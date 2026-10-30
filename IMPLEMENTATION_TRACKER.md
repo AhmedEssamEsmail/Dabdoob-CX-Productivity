@@ -72,10 +72,11 @@
 - [ ] Set up Maqsam sync
 
 ### Scheduled Jobs
-- [ ] Implement cron job structure
-- [ ] Set up Gmail import job
+- [x] Implement cron job structure
 - [ ] Set up flag detection job
 - [ ] Set up analytics aggregation job
+- [ ] Set up daily productivity layers calculation
+- [ ] Set up Gmail import job
 - [ ] Set up quarterly report job
 
 ---
