@@ -43,21 +43,25 @@
 ## Phase 2: Backend Core (Weeks 4-7)
 
 ### Productivity API
-- [ ] Implement productivity flag detection
-- [ ] Implement flag review page API
-- [ ] Implement my status page API
+- [x] Implement flag review page API
+- [x] Implement my status page API (intervals, daily layers)
 - [ ] Implement analytics API
 - [ ] Implement auto-accept logic
 - [ ] Implement confidence scoring
+- [ ] Implement productivity flag detection
 
 ### TPH API
-- [ ] Implement TPH grid API
-- [ ] Implement task management API
-- [ ] Implement cases API
+- [x] Implement TPH grid API (days)
+- [x] Implement task management API
+- [x] Implement cases API
 - [ ] Implement analytics API
 
+### Quality & FCR API
+- [x] Implement Quality audits API
+- [x] Implement FCR daily API
+
 ### Auth Middleware
-- [ ] Implement role-based access control
+- [x] Implement role-based access control
 - [ ] Implement view-as functionality
 - [ ] Test all API endpoints with auth
 
