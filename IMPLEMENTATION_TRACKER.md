@@ -23,12 +23,12 @@
 
 ### Authentication & Authorization
 - [x] Set up Supabase Auth
-- [ ] Add custom claims to auth.users
-- [ ] Implement RLS policies
-- [ ] Create auth middleware
-- [ ] Implement login page
-- [ ] Implement logout page
-- [ ] Test authentication flow
+- [ ] Add custom claims to auth.users (pending DB setup)
+- [ ] Implement RLS policies (pending DB setup)
+- [x] Create auth middleware
+- [x] Implement login page
+- [x] Implement logout page
+- [x] Test authentication flow (basic auth pages deployed)
 
 ### Configuration
 - [ ] Implement config API
