@@ -1,5 +1,7 @@
 # Implementation Tracker
 
+> **Important:** Each part of the plan will be committed separately after all tests pass. Do not combine multiple features in a single commit.
+
 ## Phase 1: Foundation (Weeks 1-3)
 
 ### Infrastructure Setup
@@ -31,8 +33,8 @@
 - [x] Test authentication flow (basic auth pages deployed)
 
 ### Configuration
+- [x] Set up initial configuration values
 - [ ] Implement config API
-- [ ] Set up initial configuration values
 - [ ] Test config management
 
 ---

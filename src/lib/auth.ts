@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase'
 
-export async function createClient() {
+export async function createAuthClient() {
   const cookieStore = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,7 +23,7 @@ export async function createClient() {
 }
 
 export async function getUser() {
-  const supabase = await createClient()
+  const supabase = await createAuthClient()
   const { data: { user } } = await supabase.auth.getUser()
   return user
 }
@@ -35,7 +36,7 @@ export async function requireAuth() {
 
 export async function requireRole(allowedRoles: string[]) {
   const user = await requireAuth()
-  const supabase = await createClient()
+  const supabase = createClient()
   const { data: rosterUser } = await supabase
     .from('roster')
     .select('role')
