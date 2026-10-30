@@ -15,13 +15,14 @@
 
 ### Database Schema
 - [x] Create core tables (config, roster, view_as)
-- [ ] Create productivity tables
-- [ ] Create TPH tables
-- [ ] Create quality tables
-- [ ] Create FCR tables
-- [ ] Create KPI tables
-- [ ] Create queue tables
+- [x] Create productivity tables
+- [x] Create TPH tables
+- [x] Create quality tables
+- [x] Create FCR tables
+- [x] Create KPI tables
+- [x] Create queue tables
 - [x] Create indexes
+- [x] Create people/calendar/TL/core tables
 
 ### Authentication & Authorization
 - [x] Set up Supabase Auth
@@ -34,8 +35,8 @@
 
 ### Configuration
 - [x] Set up initial configuration values
-- [ ] Implement config API
-- [ ] Test config management
+- [x] Implement config API
+- [x] Test config management
 
 ---
 
