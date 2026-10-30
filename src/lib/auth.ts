@@ -46,3 +46,21 @@ export async function requireRole(allowedRoles: string[]) {
   if (!allowedRoles.includes(role)) throw new Error(`Forbidden`)
   return { ...user, role }
 }
+
+export async function getViewAsUser(userEmail: string) {
+  const supabase = createClient()
+  const { data: viewAsRecord } = await supabase
+    .from('view_as')
+    .select('*')
+    .eq('owner_email', userEmail)
+    .eq('action', 'start')
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (viewAsRecord && viewAsRecord.target_email) {
+    return viewAsRecord.target_email
+  }
+
+  return null
+}
