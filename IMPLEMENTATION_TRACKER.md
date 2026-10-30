@@ -12,14 +12,14 @@
 - [x] Deploy initial Next.js app to Vercel
 
 ### Database Schema
-- [ ] Create core tables (config, roster, view_as)
+- [x] Create core tables (config, roster, view_as)
 - [ ] Create productivity tables
 - [ ] Create TPH tables
 - [ ] Create quality tables
 - [ ] Create FCR tables
 - [ ] Create KPI tables
 - [ ] Create queue tables
-- [ ] Create indexes
+- [x] Create indexes
 
 ### Authentication & Authorization
 - [x] Set up Supabase Auth
