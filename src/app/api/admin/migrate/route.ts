@@ -5,7 +5,7 @@ export const maxDuration = 300
 
 interface MigrationResult {
   success: boolean
-  tables: Record<string, { migrated: number; errors?: string[] }>
+  tables: Record<string, { migrated: number; skipped?: number; errors?: string[] }>
   errors: string[]
 }
 
@@ -20,42 +20,50 @@ const SPREADSHEETS = {
   quality: '1sOFoYdrbKorQ0WOA6bgJT1ROpzPxq2N-7oWnjhsxm3w',
 }
 
-// JSON columns that need JSON.parse
 const JSON_COLS = new Set([
   'spans_json', 'case_ids_json', 'channel_mix_json', 'rule_json',
   'confidence_factors_json', 'slots_json', 'sources_json', 'cases_json',
   'touches_json', 'calls_json', 'counts_json', 'report_json', 'flags',
+  'answers_json', 'fail_reasons_json',
 ])
 
-// Columns that are DB-generated (never insert)
-const SKIP_COLS = new Set(['id', 'created_at', 'updated_at'])
+const NUM_COLS = new Set([
+  'minutes', 'interval_min', 'flagged_min', 'total_flagged_min',
+  'avg_cases_per_flag', 'productivity_pct', 'fcr_pct', 'score', 'score_final',
+  'inbound_avail_min', 'inbound_target', 'inbound_achieved', 'inbound_missed',
+  'inbound_prod_pct', 'inbound_gap', 'texting_avail_min', 'texting_target',
+  'texting_achieved', 'texting_prod_pct', 'texting_gap', 'wa_avail_min',
+  'wa_target', 'wa_achieved', 'wa_prod_pct', 'wa_gap', 'overall_prod_pct',
+  'total_audits', 'avg_score', 'productive_min_aux',
+  'productive_min_resolution', 'idle_min', 'tickets',
+])
 
-// Column renames: sheet header -> db column
-const RENAMES: Record<string, string> = {
-  agent_email: 'agent_email', // default identity
-}
+const INT_COLS = new Set([
+  'case_count', 'distinct_cases', 'review_open_ms', 'total_flags',
+  'auto_accepted', 'year', 'total_cases', 'resolved_on_first', 'windows',
+])
 
 interface TableMapping {
   spreadsheet: keyof typeof SPREADSHEETS
   sheet: string
   table: string
-  // allowlist of DB columns (from information_schema)
-  columns: string[]
-  // optional per-row column rename: dbCol -> sheetHeader
-  rename?: Record<string, string>
+  columns: string[]            // DB columns to write
+  sheetToDb?: Record<string, string>  // DB col -> sheet header (when names differ)
+  upsertOn?: string            // conflict column for upsert (else plain insert)
+  require?: string[]           // DB cols that must be non-null (row skipped if null)
 }
 
 const MAPPINGS: TableMapping[] = [
-  // === CC2 Core ===
   {
     spreadsheet: 'core', sheet: 'ViewAs', table: 'view_as',
     columns: ['owner_email', 'action', 'target_email', 'app', 'submitted_by', 'submitted_at'],
   },
-  // === CC2 Productivity ===
   {
     spreadsheet: 'productivity', sheet: 'prod_intervals', table: 'prod_intervals',
     columns: ['interval_key', 'date', 'agent_email', 'agent_name', 'status', 'source_status',
       'start_at', 'end_at', 'minutes', 'source', 'snapshot_at'],
+    upsertOn: 'interval_key',
+    require: ['interval_key', 'agent_email'],
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_flags', table: 'prod_flags',
@@ -65,17 +73,40 @@ const MAPPINGS: TableMapping[] = [
       'decision', 'validated_status', 'decided_by', 'decided_at', 'reason', 'review_open_ms',
       'due_date', 'created_at', 'rule_json', 'updated_at', 'confidence_score',
       'confidence_level', 'confidence_factors_json'],
+    upsertOn: 'flag_id',
+    require: ['flag_id'],
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_flag_log', table: 'prod_flag_log',
-    columns: ['log_id', 'flag_id', 'action', 'from_status', 'to_status', 'by', 'at', 'reason', 'created_at'],
+    columns: ['log_id', 'flag_id', 'action', 'from_status', 'to_status', 'by', 'at', 'reason'],
+    upsertOn: 'log_id',
+    require: ['log_id'],
   },
   {
+    // Sheet headers are camelCase: agentName, inboundAvailMin, overallProdPct, computedAt...
     spreadsheet: 'productivity', sheet: 'prod_daily_layers', table: 'prod_daily_layers',
-    columns: ['layer', 'email', 'date', 'available_min', 'idle_min', 'inbound_calls_min',
-      'chats_min', 'waiting_address_min', 'offline_min', 'flagged_min',
-      'effective_idle_min', 'productivity_pct', 'computed_at'],
-    rename: { email: 'agent_email' },
+    columns: ['layer', 'agent_name', 'date', 'email',
+      'inbound_avail_min', 'inbound_target', 'inbound_achieved', 'inbound_missed',
+      'inbound_prod_pct', 'inbound_gap',
+      'texting_avail_min', 'texting_target', 'texting_achieved', 'texting_prod_pct', 'texting_gap',
+      'wa_avail_min', 'wa_target', 'wa_achieved', 'wa_prod_pct', 'wa_gap',
+      'overall_prod_pct', 'total_audits', 'avg_score',
+      'productive_min_aux', 'productive_min_resolution', 'idle_min', 'computed_at'],
+    sheetToDb: {
+      agent_name: 'agentname', computed_at: 'computedat',
+      inbound_avail_min: 'inboundavailmin', inbound_target: 'inboundtarget',
+      inbound_achieved: 'inboundachieved', inbound_missed: 'inboundmissed',
+      inbound_prod_pct: 'inboundprodpct', inbound_gap: 'inboundgap',
+      texting_avail_min: 'textingavailmin', texting_target: 'textingtarget',
+      texting_achieved: 'textingachieved', texting_prod_pct: 'textingprodpct',
+      texting_gap: 'textinggap',
+      wa_avail_min: 'waavailmin', wa_target: 'watarget', wa_achieved: 'waachieved',
+      wa_prod_pct: 'waprodpct', wa_gap: 'wagap',
+      overall_prod_pct: 'overallprodpct', total_audits: 'totalaudits',
+      avg_score: 'avgscore', productive_min_aux: 'productiveminaux',
+      productive_min_resolution: 'productiveminresolution', idle_min: 'idlemin',
+    },
+    require: ['email', 'date'],
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_window_hist', table: 'prod_window_hist',
@@ -89,6 +120,7 @@ const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'productivity', sheet: 'prod_quarterly_reports', table: 'prod_quarterly_reports',
     columns: ['report_id', 'quarter', 'year', 'start_date', 'end_date', 'report_json', 'created_at'],
+    upsertOn: 'report_id',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_days', table: 'prod_tph_days',
@@ -97,6 +129,8 @@ const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_tasks', table: 'prod_tph_tasks',
     columns: ['task_id', 'date', 'agent_email', 'channel', 'start', 'end', 'by', 'at', 'removed'],
+    upsertOn: 'task_id',
+    require: ['task_id'],
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_cases', table: 'prod_tph_cases',
@@ -110,10 +144,31 @@ const MAPPINGS: TableMapping[] = [
     spreadsheet: 'productivity', sheet: 'prod_tph_calls', table: 'prod_tph_calls',
     columns: ['date', 'calls_json', 'computed_at'],
   },
-  // === CC2 Quality ===
   {
     spreadsheet: 'quality', sheet: 'qa_audits', table: 'qa_audits',
-    columns: ['audit_id', 'date', 'agent_email', 'agent_name', 'score', 'flags', 'comments', 'by', 'at'],
+    columns: ['audit_id', 'kind', 'queue_id', 'calibration_id', 'ticket_id', 'agent_email',
+      'tl_email', 'auditor_email', 'channel', 'contact_type', 'form_id', 'form_version',
+      'answers_json', 'comment', 'score', 'fatal', 'score_final', 'started_at', 'submitted_at',
+      'audit_date', 'status', 'ack_due_date', 'acknowledged_at', 'ack_by', 'updated_at',
+      'updated_by', 'source', 'source_agent', 'fail_reasons_json', 'audit_type', 'reference',
+      'sample_basis', 'interaction_at'],
+    upsertOn: 'audit_id',
+    require: ['audit_id'],
+  },
+  {
+    spreadsheet: 'quality', sheet: 'qa_queue', table: 'qa_queue',
+    columns: ['queue_id', 'queue_date', 'ticket_id', 'agent_email', 'agent_name', 'tl_email',
+      'channel', 'contact_type', 'tier', 'auditor_email', 'status', 'started_at', 'audit_id',
+      'imported_at', 'log_key', 'interaction_at', 'agent_status', 'passed_to', 'passed_by',
+      'passed_at', 'pass_note', 'action_at', 'agent_status_log', 'ticket_status', 'pass_reason',
+      'expire_reason', 'source', 'requested_by', 'requested_at', 'request_reason', 'waived_by',
+      'waived_at', 'waive_reason', 'audit_type', 'reference'],
+    upsertOn: 'queue_id',
+    require: ['queue_id'],
+  },
+  {
+    spreadsheet: 'quality', sheet: 'qa_volume', table: 'qa_volume',
+    columns: ['date', 'channel', 'contact_type', 'tickets', 'updated_at'],
   },
 ]
 
@@ -162,28 +217,23 @@ async function readSheet(spreadsheetId: string, sheetName: string) {
 function mapRow(row: Record<string, any>, mapping: TableMapping): Record<string, any> {
   const out: Record<string, any> = {}
   for (const col of mapping.columns) {
-    if (SKIP_COLS.has(col)) continue
-    const sheetHeader = mapping.rename?.[col] || col
+    const sheetHeader = mapping.sheetToDb?.[col] || col
     let v = row[sheetHeader]
     if (v === undefined || v === '') {
-      out[col] = null
+      out[col] = col === 'created_at' || col === 'updated_at' || col === 'computed_at'
+        ? new Date().toISOString()
+        : null
       continue
     }
     if (JSON_COLS.has(col) && typeof v === 'string') {
-      try { v = JSON.parse(v) } catch { /* keep as string */ }
+      try { v = JSON.parse(v) } catch { /* keep string */ }
     } else if (col === 'removed') {
       v = v === 'true' || v === true || v === 'TRUE'
-    } else if (['minutes', 'interval_min', 'flagged_min', 'total_flagged_min',
-      'avg_cases_per_flag', 'productivity_pct', 'available_min', 'idle_min',
-      'inbound_calls_min', 'chats_min', 'waiting_address_min', 'offline_min',
-      'effective_idle_min', 'fcr_pct', 'score', 'qa_pct', 'qa_score',
-      'qa_max_score', 'fcr_rate'].includes(col)) {
-      v = v === null ? null : parseFloat(v)
+    } else if (NUM_COLS.has(col)) {
+      v = parseFloat(v)
       if (Number.isNaN(v)) v = null
-    } else if (['case_count', 'distinct_cases', 'review_open_ms', 'total_flags',
-      'auto_accepted', 'year', 'total_cases', 'resolved_on_first', 'fcr_count',
-      'windows'].includes(col)) {
-      v = v === null ? null : parseInt(v, 10)
+    } else if (INT_COLS.has(col)) {
+      v = parseInt(v, 10)
       if (Number.isNaN(v)) v = null
     }
     out[col] = v
@@ -191,7 +241,7 @@ function mapRow(row: Record<string, any>, mapping: TableMapping): Record<string,
   return out
 }
 
-async function migrateTable(mapping: TableMapping): Promise<{ migrated: number; errors: string[] }> {
+async function migrateTable(mapping: TableMapping) {
   const errors: string[] = []
   const spreadsheetId = SPREADSHEETS[mapping.spreadsheet]
 
@@ -199,18 +249,27 @@ async function migrateTable(mapping: TableMapping): Promise<{ migrated: number; 
   try {
     rows = await readSheet(spreadsheetId, mapping.sheet)
   } catch (err) {
-    return { migrated: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
+    return { migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
   }
   if (rows.length === 0) {
-    return { migrated: 0, errors: [`Sheet '${mapping.sheet}' not found or empty`] }
+    return { migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' not found or empty`] }
   }
+
+  // Map + filter rows missing required fields
+  const mapped = rows
+    .map(r => mapRow(r, mapping))
+    .filter(r => !(mapping.require || []).some(col => r[col] === null || r[col] === undefined))
+  const skipped = rows.length - mapped.length
 
   const batchSize = 500
   let migrated = 0
 
-  for (let i = 0; i < rows.length; i += batchSize) {
-    const batch = rows.slice(i, i + batchSize).map(r => mapRow(r, mapping))
-    const { error } = await supabase.from(mapping.table).insert(batch)
+  for (let i = 0; i < mapped.length; i += batchSize) {
+    const batch = mapped.slice(i, i + batchSize)
+    const query = mapping.upsertOn
+      ? supabase.from(mapping.table).upsert(batch, { onConflict: mapping.upsertOn })
+      : supabase.from(mapping.table).insert(batch)
+    const { error } = await query
     if (error) {
       errors.push(`Rows ${i}-${i + batch.length}: ${error.message}`)
     } else {
@@ -218,7 +277,7 @@ async function migrateTable(mapping: TableMapping): Promise<{ migrated: number; 
     }
   }
 
-  return { migrated, errors }
+  return { migrated, skipped, errors }
 }
 
 export async function POST(request: Request) {
@@ -227,18 +286,19 @@ export async function POST(request: Request) {
   }
 
   const result: MigrationResult = { success: false, tables: {}, errors: [] }
-
-  // Optional: only migrate specific tables via {"tables": ["prod_intervals", ...]}
   const body = await request.json().catch(() => ({})) as { tables?: string[] }
   const wanted = body.tables?.length ? new Set(body.tables) : null
 
   try {
     for (const mapping of MAPPINGS) {
       if (wanted && !wanted.has(mapping.table)) continue
-      console.log(`Migrating ${mapping.table} from ${mapping.spreadsheet}/${mapping.sheet}...`)
       try {
-        const { migrated, errors } = await migrateTable(mapping)
-        result.tables[mapping.table] = { migrated, errors: errors.length ? errors : undefined }
+        const { migrated, skipped, errors } = await migrateTable(mapping)
+        result.tables[mapping.table] = {
+          migrated,
+          skipped: skipped || undefined,
+          errors: errors.length ? errors : undefined,
+        }
       } catch (error) {
         result.tables[mapping.table] = { migrated: 0, errors: [String(error)] }
         result.errors.push(`${mapping.table}: ${error}`)
