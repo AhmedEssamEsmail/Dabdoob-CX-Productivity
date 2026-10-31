@@ -45,3 +45,5 @@ migration/
 
 /playwright-report/
 /test-results/
+
+.env*
