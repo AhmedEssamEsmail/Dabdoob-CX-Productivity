@@ -19,15 +19,15 @@ Defaults applied for the undecided questions in `06` (reversible):
 | WP-8a | ProdValidation/productivity port + golden tests | done | src/lib/prod/*; 86/86 golden oracle tests green (legacy run verbatim in vm). |
 | WP-8b | ProdTph port + golden tests | done | src/lib/tph/* + kpi/scorecard/queue libs; golden-tested same suite. |
 | WP-8c | 4 productivity pages to parity | done | status-validation (Ra), my-status (Ia), tph (za 6 tabs), productivity-analytics (Fa) ported verbatim; /tph + /tph-grid routes; px diff 0-0.26% per latest agent verify. |
-| WP-8d | Productivity jobs + Gmail import + vercel.json | in progress (agent) | vercel.json + migration 003 committed earlier. |
-| WP-1b | Hub pages (admin, overview, people-holidays, my-day, ecosystem) | blocked->placeholder | Page components absent from bundle: routes render legacy hs() placeholder; data APIs (health/options/mail-log/calendar/holidays) exist. |
-| WP-2 | Quality | partially blocked | routes + schemas now; source absent |
-| WP-3 | FCR | pending (bounded) | D3 applied |
-| WP-4 | Queue & Workforce | partially blocked | API fragments in progress (agent): /api/queue/{health,aging-flags,checkins}. UI placeholder; sync jobs need Freshdesk adapter. |
-| WP-5 | People & Performance | partially blocked | KpiPayout + WorkCalendar ported + golden-tested; /api/kpi/* in progress (agent). Pages placeholder. |
-| WP-6 | Operations & Trackers | blocked | Trackers.js absent |
-| WP-7 | TL desk | partially blocked | TlSnapshots ported; /api/tl/performance + /api/holidays in progress (agent). MailDesk/MD_HEADERS absent. |
-| WP-9 | Migrations, final sweep, gates | pending | |
+| WP-8d | Productivity jobs + Gmail import + vercel.json | done | src/lib/jobs/* + 4 new cron routes; chain order verbatim; Gmail import behind read adapter (skipped unconfigured); 352 tests green. |
+| WP-1b | Hub pages | bounded-done | Components absent: routes render legacy hs() placeholder (parity for an unbuilt route). APIs live: health/options/mail-log/calendar/holidays/bootstrap. |
+| WP-2 | Quality | bounded-done | /api/quality/audits + qa_audits data exist; page components + Quality.js absent -> placeholders per policy. |
+| WP-3 | FCR | bounded-done | /api/fcr/daily GET+POST (scorecard rows) done; page placeholder per D3. |
+| WP-4 | Queue & Workforce | bounded-done | /api/queue/{health,aging-flags,checkins} ported; agg_* stores lack schema (tolerant reads). Pages placeholder. |
+| WP-5 | People & Performance | bounded-done | kpiPayout endpoint + kpi_*_log CRUD + calendar/holidays live; scorecard stores lack schema; pages placeholder. |
+| WP-6 | Operations & Trackers | bounded-done (blocked) | Trackers.js + UI absent: placeholders only; nothing ported, nothing invented. |
+| WP-7 | TL desk | bounded-done | /api/tl/performance (raw rows + reader outputs) + holidays; TlPerformance.js/MailDesk absent. Pages placeholder. |
+| WP-9 | Migrations, final sweep, gates | done | 002+003 written; parity suite green: all comparable views 0-0.05% px diff. Remaining unknown-schema tables need legacy source. |
 
 ## Log
 - 2026-10-31: tracker created; defaults applied.
@@ -37,3 +37,5 @@ Defaults applied for the undecided questions in `06` (reversible):
 
 - WP-1a/WP-B/WP-8a/WP-8b agents completed (resumed after quota pause, same model). WP-8d + API-fragments agents running.
 - Commits: specs reorg, vercel.json, 003 migration, then per-package agent commits; stale disputeDays test fixed.
+
+- Final: all implementable scope complete and committed (per-package commits). Parity suite: 10 comparable views all 'match' (0-0.05% px, <=2 style props, <=2 DOM lines). Remaining work is blocked on missing legacy source files (see 06) and new-store schemas (QA_HEADERS, DQ_*_HEADERS for live/agg stores, MD/TLP headers, one_on_one_*/actions/tracker tables, FCR module).
