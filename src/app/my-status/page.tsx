@@ -21,21 +21,21 @@ export default function MyStatusPage() {
   if (loading) return <Loading text="Loading status..." />
 
   return (
-    <div className="p-[var(--cx-space-6)] max-w-7xl mx-auto">
-      <h1 className="text-[var(--cx-text-3xl)] font-semibold text-[var(--cx-text-primary)] mb-[var(--cx-space-6)]">
+    <div className="p-[var(--cx-space-4)] md:p-[var(--cx-space-6)] max-w-7xl mx-auto">
+      <h1 className="text-[var(--cx-text-2xl)] md:text-[var(--cx-text-3xl)] font-semibold text-[var(--cx-text-primary)] mb-[var(--cx-space-4)] md:mb-[var(--cx-space-6)]">
         My Status
       </h1>
 
-      <div className="grid gap-[var(--cx-space-6)]">
+      <div className="grid gap-[var(--cx-space-4)] md:gap-[var(--cx-space-6)]">
         <Card>
           <CardHeader>
-            <h2 className="text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+            <h2 className="text-[var(--cx-text-lg)] md:text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
               Productivity Score
             </h2>
           </CardHeader>
           <CardContent>
             {layers.length > 0 ? (
-              <div className="text-[var(--cx-text-3xl)] font-bold text-[var(--cx-accent)]">
+              <div className="text-[var(--cx-text-2xl)] md:text-[var(--cx-text-3xl)] font-bold text-[var(--cx-accent)]">
                 {layers[0].productivity_pct}%
               </div>
             ) : (
@@ -46,7 +46,7 @@ export default function MyStatusPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+            <h2 className="text-[var(--cx-text-lg)] md:text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
               Recent Intervals
             </h2>
           </CardHeader>
@@ -54,8 +54,8 @@ export default function MyStatusPage() {
             <div className="space-y-2">
               {intervals.slice(0, 10).map((interval: any) => (
                 <div key={interval.interval_key} className="flex justify-between p-[var(--cx-space-3)] border-b border-gray-200">
-                  <span className="text-[var(--cx-text-primary)]">{interval.status}</span>
-                  <span className="text-[var(--cx-text-primary)] opacity-70">{interval.minutes} min</span>
+                  <span className="text-[var(--cx-text-primary)] text-sm md:text-base">{interval.status}</span>
+                  <span className="text-[var(--cx-text-primary)] opacity-70 text-sm md:text-base">{interval.minutes} min</span>
                 </div>
               ))}
             </div>

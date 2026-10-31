@@ -3,12 +3,14 @@ import React from 'react'
 interface TableProps {
   children: React.ReactNode
   className?: string
+  caption?: string
 }
 
-export function Table({ children, className = '' }: TableProps) {
+export function Table({ children, className = '', caption }: TableProps) {
   return (
-    <div className={`overflow-x-auto ${className}`}>
+    <div className={`overflow-x-auto ${className}`} role="region" aria-label={caption}>
       <table className="w-full border-collapse">
+        {caption && <caption className="sr-only">{caption}</caption>}
         {children}
       </table>
     </div>
@@ -44,11 +46,15 @@ export function TableRow({ children, className = '' }: TableRowProps) {
 interface TableHeadProps {
   children: React.ReactNode
   className?: string
+  scope?: 'col' | 'row'
 }
 
-export function TableHead({ children, className = '' }: TableHeadProps) {
+export function TableHead({ children, className = '', scope = 'col' }: TableHeadProps) {
   return (
-    <th className={`text-left p-[var(--cx-space-3)] font-medium text-[var(--cx-text-primary)] ${className}`}>
+    <th
+      scope={scope}
+      className={`text-left p-[var(--cx-space-3)] font-medium text-[var(--cx-text-primary)] ${className}`}
+    >
       {children}
     </th>
   )

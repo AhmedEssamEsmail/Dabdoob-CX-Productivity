@@ -3,22 +3,39 @@ import React from 'react'
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
+  helperText?: string
 }
 
-export function Input({ label, error, className = '', ...props }: InputProps) {
+export function Input({ label, error, helperText, className = '', id, ...props }: InputProps) {
+  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
+  const errorId = error ? `${inputId}-error` : undefined
+  const helperId = helperText ? `${inputId}-helper` : undefined
+
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label className="text-sm font-medium text-[var(--cx-text-primary)]">
+        <label
+          htmlFor={inputId}
+          className="text-sm font-medium text-[var(--cx-text-primary)]"
+        >
           {label}
         </label>
       )}
       <input
+        id={inputId}
         className={`px-3 py-2 rounded-[var(--cx-radius-control)] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--cx-focus)] focus:border-transparent ${error ? 'border-red-500' : ''} ${className}`}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-describedby={errorId || helperId}
+        aria-required={props.required}
         {...props}
       />
+      {helperText && !error && (
+        <span id={helperId} className="text-sm text-[var(--cx-text-primary)] opacity-70">
+          {helperText}
+        </span>
+      )}
       {error && (
-        <span className="text-sm text-[var(--cx-status-bad-fg)]">
+        <span id={errorId} className="text-sm text-[var(--cx-status-bad-fg)]" role="alert">
           {error}
         </span>
       )}
