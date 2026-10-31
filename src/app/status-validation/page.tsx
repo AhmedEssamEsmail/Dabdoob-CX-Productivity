@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Card, CardHeader, CardContent, Table, TableHeader, TableRow, TableHead, TableCell, StatusBadge, Button, Loading } from '@/components/ui'
 
 export default function StatusValidationPage() {
   const [flags, setFlags] = useState<any[]>([])
@@ -19,37 +20,58 @@ export default function StatusValidationPage() {
       })
   }, [])
 
-  if (loading) return <div className="p-4">Loading...</div>
+  if (loading) return <Loading text="Loading flags..." />
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Status Validation</h1>
-      <div className="bg-white rounded shadow p-4">
-        {flags.length === 0 ? (
-          <p>No flags to review</p>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="text-left p-2">Agent</th>
-                <th className="text-left p-2">Type</th>
-                <th className="text-left p-2">Status</th>
-                <th className="text-left p-2">Confidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {flags.map((flag) => (
-                <tr key={flag.id} className="border-t">
-                  <td className="p-2">{flag.agent_email}</td>
-                  <td className="p-2">{flag.flag_type}</td>
-                  <td className="p-2">{flag.status}</td>
-                  <td className="p-2">{flag.confidence}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+    <div className="p-[var(--cx-space-6)] max-w-7xl mx-auto">
+      <h1 className="text-[var(--cx-text-3xl)] font-semibold text-[var(--cx-text-primary)] mb-[var(--cx-space-6)]">
+        Status Validation
+      </h1>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+            Productivity Flags
+          </h2>
+        </CardHeader>
+        <CardContent>
+          {flags.length === 0 ? (
+            <p className="text-[var(--cx-text-primary)]">No flags to review</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Agent</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Confidence</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <tbody>
+                {flags.map((flag) => (
+                  <TableRow key={flag.id}>
+                    <TableCell>{flag.agent_email}</TableCell>
+                    <TableCell>{flag.flag_type}</TableCell>
+                    <TableCell>
+                      <StatusBadge type={flag.status === 'pending' ? 'warning' : flag.status === 'accepted' ? 'success' : 'error'}>
+                        {flag.status}
+                      </StatusBadge>
+                    </TableCell>
+                    <TableCell>{flag.confidence}%</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="primary">Accept</Button>
+                        <Button size="sm" variant="outline">Reject</Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

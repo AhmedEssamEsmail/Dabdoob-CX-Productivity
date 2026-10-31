@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+/* CX Helm Productivity Design System - CSS Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background colors */
+  --cx-bg-primary: #f2f5f4;
+  --cx-bg-blue: #cfe4ff;
+  --cx-bg-pink: #fbd9e8;
+
+  /* Text colors */
+  --cx-text-primary: #4d5d63;
+
+  /* Status colors */
+  --cx-status-neutral-fg: #46546a;
+  --cx-status-neutral-bg: #e6eaf1;
+  --cx-status-neutral-edge: #8a96a8;
+
+  --cx-status-info-fg: #0f5a96;
+  --cx-status-info-bg: #e3eefa;
+  --cx-status-info-edge: #176aaa;
+
+  --cx-status-ok-fg: #17744a;
+  --cx-status-ok-bg: #e4f4ec;
+  --cx-status-ok-edge: #2e9a69;
+
+  --cx-status-warn-fg: #7d5000;
+  --cx-status-warn-bg: #fdf0d6;
+  --cx-status-warn-edge: #c68a1a;
+
+  --cx-status-bad-fg: #b3261e;
+  --cx-status-bad-bg: #fbe9e7;
+  --cx-status-bad-edge: #d9483f;
+
+  /* Accent colors (pine green) */
+  --cx-accent: #2d5a4d;
+  --cx-accent-hover: #1e4238;
+  --cx-accent-ink: #ffffff;
+  --cx-accent-soft: rgba(45, 90, 77, 0.12);
+
+  /* Focus ring */
+  --cx-focus: #0066cc;
+
+  /* Spacing */
+  --cx-space-1: 0.25rem;
+  --cx-space-2: 0.5rem;
+  --cx-space-3: 0.75rem;
+  --cx-space-4: 1rem;
+  --cx-space-5: 1.5rem;
+  --cx-space-6: 2rem;
+  --cx-space-7: 3rem;
+  --cx-space-8: 4rem;
+  --cx-gutter: 1rem;
+  --cx-target: 2.75rem;
+
+  /* Border radius */
+  --cx-radius-control: 6px;
+  --cx-radius-object: 10px;
+  --cx-radius-bar: 4px;
+
+  /* Shadow */
+  --cx-shadow-pop: 0 12px 32px rgba(15, 27, 45, 0.12);
+
+  /* Layout */
+  --cx-rail-width: 15rem;
+  --cx-topbar-height: 3.5rem;
+
+  /* Typography */
+  --cx-font: 'IBM Plex Sans', system-ui, sans-serif;
+  --cx-font-ar: 'IBM Plex Sans Arabic', sans-serif;
+  --cx-font-mono: 'IBM Plex Mono', monospace;
+
+  --cx-text-xs: 0.75rem;
+  --cx-text-sm: 0.875rem;
+  --cx-text-md: 1rem;
+  --cx-text-lg: 1.125rem;
+  --cx-text-xl: 1.25rem;
+  --cx-text-2xl: 1.5rem;
+  --cx-text-3xl: 1.875rem;
+
+  --cx-weight-regular: 400;
+  --cx-weight-medium: 500;
+  --cx-weight-strong: 600;
+
+  --cx-lh-latin: 1.45;
+  --cx-lh-latin-dense: 1.3;
+  --cx-lh-arabic: 1.8;
+  --cx-lh-arabic-dense: 1.6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Map CSS variables to Tailwind theme */
+  --color-background: var(--cx-bg-primary);
+  --color-foreground: var(--cx-text-primary);
+  --font-sans: var(--cx-font);
+  --font-mono: var(--cx-font-mono);
+
+  /* Custom colors */
+  --color-status-neutral: var(--cx-status-neutral-bg);
+  --color-status-info: var(--cx-status-info-bg);
+  --color-status-success: var(--cx-status-ok-bg);
+  --color-status-warning: var(--cx-status-warn-bg);
+  --color-status-error: var(--cx-status-bad-bg);
+
+  --color-accent: var(--cx-accent);
+  --color-accent-hover: var(--cx-accent-hover);
+
+  /* Custom spacing */
+  --spacing-gutter: var(--cx-gutter);
+  --spacing-target: var(--cx-target);
+
+  /* Custom border radius */
+  --radius-control: var(--cx-radius-control);
+  --radius-object: var(--cx-radius-object);
+  --radius-bar: var(--cx-radius-bar);
+
+  /* Custom shadow */
+  --shadow-pop: var(--cx-shadow-pop);
 }
 
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --cx-bg-primary: #131b1d;
+    --cx-text-primary: #a9b8b5;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cx-bg-primary);
+  color: var(--cx-text-primary);
+  font-family: var(--cx-font);
+  line-height: var(--cx-lh-latin);
+}
+
+/* Arabic language support */
+html[lang="ar"] body {
+  font-family: var(--cx-font-ar);
+  line-height: var(--cx-lh-arabic);
+}
+
+/* Reduce motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
