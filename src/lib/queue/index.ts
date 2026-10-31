@@ -96,6 +96,53 @@ export function dqWithCurrentTl_(
   })
 }
 
+export interface DqAgingFlagOut {
+  flagId: string
+  ticketId: string
+  note: string
+  tlEmail: string
+  by: string
+  at: string
+}
+
+/**
+ * dqOpenAgingFlags_: open flags whose ticket is still on the aging board.
+ * flagRows = the dq_aging_flags rows (null = no store, []); agingRows = the
+ * aging rows already read (the onBoard set).
+ */
+export function dqOpenAgingFlags_(
+  flagRows: Record<string, unknown>[] | null,
+  agingRows: Record<string, unknown>[]
+): DqAgingFlagOut[] {
+  if (flagRows === null) return []
+  const onBoard: Record<string, boolean> = {}
+  ;(agingRows || []).forEach((r) => {
+    onBoard[String(r.ticket_id)] = true
+  })
+  return flagRows
+    .filter((f) => !f.resolved_at && onBoard[String(f.ticket_id)])
+    .map((f) => ({
+      flagId: String(f.flag_id),
+      ticketId: String(f.ticket_id),
+      note: String(f.note || ''),
+      tlEmail: normEmail_(f.tl_email),
+      by: normEmail_(f.submitted_by),
+      at: String(f.submitted_at || ''),
+    }))
+}
+
+/** The client shape of one open flag (the dqOpenAgingFlags_ mapper, without the board filter). */
+export function dqAgingFlagOut_(f: Record<string, unknown>): DqAgingFlagOut {
+  return {
+    flagId: String(f.flag_id),
+    ticketId: String(f.ticket_id),
+    note: String(f.note || ''),
+    tlEmail: normEmail_(f.tl_email),
+    by: normEmail_(f.submitted_by),
+    at: String(f.submitted_at || ''),
+  }
+}
+
 /** dqSubmissionsFor_: submissions of the given slot_dates (readTable_ output injected). */
 export function dqSubmissionsFor_(
   submissionRows: Record<string, unknown>[] | null,

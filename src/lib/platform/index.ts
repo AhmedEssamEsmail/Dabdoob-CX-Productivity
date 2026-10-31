@@ -13,6 +13,7 @@
  *   notify.ts    Notify.js + OneOnOneAlerts.js — the notification engine
  *   health.ts    Health.js — ecosystem heartbeats
  *   calendar.ts  WorkCalendar.js + calendar helpers — who works when
+ *   stores.ts    Stores.js — table reads (missingOk / dqCachedLive_), dqLastRun_
  */
 
 export * from './repo'
@@ -26,3 +27,4 @@ export * from './mail'
 export * from './notify'
 export * from './health'
 export * from './calendar'
+export * from './stores'
