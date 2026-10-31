@@ -47,6 +47,63 @@ export interface GmailAdapter {
   sendReply(mime: string, threadId: string): Promise<{ id?: string }>
 }
 
+/**
+ * The read side of Gmail (Gmail.Users.Messages.* in legacy Apps Script), used by the
+ * daily "Agents Activity" CSV import. One search + one message + one attachment get
+ * per run. No Gmail creds are wired in this project yet: the job registers an
+ * adapter (setGmailReadAdapter) or an external endpoint is provided through
+ * GMAIL_READ_API_URL / GMAIL_READ_API_KEY. Absent both: the job reports
+ * { skipped: 'gmail adapter not configured' }.
+ */
+export interface GmailReadAdapter {
+  /** Gmail.Users.Messages.list('me', { q, maxResults }) -> the message stubs. */
+  listMessages(q: string, maxResults: number): Promise<{ id: string }[]>
+  /** Gmail.Users.Messages.get('me', id, { format: 'full' }) -> { id, internalDate, payload }. */
+  getMessage(id: string): Promise<{ id: string; internalDate: string | number; payload?: unknown }>
+  /** Gmail.Users.Messages.Attachments.get('me', msgId, attId) -> { data } (base64url). */
+  getAttachment(messageId: string, attachmentId: string): Promise<{ data: string }>
+}
+
+let GMAIL_READ_STUB: GmailReadAdapter | null = null
+
+/** Registers the read adapter (job wiring or tests). null clears it. */
+export function setGmailReadAdapter(adapter: GmailReadAdapter | null): void {
+  GMAIL_READ_STUB = adapter
+}
+
+/**
+ * The configured read adapter: a registered one first, else a generic HTTPS endpoint
+ * (GMAIL_READ_API_URL + GMAIL_READ_API_KEY) that accepts
+ * { action: 'list' | 'get' | 'attachment', ... } and answers the shapes above.
+ */
+export function getGmailReadAdapter(): GmailReadAdapter | null {
+  if (GMAIL_READ_STUB) return GMAIL_READ_STUB
+  const url = process.env.GMAIL_READ_API_URL
+  const key = process.env.GMAIL_READ_API_KEY
+  if (!url || !key) return null
+  const call = async (body: Record<string, unknown>) => {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error('Gmail read adapter failed: HTTP ' + res.status)
+    return res.json()
+  }
+  return {
+    async listMessages(q, maxResults) {
+      const body = (await call({ action: 'list', q, maxResults })) as { messages?: { id: string }[] }
+      return body.messages || []
+    },
+    async getMessage(id) {
+      return (await call({ action: 'get', id })) as { id: string; internalDate: string | number; payload?: unknown }
+    },
+    async getAttachment(messageId, attachmentId) {
+      return (await call({ action: 'attachment', messageId, attachmentId })) as { data: string }
+    },
+  }
+}
+
 export type SendStatus = 'sent' | 'dry_run' | 'blocked' | 'failed'
 export interface SendResult {
   status: SendStatus
@@ -157,21 +214,27 @@ export async function sendMail(msg: MailMessage, actor: string): Promise<SendRes
       }
     }
   }
-  await appendRow(
-    MAIL_LOG_TABLE,
-    {
-      sent_at: new Date().toISOString(),
-      to,
-      cc,
-      subject: msg.subject,
-      kind: msg.kind || '',
-      ref: msg.ref || '',
-      status,
-      error,
-      quota_left: quota === '' ? '' : String(quota),
-    },
-    actor
-  )
+  // The mail_log write is best effort (like dqLogRun_): a missing table or a
+  // transient failure must not turn a sent / dry-run mail into a job error.
+  try {
+    await appendRow(
+      MAIL_LOG_TABLE,
+      {
+        sent_at: new Date().toISOString(),
+        to,
+        cc,
+        subject: msg.subject,
+        kind: msg.kind || '',
+        ref: msg.ref || '',
+        status,
+        error,
+        quota_left: quota === '' ? '' : String(quota),
+      },
+      actor
+    )
+  } catch (e) {
+    console.log('mail_log append failed: ' + ((e as Error)?.message || e))
+  }
   return error ? { status, error } : { status }
 }
 
