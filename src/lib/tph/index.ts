@@ -1239,7 +1239,8 @@ export function tphHours_(cfg: Cfg): number[] {
  * tphShifts_: seam for the WFM schedule (not linked): email -> { from, to } shift slots for
  * the date. Empty = no shift known. When linked, read a stored snapshot — inject it.
  */
-export function tphShifts_(_dateKey: string): Record<string, { from: number; to: number }> {
+export function tphShifts_(dateKey: string): Record<string, { from: number; to: number }> {
+  void dateKey
   return {}
 }
 
@@ -1722,4 +1723,253 @@ export function tphBuildCases_(
     null
   )
   return out
+}
+
+// ---------------------------------------------------------------- capture + steps
+
+/**
+ * tphCaptureCases_ verbatim, seams injected: folds the fresh queue numbers into today's
+ * 'auto' prod_tph_cases row. io.cachedLive = dqCachedLive_('agg_queue_now'); io.withLock optional.
+ */
+export function tphCaptureCases_(
+  io: TphIo & {
+    cachedLive: (name: string) => Record<string, unknown>[]
+    upsertIn: NonNullable<TphIo['upsertIn']>
+    withLock?: <T>(fn: () => T) => T
+  }
+): Record<string, unknown> {
+  if (!prodReady_(io.cfg)) return { skipped: 'CC2 Productivity is not set up' }
+  const tz = String(dqSetting_(io.cfg, 'business_tz'))
+  const now = io.now === undefined ? new Date() : new Date(io.now)
+  const date = formatDate_(now, tz, 'yyyy-MM-dd')
+  const h = Number(formatDate_(now, tz, 'H'))
+  const got = tphCasesFromQueue_(
+    io.cachedLive('agg_queue_now') || [],
+    tphChannels_(io.cfg),
+    prodSetting_(io.cfg, 'tph_ticket_statuses'),
+    prodSetting_(io.cfg, 'tph_chat_exclude_statuses')
+  )
+  if (!Object.keys(got).length) return { rowsOut: 0, note: date + ' ' + h + ':00 no fresh queue numbers' }
+  const at = now.toISOString()
+  const run = () => {
+    const row =
+      io.prodRows('prod_tph_cases').filter((r) => r.date === date && r.source === 'auto')[0] || {}
+    const m = tphJson_<Record<string, { stock: unknown; c0: unknown; c1: unknown }>>(row.cases_json, {})
+    const added = tphFoldCapture_(m, h, got)
+    io.upsertIn(
+      'prod_tph_cases',
+      ['date', 'source'],
+      [{ date, source: 'auto', cases_json: JSON.stringify(m), by: 'system', at }],
+      null
+    )
+    return { rowsOut: added, note: date + ' ' + h + ':00 ' + JSON.stringify(got) }
+  }
+  return io.withLock ? io.withLock(run) : run()
+}
+
+/** tphDiagnoseTouchLines_ verbatim: why an agent's touches are low — pure, returns log lines. */
+export function tphDiagnoseTouchLines_(
+  rows: unknown[][],
+  date: string,
+  frag: unknown,
+  nameToEmail: Record<string, string>,
+  localTz: string,
+  channels: { key: string; groups?: unknown[] }[],
+  bizTz: string,
+  headcount: { email?: string; name?: string; fdName?: string; fdId?: string }[] | null
+): string[] {
+  const idx = tphGroupIndex_(channels)
+  const fb = tphTouchFallback_(channels)
+  const inLocal = tphClock_(localTz)
+  const inBiz = tphClock_(bizTz)
+  const f = String(frag || '').trim().toLowerCase()
+  const names: Record<string, number> = {}
+  const groups: Record<string, { n: number; ids: Record<string, boolean>; ch: string }> = {}
+  const unmapped: Record<string, number> = {}
+  const mine: unknown[][] = []
+  const raw: Record<string, { n: number; ids: Record<string, boolean> }> = {}
+  const top = (o: Record<string, number>, n: number) =>
+    Object.keys(o)
+      .sort((a, b) => o[b] - o[a])
+      .slice(0, n)
+  rows.forEach((r) => {
+    const t = inLocal.ms(r[0])
+    if (t === null || inBiz.day(t) !== date) return
+    const g = String(r[8] || '').trim()
+    const gl = g.toLowerCase()
+    if (!idx[gl]) unmapped[g || '(blank)'] = (unmapped[g || '(blank)'] || 0) + 1
+    const n = String(r[2] || '').trim()
+    if (/raw id/i.test(n)) {
+      const rw = (raw[n] = raw[n] || { n: 0, ids: {} })
+      rw.n++
+      rw.ids[tphTid_(r[1])] = true
+    }
+    if (!f || n.toLowerCase().indexOf(f) === -1) return
+    mine.push(r)
+    names[n] = (names[n] || 0) + 1
+    const gg = (groups[g || '(blank)'] = groups[g || '(blank)'] || {
+      n: 0,
+      ids: {},
+      ch: idx[gl] || (fb ? fb + ' (fallback)' : 'UNMAPPED'),
+    })
+    gg.n++
+    gg.ids[tphTid_(r[1])] = true
+  })
+  const credited = tphTouchesFromRows_(mine, [date], nameToEmail, localTz, channels, bizTz)[date] || {}
+  const total = Object.keys(credited).reduce((s, k) => s + credited[k], 0)
+  const cnt = (o: Record<string, { n: number }>) => {
+    const m: Record<string, number> = {}
+    Object.keys(o).forEach((k) => {
+      m[k] = o[k].n
+    })
+    return m
+  }
+  const out = ['diagnoseTphTouches ' + date + ' "' + frag + '": ' + mine.length + ' rows, ' + total + ' touches credited']
+  out.push('-- names (col C):')
+  top(names, 10).forEach((n) => {
+    out.push('  "' + n + '" x' + names[n] + ' -> ' + (nameToEmail[n.toLowerCase()] || 'NOT IN HEADCOUNT'))
+  })
+  out.push('-- groups (col I):')
+  top(cnt(groups), 20).forEach((g) => {
+    out.push('  "' + g + '" x' + groups[g].n + ', ' + Object.keys(groups[g].ids).length + ' tickets -> ' + groups[g].ch)
+  })
+  out.push('-- top unmapped groups, all agents:')
+  top(unmapped, 15).forEach((g) => {
+    out.push('  "' + g + '" x' + unmapped[g])
+  })
+  out.push('-- raw-id performers, all agents:')
+  top(cnt(raw), 50).forEach((n) => {
+    const need = (n.match(/raw id\s*(\S+)/i) || [])[1] || ''
+    out.push(
+      '  "' + n + '" x' + raw[n].n + ', ' + Object.keys(raw[n].ids).length + ' tickets, needs fdId ' +
+        JSON.stringify(need) + ' -> ' + (nameToEmail[n.toLowerCase()] || 'NOT MAPPED')
+    )
+  })
+  if (headcount) {
+    out.push(
+      '-- headcount: ' + headcount.length + ' entries, ' +
+        headcount.filter((h) => String(h.fdId || '').trim()).length + ' with fdId'
+    )
+    headcount.forEach((h) => {
+      if (!f || (String(h.name || '') + '|' + String(h.fdName || '')).toLowerCase().indexOf(f) === -1) return
+      const id = String(h.fdId || '')
+      out.push(
+        '  match: ' + h.email + ' name ' + JSON.stringify(h.name) + ' fdName ' + JSON.stringify(h.fdName) +
+          ' fdId ' + JSON.stringify(h.fdId) +
+          ' -> raw-id name needed "unknown agent - raw id ' + id.toLowerCase() + '" ' +
+          (nameToEmail['unknown agent - raw id ' + id.toLowerCase()] ? 'in map' : 'NOT IN MAP') +
+          ', seen on date: ' +
+          (Object.keys(raw).some((n) => n.toLowerCase() === 'unknown agent - raw id ' + id.trim().toLowerCase())
+            ? 'yes'
+            : 'no')
+      )
+    })
+  }
+  return out
+}
+
+// ---------------------------------------------------------------- past-day steps
+
+/** tphPastDay_ verbatim: a past-day key or throw (today is computed tomorrow morning). */
+export function tphPastDay_(date: unknown, cfg: Cfg, today?: number | Date): string {
+  const d = String(date || '')
+  if (!/^\d{4}-\d\d-\d\d$/.test(d) || d >= prodToday_(cfg, today))
+    throw new Error('Pick a past day (yyyy-MM-dd): today is computed tomorrow morning.')
+  return d
+}
+
+export type TphStep = 'touches' | 'cases_chats' | 'cases_tickets' | 'calls'
+
+export interface TphStepIo extends TphIo {
+  activityTail: (date: string, days: number) => unknown[][]
+  buildTouches: (dates: string[], activityRows: unknown[][]) => unknown
+  buildCallMinutes: (dates: string[]) => number
+  buildCases: (dates: string[], activityRows: unknown[][] | null, part?: string) => Record<string, { cells: Record<string, unknown>; reasons: Record<string, string> }>
+  logRun: (job: string, startedMs: number, status: string, info: Record<string, unknown>) => void
+  nowMs?: number
+}
+
+/** tphRunStep_ verbatim, builds delegated to io: one step for one past day; logs its own run. */
+export function tphRunStep_(
+  d: string,
+  step: string,
+  by: string,
+  io: TphStepIo
+): Record<string, unknown> {
+  const t = io.nowMs === undefined ? Date.now() : io.nowMs
+  const out: Record<string, unknown> = { step, date: d }
+  let job = ''
+  let n: number | undefined
+  try {
+    if (step === 'touches') {
+      job = 'prod_tph_touches'
+      io.buildTouches([d], io.activityTail(d, 1))
+      const row = io.prodRows('prod_tph_touches').filter((r) => r.date === d)[0]
+      n = out.touchCells = Object.keys(tphJson_(row && row.touches_json, {})).length
+    } else if (step === 'calls') {
+      job = 'prod_tph_calls'
+      n = io.buildCallMinutes([d])
+    } else if (step === 'cases_chats' || step === 'cases_tickets') {
+      job = 'prod_tph_cases_rebuilt'
+      const got = io.buildCases([d], null, step === 'cases_tickets' ? 'tickets' : 'chats')[d] || { cells: {}, reasons: {} }
+      n = out.casesRebuilt = Object.keys(got.cells).length
+      out.casesReasons = got.reasons
+    } else throw new Error('Unknown TPH step ' + step + '.')
+  } catch (e) {
+    if (job) io.logRun(job, t, 'error', { error: step + ' ' + d + ': ' + (e as Error).message })
+    throw e
+  }
+  const ms = (io.nowMs === undefined ? Date.now() : io.nowMs) - t
+  out.ms = ms
+  io.logRun(job, t, 'ok', { rowsOut: n, note: 'TPH ' + step + ' ' + d + ' by ' + by + ' in ' + out.ms + ' ms' })
+  return out
+}
+
+/** tphBuildPastDays_ verbatim, steps via tphRunStep_/io: rebuild the last TPH_PAST_DAYS stale days. */
+export function tphBuildPastDays_(
+  io: TphStepIo & { today?: number | Date }
+): Record<string, unknown> {
+  if (!prodReady_(io.cfg)) return { skipped: 'CC2 Productivity is not set up' }
+  const t0 = io.nowMs === undefined ? Date.now() : io.nowMs
+  const today = prodToday_(io.cfg, io.today)
+  const done: string[] = []
+  const failed: string[] = []
+  const left: string[] = []
+  for (let i = 1; i <= TPH_PAST_DAYS; i++) {
+    const d = dqAddDays_(today, -i)
+    const row = (name: string, pick?: (r: Record<string, unknown>) => boolean) =>
+      io.prodRows(name).filter((r) => r.date === d && (!pick || pick(r)))[0]
+    const touch = row('prod_tph_touches')
+    const call = row('prod_tph_calls')
+    const reb = row('prod_tph_cases', (r) => r.source === 'rebuilt')
+    const steps = tphStaleSteps_(
+      {
+        touches: touch && String(touch.computed_at || ''),
+        calls: call && String(call.computed_at || ''),
+        cases: reb && String(reb.at || ''),
+      },
+      t0,
+      TPH_STALE_MS
+    )
+    steps.forEach((step) => {
+      if ((io.nowMs === undefined ? Date.now() : io.nowMs) - t0 > TPH_TIME_GUARD_MS) {
+        left.push(d + ' ' + step)
+        return
+      }
+      try {
+        tphRunStep_(d, step, TPH_PAST_JOB, io)
+        done.push(d + ' ' + step)
+      } catch (err) {
+        failed.push(d + ' ' + step + ': ' + (err as Error).message)
+      }
+    })
+  }
+  if (!done.length && !failed.length && !left.length) return { rowsOut: 0, note: 'nothing stale' }
+  const note =
+    'Built ' +
+    (done.join(', ') || 'nothing') +
+    (failed.length ? ' | failed ' + failed.join('; ') : '') +
+    (left.length ? ' | left for next hour ' + left.join(', ') : '')
+  io.logRun('prod_tph_auto', t0, failed.length ? 'error' : 'ok', { rowsOut: done.length, note, error: failed.join('; ') })
+  return { rowsOut: done.length, note }
 }

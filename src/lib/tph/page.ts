@@ -18,6 +18,7 @@ import {
   tphRebuiltCases_,
   tphResolveCases_,
   tphResolveSlots_,
+  tphShifts_,
   tphTable_,
 } from './index'
 
@@ -58,7 +59,7 @@ export function tphHours_(cfg: Cfg): number[] {
 }
 
 /** WFM seam — not linked yet, always {}. */
-export function tphShifts_(_dateKey: string): Record<string, unknown> {
+export function _tphShiftsUnused(): Record<string, unknown> {
   return {}
 }
 
