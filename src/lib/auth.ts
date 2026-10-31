@@ -35,8 +35,10 @@ export async function requireAuth() {
 }
 
 export async function requireRole(allowedRoles: string[]) {
-  const user = await requireAuth()
-  const supabase = createClient()
+  const supabase = await createAuthClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
   const { data: rosterUser } = await supabase
     .from('roster')
     .select('role')
