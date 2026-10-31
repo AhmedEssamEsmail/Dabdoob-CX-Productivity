@@ -1,3 +1,5 @@
+> Superseded in scope by [../legacy-parity/README.md](../legacy-parity/README.md): this v1 shard set covers the Productivity migration only. Kept for reference.
+
 # CX Helm Productivity Migration - Specification Index
 
 This directory contains the complete technical specification for migrating the CX Helm Productivity system from Google Sheets/Google Apps Script to Supabase/Next.js/Vercel.
@@ -39,6 +41,9 @@ This directory contains the complete technical specification for migrating the C
 - **[20-ui-preservation-plan.md](./20-ui-preservation-plan.md)** - Detailed plan to preserve original visual design, colors, and UX
 - **[21-test-coverage-plan.md](./21-test-coverage-plan.md)** - Comprehensive test coverage plan (unit, integration, E2E, performance, security)
 - **[22-data-migration-requirements.md](./22-data-migration-requirements.md)** - What is needed to actually migrate data from Google Sheets
+
+### Legacy Parity Programme (supersedes the scope assumptions above)
+- **[legacy-parity/README.md](../legacy-parity/README.md)** - Full-parity audit of the legacy GAS ecosystem (8 apps, 40 pages): inventory, gap analysis, UI/UX and functional parity plans, implementation plan, and the blocking source gaps and owner decisions. Start here.
 
 ## Quick Reference
 

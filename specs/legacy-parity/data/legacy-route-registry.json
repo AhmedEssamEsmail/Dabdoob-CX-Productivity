@@ -1,0 +1,614 @@
+{
+  "source": "original_deprecated/index.html (bundled app.tsx registry, extracted verbatim)",
+  "groupOrder": [
+    "hub",
+    "quality",
+    "productivity",
+    "queue",
+    "people",
+    "operations",
+    "desk",
+    "fcr"
+  ],
+  "groupLabels": {
+    "hub": "Hub",
+    "quality": "Quality",
+    "productivity": "Productivity",
+    "queue": "Queue & Workforce",
+    "people": "People & Performance",
+    "operations": "Operations & Trackers",
+    "fcr": "FCR",
+    "desk": "TL desk"
+  },
+  "groupDefaultPage": {
+    "hub": "overview",
+    "quality": "audit-queue",
+    "productivity": "status-validation",
+    "queue": "queue",
+    "people": "one-on-ones",
+    "operations": "trackers",
+    "fcr": "fcr",
+    "desk": "tl-performance"
+  },
+  "groupTone": {
+    "hub": "work",
+    "queue": "work",
+    "productivity": "work",
+    "people": "team",
+    "desk": "team",
+    "quality": "quality",
+    "fcr": "quality",
+    "operations": "system"
+  },
+  "apps": {
+    "hub": {
+      "title": "CX Helm",
+      "groups": [
+        "hub"
+      ],
+      "server": "*"
+    },
+    "quality": {
+      "title": "CX Helm Quality",
+      "groups": [
+        "quality"
+      ],
+      "server": [
+        "QaEngine.js",
+        "QaMigrate.js",
+        "Quality.js"
+      ]
+    },
+    "productivity": {
+      "title": "CX Helm Productivity",
+      "groups": [
+        "productivity"
+      ],
+      "server": [
+        "ProdTph.js",
+        "ProdValidation.js",
+        "ProductivityApp.js",
+        "productivity.js"
+      ]
+    },
+    "desk": {
+      "title": "CX Helm Desk",
+      "groups": [
+        "desk"
+      ],
+      "server": [
+        "KpiLogs.js",
+        "MailDesk.js",
+        "TlPerformance.js"
+      ],
+      "scopes": [
+        "https://www.googleapis.com/auth/gmail.send"
+      ]
+    },
+    "people": {
+      "title": "CX Helm People",
+      "groups": [
+        "people"
+      ],
+      "server": [
+        "Actions.js",
+        "Coaching.js",
+        "Meetings.js",
+        "MigrateV1Tasks.js",
+        "Notes.js",
+        "OneOnOneDelete.js",
+        "OneOnOneReminders.js",
+        "OneOnOnes.js",
+        "PeopleTriggers.js",
+        "Reminders.js",
+        "Scorecard.js",
+        "Tasks.js"
+      ]
+    },
+    "operations": {
+      "title": "CX Helm Operations",
+      "groups": [
+        "operations"
+      ],
+      "server": [
+        "Trackers.js"
+      ]
+    },
+    "queue": {
+      "title": "CX Helm Queue",
+      "groups": [
+        "queue"
+      ],
+      "server": [
+        "AgingHelp.js",
+        "Heatmap.js",
+        "QueuePages.js",
+        "Scheduler.js",
+        "TlQueue.js"
+      ]
+    },
+    "fcr": {
+      "title": "CX Helm FCR",
+      "groups": [
+        "fcr"
+      ],
+      "server": []
+    }
+  },
+  "pages": [
+    {
+      "path": "my-day",
+      "title": "My day",
+      "group": "hub",
+      "reqs": [
+        17
+      ],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "Your meetings, deadlines, mail waiting on you and recent files, with focus blocks you can book."
+    },
+    {
+      "path": "overview",
+      "title": "Home",
+      "group": "hub",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "What needs you right now, then every queue and how old its work is."
+    },
+    {
+      "path": "people-holidays",
+      "title": "People & holidays",
+      "group": "hub",
+      "reqs": [],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "Where each person is based, their days off, and public holidays by country."
+    },
+    {
+      "path": "admin",
+      "title": "Admin",
+      "group": "hub",
+      "reqs": [],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "Roster, settings, dropdown choices, email log and scheduled jobs."
+    },
+    {
+      "path": "quality-scores",
+      "title": "Team scores",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "The team score for this month or any dates you pick, its trend, and the team leads, agents and channels behind it."
+    },
+    {
+      "path": "audit-queue",
+      "title": "Audit Desk",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Four audits per agent per day: open one, score it live in the form, and the agent gets the result by email."
+    },
+    {
+      "path": "my-audits",
+      "title": "My audits",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "agent"
+      ],
+      "purpose": "Your quality audits and what lost marks; confirm your coaching (CTL) with your team lead happened."
+    },
+    {
+      "path": "ctls",
+      "title": "CTLs",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Go through each audit under 100% with the agent within 2 working days (3 over a day off) and submit the outcome: acknowledged or dispute. A TL on shift may close any open CTL."
+    },
+    {
+      "path": "disputes",
+      "title": "Disputes",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Disputes team leads raised at the CTL: record the weekly meeting outcome, or escalate to Mohamed."
+    },
+    {
+      "path": "calibration",
+      "title": "Calibration",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Each auditor scored against the team lead reference on the same tickets, and the auditor trend over time."
+    },
+    {
+      "path": "kb-gaps",
+      "title": "KB gaps",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Knowledge-base gaps auditors flag on the day of the audit. Auditors add entries; the KB update list marks them added."
+    },
+    {
+      "path": "my-auditor-kpis",
+      "title": "My auditor work",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Your own auditor KPIs for a month, the audits you did and any dispute raised on them."
+    },
+    {
+      "path": "quality-analytics",
+      "title": "Quality analytics",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Scores by agent, team lead, channel and question; auditor and CTL KPIs."
+    },
+    {
+      "path": "qa-forms",
+      "title": "Audit forms",
+      "group": "quality",
+      "reqs": [],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "The audit questions per channel, their weights, and the critical questions that zero an audit."
+    },
+    {
+      "path": "status-validation",
+      "title": "Status validation",
+      "group": "productivity",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "IDLE time with cases in it, flagged for your review: accept the status it counts as, or revert with a reason."
+    },
+    {
+      "path": "my-status",
+      "title": "My status",
+      "group": "productivity",
+      "reqs": [],
+      "roles": [
+        "agent"
+      ],
+      "purpose": "Your flagged IDLE time, raw, suggested and reviewed, and your productivity before and after; dispute a flag."
+    },
+    {
+      "path": "productivity-analytics",
+      "title": "Productivity analytics",
+      "group": "productivity",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Idle before and after validation, its effect on productivity, and how flags are reviewed."
+    },
+    {
+      "path": "tph",
+      "title": "TPH and caps",
+      "group": "productivity",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Which channel each agent is on, the cases waiting each hour, and each agent’s touches against their share of them."
+    },
+    {
+      "path": "queue",
+      "title": "Queue health",
+      "group": "queue",
+      "reqs": [
+        5
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Every queue now: open work, its age, and how it moved since the last check-in."
+    },
+    {
+      "path": "aging",
+      "title": "Aging cases",
+      "group": "queue",
+      "reqs": [
+        11
+      ],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Unresolved tickets by age, getting redder the longer they stay open."
+    },
+    {
+      "path": "checkins",
+      "title": "Check-ins",
+      "group": "queue",
+      "reqs": [
+        9
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Queue status at 09:30, 13:00, 18:30 and 22:00 Kuwait time."
+    },
+    {
+      "path": "analytics",
+      "title": "Analytics",
+      "group": "queue",
+      "reqs": [
+        15
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Inflow by day, week and month: inbound calls, chats and internal escalations."
+    },
+    {
+      "path": "heatmap",
+      "title": "Heatmap",
+      "group": "queue",
+      "reqs": [
+        4
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Headcount needed per interval and per shift, by country, with every assumption editable."
+    },
+    {
+      "path": "scheduler",
+      "title": "TL scheduler",
+      "group": "queue",
+      "reqs": [
+        10
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Who works which shift, and what each team lead is doing in every hour of the day."
+    },
+    {
+      "path": "agents",
+      "title": "Agent performance",
+      "group": "people",
+      "reqs": [
+        1
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Each agent’s productivity and trend, from the V1 productivity engine."
+    },
+    {
+      "path": "one-on-ones",
+      "title": "1:1s",
+      "group": "people",
+      "reqs": [
+        3,
+        6,
+        7
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Schedule and log topic-driven 1:1s. A 1:1 not logged the same day triggers a reminder."
+    },
+    {
+      "path": "tl-tasks",
+      "title": "TL tasks",
+      "group": "people",
+      "reqs": [
+        2
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Tasks for team leads with a timeline from start to deadline, progress updates and reminders."
+    },
+    {
+      "path": "meetings",
+      "title": "Meetings & BRs",
+      "group": "people",
+      "reqs": [
+        8
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Notes and action items from meetings and business reviews, reviewed at the next one."
+    },
+    {
+      "path": "my-actions",
+      "title": "My actions",
+      "group": "people",
+      "reqs": [
+        3,
+        8
+      ],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "What you agreed to in 1:1s and meetings, and where each stands."
+    },
+    {
+      "path": "notes",
+      "title": "Notes",
+      "group": "people",
+      "reqs": [],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "Your private scratchpad: get a thought down now, tag and sort it later, turn it into a task when it is ready."
+    },
+    {
+      "path": "coaching",
+      "title": "Coaching signals",
+      "group": "people",
+      "reqs": [
+        3
+      ],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Suggest a 1:1 topic for one person, e.g. a QA finding; it reaches their team lead."
+    },
+    {
+      "path": "hard-cases",
+      "title": "Hard cases",
+      "group": "people",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "A log of difficult cases to coach from, each one linkable to a 1:1."
+    },
+    {
+      "path": "kpi-close",
+      "title": "Month-end KPI close",
+      "group": "people",
+      "reqs": [],
+      "roles": [
+        "admin"
+      ],
+      "purpose": "Final agent, team lead and auditor scores from settled data, deductions applied, exceptions with a reason, then the month locked."
+    },
+    {
+      "path": "trackers",
+      "title": "Trackers",
+      "group": "operations",
+      "reqs": [
+        16
+      ],
+      "roles": [
+        "admin",
+        "tl",
+        "agent"
+      ],
+      "purpose": "Blocked customers, promocodes, operational loss, customer strikes and more, in one place."
+    },
+    {
+      "path": "escalation-matrix",
+      "title": "Escalation matrix",
+      "group": "operations",
+      "reqs": [
+        10
+      ],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Who to escalate to, for which issue, and after how long, built and kept in one place."
+    },
+    {
+      "path": "tl-performance",
+      "title": "TL performance",
+      "group": "desk",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "A team lead's week: team scores, responsibilities, projects against expectation, queue hours and mails to answer."
+    },
+    {
+      "path": "kb-tracker",
+      "title": "KB tracker",
+      "group": "desk",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Knowledge-base updates: when each was asked for, when it was done, and whether it was accurate."
+    },
+    {
+      "path": "kpi-logs",
+      "title": "KPI logs",
+      "group": "desk",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "What no system records: HR-confirmed behaviour cases, unplanned leaves, and tickets left out of an area's SLA. The scorecard reads them."
+    },
+    {
+      "path": "mail-desk",
+      "title": "Mail desk",
+      "group": "desk",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "Approval mails to answer in their thread, and MyFatoorah refund updates and chargebacks: who was on queue, who replied and when."
+    },
+    {
+      "path": "fcr",
+      "title": "FCR",
+      "group": "fcr",
+      "reqs": [],
+      "roles": [
+        "admin",
+        "tl"
+      ],
+      "purpose": "First contact resolution: scoring, raw data, analytics and insights."
+    }
+  ]
+}

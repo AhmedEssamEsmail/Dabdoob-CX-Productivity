@@ -139,15 +139,15 @@
 
 ### Testing
 - [x] Unit tests (119 tests passing)
-- [x] Test coverage plan created (specs/21-test-coverage-plan.md)
+- [x] Test coverage plan created (specs/migration-spec-v1/21-test-coverage-plan.md)
 - [x] Integration tests (40 tests created)
 - [x] E2E test framework setup (Playwright)
 - [x] Performance testing (14 tests)
 - [x] Security audit (22 tests)
 
 ### Documentation
-- [x] UI preservation plan created (specs/20-ui-preservation-plan.md)
-- [x] Data migration requirements documented (specs/22-data-migration-requirements.md)
+- [x] UI preservation plan created (specs/migration-spec-v1/20-ui-preservation-plan.md)
+- [x] Data migration requirements documented (specs/migration-spec-v1/22-data-migration-requirements.md)
 
 ### Pages Implemented
 - [x] Status Validation page
