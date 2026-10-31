@@ -1,50 +1,46 @@
 import Link from 'next/link'
 
+const AREAS = [
+  {
+    href: '/status-validation',
+    title: 'Status validation',
+    purpose:
+      'IDLE time with cases in it, flagged for your review: accept the status it counts as, or revert with a reason.',
+  },
+  {
+    href: '/my-status',
+    title: 'My status',
+    purpose:
+      'Your flagged IDLE time, raw, suggested and reviewed, and your productivity before and after; dispute a flag.',
+  },
+  {
+    href: '/tph',
+    title: 'TPH and caps',
+    purpose:
+      'Which channel each agent is on, the cases waiting each hour, and each agent\u2019s touches against their share of them.',
+  },
+]
+
+/** Landing hub rendered with the legacy page chrome (page/page-head/cx-panel). */
 export default function Home() {
   return (
-    <div className="workspace-home">
-      <section className="workspace-home__intro">
-        <p className="workspace-home__eyebrow">CX HELM / PRODUCTIVITY</p>
-        <h1>Make the work visible.</h1>
-        <p>
-          Review status, track your productivity, and keep hourly workload in
-          view.
+    <section className="page" aria-labelledby="page-title">
+      <header className="page-head">
+        <h1 id="page-title" className="page-title">
+          CX Helm Productivity
+        </h1>
+        <p className="page-purpose">
+          Review status, track your productivity, and keep hourly workload in view.
         </p>
-      </section>
-
-      <section className="workspace-home__section" aria-labelledby="workspace-title">
-        <div className="workspace-home__section-heading">
-          <div>
-            <p className="workspace-home__eyebrow">YOUR WORKSPACE</p>
-            <h2 id="workspace-title">Choose where to start</h2>
-          </div>
-          <span className="workspace-home__date">3 WORK AREAS</span>
-        </div>
-
-        <div className="workspace-home__grid">
-          <Link href="/status-validation" className="workspace-card workspace-card--lead">
-            <span className="workspace-card__index">01 / REVIEW</span>
-            <span className="workspace-card__icon" aria-hidden="true">↗</span>
-            <h3>Status validation</h3>
-            <p>Review flagged idle time and decide how it should count.</p>
-            <span className="workspace-card__link">Open review <span aria-hidden="true">→</span></span>
+      </header>
+      <div className="cx-grid-2">
+        {AREAS.map((a) => (
+          <Link key={a.href} href={a.href} className="cx-panel cx-panel--pad">
+            <h2 className="cx-section__title">{a.title}</h2>
+            <p className="cx-muted">{a.purpose}</p>
           </Link>
-          <Link href="/my-status" className="workspace-card">
-            <span className="workspace-card__index">02 / PERSONAL</span>
-            <span className="workspace-card__icon" aria-hidden="true">◷</span>
-            <h3>My status</h3>
-            <p>See your productivity score and recent status intervals.</p>
-            <span className="workspace-card__link">View my status <span aria-hidden="true">→</span></span>
-          </Link>
-          <Link href="/tph-grid" className="workspace-card">
-            <span className="workspace-card__index">03 / TEAM</span>
-            <span className="workspace-card__icon" aria-hidden="true">▦</span>
-            <h3>TPH grid</h3>
-            <p>Compare hourly case volume, channel assignment, and touches.</p>
-            <span className="workspace-card__link">Open TPH grid <span aria-hidden="true">→</span></span>
-          </Link>
-        </div>
-      </section>
-    </div>
+        ))}
+      </div>
+    </section>
   )
 }

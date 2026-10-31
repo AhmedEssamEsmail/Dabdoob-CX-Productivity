@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardHeader, CardContent, Table, TableHeader, TableRow, TableHead, TableCell, StatusBadge, Button, Loading, Input } from '@/components/ui'
 
 interface RosterUser {
   email: string
@@ -12,6 +11,13 @@ interface RosterUser {
   active: boolean
   submitted_by?: string
   submitted_at?: string
+}
+
+const ROLE_STATUS: Record<string, string> = {
+  admin: 'bad',
+  tl: 'warn',
+  specialist: 'info',
+  agent: 'neutral',
 }
 
 export default function AdminRosterPage() {
@@ -82,56 +88,68 @@ export default function AdminRosterPage() {
     }
   }
 
-  const getRoleBadgeType = (role: string) => {
-    switch (role) {
-      case 'admin': return 'error'
-      case 'tl': return 'warning'
-      case 'specialist': return 'info'
-      default: return 'neutral'
-    }
+  if (loading) {
+    return (
+      <main className="state-screen">
+        <h1>Loading roster…</h1>
+      </main>
+    )
   }
 
-  if (loading) return <Loading text="Loading roster..." />
-
   return (
-    <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-(--cx-space-4) md:mb-(--cx-space-6)">
-        <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground">
-          Roster Management
+    <section className="page" aria-labelledby="page-title">
+      <header className="page-head">
+        <h1 id="page-title" className="page-title">
+          Roster
         </h1>
-        <Button variant="primary" onClick={() => setShowAddForm(!showAddForm)}>
-          {showAddForm ? 'Cancel' : 'Add User'}
-        </Button>
-      </div>
+        <p className="page-purpose">
+          Who is on the CX roster, their role, team lead and whether they are active.
+        </p>
+      </header>
 
-      {showAddForm && (
-        <Card className="mb-(--cx-space-6)">
-          <CardHeader>
-            <h2 className="text-(length:--cx-text-lg) font-semibold text-foreground">
-              Add New User
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Email"
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                required
-              />
-              <Input
-                label="Name"
-                value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                required
-              />
-              <div>
-                <label className="text-sm font-medium text-foreground">Role</label>
+      <section className="cx-section">
+        <div className="cx-section__head">
+          <h2 className="cx-section__title">Users</h2>
+          <button
+            type="button"
+            className={`cx-btn ${showAddForm ? 'cx-btn--quiet' : 'cx-btn--primary'}`}
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            {showAddForm ? 'Cancel' : 'Add user'}
+          </button>
+        </div>
+
+        {showAddForm && (
+          <div className="cx-panel cx-panel--pad">
+            <div className="cx-grid-2">
+              <div className="field">
+                <label className="field-label" htmlFor="nu-email">Email</label>
+                <input
+                  id="nu-email"
+                  className="cx-input"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nu-name">Name</label>
+                <input
+                  id="nu-name"
+                  className="cx-input"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nu-role">Role</label>
                 <select
+                  id="nu-role"
+                  className="cx-select"
                   value={newUser.role}
-                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}
-                  className="w-full px-3 py-2 rounded-(--cx-radius-control) border border-gray-300 mt-1"
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as RosterUser['role'] })}
                 >
                   <option value="agent">Agent</option>
                   <option value="tl">TL</option>
@@ -139,104 +157,141 @@ export default function AdminRosterPage() {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              <Input
-                label="TL Email"
-                type="email"
-                value={newUser.tl_email}
-                onChange={(e) => setNewUser({ ...newUser, tl_email: e.target.value })}
-              />
-              <Input
-                label="Country"
-                value={newUser.country}
-                onChange={(e) => setNewUser({ ...newUser, country: e.target.value })}
-              />
-              <div className="flex items-center gap-2">
+              <div className="field">
+                <label className="field-label" htmlFor="nu-tl">TL email</label>
                 <input
-                  type="checkbox"
-                  id="active"
-                  checked={newUser.active}
-                  onChange={(e) => setNewUser({ ...newUser, active: e.target.checked })}
-                  className="w-4 h-4"
+                  id="nu-tl"
+                  className="cx-input"
+                  type="email"
+                  value={newUser.tl_email}
+                  onChange={(e) => setNewUser({ ...newUser, tl_email: e.target.value })}
                 />
-                <label htmlFor="active" className="text-sm font-medium text-foreground">
-                  Active
-                </label>
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nu-country">Country</label>
+                <input
+                  id="nu-country"
+                  className="cx-input"
+                  value={newUser.country}
+                  onChange={(e) => setNewUser({ ...newUser, country: e.target.value })}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nu-active">Active</label>
+                <span>
+                  <input
+                    id="nu-active"
+                    type="checkbox"
+                    checked={newUser.active}
+                    onChange={(e) => setNewUser({ ...newUser, active: e.target.checked })}
+                  />{' '}
+                  <span className="cx-muted">Counts toward access and staffing</span>
+                </span>
               </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="primary" onClick={handleAdd}>
-                Add User
-              </Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
+            <p>
+              <button type="button" className="cx-btn cx-btn--primary" onClick={handleAdd}>
+                Add user
+              </button>{' '}
+              <button type="button" className="cx-btn cx-btn--quiet" onClick={() => setShowAddForm(false)}>
                 Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
-            Users
-          </h2>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto -mx-(--cx-space-4) md:mx-0">
-            <div className="min-w-200 px-(--cx-space-4) md:px-0">
-              <Table caption="User roster">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>TL Email</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <tbody>
-                  {roster.map((user) => (
-                    <TableRow key={user.email}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>
-                        <StatusBadge type={getRoleBadgeType(user.role)}>
-                          {user.role}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>{user.tl_email || '-'}</TableCell>
-                      <TableCell>{user.country || '-'}</TableCell>
-                      <TableCell>
-                        <StatusBadge type={user.active ? 'success' : 'error'}>
-                          {user.active ? 'Active' : 'Inactive'}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>
-                        {editingEmail === user.email ? (
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="primary" onClick={() => handleSave(user.email)}>
-                              Save
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={handleCancel}>
-                              Cancel
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(user)}>
-                            Edit
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
+              </button>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+
+        <div className="cx-panel cx-panel--pad">
+          <div className="cx-tablewrap">
+            <table className="cx-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>TL email</th>
+                  <th>Country</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {roster.map((user) => (
+                  <tr key={user.email}>
+                    <td>{user.email}</td>
+                    <td>
+                      {editingEmail === user.email ? (
+                        <input
+                          className="cx-input"
+                          value={editData.name ?? ''}
+                          onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                        />
+                      ) : (
+                        user.name
+                      )}
+                    </td>
+                    <td>
+                      <span className="cx-chip" data-status={ROLE_STATUS[user.role] || 'neutral'}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      {editingEmail === user.email ? (
+                        <input
+                          className="cx-input"
+                          value={editData.tl_email ?? ''}
+                          onChange={(e) => setEditData({ ...editData, tl_email: e.target.value })}
+                        />
+                      ) : (
+                        user.tl_email || '-'
+                      )}
+                    </td>
+                    <td>
+                      {editingEmail === user.email ? (
+                        <input
+                          className="cx-input"
+                          value={editData.country ?? ''}
+                          onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                        />
+                      ) : (
+                        user.country || '-'
+                      )}
+                    </td>
+                    <td>
+                      <span className="cx-chip" data-status={user.active ? 'ok' : 'bad'}>
+                        {user.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      {editingEmail === user.email ? (
+                        <>
+                          <button
+                            type="button"
+                            className="cx-btn cx-btn--primary"
+                            onClick={() => handleSave(user.email)}
+                          >
+                            Save
+                          </button>{' '}
+                          <button type="button" className="cx-btn cx-btn--quiet" onClick={handleCancel}>
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="cx-btn cx-btn--quiet"
+                          onClick={() => handleEdit(user)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </section>
   )
 }

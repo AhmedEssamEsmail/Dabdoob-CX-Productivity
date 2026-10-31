@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+/**
+ * Legacy state-screen chrome around the sign-in form — same centred panel the
+ * app uses for boot/no-access screens.
+ */
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -38,61 +42,51 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-screen">
-      <div className="login-card">
-        <div className="login-brand">
-          <span className="login-brand__mark" aria-hidden="true">CX</span>
-          <span>CX HELM <span aria-hidden="true">/</span> PRODUCTIVITY</span>
+    <main className="state-screen">
+      <h1>CX Helm Productivity</h1>
+      <p>Sign in with your work account to continue.</p>
+      <form onSubmit={handleLogin} style={{ display: 'contents' }}>
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="field">
+          <label className="field-label" htmlFor="email">
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@dabdoob.com"
+            className="cx-input"
+          />
         </div>
-        <div className="login-heading">
-          <p className="login-eyebrow">TEAM WORKSPACE</p>
-          <h1>Welcome back.</h1>
-          <p>Sign in with your work account to continue.</p>
+        <div className="field">
+          <label className="field-label" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="cx-input"
+          />
         </div>
-        <form className="login-form" onSubmit={handleLogin}>
-          {error && (
-            <div className="login-error" role="alert">
-              {error}
-            </div>
-          )}
-          <div className="login-field">
-            <label htmlFor="email">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="username"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@company.com"
-              className="login-input"
-            />
-          </div>
-          <div className="login-field">
-            <label htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="login-input"
-            />
-          </div>
-          <button type="submit" disabled={loading} className="login-submit">
-            {loading ? 'Signing in...' : 'Sign in'}
-            {!loading && <span aria-hidden="true">→</span>}
-          </button>
-        </form>
-        <p className="login-footnote">Secure access for CX Helm team members</p>
-      </div>
-    </div>
+        <button type="submit" disabled={loading} className="cx-btn cx-btn--primary">
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+      <p className="cx-muted">Secure access for CX Helm team members</p>
+    </main>
   )
 }

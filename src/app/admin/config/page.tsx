@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardHeader, CardContent, Input, Button, Loading } from '@/components/ui'
 
 interface ConfigItem {
   key: string
@@ -54,69 +53,92 @@ export default function AdminConfigPage() {
     setEditValue('')
   }
 
-  if (loading) return <Loading text="Loading configuration..." />
+  if (loading) {
+    return (
+      <main className="state-screen">
+        <h1>Loading configuration…</h1>
+      </main>
+    )
+  }
 
   return (
-    <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
-      <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
-        Configuration
-      </h1>
+    <section className="page" aria-labelledby="page-title">
+      <header className="page-head">
+        <h1 id="page-title" className="page-title">
+          Configuration
+        </h1>
+        <p className="page-purpose">System settings the productivity engine and pages read.</p>
+      </header>
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
-            System Configuration
-          </h2>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {config.map((item) => (
-              <div key={item.key} className="border-b border-gray-200 pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-medium text-foreground">{item.key}</h3>
-                    {item.description && (
-                      <p className="text-sm text-foreground opacity-70 mt-1">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                  {item.updated_at && (
-                    <span className="text-xs text-foreground opacity-50">
-                      Updated: {new Date(item.updated_at).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-
-                {editingKey === item.key ? (
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button size="sm" variant="primary" onClick={() => handleSave(item.key)}>
-                      Save
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={handleCancel}>
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-center mt-2">
-                    <code className="text-sm bg-gray-50 px-2 py-1 rounded text-foreground">
-                      {item.value}
-                    </code>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(item.key, item.value)}>
-                      Edit
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
+      <section className="cx-section">
+        <div className="cx-section__head">
+          <h2 className="cx-section__title">System Configuration</h2>
+        </div>
+        <div className="cx-panel cx-panel--pad">
+          <div className="cx-tablewrap">
+            <table className="cx-table">
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Value</th>
+                  <th>Updated</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {config.map((item) => (
+                  <tr key={item.key}>
+                    <td>
+                      <div className="field">
+                        <span className="field-label">{item.key}</span>
+                        {item.description && <span className="field-hint">{item.description}</span>}
+                      </div>
+                    </td>
+                    <td>
+                      {editingKey === item.key ? (
+                        <input
+                          className="cx-input"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                        />
+                      ) : (
+                        <code>{item.value}</code>
+                      )}
+                    </td>
+                    <td className="cx-muted">
+                      {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : ''}
+                    </td>
+                    <td>
+                      {editingKey === item.key ? (
+                        <>
+                          <button
+                            type="button"
+                            className="cx-btn cx-btn--primary"
+                            onClick={() => handleSave(item.key)}
+                          >
+                            Save
+                          </button>{' '}
+                          <button type="button" className="cx-btn cx-btn--quiet" onClick={handleCancel}>
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="cx-btn cx-btn--quiet"
+                          onClick={() => handleEdit(item.key, item.value)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </section>
+    </section>
   )
 }

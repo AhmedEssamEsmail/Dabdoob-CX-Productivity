@@ -61,6 +61,8 @@ export interface FlagView {
   confidenceScore: number
   confidenceLevel: string
   confidenceFactors: string[]
+  /** Present when an agent dispute is attached (mechanism disabled upstream — never populated today). */
+  dispute?: { disputeId: string; raisedAt: string; reason: string; status: string }
 }
 
 export interface DecisionInput {

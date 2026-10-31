@@ -22,7 +22,14 @@ const CONFIG_KEYS = [
   'prod_replacement_statuses',
   'prod_reason_statuses',
   'freshdesk_domain',
+  'ss_productivity_id',
 ]
+
+/** PROD_MAIL_QUERY (ProductivityApp.js) — the Gmail search that feeds Agents Activity. */
+const PROD_MAIL_QUERY = 'subject:"Agents Activity" has:attachment'
+
+/** PROD_ENGINE_STATUSES — statuses that count toward the Productivity % denominator. */
+const PROD_ENGINE_STATUSES = ['Available', 'Inbound Calls', 'Chats', 'Waiting Address', 'IDLE']
 
 function authError(error: unknown) {
   const message = error instanceof Error ? error.message : 'Unable to authorize request'
@@ -112,11 +119,19 @@ export async function GET() {
   })
   const seenStatuses = [...seenCounts.keys()].sort()
 
+  // dqLastRun_('prod_snapshot') — the last Agents Activity snapshot import run.
+  const { data: snapshotRun } = await supabase
+    .from('health')
+    .select('last_run_at')
+    .eq('job', 'prod_snapshot')
+    .maybeSingle()
+
   const flagStatuses = settingList(cfg.prod_flag_statuses, PROD_DEFAULTS.prod_flag_statuses)
   const offlineStatuses = settingList(cfg.prod_offline_statuses, PROD_DEFAULTS.prod_offline_statuses)
   const replacement = settingList(cfg.prod_replacement_statuses, PROD_DEFAULTS.prod_replacement_statuses)
 
   const isAdmin = user.role === 'admin'
+  const engineNorm = PROD_ENGINE_STATUSES.map((s) => s.trim().toLowerCase())
 
   return NextResponse.json({
     today,
@@ -128,10 +143,19 @@ export async function GET() {
     rule: ruleView(cfg),
     ticketUrl: `https://${cfg.freshdesk_domain || PROD_DEFAULTS.freshdesk_domain}/a/tickets/`,
     isAdmin,
-    ready: true,
+    // prodReady_(): the engine is configured once ss_productivity_id exists.
+    ready: !!cfg.ss_productivity_id,
     source: isAdmin
       ? {
-          statusesSeen: seenStatuses.map((status) => ({ status, rows: seenCounts.get(status) || 0 })),
+          query: PROD_MAIL_QUERY,
+          // prodLastMail_(): the GAS mail-ingest state has no ported store yet.
+          lastMailAt: '',
+          lastSnapshot: snapshotRun?.last_run_at || '',
+          statusesSeen: seenStatuses.map((status) => ({
+            status,
+            rows: seenCounts.get(status) || 0,
+            engine: engineNorm.includes(status.trim().toLowerCase()),
+          })),
         }
       : null,
   })
