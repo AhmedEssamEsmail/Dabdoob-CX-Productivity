@@ -30,66 +30,68 @@ export default function LoginPage() {
 
       router.push('/')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">Sign in</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            CX Helm Productivity System
-          </p>
+    <div className="login-screen">
+      <div className="login-card">
+        <div className="login-brand">
+          <span className="login-brand__mark" aria-hidden="true">CX</span>
+          <span>CX HELM <span aria-hidden="true">/</span> PRODUCTIVITY</span>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <div className="login-heading">
+          <p className="login-eyebrow">TEAM WORKSPACE</p>
+          <h1>Welcome back.</h1>
+          <p>Sign in with your work account to continue.</p>
+        </div>
+        <form className="login-form" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="login-error" role="alert">
               {error}
             </div>
           )}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <div className="login-field">
+            <label htmlFor="email">
               Email address
             </label>
             <input
               id="email"
               name="email"
               type="email"
+              autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="name@company.com"
+              className="login-input"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <div className="login-field">
+            <label htmlFor="password">
               Password
             </label>
             <input
               id="password"
               name="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="login-input"
             />
           </div>
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
+          <button type="submit" disabled={loading} className="login-submit">
+            {loading ? 'Signing in...' : 'Sign in'}
+            {!loading && <span aria-hidden="true">→</span>}
+          </button>
         </form>
+        <p className="login-footnote">Secure access for CX Helm team members</p>
       </div>
     </div>
   )

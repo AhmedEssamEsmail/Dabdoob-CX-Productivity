@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import TopBar from "@/components/layout/TopBar";
-import SideRail from "@/components/layout/SideRail";
+import SiteChrome from "@/components/layout/SiteChrome";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -40,13 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main-content" className="skip-to-main">
           Skip to main content
         </a>
-        <TopBar />
-        <div className="flex flex-1">
-          <SideRail />
-          <main id="main-content" className="flex-1 md:ml-(--cx-rail-width)" tabIndex={-1}>
-            {children}
-          </main>
-        </div>
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
