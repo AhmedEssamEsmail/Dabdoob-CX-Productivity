@@ -6,8 +6,6 @@ import {
   LoadError,
   PageHead,
   Section,
-  useTip,
-  vsPrev,
 } from '@/components/shell/ui'
 import { toast } from '@/components/shell/Toasts'
 import {
@@ -19,7 +17,9 @@ import {
   G,
   re,
   T,
+  Tn,
   useSe,
+  type TrendPoint,
 } from '@/components/prod/pv-shared'
 import type { FlagView, RuleView } from '@/lib/prod-validation'
 
@@ -48,13 +48,6 @@ interface Mine {
   bandChange: string
 }
 
-interface TrendPoint {
-  week: string
-  partial: boolean
-  idleEffPct: number | null
-  flagsPer100h: number | null
-  precisionPct: number | null
-}
 
 interface MyPage {
   today: string
@@ -113,95 +106,6 @@ function DisputeRaise({ f, onDone }: { f: FlagView; onDone: () => void }) {
         {saving ? 'Sending…' : 'Send the dispute'}
       </button>
     </form>
-  )
-}
-
-/* --- Xe — one SVG sparkline (polyline + hoverable points + Ca tooltip) --- */
-
-function Xe({
-  title,
-  unit,
-  points,
-  pick,
-}: {
-  title: string
-  unit: string
-  points: TrendPoint[]
-  pick: (p: TrendPoint) => number | null
-}) {
-  const { ref, tipFor, tipEl } = useTip<HTMLElement>()
-  const i = points.map(pick)
-  const h = i.filter((d) => d !== null)
-  const p = Math.max(...h, 1)
-  const lo = Math.min(...h, 0)
-  const u = (m: number) => 12 + (m * 176) / Math.max(points.length - 1, 1)
-  const c = (d: number) => 60 - ((d - lo) / Math.max(p - lo, 1e-9)) * 48
-  const g = i
-    .map((d, m) => (d === null ? '' : `${u(m)},${c(d)}`))
-    .filter(Boolean)
-    .join(' ')
-  return (
-    <figure ref={ref} className="pv-spark cx-panel cx-panel--pad cc-chart">
-      {tipEl}
-      <figcaption>{title}</figcaption>
-      <svg
-        viewBox="0 0 200 72"
-        role="group"
-        aria-label={`${title}: ${i.map((d, m) => `${points[m].week} ${T(d, unit)}`).join(', ')}`}
-      >
-        <polyline className="cc-sweep-line" pathLength={1} points={g} />
-        {i.map((d, m) =>
-          d === null ? null : (
-            <circle
-              key={m}
-              className="cc-sweep-fade"
-              cx={u(m)}
-              cy={c(d)}
-              r={3}
-              data-partial={points[m].partial ? 'true' : undefined}
-              tabIndex={0}
-              role="img"
-              {...tipFor(
-                [
-                  `Week of ${points[m].week}: ${T(d, unit)}${points[m].partial ? ' so far' : ''}`,
-                  points[m].partial ? '' : vsPrev(d, i[m - 1]),
-                ]
-                  .filter(Boolean)
-                  .join(', ')
-              )}
-            />
-          )
-        )}
-      </svg>
-      <div className="pv-spark__vals">
-        {i.map((d, m) => (
-          <span key={m}>
-            {T(d, unit)}
-            {points[m].partial ? '*' : ''}
-          </span>
-        ))}
-      </div>
-    </figure>
-  )
-}
-
-/* --- Tn — the three sparklines + footnote ------------------------------- */
-
-function Tn({ points }: { points: TrendPoint[] }) {
-  return (
-    <Fragment>
-      <div className="pv-sparks">
-        <Xe title="Idle after review, % of logged" unit="%" points={points} pick={(n) => n.idleEffPct} />
-        <Xe title="Flags per 100 logged hours" unit="" points={points} pick={(n) => n.flagsPer100h} />
-        <Xe
-          title="Flag precision (accepted of reviewed)"
-          unit="%"
-          points={points}
-          pick={(n) => n.precisionPct}
-        />
-      </div>
-      <p className="cx-faint">Weeks start on Sunday; * marks the week in progress.</p>
-    </Fragment>
   )
 }
 

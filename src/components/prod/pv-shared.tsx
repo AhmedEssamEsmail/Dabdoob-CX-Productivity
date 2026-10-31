@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { Chip } from '@/components/shell/ui'
+import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Chip, stagger, useEnterAnim, useTip, vsPrev } from '@/components/shell/ui'
 import { daysUntil, type FlagView } from '@/lib/prod-validation'
 
 /**
@@ -148,5 +148,218 @@ export function CasesLine({ f, ticketUrl }: { f: FlagView; ticketUrl: string }) 
         </span>
       ))}
     </p>
+  )
+}
+
+/* --------------------------------------------------------------------------
+ * Ba / Na / ja — analytics-only helpers (Fa page): status mix text, the
+ * pv-heat weekday×hour heatmap, and the calibration histogram.
+ * ------------------------------------------------------------------------ */
+
+export const Ba = (t: Record<string, number>) =>
+  Object.entries(t)
+    .sort((n, a) => a[1] - n[1])
+    .map(([n, a]) => `${n} ${a}`)
+    .join(', ') || '–'
+
+/** Na — idle-after-review heatmap: weekday rows × 24 hour cells. */
+export function HeatGrid({ grid }: { grid: (number | null)[][] }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEnterAnim(ref)
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const max = Math.max(1, ...grid.flat().filter((l): l is number => l !== null))
+  return (
+    <div
+      ref={ref}
+      className="cx-panel cx-panel--pad pv-heat cc-chart"
+      role="table"
+      aria-label="Idle after review, % of logged time, by weekday and hour (Kuwait)"
+    >
+      <div className="pv-heat__row" role="row">
+        <span role="columnheader" />
+        {Array.from({ length: 24 }, (_, r) => (
+          <span key={r} role="columnheader" className="pv-heat__h">
+            {r % 3 === 0 ? r : ''}
+          </span>
+        ))}
+      </div>
+      {grid.map((row, r) => (
+        <div key={r} className="pv-heat__row cc-sweep-fade" style={stagger(r)} role="row">
+          <span role="rowheader" className="pv-heat__d">
+            {days[r]}
+          </span>
+          {row.map((o, i) => (
+            <span
+              key={i}
+              role="cell"
+              className="pv-heat__c"
+              title={`${days[r]} ${i}:00, ${T(o, '%')}`}
+              style={o === null ? undefined : ({ '--pv-heat': String(Math.min(o / max, 1)) } as CSSProperties)}
+              data-empty={o === null ? 'true' : undefined}
+            >
+              <span className="cx-sr">{T(o, '%')}</span>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** ja — histogram of distinct-case counts in idle vs working windows. */
+export function CalibrationChart({
+  cal,
+  windowMin,
+}: {
+  cal: { idle: Record<string, number>; working: Record<string, number> }
+  windowMin: number
+}) {
+  const keys = [...new Set([...Object.keys(cal.idle), ...Object.keys(cal.working)])]
+    .map(Number)
+    .sort((i, h) => i - h)
+  const share = (i: Record<string, number>) => {
+    const total = Object.values(i).reduce((p, x) => p + x, 0) || 1
+    return (p: number) => ((i[p] || 0) / total) * 100
+  }
+  const idleShare = share(cal.idle)
+  const workingShare = share(cal.working)
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEnterAnim(ref)
+  return (
+    <div ref={ref} className="cx-panel cx-panel--pad pv-hist cc-chart">
+      <p className="cx-muted">
+        Share of {windowMin}-minute windows by distinct cases in them. A good X sits where IDLE
+        windows end and working windows start.
+      </p>
+      <table className="cx-table">
+        <thead>
+          <tr>
+            <th scope="col">Distinct cases</th>
+            <th scope="col">IDLE windows</th>
+            <th scope="col">Working windows</th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((i, h) => (
+            <tr key={i}>
+              <td className="cx-num">{i}</td>
+              <td>
+                <span
+                  className="pv-bar cc-sweep-bar"
+                  data-kind="idle"
+                  style={{ inlineSize: `${idleShare(i)}%`, ...stagger(h) }}
+                />{' '}
+                {idleShare(i).toFixed(1)}%
+              </td>
+              <td>
+                <span
+                  className="pv-bar cc-sweep-bar"
+                  data-kind="working"
+                  style={{ inlineSize: `${workingShare(i)}%`, ...stagger(h) }}
+                />{' '}
+                {workingShare(i).toFixed(1)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* --- Xe / Tn � the weekly sparkline trio (my-status + Fa) ---------------- */
+
+export interface TrendPoint {
+  week: string
+  partial: boolean
+  idleEffPct: number | null
+  flagsPer100h: number | null
+  precisionPct: number | null
+}
+
+/** Xe � one SVG sparkline (polyline + hoverable points + Ca tooltip). */
+export function Xe({
+  title,
+  unit,
+  points,
+  pick,
+}: {
+  title: string
+  unit: string
+  points: TrendPoint[]
+  pick: (p: TrendPoint) => number | null
+}) {
+  const { ref, tipFor, tipEl } = useTip<HTMLElement>()
+  const i = points.map(pick)
+  const h = i.filter((d): d is number => d !== null)
+  const p = Math.max(...h, 1)
+  const lo = Math.min(...h, 0)
+  const u = (m: number) => 12 + (m * 176) / Math.max(points.length - 1, 1)
+  const c = (d: number) => 60 - ((d - lo) / Math.max(p - lo, 1e-9)) * 48
+  const g = i
+    .map((d, m) => (d === null ? '' : `${u(m)},${c(d)}`))
+    .filter(Boolean)
+    .join(' ')
+  return (
+    <figure ref={ref} className="pv-spark cx-panel cx-panel--pad cc-chart">
+      {tipEl}
+      <figcaption>{title}</figcaption>
+      <svg
+        viewBox="0 0 200 72"
+        role="group"
+        aria-label={`${title}: ${i.map((d, m) => `${points[m].week} ${T(d, unit)}`).join(', ')}`}
+      >
+        <polyline className="cc-sweep-line" pathLength={1} points={g} />
+        {i.map((d, m) =>
+          d === null ? null : (
+            <circle
+              key={m}
+              className="cc-sweep-fade"
+              cx={u(m)}
+              cy={c(d)}
+              r={3}
+              data-partial={points[m].partial ? 'true' : undefined}
+              tabIndex={0}
+              role="img"
+              {...tipFor(
+                [
+                  `Week of ${points[m].week}: ${T(d, unit)}${points[m].partial ? ' so far' : ''}`,
+                  points[m].partial ? '' : vsPrev(d, i[m - 1]),
+                ]
+                  .filter(Boolean)
+                  .join(', ')
+              )}
+            />
+          )
+        )}
+      </svg>
+      <div className="pv-spark__vals">
+        {i.map((d, m) => (
+          <span key={m}>
+            {T(d, unit)}
+            {points[m].partial ? '*' : ''}
+          </span>
+        ))}
+      </div>
+    </figure>
+  )
+}
+
+/** Tn � the three sparklines + footnote. */
+export function Tn({ points }: { points: TrendPoint[] }) {
+  return (
+    <Fragment>
+      <div className="pv-sparks">
+        <Xe title="Idle after review, % of logged" unit="%" points={points} pick={(n) => n.idleEffPct} />
+        <Xe title="Flags per 100 logged hours" unit="" points={points} pick={(n) => n.flagsPer100h} />
+        <Xe
+          title="Flag precision (accepted of reviewed)"
+          unit="%"
+          points={points}
+          pick={(n) => n.precisionPct}
+        />
+      </div>
+      <p className="cx-faint">Weeks start on Sunday; * marks the week in progress.</p>
+    </Fragment>
   )
 }
