@@ -173,6 +173,7 @@ describe('ruleView + settings parsing', () => {
       flagStatuses: ['IDLE'],
       channelStatus: { chat: 'Chats', ticket: 'Available', wa: 'Waiting Address' },
       reviewDays: 7,
+      disputeDays: 3,
     })
   })
 
