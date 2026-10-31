@@ -1,37 +1,35 @@
-import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { getViewAsState, startViewAs, stopViewAs } from '@/lib/platform'
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const ownerEmail = searchParams.get('owner_email')
-
-  let query = supabase.from('view_as').select('*')
-
-  if (ownerEmail) {
-    query = query.eq('owner_email', ownerEmail)
+/**
+ * The legacy View as surface (startViewAs / stopViewAs / getViewAsState):
+ * GET answers the owner's current target, POST {email} starts or switches,
+ * DELETE exits. Only the CX owner may call these — enforced inside the lib.
+ */
+export async function GET() {
+  try {
+    return NextResponse.json(await getViewAsState())
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: msg }, { status: msg === 'Unauthorized' ? 401 : 403 })
   }
-
-  const { data, error } = await query.order('submitted_at', { ascending: false })
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json(data)
 }
 
 export async function POST(req: Request) {
-  const body = await req.json()
-
-  const { data, error } = await supabase
-    .from('view_as')
-    .insert(body)
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  try {
+    const body = (await req.json().catch(() => ({}))) as { email?: string }
+    return NextResponse.json(await startViewAs(body.email || ''))
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: msg }, { status: msg === 'Unauthorized' ? 401 : 400 })
   }
+}
 
-  return NextResponse.json(data)
+export async function DELETE() {
+  try {
+    return NextResponse.json(await stopViewAs())
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: msg }, { status: msg === 'Unauthorized' ? 401 : 400 })
+  }
 }

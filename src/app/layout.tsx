@@ -28,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
           rel="stylesheet"
           media="print"
+          suppressHydrationWarning
         />
         {/* Equivalent of the legacy inline onload="this.media='all'" — React
             drops string event handlers, so a tiny script flips media to 'all'. */}
