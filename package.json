@@ -9,8 +9,11 @@
     "lint": "eslint",
     "test": "vitest",
     "test:unit": "vitest",
+    "test:integration": "vitest run src/app/api/__tests__",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:performance": "vitest run tests/performance",
+    "test:security": "vitest run tests/security"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

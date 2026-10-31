@@ -43,7 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <TopBar />
         <div className="flex flex-1">
           <SideRail />
-          <main id="main-content" className="flex-1 md:ml-[var(--cx-rail-width)]" tabIndex={-1}>
+          <main id="main-content" className="flex-1 md:ml-(--cx-rail-width)" tabIndex={-1}>
             {children}
           </main>
         </div>

@@ -26,7 +26,7 @@ export function LanguageToggle() {
   return (
     <button
       onClick={toggleLanguage}
-      className="p-[var(--cx-space-2)] rounded-[var(--cx-radius-control)] hover:bg-[var(--cx-accent-soft)] transition-colors font-medium"
+      className="p-(--cx-space-2) rounded-(--cx-radius-control) hover:bg-(--cx-accent-soft) transition-colors font-medium"
       aria-label={`Switch to ${language === 'en' ? 'Arabic' : 'English'}`}
     >
       {language === 'en' ? 'ع' : 'EN'}

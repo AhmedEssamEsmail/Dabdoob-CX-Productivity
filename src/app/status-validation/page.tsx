@@ -23,23 +23,23 @@ export default function StatusValidationPage() {
   if (loading) return <Loading text="Loading flags..." />
 
   return (
-    <div className="p-[var(--cx-space-4)] md:p-[var(--cx-space-6)] max-w-7xl mx-auto">
-      <h1 className="text-[var(--cx-text-2xl)] md:text-[var(--cx-text-3xl)] font-semibold text-[var(--cx-text-primary)] mb-[var(--cx-space-4)] md:mb-[var(--cx-space-6)]">
+    <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
+      <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
         Status Validation
       </h1>
 
       <Card>
         <CardHeader>
-          <h2 className="text-[var(--cx-text-lg)] md:text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+          <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
             Productivity Flags
           </h2>
         </CardHeader>
         <CardContent>
           {flags.length === 0 ? (
-            <p className="text-[var(--cx-text-primary)]">No flags to review</p>
+            <p className="text-foreground">No flags to review</p>
           ) : (
-            <div className="overflow-x-auto -mx-[var(--cx-space-4)] md:mx-0">
-              <div className="min-w-[800px] px-[var(--cx-space-4)] md:px-0">
+            <div className="overflow-x-auto -mx-(--cx-space-4) md:mx-0">
+              <div className="min-w-200 px-(--cx-space-4) md:px-0">
                 <Table>
                   <TableHeader>
                     <TableRow>

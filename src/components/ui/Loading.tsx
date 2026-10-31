@@ -16,11 +16,11 @@ export function Loading({ size = 'md', text = 'Loading...' }: LoadingProps) {
     <div className="flex flex-col items-center justify-center gap-4">
       <div className={`relative ${sizes[size]} flex items-center justify-center`}>
         {/* Simple CSS loader matching original design */}
-        <div className="absolute inset-0 border-4 border-[var(--cx-status-neutral-bg)] rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-[var(--cx-accent)] rounded-full border-t-transparent animate-spin"></div>
+        <div className="absolute inset-0 border-4 border-(--cx-status-neutral-bg) rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-(--cx-accent) rounded-full border-t-transparent animate-spin"></div>
       </div>
       {text && (
-        <p className="text-[var(--cx-text-primary)] font-medium">
+        <p className="text-foreground font-medium">
           {text}
         </p>
       )}

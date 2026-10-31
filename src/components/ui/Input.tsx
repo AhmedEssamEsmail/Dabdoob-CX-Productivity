@@ -16,26 +16,26 @@ export function Input({ label, error, helperText, className = '', id, ...props }
       {label && (
         <label
           htmlFor={inputId}
-          className="text-sm font-medium text-[var(--cx-text-primary)]"
+          className="text-sm font-medium text-foreground"
         >
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`px-3 py-2 rounded-[var(--cx-radius-control)] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--cx-focus)] focus:border-transparent ${error ? 'border-red-500' : ''} ${className}`}
+        className={`px-3 py-2 rounded-(--cx-radius-control) border border-gray-300 focus:outline-none focus:ring-2 focus:ring-(--cx-focus) focus:border-transparent ${error ? 'border-red-500' : ''} ${className}`}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={errorId || helperId}
         aria-required={props.required}
         {...props}
       />
       {helperText && !error && (
-        <span id={helperId} className="text-sm text-[var(--cx-text-primary)] opacity-70">
+        <span id={helperId} className="text-sm text-foreground opacity-70">
           {helperText}
         </span>
       )}
       {error && (
-        <span id={errorId} className="text-sm text-[var(--cx-status-bad-fg)]" role="alert">
+        <span id={errorId} className="text-sm text-(--cx-status-bad-fg)" role="alert">
           {error}
         </span>
       )}

@@ -53,7 +53,7 @@ export function TableHead({ children, className = '', scope = 'col' }: TableHead
   return (
     <th
       scope={scope}
-      className={`text-left p-[var(--cx-space-3)] font-medium text-[var(--cx-text-primary)] ${className}`}
+      className={`text-left p-(--cx-space-3) font-medium text-foreground ${className}`}
     >
       {children}
     </th>
@@ -67,7 +67,7 @@ interface TableCellProps {
 
 export function TableCell({ children, className = '' }: TableCellProps) {
   return (
-    <td className={`p-[var(--cx-space-3)] text-[var(--cx-text-primary)] ${className}`}>
+    <td className={`p-(--cx-space-3) text-foreground ${className}`}>
       {children}
     </td>
   )

@@ -101,6 +101,16 @@
 - [ ] Convert admin pages
 - [x] Implement auth UI
 
+### Design & UX
+- [x] Design tokens system (colors, typography, spacing, borders, shadows)
+- [x] Component library (Button, Card, StatusBadge, Table, Input, Loading)
+- [x] Responsive design (mobile, tablet, desktop)
+- [x] Dark mode support (toggle + system preference)
+- [x] RTL/Arabic support (language toggle + RTL layout)
+- [x] Accessibility (focus indicators, skip link, ARIA, touch targets)
+- [x] Preserve original colour scheme
+- [x] Preserve original layouts
+
 ### Design
 - [ ] Implement responsive design
 - [ ] Preserve original colour scheme

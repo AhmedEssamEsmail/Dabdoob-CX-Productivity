@@ -21,41 +21,41 @@ export default function MyStatusPage() {
   if (loading) return <Loading text="Loading status..." />
 
   return (
-    <div className="p-[var(--cx-space-4)] md:p-[var(--cx-space-6)] max-w-7xl mx-auto">
-      <h1 className="text-[var(--cx-text-2xl)] md:text-[var(--cx-text-3xl)] font-semibold text-[var(--cx-text-primary)] mb-[var(--cx-space-4)] md:mb-[var(--cx-space-6)]">
+    <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
+      <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
         My Status
       </h1>
 
-      <div className="grid gap-[var(--cx-space-4)] md:gap-[var(--cx-space-6)]">
+      <div className="grid gap-(--cx-space-4) md:gap-(--cx-space-6)">
         <Card>
           <CardHeader>
-            <h2 className="text-[var(--cx-text-lg)] md:text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+            <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
               Productivity Score
             </h2>
           </CardHeader>
           <CardContent>
             {layers.length > 0 ? (
-              <div className="text-[var(--cx-text-2xl)] md:text-[var(--cx-text-3xl)] font-bold text-[var(--cx-accent)]">
+              <div className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-bold text-accent">
                 {layers[0].productivity_pct}%
               </div>
             ) : (
-              <p className="text-[var(--cx-text-primary)]">No data available</p>
+              <p className="text-foreground">No data available</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <h2 className="text-[var(--cx-text-lg)] md:text-[var(--cx-text-xl)] font-semibold text-[var(--cx-text-primary)]">
+            <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
               Recent Intervals
             </h2>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {intervals.slice(0, 10).map((interval: any) => (
-                <div key={interval.interval_key} className="flex justify-between p-[var(--cx-space-3)] border-b border-gray-200">
-                  <span className="text-[var(--cx-text-primary)] text-sm md:text-base">{interval.status}</span>
-                  <span className="text-[var(--cx-text-primary)] opacity-70 text-sm md:text-base">{interval.minutes} min</span>
+                <div key={interval.interval_key} className="flex justify-between p-(--cx-space-3) border-b border-gray-200">
+                  <span className="text-foreground text-sm md:text-base">{interval.status}</span>
+                  <span className="text-foreground opacity-70 text-sm md:text-base">{interval.minutes} min</span>
                 </div>
               ))}
             </div>

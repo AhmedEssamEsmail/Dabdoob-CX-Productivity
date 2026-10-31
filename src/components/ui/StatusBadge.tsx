@@ -11,29 +11,29 @@ interface StatusBadgeProps {
 export function StatusBadge({ type, children, className = '' }: StatusBadgeProps) {
   const styles = {
     neutral: {
-      bg: 'bg-[var(--cx-status-neutral-bg)]',
-      fg: 'text-[var(--cx-status-neutral-fg)]',
-      edge: 'border-[var(--cx-status-neutral-edge)]',
+      bg: 'bg-(--cx-status-neutral-bg)',
+      fg: 'text-(--cx-status-neutral-fg)',
+      edge: 'border-(--cx-status-neutral-edge)',
     },
     info: {
-      bg: 'bg-[var(--cx-status-info-bg)]',
-      fg: 'text-[var(--cx-status-info-fg)]',
-      edge: 'border-[var(--cx-status-info-edge)]',
+      bg: 'bg-(--cx-status-info-bg)',
+      fg: 'text-(--cx-status-info-fg)',
+      edge: 'border-(--cx-status-info-edge)',
     },
     success: {
-      bg: 'bg-[var(--cx-status-ok-bg)]',
-      fg: 'text-[var(--cx-status-ok-fg)]',
-      edge: 'border-[var(--cx-status-ok-edge)]',
+      bg: 'bg-(--cx-status-ok-bg)',
+      fg: 'text-(--cx-status-ok-fg)',
+      edge: 'border-(--cx-status-ok-edge)',
     },
     warning: {
-      bg: 'bg-[var(--cx-status-warn-bg)]',
-      fg: 'text-[var(--cx-status-warn-fg)]',
-      edge: 'border-[var(--cx-status-warn-edge)]',
+      bg: 'bg-(--cx-status-warn-bg)',
+      fg: 'text-(--cx-status-warn-fg)',
+      edge: 'border-(--cx-status-warn-edge)',
     },
     error: {
-      bg: 'bg-[var(--cx-status-bad-bg)]',
-      fg: 'text-[var(--cx-status-bad-fg)]',
-      edge: 'border-[var(--cx-status-bad-edge)]',
+      bg: 'bg-(--cx-status-bad-bg)',
+      fg: 'text-(--cx-status-bad-fg)',
+      edge: 'border-(--cx-status-bad-edge)',
     },
   }
 
@@ -41,7 +41,7 @@ export function StatusBadge({ type, children, className = '' }: StatusBadgeProps
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-1 rounded-[var(--cx-radius-control)] text-sm font-medium border ${style.bg} ${style.fg} ${style.edge} ${className}`}
+      className={`inline-flex items-center px-2 py-1 rounded-(--cx-radius-control) text-sm font-medium border ${style.bg} ${style.fg} ${style.edge} ${className}`}
     >
       {children}
     </span>
