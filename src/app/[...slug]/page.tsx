@@ -1,10 +1,11 @@
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { PAGES } from '@/components/shell/registry'
 import { UnbuiltPage } from '@/components/shell/StateScreen'
 
 /**
  * Registry paths whose pages are not ported yet render the legacy hs()
  * placeholder ("Not built yet.") instead of a 404, matching the bundle.
+ * Unknown paths fall back to / like the legacy hash router's default page.
  */
 export default async function RegistryCatchAll({
   params,
@@ -13,6 +14,6 @@ export default async function RegistryCatchAll({
 }) {
   const { slug } = await params
   const route = PAGES.find((page) => page.path === slug.join('/'))
-  if (!route) notFound()
+  if (!route) redirect('/')
   return <UnbuiltPage route={route} />
 }

@@ -88,7 +88,8 @@ describe('adapters: time + keys', () => {
       else v = `garbage ${i}`
       same('dqParseTs_', [v, tz], () => {
         const r = dqParseTs_(v, tz)
-        return r === null ? null : r.getTime()
+        // legacy returns a Date; the JSON seam carries ISO — normalise to it
+        return r === null ? null : r.toISOString()
       }, {}, `ts ${i}`)
     }
   })
@@ -103,9 +104,9 @@ describe('adapters: time + keys', () => {
       const h = rint(R, 0, 23)
       const mi = rint(R, 0, 59)
       const tz = rpick(R, tzs)
-      same('dqWallToUtc_', [y, mo, d, h, mi, 0, tz], () => dqWallToUtc_(y, mo, d, h, mi, 0, tz).getTime(), {}, `wall ${i}`)
+      same('dqWallToUtc_', [y, mo, d, h, mi, 0, tz], () => dqWallToUtc_(y, mo, d, h, mi, 0, tz).toISOString(), {}, `wall ${i}`)
       const ms = Date.UTC(y, mo - 1, d, h, mi)
-      same('dqTzOffsetMin_', [ms, tz], () => dqTzOffsetMin_(new Date(ms), tz), {}, `off ${i}`)
+      same('dqTzOffsetMin_', [`@@ms:${ms}`, tz], () => dqTzOffsetMin_(new Date(ms), tz), {}, `off ${i}`)
       // legacy dqDateKey_(date, tz) — tz optional (business_tz fallback)
       same('dqDateKey_', [new Date(ms).toISOString(), tz], () => dqDateKey_(new Date(ms), tz), {}, `dk ${i}`)
       const k = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -114,9 +115,9 @@ describe('adapters: time + keys', () => {
       same('prodDateKey_', [new Date(ms).toISOString()], () => prodDateKey_(new Date(ms).toISOString()), {}, `pdk ${i}`)
       const e = rpick(R, [' A@x.COM ', 'b@y.COM', 'C@z.com', '', '  '])
       same('normEmail_', [e], () => normEmail_(e), {}, `ne ${i}`)
-      // dqNormCell_: Date -> date/ISO by column name
+      // dqNormCell_ only rewrites real Dates — @@ms: rebinds a Date inside the vm
       const col = rpick(R, ['date', 'created_at', 'week', 'month', 'decided_at', 'name'])
-      same('dqNormCell_', [col, new Date(ms).toISOString()], () => dqNormCell_(col, new Date(ms)), {}, `nc ${i}`)
+      same('dqNormCell_', [col, `@@ms:${ms}`], () => dqNormCell_(col, new Date(ms)), {}, `nc ${i}`)
     }
     // dqDateKey_ with tz omitted -> business_tz fallback
     const ms = Date.parse('2026-10-29T22:30:00Z')
@@ -259,8 +260,9 @@ describe('engine settings + views', () => {
       same('prodFlagView_', [f, dirArg], () =>
         prodFlagView_(f, { name: (e: string) => 'Name ' + e }), fx, `fv ${i}`)
       same('prodIntervalOf_', [f], () => prodIntervalOf_(f), fx, `iv ${i}`)
-      same('prodPersonName_', [dirArg, rpick(R, ['a@x.com', '', null])], () =>
-        prodPersonName_({ name: (e: string) => 'Name ' + e }, rpick(R, ['a@x.com', '', null])), fx, `pn ${i}`)
+      const pnEmail = rpick(R, ['a@x.com', '', null])
+      same('prodPersonName_', [dirArg, pnEmail], () =>
+        prodPersonName_({ name: (e: string) => 'Name ' + e }, pnEmail), fx, `pn ${i}`)
     }
     // store-backed views
     const lSeen = callLegacy('prodSeenStatuses_', [], fx)
@@ -276,12 +278,10 @@ describe('engine settings + views', () => {
     )
     expect(diffPath(lSeen, pSeen)).toBeNull()
     const lCh = callLegacy('prodStatusChoices_', [], fx)
+    // legacy computes prodSeenStatuses_() internally from the seeded prod_intervals;
+    // the port gets the same seen list (pSeen is the verified-equal port output above)
     const pCh = callPort(() =>
-      prodStatusChoices_(fx.settings as Cfg, [
-        { status: 'IDLE', rows: 1 },
-        { status: 'Aux Time', rows: 1 },
-        { status: 'Old Status', rows: 1 },
-      ])
+      prodStatusChoices_(fx.settings as Cfg, pSeen.ok as { status: string; rows: number }[])
     )
     expect(diffPath(lCh, pCh)).toBeNull()
     // prodScope_(user, dir) -> predicate; compare predicate behaviour on emails inside vm
@@ -313,13 +313,10 @@ describe('engine settings + views', () => {
       },
     })
     const l = callLegacy('prodFlagsForDates_', [['2026-10-29']], fx)
-    const p = callPort(() =>
-      prodFlagsForDates_(['2026-10-29'], [
-        { flag_id: 'PF1', date: '2026-10-29', agent_email: 'a@x.com', decision: 'pending' },
-        { flag_id: 'PF2', date: '2026-10-30', agent_email: 'a@x.com', decision: 'accepted' },
-      ])
-    )
-    // dqReadObjects_ adds no extra fields; shapes match when the fixture row carries the same keys
+    // dqReadObjects_ pads every def header (ensureColumns_ unions them into the tab) —
+    // feed the port the exact objects the store read yields.
+    const objs = oracle().objects('prod_flags', fx)
+    const p = callPort(() => prodFlagsForDates_(['2026-10-29'], objs))
     expect(diffPath(l, p)).toBeNull()
   })
 })
@@ -454,8 +451,14 @@ describe('computeProductivityForDate_ + prodComputeDates_ — full path incl. wr
         return tab.slice(1).filter((r) => (r as unknown[])[0] !== '' && (r as unknown[])[0] !== null).map((r) => Object.fromEntries((r as unknown[]).map((v, i) => [hdrs[i], v]))) as Record<string, unknown>[]
       },
       roster: null,
-      upsert: (t, cols, rows) => writes.push({ fn: 'dqUpsert_', args: [t, cols, rows, null] }),
-      upsertIn: (t, cols, rows) => writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, null] }),
+      now: fx.nowMs as number,
+      // dqUpsert_ delegates to dqUpsertIn_ inside the lock — the recorder sees both calls,
+      // but only when objs is non-empty (dqUpsert_ early-returns first).
+      upsert: (t, cols, rows, y) => {
+        writes.push({ fn: 'dqUpsert_', args: [t, cols, rows, y] })
+        if (rows.length) writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, y] })
+      },
+      upsertIn: (t, cols, rows, y) => writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, y] }),
     }
     return { io, writes }
   }
@@ -484,7 +487,7 @@ describe('computeProductivityForDate_ + prodComputeDates_ — full path incl. wr
       const assumptions = prodAssumptions_(ss)
       const raw = prodLoadMonth_(ss, [dateStr], activities)
       const l = callLegacy('computeProductivityForDate_', [dateStr, raw, assumptions], fx)
-      const p = callPort(() => computeProductivityForDate_(dateStr, raw as never, assumptions))
+      const p = callPort(() => computeProductivityForDate_(dateStr, raw as never, assumptions, fx.nowMs as number))
       const d = diffPath(l, p)
       if (d) throw new Error(`vec ${i}: ${d}`)
     }
@@ -577,8 +580,11 @@ describe('prodDetectDates_ / prodAutoAccept_ — flag orchestration', () => {
         today: new Date(fx.nowMs as number),
         nowMs: fx.nowMs as number,
         newId: () => 'pfl_x',
-        upsert: (t, cols, rows) => writes.push({ fn: 'dqUpsert_', args: [t, cols, rows, null] }),
-        upsertIn: (t, cols, rows) => writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, null] }),
+        upsert: (t, cols, rows, y) => {
+          writes.push({ fn: 'dqUpsert_', args: [t, cols, rows, y] })
+          if (rows.length) writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, y] })
+        },
+        upsertIn: (t, cols, rows, y) => writes.push({ fn: 'dqUpsertIn_', args: [t, cols, rows, y] }),
         append: (t, rows) => writes.push({ fn: 'dqAppend_', args: [t, rows] }),
       }
       const p = callPort(() => prodDetectDates_(['2026-10-29'], (fx.spreadsheets!['fd-activity']!['Activities'] as unknown[][]).slice(1), io as never))
@@ -623,8 +629,11 @@ describe('prodDetectDates_ / prodAutoAccept_ — flag orchestration', () => {
         },
         today: new Date(fx.nowMs as number),
         nowMs: fx.nowMs as number,
-        upsert: (t: string, c: string[], rows: Record<string, unknown>[]) => writes.push({ fn: 'dqUpsert_', args: [t, c, rows, null] }),
-        upsertIn: (t: string, c: string[], rows: Record<string, unknown>[]) => writes.push({ fn: 'dqUpsertIn_', args: [t, c, rows, null] }),
+        upsert: (t: string, c: string[], rows: Record<string, unknown>[], y: number | null) => {
+          writes.push({ fn: 'dqUpsert_', args: [t, c, rows, y] })
+          if (rows.length) writes.push({ fn: 'dqUpsertIn_', args: [t, c, rows, y] })
+        },
+        upsertIn: (t: string, c: string[], rows: Record<string, unknown>[], y: number | null) => writes.push({ fn: 'dqUpsertIn_', args: [t, c, rows, y] }),
         append: (t: string, rows: Record<string, unknown>[]) => writes.push({ fn: 'dqAppend_', args: [t, rows] }),
       }
       const p = callPort(() => prodAutoAccept_(io as never))

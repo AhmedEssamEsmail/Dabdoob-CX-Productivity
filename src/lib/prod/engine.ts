@@ -174,7 +174,6 @@ export function prodIntervalOf_(r: Record<string, unknown>): {
   agentEmail: string
   agentName: string
   status: string
-  sourceStatus: string
   startMs: number
   endMs: number
   minutes: number
@@ -184,7 +183,6 @@ export function prodIntervalOf_(r: Record<string, unknown>): {
     agentEmail: normEmail_(r.agent_email),
     agentName: String(r.agent_name),
     status: String(r.status),
-    sourceStatus: String(r.source_status || r.status || ''),
     startMs: Date.parse(String(r.start_at)),
     endMs: Date.parse(String(r.end_at)),
     minutes: Number(r.minutes) || 0,
@@ -381,7 +379,8 @@ export interface ProdDayRow {
 export function computeProductivityForDate_(
   dateStr: string,
   raw: ProdRawData,
-  assumptions: ProdAssumptions
+  assumptions: ProdAssumptions,
+  now?: number | Date
 ): ProdDayRow[] {
   const mqTarget = assumptions.mqTarget
   const textTarget = assumptions.textTarget
@@ -486,7 +485,7 @@ export function computeProductivityForDate_(
       productiveMinAux: availSum,
       productiveMinResolution: inboundAchieved * mqTarget + textingAchieved * textTarget + waAchieved * waTarget,
       idleMin,
-      computedAt: new Date(),
+      computedAt: now === undefined ? new Date() : new Date(now),
     })
   })
 
@@ -511,6 +510,8 @@ export interface ProdIo {
   upsertIn?: (table: string, cols: string[], rows: Record<string, unknown>[], year: number | null) => void
   append?: (table: string, rows: Record<string, unknown>[]) => void
   log?: (msg: string) => void
+  /** Freeze for computedAt/prodToday_ (legacy `new Date()`); default real time. */
+  now?: number | Date
 }
 
 /** prodComputeRange_: computes an inclusive range of yyyy-MM-dd keys. Returns rows written. */
@@ -573,12 +574,12 @@ export function prodComputeDates_(dates: string[], activityRows: unknown[][] | n
     const byYear: Record<string, ProdDayRow[]> = {}
     const layers: ProdDayRow[] = []
     byMonth[m].forEach((date) => {
-      computeProductivityForDate_(date, eff, assumptions).forEach((r) => {
+      computeProductivityForDate_(date, eff, assumptions, io.now).forEach((r) => {
         ;(byYear[date.slice(0, 4)] = byYear[date.slice(0, 4)] || []).push(r)
         layers.push(Object.assign({ layer: 'effective' }, r))
       })
       if (layered)
-        computeProductivityForDate_(date, raw, assumptions).forEach((r) => {
+        computeProductivityForDate_(date, raw, assumptions, io.now).forEach((r) => {
           layers.push(Object.assign({ layer: 'raw' }, r))
         })
     })
@@ -725,7 +726,6 @@ export function prodRuleView_(cfg: Cfg): Record<string, unknown> {
     flagStatuses: r.statuses,
     channelStatus: r.channelStatus,
     reviewDays: Number(prodSetting_(cfg, 'prod_review_days')),
-    disputeDays: Number(prodSetting_(cfg, 'prod_dispute_days')),
   }
 }
 
@@ -950,8 +950,10 @@ export function prodAutoAccept_(
     newId?: (prefix: string) => string
     today?: number | Date
     nowMs?: number
+    /** prodMarkDirty_ seam: marks recomputation-needed dates (PROD_DIRTY_PROP). */
+    markDirty?: (dates: string[]) => void
   }
-): { skipped?: string; rowsOut?: number; note?: string; dirty?: string[] } {
+): { skipped?: string; rowsOut?: number; note?: string } {
   if (!prodReady_(io.cfg)) return { skipped: 'CC2 Productivity is not set up' }
   const today = prodToday_(io.cfg, io.today)
   const now = prodNowIso_(io.nowMs)
@@ -981,5 +983,6 @@ export function prodAutoAccept_(
         reason: 'Not reviewed by ' + f.due_date + '.',
       }))
     )
-  return { rowsOut: rows.length, note: rows.length + ' flags auto-accepted', dirty: due.map((f) => String(f.date)) }
+  if (rows.length && io.markDirty) io.markDirty(due.map((f) => String(f.date)))
+  return { rowsOut: rows.length, note: rows.length + ' flags auto-accepted' }
 }

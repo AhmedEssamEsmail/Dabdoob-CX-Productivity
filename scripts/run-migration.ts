@@ -40,7 +40,7 @@ async function runMigration() {
     if (result.tables) {
       console.log('')
       console.log('📋 Tables migrated:')
-      Object.entries(result.tables).forEach(([table, data]: [string, any]) => {
+      Object.entries(result.tables as Record<string, { migrated?: number; errors?: string[] }>).forEach(([table, data]) => {
         console.log(`  ${table}: ${data.migrated} rows`)
         if (data.errors && data.errors.length > 0) {
           console.log(`    ⚠️  Errors: ${data.errors.join(', ')}`)

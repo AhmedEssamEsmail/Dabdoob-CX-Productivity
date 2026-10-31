@@ -269,6 +269,32 @@ var MailApp = { sendEmail: function () {} };
 var UrlFetchApp = { fetch: function () { throw new Error('no network in oracle'); } };
 var DriveApp = {};
 
+// V2 table header defs whose owning files are outside the ported set (Queue.js,
+// DailyReport.js, FreshdeskSync.js, Scheduler apps). dqTableDefs_() only registers a
+// table when its header var exists, so without these every store read of these
+// tables returns [] — which would silently hide store-seam diffs. Column lists
+// mirror what ensureColumns_ unions into the fixture tabs anyway.
+var DQ_SNAPSHOT_HEADERS = ['slot_date', 'slot', 'queue', 'open', 'over_top', 'by_status_json', 'bands_json', 'created_today', 'resolved_today', 'stale', 'as_of'];
+var DQ_QUEUE_NOW_HEADERS = ['kind', 'queue', 'open', 'actionable', 'unassigned', 'oldest_h', 'bands_json', 'over_top', 'created_today', 'resolved_today', 'by_status_json', 'source_as_of', 'stale'];
+var FD_TICKET_HEADERS = ['ticket_id', 'status', 'group_name', 'created_at', 'resolved_at', 'closed_at', 'channel', 'requester_id', 'agent_id', 'agent_email', 'tl_email'];
+var FD_ESC_SEEN_HEADERS = ['ticket_id', 'seen_at'];
+var DQ_AGING_HEADERS = ['ticket_id', 'group_name', 'status', 'created_at', 'age_h', 'band', 'ours'];
+var DQ_INFLOW_HEADERS = ['date', 'queue', 'created', 'resolved', 'open_end', 'by_status_json'];
+var DQ_INFLOW_HOURLY_HEADERS = ['date', 'hour', 'queue', 'created', 'resolved', 'calls', 'answered'];
+var DQ_INFLOW_ROLLUP_HEADERS = ['period', 'queue', 'created', 'resolved', 'open_end'];
+var DQ_AGENT_PERF_HEADERS = ['date', 'email', 'calls', 'minutes', 'tickets', 'chats'];
+var DQ_AGENT_DAILY_HEADERS = ['date', 'email', 'metric', 'value'];
+var SC_MONTH_HEADERS = ['month', 'email', 'score', 'rank', 'kpi_json', 'computed_at'];
+var SC_DAILY_HEADERS = ['date', 'email', 'matrix_day', 'inb_target', 'inb_achieved', 'txt_target', 'txt_achieved', 'wa_target', 'wa_achieved', 'audits', 'score_x_audits'];
+var SC_BEHAVIOUR_HEADERS = ['date', 'email', 'metric', 'value'];
+var TLP_HEADERS = {
+  tlp_shifts: ['key', 'date', 'tl_email', 'shift_start', 'shift_end', 'queue_json', 'updated_at'],
+  tlp_perf_daily: ['date', 'tl_email', 'metric', 'value'],
+  tlp_perf_weekly: ['week', 'tl_email', 'metric', 'value'],
+};
+var MD_HEADERS = {};
+var QA_HEADERS = {};
+
 // Health.js beats (called by dqStep_ / job wrappers); inert here.
 function hbBeat_() {}
 function hbFlush_() {}
@@ -284,6 +310,19 @@ function __fn_dir_name__(e) { return 'Name ' + e; }
 function __fn_dir_managerOf__(e) { return 'tl@dabdoob.com'; }
 function __fn_scope_true__(e) { return true; }
 function __fn_kctx__(email) { return { probationMonth: 1, olCases: 0, leaveIneligible: false }; }
+// dir.person seam for tphCheckAgent_ / pwDirectory_-shaped args: reads fixtures.dirPersons.
+function __fn_dirPerson__(e) {
+  var m = (__FIXTURES__ && __FIXTURES__.dirPersons) || {};
+  return m[String(e).trim().toLowerCase()] || null;
+}
+// Deterministic tphEditDay_ edit double (mirrors the port-side closure in tests/golden/tph.test.ts).
+function __fn_tphEdit__(logged, src) {
+  logged['40'] = 'calls'; src['40'] = 'grid';
+  logged['41'] = 'wa+calls'; src['41'] = 'grid';
+  delete logged['32']; delete src['32'];
+}
+// scAdd_ mutates its bucket and returns nothing — expose the post-mutation accumulator.
+function __fn_scAddAcc__(a, r) { scAdd_(a, r); return a; }
 
 // readTable_'s memo + data book live in Repo.js (loaded verbatim); only the props' seed matters.
 `;
@@ -318,15 +357,16 @@ function __reset__(fx) {
   __CACHE__ = {};
   __PROPS__ = { CC_DATA_SPREADSHEET_ID: '__data__' };
   if (__FIXTURES__.props) Object.keys(__FIXTURES__.props).forEach(function (k) { __PROPS__[k] = __FIXTURES__.props[k]; });
-  var names = ['CONFIG_MEMO_', 'TABLE_MEMO_', 'PROD_ROWS_MEMO_', 'DQ_SS_MEMO', 'WC_STATE_',
-    'VA_MEMO_', 'VA_SYSTEM_', 'VA_BYPASS_', 'VA_RESOLVING_', 'dataSpreadsheetCache_'];
-  names.forEach(function (n) {
-    if (n in globalThis) {
-      var v = globalThis[n];
-      globalThis[n] = (v && typeof v === 'object' && n !== 'WC_STATE_' && n !== 'VA_MEMO_' && n !== 'dataSpreadsheetCache_')
-        ? (n === 'DQ_SHEET_HDR_' ? { sh: null, headers: null } : {})
-        : (n === 'VA_SYSTEM_' || n === 'VA_BYPASS_' || n === 'VA_RESOLVING_' ? false : null);
-    }
+  // Per-execution memos restored to their initial values (an empty object is NOT a
+  // null check: configAll_ returns CONFIG_MEMO_ when truthy, so {} would serve forever).
+  var init = {
+    CONFIG_MEMO_: null, WC_STATE_: null, VA_MEMO_: null, dataSpreadsheetCache_: null,
+    TABLE_MEMO_: {}, PROD_ROWS_MEMO_: {}, DQ_SS_MEMO: {},
+    VA_SYSTEM_: false, VA_BYPASS_: false, VA_RESOLVING_: false,
+    DQ_SHEET_HDR_: { sh: null, headers: null }
+  };
+  Object.keys(init).forEach(function (n) {
+    if (n in globalThis) globalThis[n] = JSON.parse(JSON.stringify(init[n]));
   });
   if ('DQ_SHEET_HDR_' in globalThis) globalThis.DQ_SHEET_HDR_ = { sh: null, headers: null };
   if ('DQ_WRITE_GEN_' in globalThis) globalThis.DQ_WRITE_GEN_ = globalThis.DQ_WRITE_GEN_ + 1;
@@ -334,6 +374,7 @@ function __reset__(fx) {
 function __rebind__(v) {
   if (typeof v === 'string' && v.indexOf('@@fn:') === 0) return globalThis[v.slice(5)];
   if (typeof v === 'string' && v.indexOf('@@ss:') === 0) return __bookFor__(v.slice(5));
+  if (typeof v === 'string' && v.indexOf('@@ms:') === 0) return new __RealDate(+v.slice(5));
   if (Array.isArray(v)) { for (var i = 0; i < v.length; i++) v[i] = __rebind__(v[i]); return v; }
   if (v && typeof v === 'object') { Object.keys(v).forEach(function (k) { v[k] = __rebind__(v[k]); }); return v; }
   return v;
@@ -401,6 +442,25 @@ export function createOracle(files) {
     },
     logs() {
       return JSON.parse(vm.runInContext('JSON.stringify(__logs__())', ctx))
+    },
+    /**
+     * The row objects dqReadObjects_ yields for a V2 store table (no _row; every
+     * def/ensureColumns_ header present). Feed these to the port so both sides see
+     * the identical input shape.
+     */
+    objects(name, fixtures = {}, year = null) {
+      vm.runInContext(`__reset__(${JSON.stringify(settingsToConfig(fixtures))})`, ctx)
+      return JSON.parse(
+        vm.runInContext(
+          `JSON.stringify(dqReadObjects_(${JSON.stringify(name)}, ${JSON.stringify(year)}, { missingOk: true }))`,
+          ctx
+        )
+      )
+    },
+    /** The row objects readTable_ yields for a data-spreadsheet tab (with _row). */
+    table(name, fixtures = {}) {
+      vm.runInContext(`__reset__(${JSON.stringify(settingsToConfig(fixtures))})`, ctx)
+      return JSON.parse(vm.runInContext(`JSON.stringify(readTable_(${JSON.stringify(name)}))`, ctx))
     },
     /** Evaluates an arbitrary expression inside the context (debug). */
     eval(code) {

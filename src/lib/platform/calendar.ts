@@ -8,8 +8,8 @@
  *      + the `holidays` table) -> { working: false, reason: 'holiday' }
  *   2. team leads: the TL schedule behind wcTlScheduleSource() — an adapter
  *      interface reading the tlp/shift tables (`tl_shift_plan`, `tl_off_days`,
- *      `team_leads`; V2 scheduler tables `sched_plan`/`sched_offdays` win where
- *      they have a row).
+ *      `team_leads`, the live `tlp_shifts`; V2 scheduler tables
+ *      `sched_plan`/`sched_offdays` win where they have a row).
  *        ShiftPlan row AM/PM      -> working on that shift
  *        ShiftPlan row OFF/LEAVE  -> { working: false, reason: 'off' }
  *        no row, TLOffDays weekday-> off
@@ -25,7 +25,7 @@ import { db, cacheGet, cachePut, cacheRemove } from './repo'
 import { getConfig, dqSetting } from './settings'
 import { normEmail } from './identity'
 import {
-  pwKwDate, pwDateOnly, pwAt, pwDow, pwAddDays, pwToday, PW_DAY_MS,
+  pwMs, pwKwDate, pwKwTime, pwDateOnly, pwAt, pwDow, pwAddDays, pwToday, PW_DAY_MS,
 } from './time'
 
 export const WC_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -272,15 +272,15 @@ async function readIfPresent(table: string): Promise<Record<string, unknown>[]> 
 const EMPTY_SCHEDULE: TlSchedule = { shifts: {}, offDays: {} }
 
 /**
- * The V1 tabs, read-only (wcTlScheduleSourceV1_), merged with V2's scheduler tables
- * (schSavedSource_ equivalent): V2 rows win where present.
+ * The TL schedule readers, layered: the legacy V1 tabs (wcTlScheduleSourceV1_),
+ * then the live `tlp_shifts` table (migrations/003), then V2's own scheduler
+ * tables (schSavedSource_ equivalent) — later layers win where they have a row.
  */
 async function defaultTlScheduleSource(): Promise<TlSchedule> {
-  const out = await wcTlScheduleSourceV1()
-  const mine = await schedSavedSource()
-  if (!mine) return out
   const merged: TlSchedule = { shifts: {}, offDays: {} }
-  ;[out, mine].forEach((src) => {
+  const srcs: (TlSchedule | null)[] = [await wcTlScheduleSourceV1(), await tlpShiftsSource(), await schedSavedSource()]
+  srcs.forEach((src) => {
+    if (!src) return
     Object.keys(src.shifts).forEach((k) => {
       merged.shifts[k] = src.shifts[k]
     })
@@ -337,6 +337,27 @@ async function wcTlScheduleSourceV1(): Promise<TlSchedule> {
     out.offDays[e + '|' + (/^\d{4}-\d{2}$/.test(m) ? m : '')] = days
   })
   cachePut('wc_v1_tl', JSON.stringify(out), 600)
+  return out
+}
+
+/**
+ * The live `tlp_shifts` table (migrations/003): one row per TL per date with the
+ * actual shift_start / shift_end instants. Classified into AM / PM by the Kuwait
+ * start hour (AM 09:30, PM 13:00); days without a row fall through to the
+ * weekday-off / default-shift logic like an unplanned day.
+ */
+async function tlpShiftsSource(): Promise<TlSchedule | null> {
+  const rows = await readIfPresent('tlp_shifts')
+  if (!rows.length) return null
+  const out: TlSchedule = { shifts: {}, offDays: {} }
+  rows.forEach((r) => {
+    const e = normEmail(r.tl_email || r.email)
+    const d = pwDateOnly(r.date)
+    const startMs = pwMs(r.shift_start)
+    if (!e || !d || isNaN(startMs)) return
+    const hour = Number(pwKwTime(startMs).slice(0, 2))
+    out.shifts[e + '|' + d] = hour < 12 ? 'AM' : 'PM'
+  })
   return out
 }
 

@@ -18,7 +18,8 @@ export async function POST(req: Request) {
         '3. Import to prod_intervals table'
       ]
     })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -96,7 +96,8 @@ export interface ProdInterval {
   agentEmail: string
   agentName: string
   status: string
-  sourceStatus: string
+  /** Only parsed intervals carry the raw source status — prodIntervalOf_ (stored rows) drops it. */
+  sourceStatus?: string
   startMs: number
   endMs: number
   minutes: number

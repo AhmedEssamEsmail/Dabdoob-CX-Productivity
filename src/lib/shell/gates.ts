@@ -4,7 +4,7 @@ import {
   PAGES,
   type RouteDef,
 } from '@/components/shell/registry'
-import type { Bootstrap, ShellUser } from '@/lib/shell/context'
+import { getBoot, type Bootstrap, type ShellUser } from '@/lib/shell/context'
 
 /**
  * Role gates and link resolution ported from the legacy bundle:
@@ -101,9 +101,16 @@ export interface ResolvedLink {
   missing: boolean
 }
 
+/** aa() — the other app's web URL from the bootstrap. */
+function appUrl(app: string): string {
+  return getBoot()?.appUrls?.[app] ?? ''
+}
+
 /**
- * we() — resolve a `#/path[?query]` link. Unified-app variant: every known
- * page resolves internally; `withQuery=false` drops the query string.
+ * we() — resolve a `#/path[?query]` link. Pages in this app become internal
+ * `/path` routes; pages in another app become that app's web URL with
+ * `?page=path` (the legacy `external:true` branch — "not connected" when the
+ * bootstrap has no URL for the app).
  */
 export function resolveLink(
   href: string,
@@ -113,11 +120,19 @@ export function resolveLink(
   const match = /^#\/?([^?]*)(?:\?(.*))?$/.exec(href)
   const route = match ? pages.find((page) => page.path === match[1]) : undefined
   if (!match || !route) return { href, external: false, missing: false }
-  return {
-    href: `/${route.path}${withQuery && match[2] ? `?${match[2]}` : ''}`,
-    external: false,
-    missing: false,
+  if (inThisApp(route)) {
+    return {
+      href: `/${route.path}${withQuery && match[2] ? `?${match[2]}` : ''}`,
+      external: false,
+      missing: false,
+    }
   }
+  const base = appUrl(appForGroup(route.group))
+  if (!base) return { href: '', external: true, missing: true }
+  if (!withQuery) return { href: base, external: true, missing: false }
+  const query = new URLSearchParams(match[2] ?? '')
+  query.set('page', match[1] as string)
+  return { href: `${base}?${query.toString()}`, external: true, missing: false }
 }
 
 /** ra() — a group's rail entry links to its first page the user may see. */
@@ -128,7 +143,9 @@ export function groupEntryLink(
 ): ResolvedLink | null {
   const route = pages.find((page) => page.group === group && gate(page))
   if (!route) return null
-  return resolveLink(`#/${route.path}`, pages)
+  const app = appForGroup(group)
+  const withQuery = group !== 'hub' && APPS[app].groups.length > 1
+  return resolveLink(`#/${route.path}`, pages, withQuery)
 }
 
 /** jt() — internal href for a page path. */

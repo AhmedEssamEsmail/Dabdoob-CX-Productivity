@@ -47,3 +47,6 @@ migration/
 /test-results/
 
 .env*
+
+# devin work artifacts (legacy extract, harness)
+.devin/

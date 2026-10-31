@@ -253,7 +253,7 @@ export function dqSortQueues_<T extends { ours: unknown; open: number }>(views: 
 }
 
 /** dqQueueView_ verbatim: a stored agg_queue_now row -> the board shape. */
-export function dqQueueView_(q: Record<string, unknown>, prevOpen: number | undefined, cfg: Cfg): Record<string, unknown> {
+export function dqQueueView_(q: Record<string, unknown>, prevOpen: number | null | undefined, cfg: Cfg): Record<string, unknown> {
   return {
     queue: String(q.queue),
     kind: String(q.kind),
@@ -266,7 +266,7 @@ export function dqQueueView_(q: Record<string, unknown>, prevOpen: number | unde
     overTop: dqNum_(q.over_top),
     createdToday: dqNum_(q.created_today),
     resolvedToday: dqNum_(q.resolved_today),
-    delta: prevOpen === undefined ? null : dqNum_(q.open) - prevOpen,
+    delta: prevOpen === undefined ? null : dqNum_(q.open) - (prevOpen as number),
     byStatus: dqJson_(q.by_status_json, {}) || {},
     sourceAsOf: String(q.source_as_of || ''),
     stale: q.stale === true || q.stale === 'TRUE' || q.stale === 'true',

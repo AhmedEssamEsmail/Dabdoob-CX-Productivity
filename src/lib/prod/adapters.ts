@@ -281,11 +281,11 @@ export function prodHeadcountRows_(ss: SheetBookLike): HeadcountRow[] {
  * `roster` = dqRosterPeople_() output or null; `openSpreadsheet`/`month` used when absent.
  */
 export function dqHeadcount_(
-  roster: HeadcountRow[] | null,
+  roster: (HeadcountRow | RosterPerson)[] | null,
   openSpreadsheet: (id: string) => SheetBookLike,
   cfg: Cfg,
   month: string
-): HeadcountRow[] {
+): (HeadcountRow | RosterPerson)[] {
   if (roster) return roster
   try {
     return prodHeadcountRows_(openSpreadsheet(prodFileFor_(month, cfg)))
@@ -318,12 +318,23 @@ export interface RosterRow {
   [k: string]: unknown
 }
 
+/** dqRosterPeople_ person shape — the Headcount fields it fills (no employeeId). */
+export interface RosterPerson {
+  email: string
+  name: string
+  fdId: string
+  fdName: string
+  maqsamName: string
+  tlEmail: string
+  tlName: string
+}
+
 /**
  * ProdCore.js dqRosterPeople_ verbatim: roster rows in the Headcount shape, or null when the
  * roster has not been synced (no tab, or no hct rows). `rosterRows` = readTable_('Roster')
  * or null when the tab does not exist.
  */
-export function dqRosterPeople_(rosterRows: RosterRow[] | null): HeadcountRow[] | null {
+export function dqRosterPeople_(rosterRows: RosterRow[] | null): RosterPerson[] | null {
   if (rosterRows === null) return null
   const rows = rosterRows.filter((r) => r.source === 'hct')
   if (!rows.length) return null
@@ -341,7 +352,6 @@ export function dqRosterPeople_(rosterRows: RosterRow[] | null): HeadcountRow[] 
       maqsamName: String(r.maqsam_name || ''),
       tlEmail: tl,
       tlName: nameOf[tl] || '',
-      employeeId: '',
     }
   })
 }

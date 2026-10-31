@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     // Flag detection logic: 2 cases in 10-minute window, 5-minute minimum interval
     for (const [agentEmail, agentIntervalsList] of agentIntervals) {
       // Sort by start time
-      agentIntervalsList.sort((a: any, b: any) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+      agentIntervalsList.sort((a: { start_at: string }, b: { start_at: string }) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
 
       // Check for flags
       for (let i = 0; i < agentIntervalsList.length; i++) {
@@ -125,12 +125,13 @@ export async function GET(req: Request) {
       intervals_processed: intervals.length,
       flags_detected: flags.length
     })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
-function calculateConfidence({ caseCount, totalMin, distinctCases }: any): number {
+function calculateConfidence({ caseCount, totalMin, distinctCases }: { caseCount: number; totalMin: number; distinctCases?: number }): number {
   let score = 50 // Base score
 
   // Case count factor

@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Node CJS scripts (not part of the app bundle) and agent scratch:
+    ".devin/**",
+    "scripts/**/*.js",
+    "specs/**/*.js",
+    "verify-db.js",
   ]),
 ]);
 

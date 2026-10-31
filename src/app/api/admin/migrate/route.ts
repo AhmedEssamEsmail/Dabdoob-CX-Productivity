@@ -211,7 +211,7 @@ async function readSheet(spreadsheetId: string, sheetName: string) {
 
   const headers = (rows[0] as string[]).map(h => String(h).trim().toLowerCase())
   return rows.slice(1).map(row => {
-    const obj: Record<string, any> = {}
+    const obj: Record<string, unknown> = {}
     headers.forEach((header, i) => {
       const v = row[i]
       obj[header] = v === undefined || v === '' ? null : v
@@ -220,8 +220,8 @@ async function readSheet(spreadsheetId: string, sheetName: string) {
   })
 }
 
-function mapRow(row: Record<string, any>, mapping: TableMapping): Record<string, any> {
-  const out: Record<string, any> = {}
+function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
   for (const col of mapping.columns) {
     const sheetHeader = mapping.sheetToDb?.[col] || col
     let v = row[sheetHeader]
@@ -236,10 +236,10 @@ function mapRow(row: Record<string, any>, mapping: TableMapping): Record<string,
     } else if (col === 'removed') {
       v = v === 'true' || v === true || v === 'TRUE'
     } else if (NUM_COLS.has(col)) {
-      v = parseFloat(v)
+      v = parseFloat(String(v))
       if (Number.isNaN(v)) v = null
     } else if (INT_COLS.has(col)) {
-      v = parseInt(v, 10)
+      v = parseInt(String(v), 10)
       if (Number.isNaN(v)) v = null
     }
     out[col] = v
@@ -251,7 +251,7 @@ async function migrateTable(mapping: TableMapping) {
   const errors: string[] = []
   const spreadsheetId = SPREADSHEETS[mapping.spreadsheet]
 
-  let rows: Record<string, any>[]
+  let rows: Record<string, unknown>[]
   try {
     rows = await readSheet(spreadsheetId, mapping.sheet)
   } catch (err) {
@@ -271,7 +271,7 @@ async function migrateTable(mapping: TableMapping) {
   // ON CONFLICT can't affect the same row twice in one statement
   if (mapping.upsertOn) {
     const keys = mapping.upsertOn.split(',')
-    const seen = new Map<string, Record<string, any>>()
+    const seen = new Map<string, Record<string, unknown>>()
     for (const r of mapped) {
       seen.set(keys.map(k => String(r[k])).join('|'), r)
     }

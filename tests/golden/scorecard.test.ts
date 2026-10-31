@@ -2,7 +2,7 @@
  * Golden tests: src/lib/scorecard/index.ts vs WorkCore.js verbatim in the oracle.
  */
 import { describe, it, expect } from 'vitest'
-import { baseFixtures, callLegacy, callPort, diffPath, rint, rng, rpick, same } from './helpers-oracle'
+import { baseFixtures, callLegacy, callPort, diffPath, oracle, rint, rng, rpick, same } from './helpers-oracle'
 import {
   d0num_,
   pwActionOut_,
@@ -161,10 +161,13 @@ describe('scorecard math', () => {
       }
       const bkN = rint(R, 0, 3)
       same('scBucket_', [bkN], () => scBucket_(bkN), {}, `bk ${i}`)
-      // scAdd_ mutates its bucket — compare the post-mutation bucket
-      const bucket = scBucket_(0)
-      scAdd_(bucket, r)
-      same('scAdd_', [scBucket_(0), r], () => bucket, {}, `add ${i}`)
+      // scAdd_ mutates its bucket and returns nothing — __fn_scAddAcc__ returns the
+      // post-mutation accumulator so both sides compare the bucket
+      same('__fn_scAddAcc__', [scBucket_(0), r], () => {
+        const bucket = scBucket_(0)
+        scAdd_(bucket, r)
+        return bucket
+      }, {}, `add ${i}`)
       const rows = [
         { overall: rint(R, 0, 100) / 10, name: 'B', rank: null },
         { overall: null, name: 'A', rank: null },
@@ -183,7 +186,13 @@ describe('scorecard math', () => {
       same('scMonthsOf_', ['2026-10-05', '2026-12-20'], () => scMonthsOf_('2026-10-05', '2026-12-20'), {}, `mo ${i}`)
       same('scMonthView_', ['2026-10', { month: '2026-10', title: 'wb', status: 'ok', matrix_rows: '120', fcr_rows: '30', fcr_dated: 'true', behaviour_found: '1' }, { id: 'w1', fallback: false }], () =>
         scMonthView_('2026-10', { month: '2026-10', title: 'wb', status: 'ok', matrix_rows: '120', fcr_rows: '30', fcr_dated: 'true', behaviour_found: '1' }, { id: 'w1', fallback: false }), {}, `mv ${i}`)
-      same('scMonthRows_', [[{ month: '2026-10', x: 1 }]], () => scMonthRows_([{ month: '2026-10', x: 1 }]), {}, `mr ${i}`)
+      // scMonthRows_() reads the sc_months live table keyed on month — seed + same objects
+      const mfx = baseFixtures({
+        spreadsheets: { 'live-store': { sc_months: [['month', 'x'], [`2026-${String(rint(R, 1, 12)).padStart(2, '0')}`, String(i)]] } },
+      })
+      const lMr = callLegacy('scMonthRows_', [], mfx)
+      const pMr = callPort(() => scMonthRows_(oracle().objects('sc_months', mfx) as never))
+      expect(diffPath(lMr, pMr)).toBeNull()
     }
   })
 

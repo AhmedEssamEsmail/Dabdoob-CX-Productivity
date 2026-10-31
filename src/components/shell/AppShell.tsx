@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   BootProvider,
   loadBootstrap,
@@ -93,6 +93,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   const [railOff, setRailOff] = useState(readRailOff)
   const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const navRef = useRef<HTMLElement>(null)
   const indRef = useRef<HTMLSpanElement>(null)
   const reposition = useRef<() => void>(() => {})
@@ -156,6 +157,25 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     if (firstRoute.current) firstRoute.current = false
     else document.documentElement.dataset.entry = 'calm'
   }, [path])
+
+  /* Legacy k/A/V: a requested page that cannot render in this app (external
+     or not permitted) redirects to the fallback page, carrying ?from=<path>
+     so the cx-note can render above it. */
+  useEffect(() => {
+    if (!boot) return
+    const req = PAGES.find((page) => page.path === (path || 'overview'))
+    if (!req) return
+    const vis = PAGES.filter((page) => pageAllowed(page, boot)).filter(inThisApp)
+    const fb =
+      vis.find((page) => page.path === 'my-day') ??
+      vis.find((page) => page.path === 'overview') ??
+      vis[0]
+    const cur = vis.includes(req) ? req : fb
+    if (!cur || req === cur) return
+    const query = new URLSearchParams(searchParams.toString())
+    query.set('from', req.path)
+    router.replace(`/${cur.path}?${query.toString()}`)
+  }, [path, boot, router, searchParams])
 
   /* ia(ca()) — stored appearance holds from the first app paint. */
   useEffect(() => {
@@ -254,24 +274,33 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   }
 
   const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter(inThisApp)
-  const requested = path ? PAGES.find((page) => page.path === path) : undefined
+  /* Legacy hash router: an empty path defaults to 'overview'. */
+  const requested = PAGES.find((page) => page.path === (path || 'overview'))
   const fallback =
     visible.find((page) => page.path === 'my-day') ??
     visible.find((page) => page.path === 'overview') ??
     visible[0]
   const current = path && visible.includes(route) ? route : fallback
-  const crossApp =
-    requested && requested !== current && !inThisApp(requested) && groupEntryAllowed(requested, boot)
+
+  /* The cx-note's route: the requested page mid-redirect, else the ?from=
+     carried on the fallback URL after it. */
+  const noteRoute =
+    requested && requested !== current
       ? requested
+      : requested === current
+        ? PAGES.find((page) => page.path === searchParams.get('from'))
+        : undefined
+  const note =
+    noteRoute && noteRoute !== current
+      ? !inThisApp(noteRoute) && groupEntryAllowed(noteRoute, boot)
+        ? { kind: 'external' as const, route: noteRoute, link: resolveLink(`#/${noteRoute.path}`) }
+        : { kind: 'denied' as const, route: noteRoute }
       : undefined
-  const crossLink = crossApp ? resolveLink(`#/${crossApp.path}`) : null
-  const deniedTitle = requested && requested !== current && !crossApp ? requested.title : ''
+
   const hubLink = resolveLink('#/overview', PAGES, false)
   const isAdmin = user.role === 'admin'
 
-  const body = current ? (
-    children
-  ) : (
+  const body = !current ? (
     <div className="state-screen">
       <h1>{D('Nothing in {app} for you yet', { app: APP_TITLE })}</h1>
       <p>
@@ -285,6 +314,12 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         </a>
       )}
     </div>
+  ) : requested && requested !== current ? (
+    /* Redirect to the fallback is in flight — render nothing rather than the
+       catch-all's UnbuiltPage for a route this app does not serve. */
+    <div className="page" />
+  ) : (
+    children
   )
 
   return (
@@ -439,13 +474,13 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         </aside>
         <main id="main" className="main" tabIndex={-1}>
           {viewingAs ? <ViewAsBanner user={user} /> : null}
-          {crossApp ? (
+          {note?.kind === 'external' ? (
             <p className="cx-note" data-status="neutral" role="status">
               <span>
-                {crossApp.title} is in {appTitle(crossApp.group)}.{' '}
-                {crossLink && !crossLink.missing ? (
-                  <a href={crossLink.href} target="_top">
-                    Open {crossApp.title}
+                {note.route.title} is in {appTitle(note.route.group)}.{' '}
+                {note.link && !note.link.missing ? (
+                  <a href={note.link.href} target="_top">
+                    Open {note.route.title}
                   </a>
                 ) : (
                   'Ask the CX admin to connect it.'
@@ -453,10 +488,10 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               </span>
             </p>
           ) : null}
-          {deniedTitle ? (
+          {note?.kind === 'denied' ? (
             <p className="cx-note" data-status="neutral" role="status">
               <span>
-                {deniedTitle} is not available to you
+                {note.route.title} is not available to you
                 {current ? `, so you are on ${current.title}` : ''}. Ask the CX
                 admin if you need it.
               </span>

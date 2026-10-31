@@ -37,13 +37,13 @@ export default function BootSplash() {
           <div className="bl-scene">
             <div className="bl-hopbox">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="bl-hop" src="/assets/boot/splash-1.png" alt="" />
+              <img className="bl-hop" src="/assets/boot/splash-1.png" alt="" width="150" height="87" />
               <span className="bl-shadow" />
             </div>
           </div>
           <div className="bl-scene">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="bl-sway" src="/assets/boot/splash-2.png" alt="" />
+            <img className="bl-sway" src="/assets/boot/splash-2.png" alt="" width="110" height="126" />
           </div>
           <div className="bl-scene">
             <div className="bl-peekbox">
@@ -53,7 +53,7 @@ export default function BootSplash() {
                 <i />
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="bl-peek" src="/assets/boot/splash-3.png" alt="" />
+              <img className="bl-peek" src="/assets/boot/splash-3.png" alt="" width="74" height="85" />
             </div>
           </div>
         </div>

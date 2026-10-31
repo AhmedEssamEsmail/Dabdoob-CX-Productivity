@@ -2,7 +2,7 @@
  * Golden tests: src/lib/kpi/index.ts vs KpiPayout.js verbatim in the oracle.
  */
 import { describe, it, expect } from 'vitest'
-import { baseFixtures, callLegacy, callPort, diffPath, rint, rng, rpick, same } from './helpers-oracle'
+import { baseFixtures, callLegacy, callPort, diffPath, oracle, rint, rng, rpick, same } from './helpers-oracle'
 import {
   kpiBandPay_,
   kpiHas_,
@@ -119,30 +119,21 @@ describe('kpi readers — store seams', () => {
         Roster: [['email', 'hiring_date'], ['a@x.com', '2026-07-15'], ['b@x.com', '']],
       },
     })
+    // dqReadObjects_ pads KPI_LOG_HEADERS via ensureColumns_ — feed the port the same objects
+    const leaveObjs = oracle().objects('kpi_leave_log', fx)
+    const olObjs = oracle().objects('kpi_ol_cases', fx)
+    const rosterObjs = oracle().table('Roster', fx)
     const l = callLegacy('kpiLogRows_', ['kpi_leave_log'], fx)
-    const p = callPort(() => kpiLogRows_(rows))
+    const p = callPort(() => kpiLogRows_(leaveObjs))
     expect(diffPath(l, p)).toBeNull()
     const l2 = callLegacy('kpiLeaveDates_', [], fx)
-    const p2 = callPort(() => kpiLeaveDates_(rows))
+    const p2 = callPort(() => kpiLeaveDates_(leaveObjs))
     expect(diffPath(l2, p2)).toBeNull()
     const l3 = callLegacy('kpiOlCases_', [['2026-10']], fx)
-    const p3 = callPort(() =>
-      kpiOlCases_(
-        [
-          { email: 'a@x.com', month: '2026-10', cases: '2' },
-          { email: 'b@x.com', month: '2026-09', cases: '1' },
-        ],
-        ['2026-10']
-      )
-    )
+    const p3 = callPort(() => kpiOlCases_(olObjs, ['2026-10']))
     expect(diffPath(l3, p3)).toBeNull()
     const l4 = callLegacy('kpiHiringDates_', [], fx)
-    const p4 = callPort(() =>
-      kpiHiringDates_([
-        { email: 'a@x.com', hiring_date: '2026-07-15' },
-        { email: 'b@x.com', hiring_date: '' },
-      ])
-    )
+    const p4 = callPort(() => kpiHiringDates_(rosterObjs))
     expect(diffPath(l4, p4)).toBeNull()
   })
 })
