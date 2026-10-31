@@ -58,13 +58,13 @@ export default function AdminConfigPage() {
 
   return (
     <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
-      <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
+      <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
         Configuration
       </h1>
 
       <Card>
         <CardHeader>
-          <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
+          <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
             System Configuration
           </h2>
         </CardHeader>

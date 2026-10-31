@@ -96,7 +96,7 @@ export default function AdminRosterPage() {
   return (
     <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-(--cx-space-4) md:mb-(--cx-space-6)">
-        <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground">
+        <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground">
           Roster Management
         </h1>
         <Button variant="primary" onClick={() => setShowAddForm(!showAddForm)}>
@@ -107,7 +107,7 @@ export default function AdminRosterPage() {
       {showAddForm && (
         <Card className="mb-(--cx-space-6)">
           <CardHeader>
-            <h2 className="text-(--cx-text-lg) font-semibold text-foreground">
+            <h2 className="text-(length:--cx-text-lg) font-semibold text-foreground">
               Add New User
             </h2>
           </CardHeader>
@@ -177,7 +177,7 @@ export default function AdminRosterPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
+          <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
             Users
           </h2>
         </CardHeader>

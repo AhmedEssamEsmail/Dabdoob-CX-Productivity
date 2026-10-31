@@ -22,20 +22,20 @@ export default function MyStatusPage() {
 
   return (
     <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-7xl mx-auto">
-      <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
+      <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground mb-(--cx-space-4) md:mb-(--cx-space-6)">
         My Status
       </h1>
 
       <div className="grid gap-(--cx-space-4) md:gap-(--cx-space-6)">
         <Card>
           <CardHeader>
-            <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
+            <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
               Productivity Score
             </h2>
           </CardHeader>
           <CardContent>
             {layers.length > 0 ? (
-              <div className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-bold text-accent">
+              <div className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-bold text-accent">
                 {layers[0].productivity_pct}%
               </div>
             ) : (
@@ -46,7 +46,7 @@ export default function MyStatusPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
+            <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
               Recent Intervals
             </h2>
           </CardHeader>

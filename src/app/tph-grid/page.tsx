@@ -104,7 +104,7 @@ export default function TphGridPage() {
   return (
     <div className="p-(--cx-space-4) md:p-(--cx-space-6) max-w-full mx-auto">
       <div className="flex justify-between items-center mb-(--cx-space-4) md:mb-(--cx-space-6)">
-        <h1 className="text-(--cx-text-2xl) md:text-(--cx-text-3xl) font-semibold text-foreground">
+        <h1 className="text-(length:--cx-text-2xl) md:text-(length:--cx-text-3xl) font-semibold text-foreground">
           TPH Grid
         </h1>
         <Input
@@ -117,7 +117,7 @@ export default function TphGridPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-(--cx-text-lg) md:text-(--cx-text-xl) font-semibold text-foreground">
+          <h2 className="text-(length:--cx-text-lg) md:text-(length:--cx-text-xl) font-semibold text-foreground">
             Hourly Time Slots - {new Date(selectedDate).toLocaleDateString()}
           </h2>
         </CardHeader>
@@ -199,7 +199,7 @@ export default function TphGridPage() {
       {selectedHour !== null && selectedChannel && (
         <Card className="mt-(--cx-space-6)">
           <CardHeader>
-            <h3 className="text-(--cx-text-lg) font-semibold text-foreground">
+            <h3 className="text-(length:--cx-text-lg) font-semibold text-foreground">
               Details: {selectedChannel} at {selectedHour.toString().padStart(2, '0')}:00
             </h3>
           </CardHeader>
@@ -229,7 +229,7 @@ export default function TphGridPage() {
 
       <Card className="mt-(--cx-space-6)">
         <CardHeader>
-          <h3 className="text-(--cx-text-lg) font-semibold text-foreground">
+          <h3 className="text-(length:--cx-text-lg) font-semibold text-foreground">
             Recent Tasks
           </h3>
         </CardHeader>
