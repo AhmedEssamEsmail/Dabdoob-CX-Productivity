@@ -13,7 +13,11 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:performance": "vitest run tests/performance",
-    "test:security": "vitest run tests/security"
+    "test:security": "vitest run tests/security",
+    "migrate": "tsx scripts/run-migration.ts",
+    "migrate:local": "tsx migration/migrate.ts",
+    "migrate:validate": "tsx migration/validate.ts",
+    "migrate:dry-run": "tsx migration/migrate-dry-run.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -21,6 +25,7 @@
     "@types/google-spreadsheet": "^3.3.2",
     "dotenv": "^18.0.9",
     "google-spreadsheet": "^5.3.0",
+    "googleapis": "^189.0.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
