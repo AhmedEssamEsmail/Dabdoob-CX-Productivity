@@ -37,9 +37,26 @@ export async function POST(request: Request) {
       columnCount: s.properties?.gridProperties?.columnCount,
     }))
 
+    // Optionally fetch header rows for requested sheets
+    const headersRequested = (body.headers as string[] | undefined) || []
+    const headers: Record<string, string[]> = {}
+    for (const name of headersRequested) {
+      try {
+        const res = await sheets.spreadsheets.values.get({
+          spreadsheetId: sheetId,
+          range: `'${name}'!1:2`,
+        })
+        const vals = res.data.values || []
+        headers[name] = (vals[0] as string[] | undefined) || []
+      } catch {
+        headers[name] = []
+      }
+    }
+
     return Response.json({
       spreadsheetTitle: response.data.properties?.title,
       sheets: sheetList,
+      headers,
     })
   } catch (error) {
     return Response.json({ error: String(error) }, { status: 500 })
