@@ -267,7 +267,7 @@ export function CalibrationChart({
   )
 }
 
-/* --- Xe / Tn — the weekly sparkline trio (my-status + Fa) ---------------- */
+/* --- Xe / Tn â€” the weekly sparkline trio (my-status + Fa) ---------------- */
 
 export interface TrendPoint {
   week: string
@@ -277,7 +277,7 @@ export interface TrendPoint {
   precisionPct: number | null
 }
 
-/** Xe — one SVG sparkline (polyline + hoverable points + Ca tooltip). */
+/** Xe â€” one SVG sparkline (polyline + hoverable points + Ca tooltip). */
 export function Xe({
   title,
   unit,
@@ -345,7 +345,7 @@ export function Xe({
   )
 }
 
-/** Tn — the three sparklines + footnote. */
+/** Tn â€” the three sparklines + footnote. */
 export function Tn({ points }: { points: TrendPoint[] }) {
   return (
     <Fragment>

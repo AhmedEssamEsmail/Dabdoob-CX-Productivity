@@ -1955,7 +1955,7 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
 
 /* --- za — the page -------------------------------------------------------------- */
 
-const ROUTE = { title: 'TPH' }
+const ROUTE = { title: 'TPH and caps' }
 
 export default function TphGridPage() {
   const dateRef = useRef('')

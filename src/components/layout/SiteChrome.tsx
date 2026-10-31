@@ -30,7 +30,7 @@ function SiteChromeBody({ children }: { children: ReactNode }) {
 
   if (isAuthPage) {
     return (
-      <main id="main" className="main flex-1" tabIndex={-1}>
+      <main id="main" className="main" tabIndex={-1}>
         {children}
       </main>
     )
