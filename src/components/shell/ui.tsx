@@ -4,6 +4,7 @@ import {
   type CSSProperties,
   type ReactNode,
   type RefObject,
+  type SyntheticEvent,
   useLayoutEffect,
   useRef,
   useState,
@@ -259,6 +260,43 @@ export function useEnterAnim(ref: RefObject<HTMLElement | null>): void {
 /** ot() — stagger index style. */
 export const stagger = (i: number): CSSProperties =>
   ({ '--i': Math.min(i, 12) }) as CSSProperties
+
+/** Ca() — chart tooltip: positioned .cc-tip inside a ref'd container.
+ *  tipFor(text) returns the aria/pointer/focus handlers a hotspot needs. */
+export function useTip<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null)
+  useEnterAnim(ref as RefObject<HTMLElement | null>)
+  const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null)
+  const show = (text: string) => (event: SyntheticEvent) => {
+    const container = ref.current
+    if (!container) return
+    const target = event.currentTarget.getBoundingClientRect()
+    const box = container.getBoundingClientRect()
+    const x = Math.max(64, Math.min(box.width - 64, target.left + target.width / 2 - box.left))
+    setTip({ text, x, y: Math.max(0, target.top - box.top) })
+  }
+  const hide = () => setTip(null)
+  const tipFor = (text: string) => ({
+    'aria-label': text,
+    onPointerEnter: show(text),
+    onFocus: show(text),
+    onPointerLeave: hide,
+    onBlur: hide,
+  })
+  const tipEl = tip ? (
+    <span className="cc-tip" aria-hidden="true" style={{ left: `${tip.x}px`, top: `${tip.y}px` }}>
+      {tip.text}
+    </span>
+  ) : null
+  return { ref, tipFor, tipEl }
+}
+
+/** Sa() — "Same as prev" / "▲ +N% vs prev" / "▼ −N% vs prev". */
+export function vsPrev(value: number | null, prev: number | null): string {
+  if (value == null || prev == null || !prev) return ''
+  const pct = Math.round(((value - prev) / Math.abs(prev)) * 100)
+  return pct === 0 ? 'Same as prev' : `${pct > 0 ? '▲ +' : '▼ −'}${Math.abs(pct)}% vs prev`
+}
 
 /** Qn() — HH:MM in Kuwait (UTC+3). */
 export const kuwaitTime = (iso: string): string =>

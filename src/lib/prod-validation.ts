@@ -61,8 +61,18 @@ export interface FlagView {
   confidenceScore: number
   confidenceLevel: string
   confidenceFactors: string[]
+  /** Legacy flagView emits these for the dispute mechanism — disabled upstream (always false/''). */
+  canDispute?: boolean
+  disputeUntil?: string
   /** Present when an agent dispute is attached (mechanism disabled upstream — never populated today). */
-  dispute?: { disputeId: string; raisedAt: string; reason: string; status: string }
+  dispute?: {
+    disputeId: string
+    raisedAt: string
+    reason: string
+    status: string
+    decidedBy?: string
+    decisionNote?: string
+  }
 }
 
 export interface DecisionInput {
@@ -89,6 +99,7 @@ export interface RuleView {
   flagStatuses: string[]
   channelStatus: Record<string, string>
   reviewDays: number
+  disputeDays: number
 }
 
 /** PROD_SETTINGS defaults that the review flow reads. */
@@ -97,6 +108,7 @@ export const PROD_DEFAULTS = {
   prod_flag_window_min: 10,
   prod_flag_min_interval_min: 5,
   prod_review_days: 7,
+  prod_dispute_days: 3,
   prod_flag_statuses: ['IDLE'],
   prod_offline_statuses: ['Offline'],
   prod_channel_status: { chat: 'Chats', ticket: 'Available', wa: 'Waiting Address' } as Record<string, string>,
@@ -240,6 +252,9 @@ export function flagView(row: ProdFlagRow, nameOf?: (email: string) => string): 
     confidenceScore: Number(row.confidence_score) || 0,
     confidenceLevel: String(row.confidence_level || ''),
     confidenceFactors: Array.isArray(factors) ? factors.map(String) : [],
+    // dispute mechanism disabled: canDispute false, disputeUntil '' (prodDisputeUntil_).
+    canDispute: false,
+    disputeUntil: '',
   }
 }
 
@@ -274,6 +289,7 @@ export function ruleView(cfg: Record<string, string>): RuleView {
     flagStatuses: settingList(cfg.prod_flag_statuses, PROD_DEFAULTS.prod_flag_statuses),
     channelStatus: parseJson<Record<string, string>>(cfg.prod_channel_status, PROD_DEFAULTS.prod_channel_status),
     reviewDays: settingNumber(cfg.prod_review_days, PROD_DEFAULTS.prod_review_days),
+    disputeDays: settingNumber(cfg.prod_dispute_days, PROD_DEFAULTS.prod_dispute_days),
   }
 }
 

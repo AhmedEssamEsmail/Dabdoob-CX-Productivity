@@ -725,6 +725,7 @@ export function prodRuleView_(cfg: Cfg): Record<string, unknown> {
     flagStatuses: r.statuses,
     channelStatus: r.channelStatus,
     reviewDays: Number(prodSetting_(cfg, 'prod_review_days')),
+    disputeDays: Number(prodSetting_(cfg, 'prod_dispute_days')),
   }
 }
 
