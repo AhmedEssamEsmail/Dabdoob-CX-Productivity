@@ -1,4 +1,8 @@
+import { requireRole } from '@/lib/auth'
+import { viewAsGuard } from '@/lib/platform/viewas'
 import { supabase } from '@/lib/supabase'
+import { tphLoadStore_ } from '@/lib/tph/page'
+import { saveTphCases } from '@/lib/tph/write'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -24,18 +28,21 @@ export async function GET(req: Request) {
   return NextResponse.json(data)
 }
 
+
+/** saveTphCases — { date, hour, channel, cases } ('' clears the TL number). */
 export async function POST(req: Request) {
-  const body = await req.json()
-
-  const { data, error } = await supabase
-    .from('prod_tph_cases')
-    .insert(body)
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  try {
+    const user = await requireRole(['admin', 'tl'])
+    await viewAsGuard()
+    const store = await tphLoadStore_()
+    const out = await saveTphCases(
+      store,
+      { role: String(user.role), email: String(user.email || '').toLowerCase() },
+      await req.json()
+    )
+    return NextResponse.json(out)
+  } catch (e) {
+    const m = e instanceof Error ? e.message : 'Unable to save'
+    return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : m === 'Forbidden' ? 403 : 400 })
   }
-
-  return NextResponse.json(data)
 }
