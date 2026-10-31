@@ -111,11 +111,13 @@ const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'productivity', sheet: 'prod_window_hist', table: 'prod_window_hist',
     columns: ['date', 'class', 'windows', 'counts_json', 'computed_at'],
+    upsertOn: 'date,class',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_flag_analytics', table: 'prod_flag_analytics',
     columns: ['date', 'agent_email', 'total_flags', 'auto_accepted', 'total_flagged_min',
       'avg_cases_per_flag', 'most_common_raw_status', 'most_common_suggested_status'],
+    upsertOn: 'date,agent_email',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_quarterly_reports', table: 'prod_quarterly_reports',
@@ -125,6 +127,7 @@ const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_days', table: 'prod_tph_days',
     columns: ['date', 'agent_email', 'slots_json', 'sources_json', 'by', 'at'],
+    upsertOn: 'date,agent_email',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_tasks', table: 'prod_tph_tasks',
@@ -135,14 +138,17 @@ const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_cases', table: 'prod_tph_cases',
     columns: ['date', 'source', 'cases_json', 'by', 'at'],
+    upsertOn: 'date,source',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_touches', table: 'prod_tph_touches',
     columns: ['date', 'touches_json', 'computed_at'],
+    upsertOn: 'date',
   },
   {
     spreadsheet: 'productivity', sheet: 'prod_tph_calls', table: 'prod_tph_calls',
     columns: ['date', 'calls_json', 'computed_at'],
+    upsertOn: 'date',
   },
   {
     spreadsheet: 'quality', sheet: 'qa_audits', table: 'qa_audits',
@@ -256,10 +262,24 @@ async function migrateTable(mapping: TableMapping) {
   }
 
   // Map + filter rows missing required fields
-  const mapped = rows
+  let mapped = rows
     .map(r => mapRow(r, mapping))
     .filter(r => !(mapping.require || []).some(col => r[col] === null || r[col] === undefined))
   const skipped = rows.length - mapped.length
+
+  // Dedupe by upsertOn key (keep last occurrence) — required because
+  // ON CONFLICT can't affect the same row twice in one statement
+  if (mapping.upsertOn) {
+    const keys = mapping.upsertOn.split(',')
+    const seen = new Map<string, Record<string, any>>()
+    for (const r of mapped) {
+      seen.set(keys.map(k => String(r[k])).join('|'), r)
+    }
+    mapped = Array.from(seen.values())
+  } else if (mapping.table === 'view_as') {
+    // view_as has a serial PK (no conflict target) — replace contents idempotently
+    await supabase.from('view_as').delete().not('id', 'is', null)
+  }
 
   const batchSize = 500
   let migrated = 0
