@@ -3,6 +3,8 @@ import { requireAdminCaller } from '@/lib/admin-auth'
 import { apiError } from '@/lib/api-error'
 import { createAuthClient } from '@/lib/auth'
 import { configAll } from '@/lib/platform/settings'
+import { dqSetting_ } from '@/lib/prod/adapters'
+import { fetchWorkbookTabs } from '@/lib/jobs/sheets'
 import { syncAllMirrors, type MirrorTable, MIRROR_TABLES } from '@/lib/jobs/mirrors'
 
 export const maxDuration = 300
@@ -17,7 +19,31 @@ export const maxDuration = 300
 export async function POST(req: Request) {
   try {
     await requireAdminCaller(req)
-    const body = (await req.json().catch(() => ({}))) as { table?: string; full?: boolean; monthsBack?: number }
+    const body = (await req.json().catch(() => ({}))) as {
+      table?: string
+      full?: boolean
+      monthsBack?: number
+      peek?: { ssId?: string; tab?: string; head?: number; tail?: number }
+    }
+    /* diagnostics: {peek:{tab, head?, tail?}} returns the first/last N rows of
+     * a source tab (Activities by default) — no writes. */
+    if (body.peek && typeof body.peek === 'object') {
+      const cfg0 = await configAll()
+      const id = body.peek.ssId || String(dqSetting_(cfg0, 'fd_activity_ss_id'))
+      const tab = body.peek.tab || 'Activities'
+      const tabs = await fetchWorkbookTabs(id, [tab])
+      const rows = tabs[tab] || []
+      const head = Math.max(1, Math.min(50, Number(body.peek.head) || 5))
+      const tail = Math.max(0, Math.min(50, Number(body.peek.tail) || 0))
+      return NextResponse.json({
+        ok: true,
+        workbook: id,
+        tab,
+        totalRows: rows.length,
+        head: rows.slice(0, head),
+        tail: tail ? rows.slice(-tail) : undefined,
+      })
+    }
     const tables = body.table ? ([body.table] as MirrorTable[]) : MIRROR_TABLES
     for (const t of tables) {
       if (!MIRROR_TABLES.includes(t)) {
