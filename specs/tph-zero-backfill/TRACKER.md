@@ -34,3 +34,13 @@ Production backfill executed remotely against `dabdoob-cx-productivity.vercel.ap
 - Result: `prod_tph_touches` non-empty on 122/123 dates (Jul-02..Oct-31; Jul-01 precedes the log). Cases rebuilt on all dates with described reasons (upstream `tickets`/`agg_*` stores are empty). Calls non-empty where Maqsam tabs carry the date. Grid: 12 dates interval-derived. Flags: 35 dates / 1000 rows. Layers: 39 dates / 1000 rows.
 - Still pending user action: paste `scripts/ops/004-paste.sql` in the Supabase SQL editor (mirror tables + `refresh_log` column superset — live table is a legacy shape so `logRun` writes soft-fail; `log_id`/`type` NOT NULL columns are written by the updated writers).
 - Config gaps (honest skips, not bugs): `productivity_files` only has `2026-09` → layers skip other months; `tickets`/`agg_queue_now`/`agg_snapshots_today` are empty upstream stores → cases_tickets described-zero.
+
+## Vendor-API mirrors (2026-11-01)
+
+Replaced the Sheets source for `maqsam_calls` + `freshchat` with direct vendor APIs; `fd_activities` keeps the email→sheet→mirror path per owner decision.
+
+- `005-rls-paste.sql` run by owner — anon-key writes were denied on the RLS-default new tables; permissive `app_all` policies added (also folded into migration 004).
+- `src/lib/vendor/{http,maqsam,freshchat}.ts` + `src/lib/jobs/vendor-apis.ts` mappers emit the same 7-cell `cols` shapes readers consume, with ISO timestamps (sheet cols were mixed `DD-MM`/`MM-DD` in one row — could misattribute days ≤12).
+- Fixes found by live testing: env-var paths doubled the API path (`e514dd7`); Maqsam index returns `{result:'success',message:[calls]}` with `timestamp`/`agents[{email}]`/`handlingTime` fields (`200b13e`); monolithic fetch died at maxDuration → resumable 7-day **windowed** sync, watermark persisted per window, 240s budget + `partial` resume (`ba2291b`); 5-page parallel fetch (`552ee99`); per-window `dedupe_key` collisions collapsed pre-upsert (`955ac47`).
+- Result: `maqsam_calls` = **111,430 rows** (Jun-01 → Nov-01, API-direct); `fd_activities` = **193,555 rows** (sheet). `syncAllMirrors` keeps incrementals cheap for the daily cron.
+- **Blocked — user action**: `freshchat` = 0 rows. `FRESHCHAT_API_KEY` returns `javax.security.sasl.AuthenticationException: Auth failure` under BOTH `Bearer` and `Token token=` schemes — the key itself is rejected (wrong/expired/not a Freshchat key). Regenerate in Freshchat Admin → API Settings, update the Vercel env, then `POST /api/admin/mirrors {table:'freshchat'}`.
