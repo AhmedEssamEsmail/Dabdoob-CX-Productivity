@@ -27,8 +27,7 @@ export async function vendorJson(url: string, init: RequestInit, source: string)
     if (res.status === 401 || res.status === 403) {
       throw new DescribedError({
         code: res.status === 401 ? 'missing_credentials' : 'source_forbidden',
-        message: `${source} API ${init.method || 'GET'} ${url} failed: HTTP ${res.status}`,
-        detail: body ? body.slice(0, 200) : undefined,
+        message: `${source} API ${init.method || 'GET'} ${url} failed: HTTP ${res.status}${body ? ' — ' + body.slice(0, 200) : ''}`,
         hint: `Check the ${source.toUpperCase()}_API_KEY / ${source.toUpperCase()}_DOMAIN env vars in Vercel.`,
       })
     }
