@@ -110,6 +110,35 @@ describe('runBackfill', () => {
     expect(res2.skipped.filter((s) => s.kind === 'tph')).toHaveLength(0)
   })
 
+  it('grid: derives prod_tph_days from prod_intervals, keeps TL-logged rows, skips honestly', async () => {
+    const env = stubEnv({
+      now: Date.parse('2026-10-08T10:00:00Z'),
+      tables: {
+        prod_intervals: [
+          { date: '2026-09-10', agent_email: 'a@dabdoob.com', status: 'Available', start_at: '2026-09-10T09:00:00+03:00', end_at: '2026-09-10T10:00:00+03:00' },
+          { date: '2026-09-10', agent_email: 'b@dabdoob.com', status: 'Chats', start_at: '2026-09-10T09:00:00+03:00', end_at: '2026-09-10T09:30:00+03:00' },
+        ],
+        prod_tph_days: [{ date: '2026-09-10', agent_email: 'b@dabdoob.com', slots_json: '{"36":"internal"}' }],
+      },
+    })
+    const res = await runBackfill({ from: '2026-09-10', to: '2026-09-10', kinds: ['grid'], env })
+    expect(res.done[0].kind).toBe('grid')
+    const days = env.tables.prod_tph_days
+    // a@ written (4 slots internal 09:00-09:45), b@ kept (TL row untouched)
+    const a = days.find((r) => r.agent_email === 'a@dabdoob.com')
+    const b = days.find((r) => r.agent_email === 'b@dabdoob.com')
+    expect(JSON.parse(String(a!.slots_json))['36']).toBe('internal')
+    expect(JSON.parse(String(b!.slots_json))['36']).toBe('internal') // TL value, not overwritten to chats
+    expect(res.done[0].rows).toContain('kept')
+    // force overwrites the TL row too
+    await runBackfill({ from: '2026-09-10', to: '2026-09-10', kinds: ['grid'], env, force: true })
+    expect(JSON.parse(String(env.tables.prod_tph_days.find((r) => r.agent_email === 'b@dabdoob.com')!.slots_json))['36']).toBe('chats')
+    // no intervals -> honest skip
+    const env2 = stubEnv({ now: Date.parse('2026-10-08T10:00:00Z') })
+    const res2 = await runBackfill({ from: '2026-07-05', to: '2026-07-05', kinds: ['grid'], env: env2 })
+    expect(res2.skipped[0].reason).toContain('prod_intervals')
+  })
+
   it('logs a backfill row to refresh_log', async () => {
     const env = stubEnv({ now: Date.parse('2026-10-08T10:00:00Z') })
     await runBackfill({ from: '2026-07-01', to: '2026-07-01', kinds: ['tph'], env })

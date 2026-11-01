@@ -21,9 +21,11 @@ import { described } from '@/lib/errors'
 import { buildJobEnv, type JobEnv } from './env'
 import { prodComputeStep_, prodFlagsStep_ } from './productivity'
 import { syncAllMirrors } from './mirrors'
+import { tphGridFromIntervals_, type IntervalRow } from './grid-slots'
+import { prodNowIso_ } from '@/lib/prod/engine'
 
-export type BackfillKind = 'mirrors' | 'tph' | 'layers' | 'flags'
-export const BACKFILL_KINDS: BackfillKind[] = ['mirrors', 'tph', 'layers', 'flags']
+export type BackfillKind = 'mirrors' | 'grid' | 'tph' | 'layers' | 'flags'
+export const BACKFILL_KINDS: BackfillKind[] = ['mirrors', 'grid', 'tph', 'layers', 'flags']
 const TPH_STEPS: TphStep[] = ['touches', 'calls', 'cases_tickets', 'cases_chats']
 const DEFAULT_BUDGET_MS = 240000
 
@@ -70,6 +72,7 @@ function prodFiles(cfg: JobEnv['cfg']): Record<string, unknown> {
 
 /** True when the date's stored outputs already cover `kind`. */
 function kindDone(env: JobEnv, d: string, kind: BackfillKind): boolean {
+  if (kind === 'grid') return false // grid skips per agent, not per date
   if (kind === 'tph')
     return (
       env.prodRows('prod_tph_touches').some((r) => r.date === d) &&
@@ -132,6 +135,43 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
   let d = startDate
   for (; d <= to; d = dqAddDays_(d, 1)) {
     if (over()) break
+
+    /* ---- grid: derive prod_tph_days slots from prod_intervals (DB only) --- */
+    if (kinds.includes('grid')) {
+      const intervals = env
+        .prodRows('prod_intervals')
+        .filter((r) => r.date === d) as unknown as IntervalRow[]
+      if (!intervals.length) {
+        result.skipped.push({ date: d, kind: 'grid', reason: 'no prod_intervals rows — snapshot or migrate first; grid stays empty' })
+      } else {
+        const derived = tphGridFromIntervals_(intervals, env.cfg)
+        const existing = env.prodRows('prod_tph_days').filter((r) => r.date === d)
+        const have = new Set(existing.map((r) => String(r.agent_email).toLowerCase()))
+        const now = prodNowIso_()
+        const rows = Object.values(derived)
+          .filter((dd) => dd.date === d && (!have.has(dd.agent_email.toLowerCase()) || opts.force))
+          .map((dd) => ({
+            date: dd.date,
+            agent_email: dd.agent_email,
+            slots_json: JSON.stringify(dd.slots),
+            sources_json: JSON.stringify(Object.fromEntries(Object.keys(dd.slots).map((s) => [s, 'intervals']))),
+            by: 'backfill',
+            at: now,
+          }))
+        try {
+          if (rows.length) env.upsert('prod_tph_days', ['date', 'agent_email'], rows, null)
+          const kept = opts.force ? 0 : Object.keys(derived).length - rows.length
+          result.done.push({
+            date: d,
+            kind: 'grid',
+            rows: `${rows.length} agents written${kept ? `, ${kept} kept (TL-logged)` : ''}`,
+          })
+        } catch (e) {
+          const de = described(e)
+          result.failed.push({ date: d, kind: 'grid', error: de.message, hint: de.hint })
+        }
+      }
+    }
 
     /* ---- tph: touches -> calls -> cases_tickets -> cases_chats ---------- */
     if (kinds.includes('tph')) {
