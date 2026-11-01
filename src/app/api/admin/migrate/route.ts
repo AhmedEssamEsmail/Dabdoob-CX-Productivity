@@ -5,7 +5,7 @@ export const maxDuration = 300
 
 interface MigrationResult {
   success: boolean
-  tables: Record<string, { migrated: number; skipped?: number; errors?: string[] }>
+  tables: Record<string, { read?: number; migrated: number; skipped?: number; errors?: string[] }>
   errors: string[]
 }
 
@@ -179,9 +179,10 @@ const MAPPINGS: TableMapping[] = [
 ]
 
 async function checkAdminAuth(request: Request): Promise<boolean> {
-  const migrationKey = request.headers.get('x-migration-key')
-  const expectedKey = process.env.MIGRATION_SECRET_KEY || 'migration-secret-2024'
-  return migrationKey === expectedKey
+  const expectedKey = process.env.MIGRATION_SECRET_KEY
+  // Fail closed: without an env key this route must not accept anything.
+  if (!expectedKey) return false
+  return request.headers.get('x-migration-key') === expectedKey
 }
 
 let sheetsClient: ReturnType<typeof google.sheets> | null = null
@@ -255,10 +256,10 @@ async function migrateTable(mapping: TableMapping) {
   try {
     rows = await readSheet(spreadsheetId, mapping.sheet)
   } catch (err) {
-    return { migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
+    return { read: 0, migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
   }
   if (rows.length === 0) {
-    return { migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' not found or empty`] }
+    return { read: 0, migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' not found or empty`] }
   }
 
   // Map + filter rows missing required fields
@@ -297,7 +298,7 @@ async function migrateTable(mapping: TableMapping) {
     }
   }
 
-  return { migrated, skipped, errors }
+  return { read: rows.length, migrated, skipped, errors }
 }
 
 export async function POST(request: Request) {
@@ -313,8 +314,9 @@ export async function POST(request: Request) {
     for (const mapping of MAPPINGS) {
       if (wanted && !wanted.has(mapping.table)) continue
       try {
-        const { migrated, skipped, errors } = await migrateTable(mapping)
+        const { read, migrated, skipped, errors } = await migrateTable(mapping)
         result.tables[mapping.table] = {
+          read,
           migrated,
           skipped: skipped || undefined,
           errors: errors.length ? errors : undefined,
