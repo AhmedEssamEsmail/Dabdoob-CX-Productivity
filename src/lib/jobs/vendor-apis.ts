@@ -34,16 +34,20 @@ function hms(totalSec: number): string {
  * [6] blank falls back to end−start inside tphCallMinutesFromRows_.
  */
 export function maqsamCallToCols(call: Record<string, unknown>): unknown[] | null {
-  const start = epochMs(pick(call, 'start_time', 'start', 'started_at', 'created_at', 'created_time'))
+  const start = epochMs(pick(call, 'timestamp', 'start_time', 'start', 'started_at', 'created_at', 'created_time'))
   if (!start) return null
-  const end = epochMs(pick(call, 'end_time', 'end', 'ended_at', 'finished_at'))
+  const durationSec = num(pick(call, 'duration', 'call_duration'))
+  const explicitEnd = epochMs(pick(call, 'end_time', 'end', 'ended_at', 'finished_at'))
+  const end = explicitEnd || (durationSec > 0 ? start + durationSec * 1000 : 0)
   const agent = call.agent as Record<string, unknown> | undefined
-  const email = str(pick(call, 'agent_email', 'email', 'agentEmail') || (agent && pick(agent, 'email'))).toLowerCase()
+  const agents = Array.isArray(call.agents) ? (call.agents[0] as Record<string, unknown> | undefined) : undefined
+  const email = str(
+    pick(call, 'agent_email', 'email', 'agentEmail') || (agent && pick(agent, 'email')) || (agents && pick(agents, 'email'))
+  ).toLowerCase()
   const state = str(pick(call, 'state', 'call_state', 'status'))
   const direction = str(pick(call, 'direction', 'call_direction', 'type'))
   // handling time: seconds in the API, fractional days in the sheet
-  const handlingSec = num(pick(call, 'total_handling_time', 'handling_time', 'handling', 'handling_time_seconds'))
-  const durationSec = num(pick(call, 'duration', 'call_duration')) || (end > start ? (end - start) / 1000 : 0)
+  const handlingSec = num(pick(call, 'handlingTime', 'handling_time', 'total_handling_time', 'handling', 'handling_time_seconds'))
   return [isoMs(start), end ? isoMs(end) : '', hms(durationSec), email, state, direction, handlingSec > 0 ? String(handlingSec / 86400) : '']
 }
 

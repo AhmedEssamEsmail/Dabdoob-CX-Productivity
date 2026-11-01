@@ -36,14 +36,16 @@ describe('epochMs', () => {
 
 describe('maqsamCallToCols', () => {
   it('maps a call to the sheet D..J cell shape with ISO timestamps', () => {
+    // Documented v2 shape: timestamp (unix), agents[{email}], duration,
+    // handlingTime — end = timestamp + duration when no explicit end_time.
     const cols = maqsamCallToCols({
-      call_id: '348615800',
-      agent_email: 'Maria.Mamdouh@Dabdoob.com',
+      id: '348615800',
+      agents: [{ identifier: 'a1', email: 'Maria.Mamdouh@Dabdoob.com' }],
       state: 'serviced',
       direction: 'inbound',
-      start_time: 1793652600, // 2026-10-31T23:30:00Z — epoch seconds
-      end_time: 1793652800,
-      total_handling_time: 165, // seconds -> 0.0019097222 days
+      timestamp: 1793652600, // 2026-10-31T23:30:00Z — epoch seconds
+      duration: 200,
+      handlingTime: 165, // seconds -> 0.0019097222 days
     })!
     expect(cols).toHaveLength(7)
     expect(cols[0]).toBe('2026-11-02T20:50:00.000Z')

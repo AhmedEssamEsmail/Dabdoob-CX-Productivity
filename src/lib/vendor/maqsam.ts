@@ -5,6 +5,7 @@
  * Maqsam Account Settings > API Credentials — with or without the api. prefix).
  */
 
+import { described } from '@/lib/errors'
 import { vendorJson } from './http'
 
 export interface MaqsamCreds {
@@ -37,8 +38,8 @@ export function maqsamBase(domain: string): string {
 
 /**
  * Calls created in [startMs, endMs) — pages of 100 until a short page or
- * maxPages. Response is { calls: [...] } on current docs; a bare array is
- * tolerated for shape drift.
+ * maxPages. Success body is { result:'success', message: [calls] } per the
+ * Maqsam docs; a bare array / calls / data keys are tolerated for shape drift.
  */
 export async function listMaqsamCalls(
   creds: MaqsamCreds,
@@ -52,12 +53,13 @@ export async function listMaqsamCalls(
     if (opts.startMs) q.set('start_time', String(Math.floor(opts.startMs / 1000)))
     if (opts.endMs) q.set('end_time', String(Math.floor(opts.endMs / 1000)))
     const data = await vendorJson(`https://${creds.base}/calls?${q}`, { headers: { authorization: `Basic ${auth}` } }, 'maqsam')
+    const body = data as { result?: string; message?: unknown; error?: boolean; calls?: MaqsamCall[]; data?: MaqsamCall[]; results?: MaqsamCall[] }
+    if (body && body.error) {
+      throw described(new Error(`maqsam API error: ${typeof body.message === 'string' ? body.message : 'unknown'}`), { step: 'maqsam API request' })
+    }
     const calls = Array.isArray(data)
       ? (data as MaqsamCall[])
-      : ((data as { calls?: MaqsamCall[]; data?: MaqsamCall[]; results?: MaqsamCall[] }).calls ||
-          (data as { data?: MaqsamCall[] }).data ||
-          (data as { results?: MaqsamCall[] }).results ||
-          [])
+      : (Array.isArray(body.message) ? (body.message as MaqsamCall[]) : body.calls || body.data || body.results || [])
     if (!calls.length) break
     out.push(...calls)
     if (calls.length < 100) break
