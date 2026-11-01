@@ -9,6 +9,9 @@ const h = vi.hoisted(() => ({
   books: {} as Record<string, Record<string, unknown[][]>>,
   tables: {} as Record<string, Record<string, unknown>[]>,
   cfgStore: {} as Record<string, unknown>,
+  apiRows: { maqsam: [] as unknown[][], freshchat: [] as unknown[][] },
+  apiErr: { maqsam: null as Error | null, freshchat: null as Error | null },
+  apiSinceMs: { maqsam: undefined as number | undefined, freshchat: undefined as number | undefined },
 }))
 
 vi.mock('@/lib/jobs/sheets', () => ({
@@ -23,6 +26,23 @@ vi.mock('@/lib/jobs/sheets', () => ({
     return out
   },
 }))
+
+vi.mock('@/lib/jobs/vendor-apis', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/lib/jobs/vendor-apis')>()
+  return {
+    ...orig,
+    fetchMaqsamRows: async (sinceMs?: number) => {
+      h.apiSinceMs.maqsam = sinceMs
+      if (h.apiErr.maqsam) throw h.apiErr.maqsam
+      return h.apiRows.maqsam
+    },
+    fetchFreshchatRows: async (sinceMs?: number) => {
+      h.apiSinceMs.freshchat = sinceMs
+      if (h.apiErr.freshchat) throw h.apiErr.freshchat
+      return h.apiRows.freshchat
+    },
+  }
+})
 
 vi.mock('@/lib/platform/repo', () => ({
   db: () => ({
@@ -87,6 +107,16 @@ describe('mirrors', () => {
     h.books = JSON.parse(JSON.stringify(BOOKS))
     h.tables = {}
     h.cfgStore = {}
+    h.apiErr = { maqsam: null, freshchat: null }
+    h.apiSinceMs = { maqsam: undefined, freshchat: undefined }
+    h.apiRows = {
+      maqsam: [
+        ['2026-10-08T11:00:00.000Z', '2026-10-08T11:02:00.000Z', '0:02:00', 'a@dabdoob.com', 'serviced', 'inbound', '0.0013888889'],
+      ],
+      freshchat: [
+        ['2026-10-08T10:00:00.000Z', '', 'conv1-1793652000000', '2026-10-08T10:05:00.000Z', '', 'IG_app', 'conv1'],
+      ],
+    }
   })
 
   it('mirrorMonths: incremental -> previous + current; full -> the window', () => {
@@ -111,12 +141,23 @@ describe('mirrors', () => {
     expect((h.cfgStore.mirror_state_fd_activities as { last_ts_ms: number }).last_ts_ms).toBeGreaterThan(0)
   })
 
-  it('maqsam_calls: slices D..J from the month workbook', async () => {
+  it('maqsam_calls: API rows land as 7-cell cols, start drives ts_ms', async () => {
     const res = await syncMirror(CFG, 'maqsam_calls', { full: true, monthsBack: 1, now: Date.parse('2026-10-08T10:00:00Z') })
     expect(res.written).toBe(1)
     const cells = h.tables.maqsam_calls[0].cols as unknown[]
     expect(cells).toHaveLength(7)
     expect(String(cells[0])).toContain('2026-10-08')
+    expect(String(cells[3])).toBe('a@dabdoob.com')
+    // full sync -> the months bound, not a watermark
+    expect(h.apiSinceMs.maqsam).toBe(Date.parse('2026-10-01T00:00:00Z'))
+  })
+
+  it('freshchat: incremental watermark is passed to the API pull', async () => {
+    h.cfgStore.mirror_state_freshchat = { last_ts_ms: Date.parse('2026-10-08T00:00:00Z') }
+    await syncMirror(CFG, 'freshchat', { now: Date.parse('2026-10-09T10:00:00Z') })
+    expect(h.apiSinceMs.freshchat).toBe(Date.parse('2026-10-08T00:00:00Z') - 86400000)
+    // ts_ms tracks updated (cells[3]) so late resolutions move the watermark
+    expect(h.tables.freshchat[0].ts_ms).toBe(Date.parse('2026-10-08T10:05:00.000Z'))
   })
 
   it('dedupe keys make a re-sync idempotent', async () => {
@@ -147,11 +188,11 @@ describe('mirrors', () => {
     expect(fd.error).toContain('Spreadsheet not found')
   })
 
-  it('missing tab -> per-table error describing the sheet failure', async () => {
-    h.books['dr-book'] = {}
+  it('API failure -> per-table error, not silent success', async () => {
+    h.apiErr.freshchat = new Error('FRESHCHAT_API_KEY / FRESHCHAT_DOMAIN are not configured')
     const res = await syncAllMirrors(CFG, { full: true, monthsBack: 1, tables: ['freshchat'], now: Date.parse('2026-10-08T10:00:00Z') })
     const fc = res.freshchat as { error?: string }
     expect(fc.error).toBeTruthy()
-    expect(fc.error).toContain('Freshchat')
+    expect(fc.error).toContain('FRESHCHAT_API_KEY')
   })
 })

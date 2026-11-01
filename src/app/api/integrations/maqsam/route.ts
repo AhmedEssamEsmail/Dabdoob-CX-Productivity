@@ -1,25 +1,27 @@
-import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
+import { configAll } from '@/lib/platform/settings'
+import { syncAllMirrors } from '@/lib/jobs/mirrors'
+import { apiError } from '@/lib/api-error'
 
+export const maxDuration = 300
+
+/**
+ * POST /api/integrations/maqsam — pull calls from the Maqsam API into the
+ * maqsam_calls mirror (incremental; {full:true} re-pulls the monthsBack window).
+ * Caller: cron or ops — same Bearer CRON_SECRET convention as the other jobs.
+ */
 export async function POST(req: Request) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-
   try {
-    // Maqsam sync placeholder
-    return NextResponse.json({
-      message: 'Maqsam sync - placeholder',
-      status: 'Maqsam API integration needed',
-      steps: [
-        '1. Set up Maqsam API credentials',
-        '2. Fetch call data',
-        '3. Import to prod_tph_calls table'
-      ]
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    const body = (await req.json().catch(() => ({}))) as { full?: boolean; monthsBack?: number }
+    const cfg = await configAll()
+    const results = await syncAllMirrors(cfg, { tables: ['maqsam_calls'], full: !!body.full, monthsBack: body.monthsBack })
+    const r = results['maqsam_calls']
+    return NextResponse.json({ ok: !('error' in r), results }, { status: 'error' in r ? 503 : 200 })
+  } catch (e) {
+    return apiError(e)
   }
 }

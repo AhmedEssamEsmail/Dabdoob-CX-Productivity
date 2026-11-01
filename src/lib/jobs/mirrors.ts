@@ -25,6 +25,7 @@ import { db } from '@/lib/platform/repo'
 import { getConfig, setConfig } from '@/lib/platform/settings'
 import { described } from '@/lib/errors'
 import { fetchWorkbookTabs } from './sheets'
+import { fetchMaqsamRows, fetchFreshchatRows } from './vendor-apis'
 
 export type MirrorTable = 'fd_activities' | 'maqsam_calls' | 'freshchat'
 export const MIRROR_TABLES: MirrorTable[] = ['fd_activities', 'maqsam_calls', 'freshchat']
@@ -34,8 +35,9 @@ const OVERLAP_MS = 86400000 // re-upsert the newest day on incremental runs
 const UPSERT_BATCH = 500
 
 interface MirrorSpec {
-  /** Sheet rows for the months being synced: [{ id, tab, rows }] in source order. */
-  fetch: (cfg: Cfg, months: string[]) => Promise<{ id: string; tab: string; rows: unknown[][] }[]>
+  /** Rows for the months being synced: [{ id, tab, rows }] in source order.
+   * `sinceMs` is the watermark cut (undefined on a full sync — bound by months). */
+  fetch: (cfg: Cfg, months: string[], sinceMs?: number) => Promise<{ id: string; tab: string; rows: unknown[][] }[]>
   /** Source row -> mirror cells ([] = skip the row entirely). */
   cols: (r: unknown[]) => unknown[] | null
   /** Mirror cells -> epoch ms (null skips the row; counted). */
@@ -58,41 +60,37 @@ const SPECS: Record<MirrorTable, MirrorSpec> = {
     hint: 'fd_activity_ss_id workbook, tab Activities',
   },
   maqsam_calls: {
-    async fetch(cfg, months) {
-      const out: { id: string; tab: string; rows: unknown[][] }[] = []
-      for (const m of months) {
-        const id = prodFileFor_(m, cfg)
-        if (!id) continue
-        const tabs = await fetchWorkbookTabs(id, [MAQSAM_MONTH_TAB])
-        out.push({ id, tab: MAQSAM_MONTH_TAB, rows: (tabs[MAQSAM_MONTH_TAB] || []).slice(1) })
-      }
-      return out
+    async fetch(_cfg, months, sinceMs) {
+      // Maqsam Calls API — calls created since the watermark (months bound on full).
+      const startMs = sinceMs ?? Date.parse(months[0] + '-01T00:00:00Z')
+      const rows = await fetchMaqsamRows(startMs)
+      return [{ id: 'maqsam-api', tab: 'v2/calls', rows }]
     },
-    // keep D..J (indices 3..9 of the full row): the call row the engine reads
-    cols: (r) => {
-      if (r.length < 4) return null
-      const c = r.slice(3, 10)
-      while (c.length < 7) c.push('')
-      return c
-    },
+    // API rows are already the 7-cell mirror shape (sheet cols D..J).
+    cols: (r) => r,
     tsMs: (cells, cfg) => tphClock_(String(dqSetting_(cfg, 'data_tz'))).ms(cells[0]),
-    hint: 'Maqsam Calls tab of each month workbook (productivity_files)',
+    hint: 'Maqsam Calls API v2 (MAQSAM_* env vars)',
   },
   freshchat: {
-    async fetch(cfg) {
-      const id = String(dqSetting_(cfg, 'daily_report_ss_id') || '')
-      if (!id) throw described(new Error('daily_report_ss_id is not configured'), { configKey: 'daily_report_ss_id' })
-      const tabs = await fetchWorkbookTabs(id, ['Freshchat'])
-      return [{ id, tab: 'Freshchat', rows: (tabs['Freshchat'] || []).slice(1) }]
+    async fetch(_cfg, _months, sinceMs) {
+      // Freshchat API — conversations updated since the watermark.
+      const rows = await fetchFreshchatRows(sinceMs)
+      return [{ id: 'freshchat-api', tab: 'v2/conversations', rows }]
     },
-    cols: (r) => r.slice(0, 7),
+    // API rows are already the 7-cell mirror shape (sheet cols A..G).
+    cols: (r) => r,
     tsMs: (cells, cfg) => {
-      const ms = tphClock_(String(dqSetting_(cfg, 'data_tz'))).ms(cells[0])
-      if (ms !== null) return ms
-      const m = String(cells[2] || '').match(/-(\d{12,14})$/)
-      return m ? Number(m[1]) : null
+      const clock = tphClock_(String(dqSetting_(cfg, 'data_tz')))
+      // ts_ms tracks UPDATED so late resolutions move the watermark and
+      // still-open old conversations stay inside reader windows.
+      let ms = clock.ms(cells[3]) ?? clock.ms(cells[0])
+      if (ms === null) {
+        const m = String(cells[2] || '').match(/-(\d{12,14})$/)
+        ms = m ? Number(m[1]) : null
+      }
+      return ms
     },
-    hint: 'daily_report_ss_id workbook, tab Freshchat',
+    hint: 'Freshchat conversations API (FRESHCHAT_* env vars)',
   },
 }
 
@@ -146,7 +144,7 @@ export async function syncMirror(
   const months = mirrorMonths(today, full, opts.monthsBack)
   const cut = full ? -Infinity : (state.last_ts_ms as number) - OVERLAP_MS
 
-  const sources = await spec.fetch(cfg, table === 'maqsam_calls' ? months : months.slice(-1))
+  const sources = await spec.fetch(cfg, table === 'maqsam_calls' ? months : months.slice(-1), cut === -Infinity ? undefined : cut)
   const now = new Date().toISOString()
   let fetched = 0
   let skipped = 0
