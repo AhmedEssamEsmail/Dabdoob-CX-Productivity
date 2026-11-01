@@ -22,3 +22,15 @@ Rule (carried from `../legacy-parity/IMPLEMENTATION-TRACKER.md`): each shard com
 ## Manual verification — pending deployed environment
 
 The steps in `06-tests-verification.md` need the deployed app + live Google service-account creds (not runnable from this workspace): source-health baseline → migration 004 → mirrors full sync → backfill range → spot-checks → cron `refresh_log`/`health` rows. Order to follow on the deploy: 00 audit first (it reports whether the legacy `prod_*` workbook holds Jul–Oct history → whether `/api/admin/migrate` runs before `/api/admin/backfill`).
+
+## Post-implementation diagnosis log (2026-11-01)
+
+Production backfill executed remotely against `dabdoob-cx-productivity.vercel.app`:
+
+- `Intl.DateTimeFormat` per-row construction caused every 300s timeout (`9719adb` — memoized per tz, ~200-400x faster; unblocked flags/layers/TPH).
+- TPH touches computed `{}` on all 115 dates: backfill prefetch never called `env.ensureHeadcount()`, and the live `roster` table has no `source='hct'` rows → `env.headcount=[]` → `prodNameToEmail_({})` dropped every row. Post-August Activities performers are mostly `Unknown Agent - raw id <fdId>` — resolvable only via the Headcount tab's `Freshdesk User` column. Fixed `5a5022a`.
+- Activities tab is 193,372 rows but `values.get` fetched `A1:ZZ100000` — everything after ~Sep-10 silently missing. Fixed `74b17e4` (100k-row paging, max 10 pages).
+- Format findings: early rows ISO-UTC `2026-07-02T16:45:40Z` (9 cols, no Date); later rows `MM-DD-YYYY HH:mm:ss` local + col J `MM-DD-YYYY`. Parsers were already correct for both.
+- Result: `prod_tph_touches` non-empty on 122/123 dates (Jul-02..Oct-31; Jul-01 precedes the log). Cases rebuilt on all dates with described reasons (upstream `tickets`/`agg_*` stores are empty). Calls non-empty where Maqsam tabs carry the date. Grid: 12 dates interval-derived. Flags: 35 dates / 1000 rows. Layers: 39 dates / 1000 rows.
+- Still pending user action: paste `scripts/ops/004-paste.sql` in the Supabase SQL editor (mirror tables + `refresh_log` column superset — live table is a legacy shape so `logRun` writes soft-fail; `log_id`/`type` NOT NULL columns are written by the updated writers).
+- Config gaps (honest skips, not bugs): `productivity_files` only has `2026-09` → layers skip other months; `tickets`/`agg_queue_now`/`agg_snapshots_today` are empty upstream stores → cases_tickets described-zero.
