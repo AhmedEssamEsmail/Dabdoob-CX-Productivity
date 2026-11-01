@@ -46,3 +46,18 @@ CREATE TABLE IF NOT EXISTS health (
   seeded_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_health_system ON health(system);
+
+-- refresh_log reconciliation: the live table predates migration 003 and only
+-- has (log_id, type, status, started_at). Add the columns this app writes so
+-- job/cron logging and the "last automatic build" reads work. log_id/type stay
+-- required-by-legacy and are supplied by the app's writers.
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS job text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS finished_at timestamptz;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS rows_in integer;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS rows_out integer;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS source_cursor text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS error text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS note text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS log_id text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS type text;
+ALTER TABLE refresh_log ALTER COLUMN type DROP NOT NULL;

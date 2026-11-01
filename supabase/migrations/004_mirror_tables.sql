@@ -35,3 +35,20 @@ CREATE TABLE IF NOT EXISTS freshchat (
   synced_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS idx_freshchat_ts ON freshchat(ts_ms);
+
+-- refresh_log reconciliation. This project's Supabase already had a legacy
+-- refresh_log (log_id, type, status, started_at — both NOT NULL) before
+-- migration 003 ran, so `CREATE TABLE IF NOT EXISTS` never added the columns
+-- this app writes (job/finished_at/rows_in/rows_out/source_cursor/error/note)
+-- and every logRun append was silently soft-failing. ALTER into the superset
+-- on either base; writers emit log_id+type so both schemas accept the row.
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS job text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS finished_at timestamptz;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS rows_in integer;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS rows_out integer;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS source_cursor text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS error text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS note text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS log_id text;
+ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS type text;
+ALTER TABLE refresh_log ALTER COLUMN type DROP NOT NULL;

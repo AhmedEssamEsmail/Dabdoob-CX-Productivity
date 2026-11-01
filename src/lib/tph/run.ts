@@ -56,6 +56,8 @@ async function dqLogRun_(job: string, t0: number, status: string, info: Record<s
   try {
     const supabase = await createAuthClient()
     await supabase.from('refresh_log').insert({
+      log_id: 'rl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      type: job,
       job,
       status,
       rows_out: info.rowsOut ?? null,

@@ -522,6 +522,9 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
         soft: true,
         rows: [
           toDbRow('refresh_log', {
+            // legacy refresh_log has log_id/type NOT NULL; post-004 both exist.
+            log_id: repoNewId('rl'),
+            type: job,
             job,
             started_at: new Date(startedMs).toISOString(),
             finished_at: new Date().toISOString(),
