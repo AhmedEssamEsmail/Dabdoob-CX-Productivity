@@ -48,26 +48,41 @@ export async function listMaqsamCalls(
   const auth = Buffer.from(`${creds.key}:${creds.secret}`).toString('base64')
   const out: MaqsamCall[] = []
   const maxPages = Math.max(1, opts.maxPages ?? 600)
-  for (let page = 1; ; page++) {
-    if (page > maxPages) {
-      // Reaching the cap means the last page was full — more calls exist.
-      // Throwing beats silently truncating a sync window.
-      throw described(new Error(`maqsam API page cap (${maxPages}) reached — the sync window is too dense`), { step: 'maqsam API request' })
-    }
+  const CONCURRENCY = 5 // pages arrive ~3s apart serially — batches cut wall time
+  const fetchPage = async (page: number): Promise<MaqsamCall[]> => {
     const q = new URLSearchParams({ page: String(page) })
     if (opts.startMs) q.set('start_time', String(Math.floor(opts.startMs / 1000)))
     if (opts.endMs) q.set('end_time', String(Math.floor(opts.endMs / 1000)))
-    const data = await vendorJson(`https://${creds.base}/calls?${q}`, { headers: { authorization: `Basic ${auth}` } }, 'maqsam')
-    const body = data as { result?: string; message?: unknown; error?: boolean; calls?: MaqsamCall[]; data?: MaqsamCall[]; results?: MaqsamCall[] }
-    if (body && body.error) {
-      throw described(new Error(`maqsam API error: ${typeof body.message === 'string' ? body.message : 'unknown'}`), { step: 'maqsam API request' })
+    try {
+      const data = await vendorJson(`https://${creds.base}/calls?${q}`, { headers: { authorization: `Basic ${auth}` } }, 'maqsam')
+      const body = data as { result?: string; message?: unknown; error?: boolean; calls?: MaqsamCall[]; data?: MaqsamCall[]; results?: MaqsamCall[] }
+      if (body && body.error) {
+        throw described(new Error(`maqsam API error: ${typeof body.message === 'string' ? body.message : 'unknown'}`), { step: 'maqsam API request' })
+      }
+      return Array.isArray(data)
+        ? (data as MaqsamCall[])
+        : Array.isArray(body.message)
+          ? (body.message as MaqsamCall[])
+          : body.calls || body.data || body.results || []
+    } catch (e) {
+      // Overshooting the last page 400s with 'Invalid Page Number' — treat as end-of-data.
+      if (/invalid page number/i.test((e as Error).message)) return []
+      throw e
     }
-    const calls = Array.isArray(data)
-      ? (data as MaqsamCall[])
-      : (Array.isArray(body.message) ? (body.message as MaqsamCall[]) : body.calls || body.data || body.results || [])
-    if (!calls.length) break
-    out.push(...calls)
-    if (calls.length < 100) break
+  }
+  for (let page = 1; page <= maxPages; page += CONCURRENCY) {
+    const batch = await Promise.all(Array.from({ length: Math.min(CONCURRENCY, maxPages - page + 1) }, (_, i) => fetchPage(page + i)))
+    let done = false
+    for (const calls of batch) {
+      out.push(...calls)
+      if (calls.length < 100) done = true // short/empty page: nothing newer follows
+    }
+    if (done) break
+  }
+  if (out.length >= maxPages * 100) {
+    // Hit the cap on a full last page — more calls exist. Throwing beats
+    // silently truncating a sync window.
+    throw described(new Error(`maqsam API page cap (${maxPages}) reached — the sync window is too dense`), { step: 'maqsam API request' })
   }
   return out
 }
