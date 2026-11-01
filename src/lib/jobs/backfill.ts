@@ -141,6 +141,7 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
   if (kinds.includes('tph')) {
     try {
       await env.activityRows()
+      await env.ensureHeadcount() // nameToEmail — without it every touch/call/case row drops
       await env.prefetchTables(['tickets', 'agg_inflow_hourly'])
       await env.prefetchWorkbook(String(dqSetting_(env.cfg, 'daily_report_ss_id')), DAILY_REPORT_TABS)
       tphReady = 'ok'

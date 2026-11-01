@@ -110,6 +110,18 @@ describe('runBackfill', () => {
     expect(res2.skipped.filter((s) => s.kind === 'tph')).toHaveLength(0)
   })
 
+  it('tph prefetch ensures headcount — nameToEmail needs fdId for raw-id performers', async () => {
+    const env = stubEnv({ now: Date.parse('2026-10-08T10:00:00Z') })
+    let ensured = 0
+    const orig = env.ensureHeadcount
+    env.ensureHeadcount = async () => {
+      ensured++
+      return orig()
+    }
+    await runBackfill({ from: '2026-07-01', to: '2026-07-01', kinds: ['tph'], env })
+    expect(ensured).toBe(1)
+  })
+
   it('grid: derives prod_tph_days from prod_intervals, keeps TL-logged rows, skips honestly', async () => {
     const env = stubEnv({
       now: Date.parse('2026-10-08T10:00:00Z'),
