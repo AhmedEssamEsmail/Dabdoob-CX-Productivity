@@ -1,6 +1,6 @@
 # TPH Zero-State Fix + Jul-2026 Backfill
 
-Status: **Planned, not started.** Source plan: `C:\Users\AHMED\.devin\plans\plan-5de9543b0a10e4a5.md`.
+Status: **Implemented — all shards committed; manual verification pending deploy.** Source plan: `C:\Users\AHMED\.devin\plans\plan-5de9543b0a10e4a5.md`. Per-shard commits in `TRACKER.md` (`2633879`, `d300c19`, `891ceef`, `691909a`, `78b1919`, `0721be7` + tests/gates commit).
 
 Problem statement (observed 2026-10-31): the TPH page shows all-zero for every day, "Compute touches and cases now" fails with `Could not find the table 'public.fd_activities' in the schema cache`, and "No automatic build found in the run log" (no cron rows in `refresh_log`).
 
