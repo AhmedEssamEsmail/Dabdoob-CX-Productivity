@@ -91,21 +91,34 @@ export function dqAddDays_(key: string, n: number): string {
 // ported code: 'yyyy-MM-dd', 'yyyy-MM', 'yyyy', 'Z', 'HH:mm', 'H'.
 
 /** Utilities.formatDate's zone parts for an instant (hourCycle h23 = 00-23). */
-export function tzParts(ms: number, tz: string): Record<string, string> {
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  })
+export const dtfByTz: Record<string, Intl.DateTimeFormat> = {}
+
+/** Intl.DateTimeFormat construction is ~1ms+; cache per tz (was ~2 allocs/row). */
+function tzDtf_(tz: string): Intl.DateTimeFormat {
+  let d = dtfByTz[tz]
+  if (!d) {
+    d = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+    dtfByTz[tz] = d
+  }
+  return d
+}
+
+function tzParts(ms: number, tz: string): Record<string, string> {
   const parts: Record<string, string> = {}
-  dtf.formatToParts(new Date(ms)).forEach((p) => {
-    parts[p.type] = p.value
-  })
+  tzDtf_(tz)
+    .formatToParts(new Date(ms))
+    .forEach((p) => {
+      parts[p.type] = p.value
+    })
   return parts
 }
 
