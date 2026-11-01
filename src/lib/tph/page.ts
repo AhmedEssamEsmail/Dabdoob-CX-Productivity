@@ -1,6 +1,7 @@
 import { createAuthClient } from '@/lib/auth'
 import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/lib/prod/adapters'
 import { prodSetting_, prodToday_ } from '@/lib/prod/engine'
+import { describeDbError } from '@/lib/errors'
 import {
   TPH_CALLS,
   TPH_OFF,
@@ -119,6 +120,8 @@ export interface TphStore {
   callsRows: Row[]   // prod_tph_calls
   tasks: Row[]       // prod_tph_tasks
   refreshLog: Row[]  // refresh_log tail
+  /** Store reads that failed while assembling the store (missing table, ...). */
+  storeErrors: string[]
 }
 
 export async function tphLoadStore_(): Promise<TphStore> {
@@ -134,6 +137,18 @@ export async function tphLoadStore_(): Promise<TphStore> {
       supabase.from('prod_tph_tasks').select('*').limit(10000),
       supabase.from('refresh_log').select('*').order('started_at', { ascending: false }).limit(300),
     ])
+  const storeErrors: string[] = []
+  const mark = (table: string, res: { error: { message?: string } | null }) => {
+    if (res.error) storeErrors.push(describeDbError(res.error, { table }).message)
+  }
+  mark('config', cfgRes)
+  mark('roster', rosterRes)
+  mark('prod_tph_days', daysRes)
+  mark('prod_tph_cases', casesRes)
+  mark('prod_tph_touches', touchesRes)
+  mark('prod_tph_calls', callsRes)
+  mark('prod_tph_tasks', tasksRes)
+  mark('refresh_log', logRes)
   const cfg: Cfg = {}
   ;(cfgRes.data || []).forEach((r: { key: string; value: unknown }) => {
     cfg[r.key] = r.value
@@ -153,6 +168,7 @@ export async function tphLoadStore_(): Promise<TphStore> {
     callsRows: callsRes.data || [],
     tasks: tasksRes.data || [],
     refreshLog: logRes.data || [],
+    storeErrors,
   }
 }
 
@@ -312,6 +328,7 @@ export function getTphPage(
     shiftsLinked: Object.keys(x.shifts).length > 0,
     canEdit: tphCanEdit_(user.role, d, today, tlDays), tlEditDays: tlDays,
     isAdmin: user.role === 'admin', lastAuto: tphLastAuto_(store),
+    storeErrors: store.storeErrors || [],
   }
 }
 

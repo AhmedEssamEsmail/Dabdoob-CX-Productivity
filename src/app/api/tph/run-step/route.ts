@@ -1,5 +1,6 @@
 import { requireRole } from '@/lib/auth'
 import { viewAsGuard } from '@/lib/platform/viewas'
+import { apiError } from '@/lib/api-error'
 import { prodReady_ } from '@/lib/prod/engine'
 import { tphLoadStore_ } from '@/lib/tph/page'
 import { tphRunStep_, tphPastDay_ } from '@/lib/tph/run'
@@ -16,7 +17,6 @@ export async function POST(req: Request) {
     const out = await tphRunStep_(store, tphPastDay_(store, body.date), String(body.step || ''), String(user.email || '').toLowerCase())
     return NextResponse.json(out)
   } catch (e) {
-    const m = e instanceof Error ? e.message : 'Unable to run'
-    return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : m === 'Forbidden' ? 403 : 400 })
+    return apiError(e)
   }
 }

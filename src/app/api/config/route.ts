@@ -1,12 +1,11 @@
 import { supabase } from '@/lib/supabase'
+import { dbErr } from '@/lib/api-error'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
   const { data, error } = await supabase.from('config').select('*')
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('config', error)
 
   return NextResponse.json(data)
 }
@@ -20,9 +19,7 @@ export async function POST(req: Request) {
     .select()
     .single()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('config', error)
 
   return NextResponse.json(data)
 }
@@ -38,9 +35,7 @@ export async function PUT(req: Request) {
     .select()
     .single()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('config', error)
 
   return NextResponse.json(data)
 }

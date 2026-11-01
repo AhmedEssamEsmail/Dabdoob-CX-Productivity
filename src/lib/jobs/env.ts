@@ -41,6 +41,7 @@ import {
 import { prodNowIso_, prodToday_ } from '@/lib/prod/engine'
 import { prodIntervalKey_, type ProdInterval } from '@/lib/prod/validation'
 import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/lib/tph'
+import { describeDbError } from '@/lib/errors'
 import { db, newId as repoNewId, readRows } from '@/lib/platform/repo'
 import { configAll } from '@/lib/platform/settings'
 import { hbBeat as platformHbBeat, hbFlush as platformHbFlush } from '@/lib/platform/health'
@@ -148,6 +149,9 @@ type WriteOp =
 export interface JobEnv {
   cfg: Cfg
   dir: Directory
+  /** Stores whose preload/read failed (table -> described message). Reads stay
+   *  missingOk (dqReadObjects_ contract) but callers can tell "empty" from "missing". */
+  tableErrors: Record<string, string>
   /** dqHeadcount_ resolved: synced roster, else the current month Headcount tab. */
   headcount: HeadcountRow[]
   /** ProdIo.roster: dqRosterPeople_ only (null lets the engine read month Headcount tabs). */
@@ -260,6 +264,7 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
   const roster = dqRosterPeople_(rosterRows) as HeadcountRow[] | null
 
   const tables: Record<string, Row[]> = {}
+  const tableErrors: Record<string, string> = {}
   const today = prodToday_(cfg, opts.now)
   let intervalBound = opts.intervalSince || dqAddDays_(today, -45)
   const wanted = PROD_TABLES.concat(opts.tables || [])
@@ -269,8 +274,10 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
         let q = db().from(name).select('*').limit(200000)
         if (name === 'prod_intervals') q = q.gte('date', intervalBound)
         const { data, error } = await q
+        if (error) tableErrors[name] = describeDbError(error, { table: name }).message
         tables[name] = error ? [] : ((data || []) as Row[])
-      } catch {
+      } catch (e) {
+        tableErrors[name] = describeDbError(e, { table: name }).message
         tables[name] = []
       }
     })
@@ -323,6 +330,7 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
   const env: JobEnv = {
     cfg,
     dir,
+    tableErrors,
     headcount,
     roster,
     now: opts.now,
@@ -463,8 +471,10 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
           if (tables[name]) return
           try {
             const { data, error } = await db().from(name).select('*').limit(200000)
+            if (error) tableErrors[name] = describeDbError(error, { table: name }).message
             tables[name] = error ? [] : ((data || []) as Row[])
-          } catch {
+          } catch (e) {
+            tableErrors[name] = describeDbError(e, { table: name }).message
             tables[name] = []
           }
         })

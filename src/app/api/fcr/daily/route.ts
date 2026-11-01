@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireRole } from '@/lib/platform/identity'
 import { assertWritable } from '@/lib/platform/viewas'
-import { apiError } from '@/lib/api-error'
+import { apiError, dbErr } from '@/lib/api-error'
 import { fcrDailyInput } from '@/lib/scorecard/fcr'
 import { db } from '@/lib/platform/repo'
 
@@ -21,9 +21,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await query.order('date', { ascending: false })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('fcr_daily', error)
 
   return NextResponse.json(data)
 }
@@ -47,7 +45,7 @@ export async function POST(req: Request) {
       // The table has no submitted_* columns: insert the validated row alone.
       res = await db().from('fcr_daily').insert(input).select().maybeSingle()
     }
-    if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 })
+    if (res.error) return dbErr('fcr_daily', res.error)
     return NextResponse.json(res.data)
   } catch (e) {
     return apiError(e)

@@ -83,6 +83,7 @@ interface TphData {
   autoAsOf: string; touchesReady: boolean; touchesAsOf: string; shiftsLinked: boolean
   canEdit: boolean; tlEditDays: number; isAdmin: boolean
   lastAuto: { at: string; job: string; status: string; note: string } | null
+  storeErrors?: string[]
 }
 interface TrendDay {
   date: string; pct: number | null; pctRaw: number | null; scored: number; onGrid: number
@@ -1926,6 +1927,21 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
   )
   return (
     <Fragment>
+      {d.storeErrors?.length ? (
+        <div className="cx-panel cx-panel--pad tph-lock" role="alert">
+          <strong>Some stores could not be read — numbers may be missing:</strong>
+          <ul>
+            {d.storeErrors.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ul>
+          {d.isAdmin ? (
+            <p className="cx-faint">
+              Run <code>GET /api/admin/source-health</code> for the full diagnosis.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {d.canEdit ? null : (
         <p className="cx-panel cx-panel--pad tph-lock" role="status">
           This day is read-only for you: team leads can change today and the {d.tlEditDays} days before it. Ask Mohamed

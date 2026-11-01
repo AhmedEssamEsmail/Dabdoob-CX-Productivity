@@ -1,6 +1,7 @@
 import { createAuthClient, requireRole } from '@/lib/auth'
 import { flagInScope } from '@/lib/prod-access'
 import { flagView, type ProdFlagRow } from '@/lib/prod-validation'
+import { dbErr } from '@/lib/api-error'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
@@ -28,7 +29,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     .eq('flag_id', flagId)
     .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return dbErr('prod_flags', error)
 
   const flag = data as ProdFlagRow | null
   if (!flag || !(await flagInScope(supabase, user, flag))) {

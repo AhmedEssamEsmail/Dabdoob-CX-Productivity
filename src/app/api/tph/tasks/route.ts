@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth'
 import { viewAsGuard } from '@/lib/platform/viewas'
 import { supabase } from '@/lib/supabase'
+import { apiError, dbErr } from '@/lib/api-error'
 import { tphLoadStore_ } from '@/lib/tph/page'
 import { saveTphTask } from '@/lib/tph/write'
 import { NextResponse } from 'next/server'
@@ -21,9 +22,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await query.order('at', { ascending: false })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('prod_tph_tasks', error)
 
   return NextResponse.json(data)
 }
@@ -42,7 +41,6 @@ export async function POST(req: Request) {
     )
     return NextResponse.json(out)
   } catch (e) {
-    const m = e instanceof Error ? e.message : 'Unable to save'
-    return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : m === 'Forbidden' ? 403 : 400 })
+    return apiError(e)
   }
 }

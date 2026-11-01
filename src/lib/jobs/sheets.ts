@@ -12,6 +12,7 @@
  */
 
 import type { SheetBookLike, SheetRangeLike, SheetTabLike } from '@/lib/prod/adapters'
+import { describeDbError, described } from '@/lib/errors'
 
 /** Tabs read from each productivity month workbook (prodFileFor_). */
 export const PROD_MONTH_TABS = ['Assumptions', 'Maqsam Calls', 'FD_AUX', 'AUXes Exceptions', 'Quality', 'Headcount']
@@ -92,8 +93,16 @@ export async function fetchWorkbookTabs(id: string, tabs: string[]): Promise<Rec
           range: `'${tab.replace(/'/g, "\\'")}'!A1:ZZ100000`,
         })
         out[tab] = (res.data.values || []) as unknown[][]
-      } catch {
-        out[tab] = [] // a tab that does not exist yet reads as empty (missingOk)
+      } catch (e) {
+        // Only a missing tab reads as empty (missingOk). Anything else — the
+        // sheet not being shared (403), a wrong spreadsheet id (404), a rate
+        // limit (429) — throws a described error, not a silent empty grid.
+        const d = describeDbError(e, { workbook: id, tab })
+        if (d.code === 'missing_source') {
+          out[tab] = []
+          return
+        }
+        throw described(e, { workbook: id, tab })
       }
     })
   )

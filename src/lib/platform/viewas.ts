@@ -15,6 +15,7 @@
 import { db, cacheGet, cachePut, cacheRemove, appendRow } from './repo'
 import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory } from './identity'
 import { getConfig, ccApp } from './settings'
+import { described } from '@/lib/errors'
 
 const VIEW_AS_TABLE = 'view_as'
 const VIEW_AS_CACHE_SEC = 30
@@ -41,11 +42,12 @@ export async function viewAsRead(owner: string, fresh?: boolean): Promise<string
     if (hit) return String((JSON.parse(hit) as { t?: string }).t || '')
   }
   let target = ''
-  const { data } = await db()
+  const { data, error } = await db()
     .from(VIEW_AS_TABLE)
     .select('action, target_email')
     .eq('owner_email', owner)
     .order('id', { ascending: true })
+  if (error) throw described(error, { table: VIEW_AS_TABLE })
   ;(data || []).forEach((r) => {
     target = String(r.action) === 'start' ? normEmail(r.target_email) : ''
   })

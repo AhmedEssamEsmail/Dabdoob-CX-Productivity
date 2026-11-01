@@ -1,5 +1,6 @@
 import { requireRole } from '@/lib/auth'
 import { viewAsGuard } from '@/lib/platform/viewas'
+import { apiError } from '@/lib/api-error'
 import { tphLoadStore_ } from '@/lib/tph/page'
 import { saveTphSlots } from '@/lib/tph/write'
 import { NextResponse } from 'next/server'
@@ -13,7 +14,6 @@ export async function POST(req: Request) {
     const out = await saveTphSlots(store, { role: String(user.role), email: String(user.email || '').toLowerCase() }, await req.json())
     return NextResponse.json(out)
   } catch (e) {
-    const m = e instanceof Error ? e.message : 'Unable to save'
-    return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : m === 'Forbidden' ? 403 : 400 })
+    return apiError(e)
   }
 }

@@ -356,6 +356,10 @@ export async function prodDailySteps_(env: JobEnv): Promise<Record<string, unkno
   })
 
   out.prod_tph_cases_rebuilt = await dqStep_(env, 'prod_tph_cases_rebuilt', () => prodTphCasesRebuiltStep_(env, recent))
+  // Stores that failed to load (missing table, read error) are surfaced rather
+  // than reading as honest empties — they make every dependent step compute zeros.
+  const tableErrors = env.tableErrors || {}
+  if (Object.keys(tableErrors).length) out.tableErrors = { ...tableErrors }
   return out
 }
 

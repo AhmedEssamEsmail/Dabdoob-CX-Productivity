@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { dbErr } from '@/lib/api-error'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -17,9 +18,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await query.order('start_at', { ascending: true })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return dbErr('prod_intervals', error)
 
   return NextResponse.json(data)
 }

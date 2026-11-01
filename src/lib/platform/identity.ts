@@ -20,6 +20,7 @@ import { createAuthClient } from '@/lib/auth'
 import { db } from './repo'
 import { getConfig } from './settings'
 import { viewAsState, assertWritable } from './viewas'
+import { described } from '@/lib/errors'
 
 export function normEmail(e: unknown): string {
   return String(e || '').trim().toLowerCase()
@@ -82,9 +83,10 @@ export async function currentUser(): Promise<PlatformUser> {
     .split(',')
     .map(normEmail)
     .filter(String)
-  const { data: rosterRows } = await db()
+  const { data: rosterRows, error: rosterErr } = await db()
     .from('roster')
     .select('*')
+  if (rosterErr) throw described(rosterErr, { table: 'roster' })
   const row = (rosterRows || []).find((r) => normEmail(r.email) === email)
   const active = !row || (row.active !== false && String(row.active).toLowerCase() !== 'false')
   if (admins.indexOf(email) !== -1) {
@@ -168,7 +170,8 @@ export async function pwDirectory(): Promise<Directory> {
     .split(',')
     .map(normEmail)
     .filter(String)
-  const { data: rosterRows } = await db().from('roster').select('*')
+  const { data: rosterRows, error: rosterErr } = await db().from('roster').select('*')
+  if (rosterErr) throw described(rosterErr, { table: 'roster' })
   const by: Record<string, DirectoryPerson> = {}
   ;(rosterRows || []).forEach((r) => {
     const e = normEmail(r.email)

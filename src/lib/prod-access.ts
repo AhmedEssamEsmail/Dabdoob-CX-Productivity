@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { described } from '@/lib/errors'
 
 /**
  * prodScope_ / pwIsManagerOf_ port: who may see or decide a flag.
@@ -19,10 +20,11 @@ export async function flagInScope(
   if (user.role !== 'tl') return false
 
   if (String(flag.tl_email || '').toLowerCase() === email) return true
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('roster')
     .select('tl_email')
     .eq('email', agentEmail)
     .maybeSingle()
+  if (error) throw described(error, { table: 'roster' })
   return String(data?.tl_email || '').toLowerCase() === email
 }

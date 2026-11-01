@@ -1,5 +1,7 @@
 import { createAuthClient, requireRole } from '@/lib/auth'
 import { flagInScope } from '@/lib/prod-access'
+import { viewAsGuard } from '@/lib/platform/viewas'
+import { apiError, dbErr } from '@/lib/api-error'
 import {
   PROD_DEFAULTS,
   PROD_DIRTY_MAX,
@@ -34,12 +36,9 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/prod/flags/
   let user: Awaited<ReturnType<typeof requireRole>>
   try {
     user = await requireRole(['admin', 'tl'])
+    await viewAsGuard()
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to authorize request'
-    return NextResponse.json(
-      { error: message },
-      { status: message === 'Unauthorized' ? 401 : message === 'Forbidden' ? 403 : 500 }
-    )
+    return apiError(error)
   }
 
   const { flagId } = await ctx.params
@@ -63,7 +62,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     .eq('flag_id', flagId)
     .maybeSingle()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return dbErr('prod_flags', error)
 
   const flag = data as ProdFlagRow | null
   if (!flag || !(await flagInScope(supabase, user, flag))) {
@@ -121,7 +120,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     .eq('decision', 'pending')
     .select('flag_id')
 
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+  if (updateError) return dbErr('prod_flags', updateError)
   if (!updated || updated.length === 0) {
     return NextResponse.json({ error: 'This flag was already decided.' }, { status: 409 })
   }
@@ -136,7 +135,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     at: now,
     reason: patch.reason,
   })
-  if (logError) return NextResponse.json({ error: logError.message }, { status: 500 })
+  if (logError) return dbErr('prod_flag_log', logError)
 
   // prodMarkDirty_: the flag's date is queued so the nightly layers job recomputes the
   // effective productivity layer — same "productivity updates overnight" contract.
