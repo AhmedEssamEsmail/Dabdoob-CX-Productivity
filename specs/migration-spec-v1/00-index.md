@@ -1,8 +1,8 @@
 > Superseded in scope by [../legacy-parity/README.md](../legacy-parity/README.md): this v1 shard set covers the Productivity migration only. Kept for reference.
 
-# CX Helm Productivity Migration - Specification Index
+# CX Productivity Migration - Specification Index
 
-This directory contains the complete technical specification for migrating the CX Helm Productivity system from Google Sheets/Google Apps Script to Supabase/Next.js/Vercel.
+This directory contains the complete technical specification for migrating the CX Productivity system from Google Sheets/Google Apps Script to Supabase/Next.js/Vercel.
 
 ## Specification Documents
 

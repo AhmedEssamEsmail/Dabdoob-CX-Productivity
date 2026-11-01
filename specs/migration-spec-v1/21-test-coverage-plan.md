@@ -1,7 +1,7 @@
 # Test Coverage Plan
 
 ## Overview
-This plan defines comprehensive test coverage for the CX Helm Productivity system migration, ensuring reliability, correctness, and maintainability.
+This plan defines comprehensive test coverage for the CX Productivity system migration, ensuring reliability, correctness, and maintainability.
 
 ## Test Strategy
 

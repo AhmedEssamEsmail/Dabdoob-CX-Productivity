@@ -1,7 +1,7 @@
 # UI Preservation Plan
 
 ## Overview
-This plan details how to fully preserve the original CX Helm Productivity system's visual design, colors, and UX when migrating from Google Apps Script to Next.js.
+This plan details how to fully preserve the original CX Productivity system's visual design, colors, and UX when migrating from Google Apps Script to Next.js.
 
 ## Original Design System Analysis
 

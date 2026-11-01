@@ -1,8 +1,8 @@
-# CX Helm Productivity Migration Technical Specification
+# CX Productivity Migration Technical Specification
 
 ## Executive Summary
 
-This document specifies the complete migration of the CX Helm Productivity system from Google Sheets/Google Apps Script to a modern stack comprising:
+This document specifies the complete migration of the CX Productivity system from Google Sheets/Google Apps Script to a modern stack comprising:
 - **Database:** Supabase (PostgreSQL)
 - **Backend:** Next.js API Routes + Supabase Edge Functions
 - **Frontend:** Next.js (React)
@@ -1483,7 +1483,7 @@ migrateAll()
 ### 9.1 GitHub Repository Structure
 
 ```
-cx-helm-productivity/
+cx-productivity/
 ├── .github/
 │   └── workflows/
 │       ├── deploy.yml

@@ -33,7 +33,7 @@ The current new app re-expresses the legacy look in Tailwind utilities and a 1,7
 
 - Group order: Hub, Quality, Productivity, Queue & Workforce, People & Performance, Operations & Trackers, TL desk, FCR; each with `data-tone` (work/team/quality/system as in `01` section B).
 - In an app context the active group lists its visible pages (after `En()`/`Qt()` gating) under `nav-group-label`; every other group renders one `nav-group--app` entry whose label is the group label, icon is that group's default-page icon, with external glyph and tooltip "Opens <page> in <App>" (internal link under D1; "not connected" state retained only if D1 keeps separate apps).
-- Brand: mark + app title (`CX Helm Productivity` etc.); footer: user name, role label (Admin / Team lead / Agent / "No access"; "<role>, viewed by you" in View as), collapse chevron; `View as` entry above the footer for the owner only.
+- Brand: mark + app title (`CX Productivity` etc.); footer: user name, role label (Admin / Team lead / Agent / "No access"; "<role>, viewed by you" in View as), collapse chevron; `View as` entry above the footer for the owner only.
 - Mobile: rail collapses to header with "Menu"/"Close" button; `nav-open` state.
 
 ## 4. Per-page parity checklist template

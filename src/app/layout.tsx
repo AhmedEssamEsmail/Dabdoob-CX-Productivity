@@ -4,8 +4,8 @@ import SiteChrome from "@/components/layout/SiteChrome";
 import BootSplash from "@/components/shell/BootSplash";
 
 export const metadata: Metadata = {
-  title: "CX Helm Productivity",
-  description: "CX Helm Productivity System",
+  title: "CX Productivity",
+  description: "CX Productivity System",
 };
 
 /**

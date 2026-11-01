@@ -27,7 +27,7 @@ export default function Home() {
     <section className="page" aria-labelledby="page-title">
       <header className="page-head">
         <h1 id="page-title" className="page-title">
-          CX Helm Productivity
+          CX Productivity
         </h1>
         <p className="page-purpose">
           Review status, track your productivity, and keep hourly workload in view.

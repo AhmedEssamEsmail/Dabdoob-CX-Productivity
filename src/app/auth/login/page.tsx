@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <main className="state-screen">
-      <h1>CX Helm Productivity</h1>
+      <h1>CX Productivity</h1>
       <p>Sign in with your work account to continue.</p>
       <form onSubmit={handleLogin} style={{ display: 'contents' }}>
         {error && (
