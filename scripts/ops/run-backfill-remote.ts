@@ -7,7 +7,18 @@
 const BASE = 'https://dabdoob-cx-productivity.vercel.app'
 const KEY = 'prod-migrate-2024-secure-key'
 
-async function post(path: string, body: unknown, tries = 3): Promise<any> {
+interface BackfillRes {
+  done?: { date: string; kind: string; rows: number | string }[]
+  failed?: { date: string; kind: string; step?: string; error: string }[]
+  skipped?: { date: string; kind?: string; reason: string }[]
+  next?: unknown
+  ms?: number
+  fatal?: string
+  httpStatus?: number
+  raw?: string
+}
+
+async function post(path: string, body: unknown, tries = 3): Promise<BackfillRes> {
   for (let i = 0; i < tries; i++) {
     try {
       const res = await fetch(BASE + path, {
@@ -18,7 +29,7 @@ async function post(path: string, body: unknown, tries = 3): Promise<any> {
       })
       const text = await res.text()
       try {
-        return JSON.parse(text)
+        return JSON.parse(text) as BackfillRes
       } catch {
         return { httpStatus: res.status, raw: text.slice(0, 400) }
       }
@@ -27,6 +38,7 @@ async function post(path: string, body: unknown, tries = 3): Promise<any> {
       if (i === tries - 1) return { fatal: (e as Error).message }
     }
   }
+  return { fatal: 'exhausted retries' }
 }
 
 async function main() {
@@ -57,7 +69,7 @@ async function main() {
       console.log(
         `round ${round}: done+${(res.done || []).length} failed+${(res.failed || []).length} skipped+${(res.skipped || []).length} next=${JSON.stringify(res.next)} ms=${res.ms}`
       )
-      ;(res.failed || []).slice(0, 8).forEach((f: any) => console.log('  FAIL', f.date, f.kind, f.step || '', String(f.error).slice(0, 140)))
+      ;(res.failed || []).slice(0, 8).forEach((f: Record<string, unknown>) => console.log('  FAIL', f.date, f.kind, f.step || '', String(f.error).slice(0, 140)))
       if (res.fatal) break
       if (!res.next) break
       cursor = res.next

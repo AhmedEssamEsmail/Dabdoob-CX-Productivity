@@ -14,7 +14,7 @@
  * never fabricated — migration 04 or TL logging owns them.
  */
 
-import { dqAddDays_ } from '@/lib/prod/adapters'
+import { dqAddDays_, dqSetting_ } from '@/lib/prod/adapters'
 import { prodToday_ } from '@/lib/prod/engine'
 import { tphRunStep_, type TphStep } from '@/lib/tph'
 import { described } from '@/lib/errors'
@@ -23,6 +23,7 @@ import { prodComputeStep_, prodFlagsStep_ } from './productivity'
 import { syncAllMirrors } from './mirrors'
 import { tphGridFromIntervals_, type IntervalRow } from './grid-slots'
 import { prodNowIso_ } from '@/lib/prod/engine'
+import { DAILY_REPORT_TABS } from './sheets'
 
 export type BackfillKind = 'mirrors' | 'grid' | 'tph' | 'layers' | 'flags'
 export const BACKFILL_KINDS: BackfillKind[] = ['mirrors', 'grid', 'tph', 'layers', 'flags']
@@ -132,6 +133,23 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
   }
 
   const dirty: string[] = []
+
+  /* TPH prefetches, once per invocation — the same seams prodTphCasesRebuiltStep_
+   * and the touches/calls builders expect: activity memo, tickets+inflow tables,
+   * the daily-report workbook. Failure is reported on every date, not hidden. */
+  let tphReady: string | null = null
+  if (kinds.includes('tph')) {
+    try {
+      await env.activityRows()
+      await env.prefetchTables(['tickets', 'agg_inflow_hourly'])
+      await env.prefetchWorkbook(String(dqSetting_(env.cfg, 'daily_report_ss_id')), DAILY_REPORT_TABS)
+      tphReady = 'ok'
+    } catch (e) {
+      const de = described(e)
+      tphReady = de.message + (de.hint ? ' — ' + de.hint : '')
+    }
+  }
+
   let d = startDate
   for (; d <= to; d = dqAddDays_(d, 1)) {
     if (over()) break
@@ -175,9 +193,17 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
 
     /* ---- tph: touches -> calls -> cases_tickets -> cases_chats ---------- */
     if (kinds.includes('tph')) {
-      if (!opts.force && kindDone(env, d, 'tph')) {
+      if (tphReady !== 'ok') {
+        result.failed.push({ date: d, kind: 'tph', error: tphReady || 'prefetch failed' })
+      } else if (!opts.force && kindDone(env, d, 'tph')) {
         result.skipped.push({ date: d, kind: 'tph', reason: 'already computed — pass force to redo' })
       } else {
+        try {
+          await env.prefetchMonthBooks([d]) // 'Maqsam Calls' for the calls step
+        } catch (e) {
+          const de = described(e)
+          result.failed.push({ date: d, kind: 'tph', step: 'calls', error: de.message, hint: de.hint })
+        }
         let tphBroken = false
         for (const step of TPH_STEPS) {
           if (over()) break
