@@ -89,29 +89,38 @@ export async function GET(req: Request) {
   const checks: Check[] = []
   const supabase = await createAuthClient()
 
-  /* ---- tables --------------------------------------------------------- */
+  /* ---- tables ---------------------------------------------------------
+   * head:true count reads return {error:null, count:null} on a MISSING table —
+   * a silent false-ok. Always verify with a real select when count is null. */
+  const probeTable = async (table: string): Promise<{ missing: string | null; count: number | null }> => {
+    const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
+    if (error) return { missing: error.message, count: null }
+    if (count !== null) return { missing: null, count }
+    const { error: e2 } = await supabase.from(table).select('*').limit(1)
+    return e2 ? { missing: e2.message, count: null } : { missing: null, count: null }
+  }
   await Promise.all(
     APP_TABLES.map(async ({ table, migration }) => {
-      const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
-      if (error) {
-        const d = describeDbError(error, { table })
+      const p = await probeTable(table)
+      if (p.missing) {
+        const d = describeDbError(p.missing, { table })
         checks.push({
           name: `table ${table}`, kind: 'table', ok: false,
           detail: d.message,
           hint: `Created by migration ${migration}_*.sql — run it, then re-check. ${d.hint || ''}`.trim(),
         })
       } else {
-        checks.push({ name: `table ${table}`, kind: 'table', ok: true, detail: `${count ?? 0} rows` })
+        checks.push({ name: `table ${table}`, kind: 'table', ok: true, detail: p.count === null ? 'exists' : `${p.count} rows` })
       }
     })
   )
   await Promise.all(
     EXTERNAL_TABLES.map(async ({ table, usedBy }) => {
-      const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
+      const p = await probeTable(table)
       checks.push({
-        name: `external ${table}`, kind: 'external', ok: !error,
-        detail: error ? describeDbError(error, { table }).message : `${count ?? 0} rows`,
-        hint: error ? `Populated by a sibling app; needed for ${usedBy}.` : undefined,
+        name: `external ${table}`, kind: 'external', ok: !p.missing,
+        detail: p.missing ? describeDbError(p.missing, { table }).message : p.count === null ? 'exists' : `${p.count} rows`,
+        hint: p.missing ? `Populated by a sibling app; needed for ${usedBy}.` : undefined,
       })
     })
   )
