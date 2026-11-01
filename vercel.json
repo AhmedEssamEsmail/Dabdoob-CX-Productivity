@@ -3,38 +3,31 @@
   "crons": [
     {
       "path": "/api/cron/job-productivity-daily",
-      "schedule": "30 6 * * *",
-      "_comment": "Legacy jobProductivityDaily, daily ~08:30 Africa/Cairo. 06:30 UTC = 08:30 Cairo in winter (UTC+2); fires 07:30 Cairo during EEST (UTC+3). Chains flag-detection + daily-layers + rollup."
+      "schedule": "30 6 * * *"
     },
     {
       "path": "/api/cron/job-tph-hourly",
-      "schedule": "0 19 * * *",
-      "_comment": "Legacy TPH job. Hobby plan allows once-daily crons only, so this runs once a day at 19:00 UTC (~21:00-22:00 Cairo) instead of every 15 minutes — intra-day hourly captures are lost on this plan."
+      "schedule": "0 19 * * *"
     },
     {
       "path": "/api/cron/job-tph-past-days",
-      "schedule": "0 5 * * *",
-      "_comment": "Legacy past-day TPH refresh. Downgraded from hourly to once daily at 05:00 UTC, before the 06:30 daily chain."
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/job-quarterly-report",
-      "schedule": "0 6 1 * *",
-      "_comment": "Legacy quarterly report on month day 1 (~09:00 Kuwait)."
+      "schedule": "0 6 1 * *"
     },
     {
       "path": "/api/cron/flag-detection",
-      "schedule": "30 6 * * *",
-      "_comment": "Kept as a standalone trigger too; also invoked inside job-productivity-daily."
+      "schedule": "30 6 * * *"
     },
     {
       "path": "/api/cron/daily-layers",
-      "schedule": "45 6 * * *",
-      "_comment": "Runs after flag-detection in the daily chain."
+      "schedule": "45 6 * * *"
     },
     {
       "path": "/api/cron/analytics-aggregation",
-      "schedule": "0 7 * * *",
-      "_comment": "Runs after daily-layers in the daily chain."
+      "schedule": "0 7 * * *"
     }
   ]
 }
