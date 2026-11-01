@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const h = vi.hoisted(() => ({ env: null as import('./helpers').StubEnv | null }))
 vi.mock('@/lib/jobs/env', () => ({ buildJobEnv: async () => h.env }))
 vi.mock('@/lib/platform/identity', () => ({ requireJobCaller: async () => {} }))
+vi.mock('@/lib/jobs/mirrors', () => ({ syncAllMirrors: async () => ({}) }))
 
 import { stubEnv } from './helpers'
 import * as routeDaily from '@/app/api/cron/job-productivity-daily/route'

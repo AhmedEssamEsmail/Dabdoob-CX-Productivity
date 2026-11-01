@@ -22,6 +22,7 @@ import {
 } from '@/lib/prod/engine'
 import { prodHeaderCols_, prodIntervalsFromRows_, type ProdIntervalsOpts } from '@/lib/prod/validation'
 import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_ } from '@/lib/tph'
+import { syncAllMirrors } from './mirrors'
 import type { GmailReadAdapter } from '@/lib/platform/mail'
 import { prodCsvRows_ } from './csv'
 import type { JobEnv, Row } from './env'
@@ -315,6 +316,17 @@ export async function prodTphCasesRebuiltStep_(env: JobEnv, dates: string[]): Pr
 export async function prodDailySteps_(env: JobEnv): Promise<Record<string, unknown>> {
   const started = Date.now()
   const out: Record<string, unknown> = {}
+  out.mirror_sync = await dqStep_(env, 'mirror_sync', async () => {
+    const t = Date.now()
+    const results = await syncAllMirrors(env.cfg)
+    const errors = Object.values(results).filter((r) => 'error' in r)
+    const rows = Object.values(results).reduce((n, r) => n + ('written' in r ? r.written : 0), 0)
+    env.logRun('mirror_sync', t, errors.length ? 'error' : 'ok', {
+      rowsOut: rows,
+      note: errors.length ? errors.map((r) => ('error' in r ? r.error : '')).join(' | ') : 'all mirrors ok',
+    })
+    return results
+  })
   const snap = await dqStep_(env, 'prod_snapshot', () => prodSnapshotIntervals_(env))
   out.prod_snapshot = snap
   if (snap && !snap.skipped) env.logRun('prod_snapshot', started, 'ok', { rowsOut: snap.rowsOut, note: snap.note })
