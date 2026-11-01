@@ -68,8 +68,8 @@ export function freshchatConvToCols(conv: Record<string, unknown>): unknown[] | 
   return [isoMs(created), isResolved ? 'AGENT_RESOLVE' : '', `${id}-${created}`, updated ? isoMs(updated) : '', isResolved && resolved ? isoMs(resolved) : '', channel, id]
 }
 
-/** maqsam_calls SPECS.fetch: calls created since `sinceMs` (or the months bound). */
-export async function fetchMaqsamRows(sinceMs?: number): Promise<unknown[][]> {
+/** maqsam_calls SPECS.fetch: calls created in [sinceMs, untilMs) — one sync window. */
+export async function fetchMaqsamRows(sinceMs?: number, untilMs?: number): Promise<unknown[][]> {
   const creds = maqsamCredsFromEnv()
   if (!creds) {
     throw new DescribedError({
@@ -78,7 +78,7 @@ export async function fetchMaqsamRows(sinceMs?: number): Promise<unknown[][]> {
       hint: 'Set the Maqsam API credentials in Vercel env (Maqsam Account Settings > API Credentials).',
     })
   }
-  const calls = await listMaqsamCalls(creds, { startMs: sinceMs })
+  const calls = await listMaqsamCalls(creds, { startMs: sinceMs, endMs: untilMs, maxPages: 400 })
   const rows: unknown[][] = []
   for (const c of calls) {
     const cols = maqsamCallToCols(c)

@@ -36,12 +36,17 @@ const UPSERT_BATCH = 500
 
 interface MirrorSpec {
   /** Rows for the months being synced: [{ id, tab, rows }] in source order.
-   * `sinceMs` is the watermark cut (undefined on a full sync — bound by months). */
-  fetch: (cfg: Cfg, months: string[], sinceMs?: number) => Promise<{ id: string; tab: string; rows: unknown[][] }[]>
+   * `sinceMs` is the watermark/window cut (undefined on a full non-windowed
+   * sync); `untilMs` bounds the current window for windowed specs. */
+  fetch: (cfg: Cfg, months: string[], sinceMs?: number, untilMs?: number) => Promise<{ id: string; tab: string; rows: unknown[][] }[]>
   /** Source row -> mirror cells ([] = skip the row entirely). */
   cols: (r: unknown[]) => unknown[] | null
   /** Mirror cells -> epoch ms (null skips the row; counted). */
   tsMs: (cells: unknown[], cfg: Cfg) => number | null
+  /** When set, the sync walks [start, now] in chunks of this many ms —
+   * upserting + persisting the watermark per window so a maxDuration kill
+   * resumes instead of losing the whole pull. */
+  windowMs?: number
   hint: string
 }
 
@@ -60,15 +65,16 @@ const SPECS: Record<MirrorTable, MirrorSpec> = {
     hint: 'fd_activity_ss_id workbook, tab Activities',
   },
   maqsam_calls: {
-    async fetch(_cfg, months, sinceMs) {
-      // Maqsam Calls API — calls created since the watermark (months bound on full).
+    async fetch(_cfg, months, sinceMs, untilMs) {
+      // Maqsam Calls API — calls created in [window start, window end).
       const startMs = sinceMs ?? Date.parse(months[0] + '-01T00:00:00Z')
-      const rows = await fetchMaqsamRows(startMs)
+      const rows = await fetchMaqsamRows(startMs, untilMs)
       return [{ id: 'maqsam-api', tab: 'v2/calls', rows }]
     },
     // API rows are already the 7-cell mirror shape (sheet cols D..J).
     cols: (r) => r,
     tsMs: (cells, cfg) => tphClock_(String(dqSetting_(cfg, 'data_tz'))).ms(cells[0]),
+    windowMs: 7 * 86400000,
     hint: 'Maqsam Calls API v2 (MAQSAM_* env vars)',
   },
   freshchat: {
@@ -101,6 +107,8 @@ export interface MirrorSyncResult {
   skipped: number
   watermark: string
   full: boolean
+  /** True when the time budget ran out mid-walk — rerun to resume from the watermark. */
+  partial?: boolean
   note?: string
 }
 
@@ -132,6 +140,8 @@ export function mirrorMonths(today: string, full: boolean, monthsBack = 6): stri
   return out.reverse()
 }
 
+const SYNC_BUDGET_MS = 240000 // stop the window walk before maxDuration kills it
+
 export async function syncMirror(
   cfg: Cfg,
   table: MirrorTable,
@@ -143,48 +153,72 @@ export async function syncMirror(
   const full = !!opts.full || !state.last_ts_ms
   const months = mirrorMonths(today, full, opts.monthsBack)
   const cut = full ? -Infinity : (state.last_ts_ms as number) - OVERLAP_MS
-
-  const sources = await spec.fetch(cfg, table === 'maqsam_calls' ? months : months.slice(-1), cut === -Infinity ? undefined : cut)
+  const monthsForSpec = table === 'maqsam_calls' ? months : months.slice(-1)
   const now = new Date().toISOString()
+  const endBound = opts.now !== undefined ? +new Date(opts.now) : Date.now()
+  const t0 = Date.now()
+
   let fetched = 0
   let skipped = 0
   let written = 0
+  let partial = false
   let maxTs = (state.last_ts_ms as number) || 0
+  const srcNotes: string[] = []
 
-  const pending: { dedupe_key: string; ts_ms: number; cols: unknown[]; synced_at: string }[] = []
-  for (const src of sources) {
-    for (const r of src.rows) {
-      const cells = spec.cols(r)
-      if (!cells) {
-        skipped++
-        continue
+  const saveState = (ts: number) =>
+    setConfig(STATE_PREFIX + table, { last_ts_ms: ts, last_sync_at: now }, 'Mirror sync watermark (managed by mirrors.ts).', 'system:mirror')
+
+  const consume = async (sinceMs?: number, untilMs?: number) => {
+    const sources = await spec.fetch(cfg, monthsForSpec, sinceMs, untilMs)
+    const pending: { dedupe_key: string; ts_ms: number; cols: unknown[]; synced_at: string }[] = []
+    for (const src of sources) {
+      srcNotes.push(`${src.tab} (${src.rows.length})`)
+      for (const r of src.rows) {
+        const cells = spec.cols(r)
+        if (!cells) {
+          skipped++
+          continue
+        }
+        fetched++
+        const ts = spec.tsMs(cells, cfg)
+        if (ts === null) {
+          skipped++
+          continue
+        }
+        if (ts <= cut) continue
+        if (untilMs !== undefined && ts > untilMs) continue
+        if (ts > maxTs) maxTs = ts
+        pending.push({ dedupe_key: dedupeKey(table, cells), ts_ms: ts, cols: cells, synced_at: now })
       }
-      fetched++
-      const ts = spec.tsMs(cells, cfg)
-      if (ts === null) {
-        skipped++
-        continue
-      }
-      if (ts <= cut) continue
-      if (ts > maxTs) maxTs = ts
-      pending.push({ dedupe_key: dedupeKey(table, cells), ts_ms: ts, cols: cells, synced_at: now })
+    }
+    for (let i = 0; i < pending.length; i += UPSERT_BATCH) {
+      const { error } = await db()
+        .from(table)
+        .upsert(pending.slice(i, i + UPSERT_BATCH), { onConflict: 'dedupe_key' })
+      if (error) throw described(error, { table })
+      written += Math.min(UPSERT_BATCH, pending.length - i)
     }
   }
 
-  for (let i = 0; i < pending.length; i += UPSERT_BATCH) {
-    const { error } = await db()
-      .from(table)
-      .upsert(pending.slice(i, i + UPSERT_BATCH), { onConflict: 'dedupe_key' })
-    if (error) throw described(error, { table })
-    written += Math.min(UPSERT_BATCH, pending.length - i)
+  if (spec.windowMs) {
+    // Walk fixed windows; each is fully fetched+upserted before the watermark
+    // advances past it, so a partial run resumes exactly where it stopped.
+    let w = cut === -Infinity ? Date.parse(months[0] + '-01T00:00:00Z') : cut
+    while (w < endBound) {
+      const until = Math.min(w + spec.windowMs, endBound)
+      await consume(w, until)
+      if (until > maxTs) maxTs = until
+      await saveState(maxTs)
+      if (Date.now() - t0 > SYNC_BUDGET_MS) {
+        partial = true
+        break
+      }
+      w = until
+    }
+  } else {
+    await consume(cut === -Infinity ? undefined : cut)
+    await saveState(maxTs)
   }
-
-  await setConfig(
-    STATE_PREFIX + table,
-    { last_ts_ms: maxTs, last_sync_at: now },
-    'Mirror sync watermark (managed by mirrors.ts).',
-    'system:mirror'
-  )
 
   return {
     table,
@@ -193,7 +227,8 @@ export async function syncMirror(
     skipped,
     watermark: maxTs ? new Date(maxTs).toISOString() : '',
     full,
-    note: `${pending.length} rows upserted from ${sources.map((s) => `${s.tab} (${s.rows.length})`).join(', ')}`,
+    partial: partial || undefined,
+    note: `${written} rows upserted from ${srcNotes.slice(-6).join(', ')}${partial ? ' — partial, rerun to resume' : ''}`,
   }
 }
 

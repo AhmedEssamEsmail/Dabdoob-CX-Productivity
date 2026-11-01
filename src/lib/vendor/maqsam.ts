@@ -48,7 +48,12 @@ export async function listMaqsamCalls(
   const auth = Buffer.from(`${creds.key}:${creds.secret}`).toString('base64')
   const out: MaqsamCall[] = []
   const maxPages = Math.max(1, opts.maxPages ?? 600)
-  for (let page = 1; page <= maxPages; page++) {
+  for (let page = 1; ; page++) {
+    if (page > maxPages) {
+      // Reaching the cap means the last page was full — more calls exist.
+      // Throwing beats silently truncating a sync window.
+      throw described(new Error(`maqsam API page cap (${maxPages}) reached — the sync window is too dense`), { step: 'maqsam API request' })
+    }
     const q = new URLSearchParams({ page: String(page) })
     if (opts.startMs) q.set('start_time', String(Math.floor(opts.startMs / 1000)))
     if (opts.endMs) q.set('end_time', String(Math.floor(opts.endMs / 1000)))

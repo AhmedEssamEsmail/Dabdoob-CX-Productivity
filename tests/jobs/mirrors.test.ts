@@ -11,7 +11,7 @@ const h = vi.hoisted(() => ({
   cfgStore: {} as Record<string, unknown>,
   apiRows: { maqsam: [] as unknown[][], freshchat: [] as unknown[][] },
   apiErr: { maqsam: null as Error | null, freshchat: null as Error | null },
-  apiSinceMs: { maqsam: undefined as number | undefined, freshchat: undefined as number | undefined },
+  apiCalls: { maqsam: [] as { sinceMs?: number; untilMs?: number }[], freshchat: [] as { sinceMs?: number; untilMs?: number }[] },
 }))
 
 vi.mock('@/lib/jobs/sheets', () => ({
@@ -31,13 +31,13 @@ vi.mock('@/lib/jobs/vendor-apis', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/lib/jobs/vendor-apis')>()
   return {
     ...orig,
-    fetchMaqsamRows: async (sinceMs?: number) => {
-      h.apiSinceMs.maqsam = sinceMs
+    fetchMaqsamRows: async (sinceMs?: number, untilMs?: number) => {
+      h.apiCalls.maqsam.push({ sinceMs, untilMs })
       if (h.apiErr.maqsam) throw h.apiErr.maqsam
       return h.apiRows.maqsam
     },
-    fetchFreshchatRows: async (sinceMs?: number) => {
-      h.apiSinceMs.freshchat = sinceMs
+    fetchFreshchatRows: async (sinceMs?: number, untilMs?: number) => {
+      h.apiCalls.freshchat.push({ sinceMs, untilMs })
       if (h.apiErr.freshchat) throw h.apiErr.freshchat
       return h.apiRows.freshchat
     },
@@ -108,10 +108,10 @@ describe('mirrors', () => {
     h.tables = {}
     h.cfgStore = {}
     h.apiErr = { maqsam: null, freshchat: null }
-    h.apiSinceMs = { maqsam: undefined, freshchat: undefined }
+    h.apiCalls = { maqsam: [], freshchat: [] }
     h.apiRows = {
       maqsam: [
-        ['2026-10-08T11:00:00.000Z', '2026-10-08T11:02:00.000Z', '0:02:00', 'a@dabdoob.com', 'serviced', 'inbound', '0.0013888889'],
+        ['2026-10-08T09:00:00.000Z', '2026-10-08T09:02:00.000Z', '0:02:00', 'a@dabdoob.com', 'serviced', 'inbound', '0.0013888889'],
       ],
       freshchat: [
         ['2026-10-08T10:00:00.000Z', '', 'conv1-1793652000000', '2026-10-08T10:05:00.000Z', '', 'IG_app', 'conv1'],
@@ -148,14 +148,16 @@ describe('mirrors', () => {
     expect(cells).toHaveLength(7)
     expect(String(cells[0])).toContain('2026-10-08')
     expect(String(cells[3])).toBe('a@dabdoob.com')
-    // full sync -> the months bound, not a watermark
-    expect(h.apiSinceMs.maqsam).toBe(Date.parse('2026-10-01T00:00:00Z'))
+    // windowed walk: first call starts at the months bound, windows advance
+    expect(h.apiCalls.maqsam[0].sinceMs).toBe(Date.parse('2026-10-01T00:00:00Z'))
+    expect(h.apiCalls.maqsam.length).toBeGreaterThanOrEqual(2)
+    expect(h.apiCalls.maqsam[0].untilMs).toBe(h.apiCalls.maqsam[1].sinceMs)
   })
 
   it('freshchat: incremental watermark is passed to the API pull', async () => {
     h.cfgStore.mirror_state_freshchat = { last_ts_ms: Date.parse('2026-10-08T00:00:00Z') }
     await syncMirror(CFG, 'freshchat', { now: Date.parse('2026-10-09T10:00:00Z') })
-    expect(h.apiSinceMs.freshchat).toBe(Date.parse('2026-10-08T00:00:00Z') - 86400000)
+    expect(h.apiCalls.freshchat[0].sinceMs).toBe(Date.parse('2026-10-08T00:00:00Z') - 86400000)
     // ts_ms tracks updated (cells[3]) so late resolutions move the watermark
     expect(h.tables.freshchat[0].ts_ms).toBe(Date.parse('2026-10-08T10:05:00.000Z'))
   })
