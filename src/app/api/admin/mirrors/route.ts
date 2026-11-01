@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       table?: string
       full?: boolean
       monthsBack?: number
-      peek?: { ssId?: string; tab?: string; head?: number; tail?: number }
+      peek?: { ssId?: string; tab?: string; head?: number; tail?: number; slice?: [number, number] }
     }
     /* diagnostics: {peek:{tab, head?, tail?}} returns the first/last N rows of
      * a source tab (Activities by default) — no writes. */
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
       const rows = tabs[tab] || []
       const head = Math.max(1, Math.min(50, Number(body.peek.head) || 5))
       const tail = Math.max(0, Math.min(50, Number(body.peek.tail) || 0))
+      const sl = Array.isArray(body.peek.slice) ? body.peek.slice : null
       return NextResponse.json({
         ok: true,
         workbook: id,
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
         totalRows: rows.length,
         head: rows.slice(0, head),
         tail: tail ? rows.slice(-tail) : undefined,
+        slice: sl ? rows.slice(Math.max(0, Number(sl[0]) || 0), Math.min(rows.length, Number(sl[1]) || 0)) : undefined,
       })
     }
     const tables = body.table ? ([body.table] as MirrorTable[]) : MIRROR_TABLES
