@@ -170,7 +170,9 @@ export async function syncMirror(
 
   const consume = async (sinceMs?: number, untilMs?: number) => {
     const sources = await spec.fetch(cfg, monthsForSpec, sinceMs, untilMs)
-    const pending: { dedupe_key: string; ts_ms: number; cols: unknown[]; synced_at: string }[] = []
+    // Map dedupes within the window — identical cell-tuples collide on
+    // dedupe_key and Postgres refuses a second ON CONFLICT hit in one batch.
+    const pending = new Map<string, { dedupe_key: string; ts_ms: number; cols: unknown[]; synced_at: string }>()
     for (const src of sources) {
       srcNotes.push(`${src.tab} (${src.rows.length})`)
       for (const r of src.rows) {
@@ -188,15 +190,17 @@ export async function syncMirror(
         if (ts <= cut) continue
         if (untilMs !== undefined && ts > untilMs) continue
         if (ts > maxTs) maxTs = ts
-        pending.push({ dedupe_key: dedupeKey(table, cells), ts_ms: ts, cols: cells, synced_at: now })
+        const k = dedupeKey(table, cells)
+        pending.set(k, { dedupe_key: k, ts_ms: ts, cols: cells, synced_at: now })
       }
     }
-    for (let i = 0; i < pending.length; i += UPSERT_BATCH) {
+    const rows = [...pending.values()]
+    for (let i = 0; i < rows.length; i += UPSERT_BATCH) {
       const { error } = await db()
         .from(table)
-        .upsert(pending.slice(i, i + UPSERT_BATCH), { onConflict: 'dedupe_key' })
+        .upsert(rows.slice(i, i + UPSERT_BATCH), { onConflict: 'dedupe_key' })
       if (error) throw described(error, { table })
-      written += Math.min(UPSERT_BATCH, pending.length - i)
+      written += Math.min(UPSERT_BATCH, rows.length - i)
     }
   }
 

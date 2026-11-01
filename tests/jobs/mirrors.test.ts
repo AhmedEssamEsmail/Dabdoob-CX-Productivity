@@ -154,6 +154,13 @@ describe('mirrors', () => {
     expect(h.apiCalls.maqsam[0].untilMs).toBe(h.apiCalls.maqsam[1].sinceMs)
   })
 
+  it('maqsam_calls: duplicate API rows in a window collapse by dedupe_key', async () => {
+    h.apiRows.maqsam.push([...h.apiRows.maqsam[0]]) // identical cells -> same key
+    const res = await syncMirror(CFG, 'maqsam_calls', { full: true, monthsBack: 1, now: Date.parse('2026-10-08T10:00:00Z') })
+    expect(res.written).toBe(1)
+    expect(h.tables.maqsam_calls).toHaveLength(1)
+  })
+
   it('freshchat: incremental watermark is passed to the API pull', async () => {
     h.cfgStore.mirror_state_freshchat = { last_ts_ms: Date.parse('2026-10-08T00:00:00Z') }
     await syncMirror(CFG, 'freshchat', { now: Date.parse('2026-10-09T10:00:00Z') })
