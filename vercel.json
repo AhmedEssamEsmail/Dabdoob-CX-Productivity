@@ -8,13 +8,13 @@
     },
     {
       "path": "/api/cron/job-tph-hourly",
-      "schedule": "*/15 * * * *",
-      "_comment": "Legacy TPH job, every 15 minutes."
+      "schedule": "0 19 * * *",
+      "_comment": "Legacy TPH job. Hobby plan allows once-daily crons only, so this runs once a day at 19:00 UTC (~21:00-22:00 Cairo) instead of every 15 minutes — intra-day hourly captures are lost on this plan."
     },
     {
       "path": "/api/cron/job-tph-past-days",
-      "schedule": "0 * * * *",
-      "_comment": "Legacy past-day TPH refresh, hourly."
+      "schedule": "0 5 * * *",
+      "_comment": "Legacy past-day TPH refresh. Downgraded from hourly to once daily at 05:00 UTC, before the 06:30 daily chain."
     },
     {
       "path": "/api/cron/job-quarterly-report",
