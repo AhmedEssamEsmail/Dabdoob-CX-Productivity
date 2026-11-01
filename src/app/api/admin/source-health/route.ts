@@ -7,6 +7,7 @@ import { configAll } from '@/lib/platform/settings'
 import { dqSetting_, prodFileFor_ } from '@/lib/prod/adapters'
 import { prodToday_ } from '@/lib/prod/engine'
 import { fetchWorkbookTabs, sheetCreds } from '@/lib/jobs/sheets'
+import { hbRowState } from '@/lib/platform/health'
 
 export const maxDuration = 120
 
@@ -72,7 +73,7 @@ const REQUIRED_ENV = [
   'GOOGLE_SERVICE_ACCOUNT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'CRON_SECRET',
 ]
 
-const CRON_JOBS = ['prod_flags', 'productivity', 'prod_tph_touches', 'prod_tph_calls', 'prod_tph_cases_rebuilt', 'prod_tph_auto', 'prod_snapshot']
+const CRON_JOBS = ['mirror_sync', 'prod_flags', 'productivity', 'prod_tph_touches', 'prod_tph_calls', 'prod_tph_cases_rebuilt', 'prod_tph_auto', 'prod_snapshot']
 
 /** The legacy productivity workbook the migrate route reads (shard 04 audit). */
 const LEGACY_PRODUCTIVITY_SS = '1h77da05ZjlxjGCArlr1tGJv7OEtmemFGde8sBnitc-g'
@@ -204,7 +205,37 @@ export async function GET(req: Request) {
     checks.push({
       name: `cron ${job}`, kind: 'cron', ok: !!r,
       detail: r ? `last ${r.status} at ${r.at}${r.error ? ` — ${r.error}` : ''}` : 'never ran (no refresh_log row)',
-      hint: r ? undefined : 'Check CRON_SECRET, the Vercel cron deployment and vercel.json schedules.',
+      hint: r ? undefined : 'Check CRON_SECRET, the Vercel cron deployment and vercel.json schedules. Hobby plans run daily crons only — intra-day cadence is folded into per-hour daily entries.',
+    })
+  }
+
+  /* ---- health rows (per-job heartbeat staleness) --------------------------- */
+  const { data: healthRows, error: healthErr } = await supabase
+    .from('health')
+    .select('job, label, expect_every_min, grace_min, active, last_run_at, last_status, last_note, seeded_at')
+  if (healthErr) {
+    const d = describeDbError(healthErr, { table: 'health' })
+    checks.push({ name: 'health table', kind: 'cron', ok: false, detail: d.message, hint: d.hint })
+  } else {
+    const now = Date.now()
+    const watched = (healthRows || []).filter((r) => r.active !== false)
+    const down: string[] = []
+    const late: string[] = []
+    watched.forEach((r) => {
+      const s = hbRowState(r as never, now)
+      if (s.state === 'down') down.push(s.note)
+      else if (s.state === 'warn') late.push(s.note)
+    })
+    checks.push({
+      name: 'health heartbeats', kind: 'cron', ok: down.length === 0,
+      detail: watched.length
+        ? down.length
+          ? down.join(' | ')
+          : late.length
+            ? `all running; late: ${late.join(' | ')}`
+            : `${watched.length} jobs healthy`
+        : 'no health rows — heartbeats never wrote',
+      hint: !watched.length || down.length ? 'Heartbeats are written by hbBeat inside the job env — an empty/stale table means the cron chain never ran.' : undefined,
     })
   }
 
