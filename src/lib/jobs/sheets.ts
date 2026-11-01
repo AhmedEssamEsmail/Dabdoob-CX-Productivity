@@ -88,11 +88,22 @@ export async function fetchWorkbookTabs(id: string, tabs: string[]): Promise<Rec
   await Promise.all(
     tabs.map(async (tab) => {
       try {
-        const res = await sheets.spreadsheets.values.get({
-          spreadsheetId: id,
-          range: `'${tab.replace(/'/g, "\\'")}'!A1:ZZ100000`,
-        })
-        out[tab] = (res.data.values || []) as unknown[][]
+        /* values.get caps at the range end — big tabs (Activities ~193k rows) are
+         * paged 100k rows at a time until a short page. */
+        const PAGE = 100000
+        const MAX_PAGES = 10
+        let rows: unknown[][] = []
+        for (let p = 0; p < MAX_PAGES; p++) {
+          const from = p * PAGE + 1
+          const res = await sheets.spreadsheets.values.get({
+            spreadsheetId: id,
+            range: `'${tab.replace(/'/g, "\\'")}'!A${from}:ZZ${from + PAGE - 1}`,
+          })
+          const page = (res.data.values || []) as unknown[][]
+          rows = rows.concat(page)
+          if (page.length < PAGE) break
+        }
+        out[tab] = rows
       } catch (e) {
         // Only a missing tab reads as empty (missingOk). Anything else — the
         // sheet not being shared (403), a wrong spreadsheet id (404), a rate
