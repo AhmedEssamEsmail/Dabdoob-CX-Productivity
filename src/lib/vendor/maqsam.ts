@@ -26,10 +26,10 @@ export function maqsamCredsFromEnv(): MaqsamCreds | null {
   return { key, secret, base: maqsamBase(domain) }
 }
 
-/** 'dabdoob' | 'dabdoob.maqsam.com' | 'api.dabdoob.maqsam.com' | URL -> api.<host>/v2 */
+/** 'dabdoob' | 'dabdoob.maqsam.com' | 'api.mq.maqsam.com' | 'host/v2/calls' | URL -> api.<host>/v2 */
 export function maqsamBase(domain: string): string {
   let d = String(domain).trim().replace(/^https?:\/\//, '').replace(/\/+$/, '')
-  if (d.endsWith('/v2')) d = d.slice(0, -3)
+  d = d.split('/')[0] // host only — the env var may already carry /v2/calls
   if (d.startsWith('api.')) d = d.slice(4)
   if (!d.includes('.')) d = `${d}.maqsam.com`
   return `api.${d}/v2`

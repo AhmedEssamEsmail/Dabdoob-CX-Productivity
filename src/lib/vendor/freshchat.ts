@@ -23,10 +23,10 @@ export function freshchatCredsFromEnv(): FreshchatCreds | null {
   return { key, base: freshchatBase(domain) }
 }
 
-/** 'dabdoob' | 'dabdoob.freshchat.com' | 'https://…/v2' -> <host>/v2 */
+/** 'dabdoob' | 'dabdoob.freshchat.com' | 'https://…/v2' | 'host/path' -> <host>/v2 */
 export function freshchatBase(domain: string): string {
   let d = String(domain).trim().replace(/^https?:\/\//, '').replace(/\/+$/, '')
-  if (d.endsWith('/v2')) d = d.slice(0, -3)
+  d = d.split('/')[0] // host only — the env var may already carry a path
   if (!d.includes('.')) d = `${d}.freshchat.com`
   return `${d}/v2`
 }
@@ -43,6 +43,9 @@ export async function listFreshchatConversations(
   const out: FreshchatConversation[] = []
   const per = Math.min(100, Math.max(1, opts.itemsPerPage ?? 100))
   const maxPages = Math.max(1, opts.maxPages ?? 500)
+  // Freshworks accounts differ: some want Bearer, others the legacy Token scheme.
+  let auth = `Bearer ${creds.key}`
+  let authTried = false
   for (let page = 1; page <= maxPages; page++) {
     const q = new URLSearchParams({
       page: String(page),
@@ -50,7 +53,17 @@ export async function listFreshchatConversations(
       sort_by: 'updated_time',
       sort_order: 'desc',
     })
-    const data = await vendorJson(`https://${creds.base}/conversations?${q}`, { headers: { authorization: `Bearer ${creds.key}` } }, 'freshchat')
+    let data: unknown
+    try {
+      data = await vendorJson(`https://${creds.base}/conversations?${q}`, { headers: { authorization: auth } }, 'freshchat')
+    } catch (e) {
+      const de = e as { code?: string }
+      if (!authTried && (de.code === 'missing_credentials' || de.code === 'source_forbidden')) {
+        authTried = true
+        auth = `Token token=${creds.key}`
+        data = await vendorJson(`https://${creds.base}/conversations?${q}`, { headers: { authorization: auth } }, 'freshchat')
+      } else throw e
+    }
     const convs = Array.isArray(data)
       ? (data as FreshchatConversation[])
       : ((data as { conversations?: FreshchatConversation[] }).conversations || [])
