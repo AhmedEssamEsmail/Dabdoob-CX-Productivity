@@ -52,3 +52,11 @@ ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS note text;
 ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS log_id text;
 ALTER TABLE refresh_log ADD COLUMN IF NOT EXISTS type text;
 ALTER TABLE refresh_log ALTER COLUMN type DROP NOT NULL;
+
+-- RLS policies. Tables created via the dashboard/SQL editor on this project get
+-- RLS enabled by default; the app writes through the anon client (auth lives in
+-- the API routes), so mirror tables need a permissive policy like every other
+-- app table or every upsert fails with "row-level security policy" violations.
+CREATE POLICY app_all ON fd_activities FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY app_all ON maqsam_calls FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY app_all ON freshchat FOR ALL USING (true) WITH CHECK (true);
