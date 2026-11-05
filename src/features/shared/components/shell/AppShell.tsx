@@ -340,6 +340,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         className={`shell ${navOpen ? 'nav-open' : ''} ${railOff ? 'rail-off' : ''} ${
           viewingAs ? 'viewing-as' : ''
         }`}
+        data-app={ctxApp}
       >
         <a className="skip" href="#main">
           {D('Skip to content')}

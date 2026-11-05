@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./legacy-apps.css";
 import SiteChrome from "@/features/shared/components/layout/SiteChrome";
 import BootSplash from "@/features/shared/components/shell/BootSplash";
 
