@@ -1,0 +1,69 @@
+{
+  "generated_by": "final-sweep leftover audit (shard 70)",
+  "source": "specs/legacy-parity/data/legacy-route-registry.json (40 registry paths, extracted verbatim from the bundled legacy app registry)",
+  "status_legend": {
+    "page": "a real Next.js page exists at src/app/<path>/page.tsx",
+    "placeholder": "confirmed unbuilt legacy route — served by the catch-all UnbuiltPage ('Not built yet.') at src/app/[...slug]/page.tsx",
+    "redirect": "legacy alias ported via redirect() (none required — see redirects)"
+  },
+  "counts": { "total": 40, "page": 36, "placeholder": 4, "redirect": 0, "missing": 0 },
+  "routes": {
+    "my-day": { "status": "page", "file": "src/app/my-day/page.tsx" },
+    "overview": { "status": "page", "file": "src/app/overview/page.tsx" },
+    "people-holidays": { "status": "page", "file": "src/app/people-holidays/page.tsx" },
+    "admin": { "status": "page", "file": "src/app/admin/page.tsx" },
+    "quality-scores": { "status": "page", "file": "src/app/quality-scores/page.tsx" },
+    "audit-queue": { "status": "page", "file": "src/app/audit-queue/page.tsx" },
+    "my-audits": { "status": "page", "file": "src/app/my-audits/page.tsx" },
+    "ctls": { "status": "page", "file": "src/app/ctls/page.tsx" },
+    "disputes": { "status": "page", "file": "src/app/disputes/page.tsx" },
+    "calibration": { "status": "page", "file": "src/app/calibration/page.tsx" },
+    "kb-gaps": { "status": "page", "file": "src/app/kb-gaps/page.tsx" },
+    "my-auditor-kpis": { "status": "page", "file": "src/app/my-auditor-kpis/page.tsx" },
+    "quality-analytics": { "status": "page", "file": "src/app/quality-analytics/page.tsx" },
+    "qa-forms": { "status": "page", "file": "src/app/qa-forms/page.tsx" },
+    "status-validation": { "status": "page", "file": "src/app/status-validation/page.tsx" },
+    "my-status": { "status": "page", "file": "src/app/my-status/page.tsx" },
+    "productivity-analytics": { "status": "page", "file": "src/app/productivity-analytics/page.tsx" },
+    "tph": { "status": "page", "file": "src/app/tph/page.tsx" },
+    "queue": { "status": "page", "file": "src/app/queue/page.tsx" },
+    "aging": { "status": "page", "file": "src/app/aging/page.tsx" },
+    "checkins": { "status": "page", "file": "src/app/checkins/page.tsx" },
+    "analytics": { "status": "page", "file": "src/app/analytics/page.tsx" },
+    "heatmap": { "status": "page", "file": "src/app/heatmap/page.tsx" },
+    "scheduler": { "status": "page", "file": "src/app/scheduler/page.tsx" },
+    "agents": { "status": "page", "file": "src/app/agents/page.tsx" },
+    "one-on-ones": { "status": "page", "file": "src/app/one-on-ones/page.tsx" },
+    "tl-tasks": { "status": "page", "file": "src/app/tl-tasks/page.tsx" },
+    "meetings": { "status": "page", "file": "src/app/meetings/page.tsx" },
+    "my-actions": { "status": "page", "file": "src/app/my-actions/page.tsx" },
+    "notes": { "status": "page", "file": "src/app/notes/page.tsx" },
+    "coaching": { "status": "page", "file": "src/app/coaching/page.tsx" },
+    "hard-cases": { "status": "placeholder", "served_by": "src/app/[...slug]/page.tsx -> UnbuiltPage" },
+    "kpi-close": { "status": "placeholder", "served_by": "src/app/[...slug]/page.tsx -> UnbuiltPage" },
+    "trackers": { "status": "page", "file": "src/app/trackers/page.tsx" },
+    "escalation-matrix": { "status": "placeholder", "served_by": "src/app/[...slug]/page.tsx -> UnbuiltPage" },
+    "tl-performance": { "status": "page", "file": "src/app/tl-performance/page.tsx" },
+    "kb-tracker": { "status": "page", "file": "src/app/kb-tracker/page.tsx" },
+    "kpi-logs": { "status": "page", "file": "src/app/kpi-logs/page.tsx" },
+    "mail-desk": { "status": "page", "file": "src/app/mail-desk/page.tsx" },
+    "fcr": { "status": "placeholder", "served_by": "src/app/[...slug]/page.tsx -> UnbuiltPage" }
+  },
+  "hidden_routes": {
+    "ecosystem": "src/app/ecosystem/page.tsx — hidden URL-only page in every legacy bundle; renders bare (no rail/banner/popups) like the legacy n1 early return. Not in the rail."
+  },
+  "extra_routes_not_in_registry": {
+    "admin/roster": "src/app/admin/roster/page.tsx — roster editor (backs /api/roster)",
+    "admin/config": "src/app/admin/config/page.tsx — config table editor (backs /api/config)",
+    "tph-grid": "src/app/tph-grid/page.tsx — extra TPH grid view, no registry entry and no legacy equivalent found",
+    "auth/login": "src/app/auth/login/page.tsx",
+    "auth/logout": "src/app/auth/logout/page.tsx",
+    "": "src/app/page.tsx — renders the app fallback page in place at '/', matching the legacy empty-hash root branch"
+  },
+  "compatibility": {
+    "hash_shim": "src/features/shared/components/shell/HashShim.tsx — '#/path?q' -> '/path?q' and '?page=path' -> '/path'; drops page/mock/role; validates /^[a-z0-9-]+$/",
+    "resolve_link": "src/features/shared/shell/gates.ts — '#/path' -> '/<path>' internal; cross-app entries resolve to their group default page",
+    "catch_all": "src/app/[...slug]/page.tsx — known registry path without a page -> UnbuiltPage; anything else -> redirect('/')",
+    "redirects": "none required — legacy doGet() serves the HTML shell (no redirect), no AppRedirect helper exists, ScriptApp.getService().getUrl() is used only for generated email links whose '#/...' targets are all registered paths"
+  }
+}

@@ -283,11 +283,19 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     )
   }
 
+  /* Legacy n1: the ecosystem page renders bare — no rail, banner or popups. */
+  if (path === 'ecosystem') {
+    return <BootProvider value={boot}>{children}</BootProvider>
+  }
+
   const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
     inApp(page, ctxApp)
   )
-  /* Legacy hash router: an empty path defaults to 'overview'. */
-  const requested = PAGES.find((page) => page.path === (path || 'overview'))
+  /* Legacy hash router: 'requested' is the URL's page; an empty path has none —
+     the fallback page renders at the root URL with no note and no redirect. */
+  const requested = path
+    ? PAGES.find((page) => page.path === path)
+    : undefined
   const fallback =
     visible.find((page) => page.path === 'my-day') ??
     visible.find((page) => page.path === 'overview') ??

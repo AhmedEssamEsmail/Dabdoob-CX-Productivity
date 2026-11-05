@@ -4,7 +4,9 @@ export const maxDuration = 60
 
 async function checkAdminAuth(request: Request): Promise<boolean> {
   const migrationKey = request.headers.get('x-migration-key')
-  const expectedKey = process.env.MIGRATION_SECRET_KEY || 'migration-secret-2024'
+  const expectedKey = process.env.MIGRATION_SECRET_KEY
+  // Fail closed: without an env key this route must not accept anything.
+  if (!expectedKey) return false
   return migrationKey === expectedKey
 }
 

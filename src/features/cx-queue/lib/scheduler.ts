@@ -52,7 +52,7 @@ function daysInMonth(mk: string): { key: string; dow: number; dom: number }[] {
 
 /** schedulerSettings verbatim-ish: config rows + team + names. */
 export async function schedulerSettings(): Promise<Record<string, unknown>> {
-  await requireRole(['admin'])
+  await requireRole(['admin', 'tl'])
   const rows = await table_(SCH_TABLES.config)
   const cfg: Record<string, unknown> = {}
   rows.forEach((r) => {

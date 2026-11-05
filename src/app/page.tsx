@@ -1,46 +1,37 @@
-import Link from 'next/link'
+'use client'
 
-const AREAS = [
-  {
-    href: '/status-validation',
-    title: 'Status validation',
-    purpose:
-      'IDLE time with cases in it, flagged for your review: accept the status it counts as, or revert with a reason.',
-  },
-  {
-    href: '/my-status',
-    title: 'My status',
-    purpose:
-      'Your flagged IDLE time, raw, suggested and reviewed, and your productivity before and after; dispute a flag.',
-  },
-  {
-    href: '/tph',
-    title: 'TPH and caps',
-    purpose:
-      'Which channel each agent is on, the cases waiting each hour, and each agent\u2019s touches against their share of them.',
-  },
-]
+/* Legacy root behaviour: an empty hash/path renders the app's fallback page in
+   place — the first visible page, preferring My day then Hub home — instead of
+   a landing screen, exactly like the legacy shell's n1 root branch. The shell
+   computes the same fallback for the rail's aria-current, so this mirrors it. */
+import { PAGES } from '@/features/shared/components/shell/registry'
+import {
+  appForGroup,
+  inApp,
+  pageAllowed,
+} from '@/features/shared/shell/gates'
+import { useBoot } from '@/features/shared/shell/context'
+import { MyDayPage } from '@/features/cx-hub/components/my-day-page'
+import { OverviewPage } from '@/features/cx-hub/components/overview-page'
+import { PeopleHolidaysPage } from '@/features/cx-hub/components/people-holidays-page'
+import { AdminPage } from '@/features/cx-hub/components/admin-page'
 
-/** Landing hub rendered with the legacy page chrome (page/page-head/cx-panel). */
 export default function Home() {
-  return (
-    <section className="page" aria-labelledby="page-title">
-      <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          CX Productivity
-        </h1>
-        <p className="page-purpose">
-          Review status, track your productivity, and keep hourly workload in view.
-        </p>
-      </header>
-      <div className="cx-grid-2">
-        {AREAS.map((a) => (
-          <Link key={a.href} href={a.href} className="cx-panel cx-panel--pad">
-            <h2 className="cx-section__title">{a.title}</h2>
-            <p className="cx-muted">{a.purpose}</p>
-          </Link>
-        ))}
-      </div>
-    </section>
+  const boot = useBoot()
+  if (!boot) return null
+  /* The shell resolves '/' to PAGES[0] (my-day) for the app context — hub. */
+  const ctxApp = appForGroup(PAGES[0].group)
+  const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter(
+    (page) => inApp(page, ctxApp)
   )
+  const fallback =
+    visible.find((page) => page.path === 'my-day') ??
+    visible.find((page) => page.path === 'overview') ??
+    visible[0]
+  if (!fallback) return null
+  if (fallback.path === 'my-day') return <MyDayPage route={{ title: fallback.title }} />
+  if (fallback.path === 'people-holidays')
+    return <PeopleHolidaysPage route={{ title: fallback.title }} />
+  if (fallback.path === 'admin') return <AdminPage route={{ title: fallback.title }} />
+  return <OverviewPage route={{ title: fallback.title }} />
 }

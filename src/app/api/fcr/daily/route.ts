@@ -6,24 +6,29 @@ import { fcrDailyInput } from '@/features/cx-people/lib/scorecard/fcr'
 import { db } from '@/features/shared/platform/repo'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const date = searchParams.get('date')
-  const agentEmail = searchParams.get('agent_email')
+  try {
+    await requireRole(['admin', 'tl'])
+    const { searchParams } = new URL(req.url)
+    const date = searchParams.get('date')
+    const agentEmail = searchParams.get('agent_email')
 
-  let query = db().from('fcr_daily').select('*')
+    let query = db().from('fcr_daily').select('*')
 
-  if (date) {
-    query = query.eq('date', date)
+    if (date) {
+      query = query.eq('date', date)
+    }
+    if (agentEmail) {
+      query = query.eq('agent_email', agentEmail)
+    }
+
+    const { data, error } = await query.order('date', { ascending: false })
+
+    if (error) return dbErr('fcr_daily', error)
+
+    return NextResponse.json(data)
+  } catch (e) {
+    return apiError(e)
   }
-  if (agentEmail) {
-    query = query.eq('agent_email', agentEmail)
-  }
-
-  const { data, error } = await query.order('date', { ascending: false })
-
-  if (error) return dbErr('fcr_daily', error)
-
-  return NextResponse.json(data)
 }
 
 /**
