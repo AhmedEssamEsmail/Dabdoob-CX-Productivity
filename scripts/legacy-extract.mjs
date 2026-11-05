@@ -251,6 +251,27 @@ for (const [app, dir] of Object.entries(APPS)) {
         bytes: node.end - node.start,
         deps: deps.filter((d) => d !== sym),
       }
+      // closure slice: the component + every top-level symbol it transitively
+      // touches, dependency-ordered — one self-contained file per page.
+      const seen = new Set()
+      const order = []
+      const visit = (name) => {
+        if (seen.has(name) || !top.has(name)) return
+        seen.add(name)
+        const n = ast.program.body.find((x) => x.start === top.get(name).start)
+        if (n) for (const d of depsOf(n, new Set(top.keys()), prettyCode)) visit(d)
+        order.push(name)
+      }
+      visit(sym)
+      const emitted = new Set()
+      const closureSrc = order
+        .map((n) => top.get(n))
+        .filter((n) => !emitted.has(n.start) && emitted.add(n.start))
+        .map((n) => prettyCode.slice(n.start, n.end))
+        .join('\n\n')
+      fs.writeFileSync(path.join(outDir, 'pages', `${safe}.closure.js`), closureSrc + '\n')
+      pages[route].closureSymbols = order.length
+      pages[route].closureBytes = closureSrc.length
     }
   } else {
     unmapped.push({ route: '*', reason: 'no component dispatch table found' })
