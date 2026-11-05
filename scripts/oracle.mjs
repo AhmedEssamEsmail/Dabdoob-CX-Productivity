@@ -191,7 +191,9 @@ function __mkRange__(cells, r, c, nr, nc) {
     for (var i = 0; i < nr; i++) {
       var row = cells[r - 1 + i] || [];
       var vals = [];
-      for (var j = 0; j < nc; j++) vals.push(c - 1 + j < row.length ? row[c - 1 + j] : '');
+      // __rebind__ revives '@@ms:'/'@@fn:'/'@@ss:' markers so fixture cells can carry
+      // real Dates/functions the same way call args can.
+      for (var j = 0; j < nc; j++) vals.push(__rebind__(c - 1 + j < row.length ? row[c - 1 + j] : ''));
       out.push(vals);
     }
     return out;
