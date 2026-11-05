@@ -4,18 +4,19 @@ Everything that cannot be completed autonomously lands here. Each entry: the iss
 
 ---
 
-## B1 — Live Supabase verification & pg_cron setup
+## B1 — Supabase DDL access (pg_cron + migrations) — PARTIALLY RESOLVED 2026-11-05
 
-**Issue:** The `supabase` MCP server is unavailable (`Failed to list tools for server 'supabase'`), so nothing can inspect the live database: applied migrations, RLS policies, existing out-of-band tables, row counts, or enabling `pg_cron`.
+**Verified working:** `.env.local` service-role credentials reach project `uugeyulccyytvgcabzzx` via PostgREST. 53 live tables enumerated — `qa_*` (7), `sc_*`, `kpi_*`, `md`, `tlp`, `tls`, `team_structure`, `weekly_schedule`, `days_off`, `esc_seen` already exist out-of-band beyond `supabase/migrations/*.sql` (only 4 files). Read/verify/data ops are unblocked without MCP.
 
-**Impact:** Can't verify schema parity vs `supabase/migrations/*.sql`, can't confirm RLS correctness for role gates, can't install the `pg_cron` schedules required by decision D-SCHED (15-min jobs).
+**Still needed:** DDL — no `rpc/` functions are exposed, and the `supabase` CLI account (logged in, `projects list` empty) has no access to this project. Enabling `pg_cron` and pushing new migrations requires one of:
+1. `pg_cron` enabled in the Supabase dashboard (Database → Extensions) by the owner, or
+2. The database password / connection string for `psql` or `supabase db push`, or
+3. A CLI login on an account with project access, or
+4. The supabase MCP server restored.
 
-**Fix (pick one):**
-1. Restore the supabase MCP server for this session, or
-2. Enable `pg_cron` in the Supabase dashboard (Database → Extensions → `pg_cron`) and run `scripts/ops/probe-db.ts` + `scripts/verify-db.js` manually and share output, or
-3. Grant direct `psql` access (connection string in `.env.local`) so verification runs via scripts.
+**Reconcile task:** live table set must be diffed against `supabase/migrations/` during each module shard; missing tables become new migration files awaiting a DDL path.
 
-**Status:** pending — rechecked each session until resolved.
+**Status:** DDL blocked; reads unblocked.
 
 ---
 
