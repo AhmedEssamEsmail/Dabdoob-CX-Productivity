@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/features/shared/platform/identity'
 import { apiError } from '@/features/shared/lib/api-error'
-import {
-  flagAgingTicket,
-  getOpenAgingFlags,
-  resolveAgingFlag,
-} from '@/features/cx-queue/lib/server'
+import { getOpenAgingFlags } from '@/features/cx-queue/lib/server'
+import { agingFlagTicket, agingResolveFlag } from '@/features/cx-queue/lib/pages'
 
 /**
  * GET /api/queue/aging-flags — dqOpenAgingFlags_ on dq_aging_flags joined to
  * the aging board (aging_open_tickets) when that store exists; flags only,
  * `aging:'unavailable'`, when it does not.
  *
- * POST — two actions, like the legacy page calls:
- *   { ticket_id, note?, tl_email? }                 create an open flag
- *   { flag_id|flagId, resolved_note? }              resolve an open flag
+ * POST — the AgingHelp.js pair, verbatim (roles are enforced inside the fns):
+ *   { ticket_id|ticketId, note }        agingFlagTicket — admin/tl/agent
+ *   { flag_id|flagId, resolved_note? }  agingResolveFlag — admin/tl
  */
 export async function GET() {
   try {
@@ -26,14 +22,13 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const user = await requireRole(['admin', 'tl'])
     const body = ((await req.json().catch(() => ({}))) || {}) as Record<string, unknown>
     const flagId = body.flag_id ?? body.flagId
-    const row =
+    const out =
       flagId !== undefined && flagId !== null && String(flagId) !== ''
-        ? await resolveAgingFlag(body, user.email)
-        : await flagAgingTicket(body, user.email)
-    return NextResponse.json(row)
+        ? await agingResolveFlag(flagId, body.resolved_note ?? body.resolvedNote ?? '')
+        : await agingFlagTicket(body.ticket_id ?? body.ticketId, body.note)
+    return NextResponse.json(out)
   } catch (e) {
     return apiError(e)
   }

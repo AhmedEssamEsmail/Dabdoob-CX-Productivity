@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /**
  * QueueCore.js + TlSnapshots.js pure parts ported 1:1 — the shared queue/aging/check-in
  * readers and the TL snapshot rules. Store reads (tables, the data spreadsheet, Config)
@@ -19,12 +20,14 @@ import {
 
 // ---------------------------------------------------------------- QueueCore.js
 
-export const DQ_FLAGS_TABLE = 'aging_flags'
+// Live Postgres table names (migration 003 owns the stores; the legacy sheet
+// tabs were `aging_flags` / `queue_status_submissions`).
+export const DQ_FLAGS_TABLE = 'dq_aging_flags'
 export const DQ_FLAGS_HEADERS = [
   'flag_id', 'ticket_id', 'note', 'tl_email', 'resolved_at', 'resolved_by', 'resolved_note',
   'submitted_by', 'submitted_at',
 ]
-export const DQ_SUBMISSIONS_TABLE = 'queue_status_submissions'
+export const DQ_SUBMISSIONS_TABLE = 'queue_submissions'
 export const DQ_SUBMISSIONS_HEADERS = [
   'submission_id', 'slot_date', 'slot', 'snapshot_key', 'status', 'queues_json',
   'corrections_json', 'correction_reason', 'general_note', 'help_needed', 'help_note',
@@ -512,4 +515,355 @@ export function tlqCol_(header: unknown[], names: string[]): number {
     if (j !== -1) return j
   }
   return -1
+}
+
+// ---------------------------------------------------------------- Aggregates.js (hub)
+// Verbatim ports of the pure builders; the I/O callers live in lib/server.ts
+// and lib/jobs.ts. Header constants keep the legacy names.
+
+export const DQ_AGING_HEADERS = ['ticket_id', 'queue', 'group_name', 'status', 'actionable', 'country', 'channel', 'contact_type_1',
+  'created_at', 'age_h', 'band', 'agent_email', 'agent_name', 'tl_email', 'tl_name', 'refreshed_at']
+// bands_json: open count per aging band (aging_bands_h edges + 1). Tabs made before it keep unused b0..b4 columns.
+export const DQ_QUEUE_NOW_HEADERS = ['queue', 'kind', 'open', 'actionable', 'unassigned', 'oldest_h',
+  'over_top', 'created_today', 'resolved_today', 'as_of', 'source_as_of', 'stale', 'by_status_json', 'bands_json']
+export const DQ_INFLOW_HEADERS = ['date', 'channel', 'country', 'inflow', 'updated_at']
+export const DQ_INFLOW_ROLLUP_HEADERS = ['period', 'channel', 'country', 'inflow', 'days', 'partial', 'updated_at']
+export const DQ_INFLOW_HOURLY_HEADERS = ['date', 'hour', 'channel', 'country', 'inflow']
+export const DQ_AGENT_PERF_HEADERS = ['email', 'name', 'tl_email', 'tl_name', 'period', 'from_date', 'to_date', 'days', 'overall_pct',
+  'inbound_pct', 'texting_pct', 'wa_pct', 'inbound_achieved', 'inbound_missed', 'texting_achieved', 'wa_achieved',
+  'productive_min', 'idle_min', 'audits', 'avg_score']
+export const DQ_AGENT_DAILY_HEADERS = ['date', 'email', 'overall_pct', 'inbound_achieved', 'texting_achieved', 'wa_achieved']
+export const DQ_SNAPSHOT_HEADERS = ['snapshot_key', 'slot_date', 'slot', 'captured_at', 'data_as_of', 'late', 'queue',
+  'open', 'actionable', 'unassigned', 'oldest_h', 'over_top', 'created_today', 'resolved_today',
+  'stale', 'by_status_json', 'bands_json']
+
+/** dqAgingOpts_ verbatim as a pure read over the injected cfg map. */
+export function dqAgingOpts_(cfg: Cfg): Record<string, unknown> {
+  return {
+    bizTz: String(dqSetting_(cfg, 'business_tz')), dataTz: String(dqSetting_(cfg, 'data_tz')),
+    edges: dqSetting_(cfg, 'aging_bands_h'), open: dqSetting_(cfg, 'open_statuses'), actionable: dqSetting_(cfg, 'actionable_statuses'),
+    excluded: dqSetting_(cfg, 'inflow_excluded_groups'), excludedText: dqSetting_(cfg, 'queue_excluded_text'), queueMap: dqSetting_(cfg, 'queue_map') || {},
+    chatMaxAgeH: dqSetting_(cfg, 'chat_open_max_age_h'), staleAfterMin: dqSetting_(cfg, 'daily_report_stale_after_min'),
+  }
+}
+
+/** dqStatusList_ verbatim: status list setting -> trimmed lower-case labels. */
+export function dqStatusList_(v: unknown): string[] {
+  const list = Array.isArray(v) ? v : String(v || '').split(',')
+  return list.map((s) => String(s).trim().toLowerCase()).filter(String)
+}
+
+export function dqEmptyQueue_(name: string, kind: string, nBands: number): Record<string, unknown> {
+  const bands: number[] = []
+  for (let i = 0; i < (nBands || 5); i++) bands.push(0)
+  return { queue: name, kind, open: 0, actionable: 0, unassigned: 0, oldest_h: 0, bands_json: bands,
+    over_top: 0, created_today: 0, resolved_today: 0, as_of: '', source_as_of: '', stale: false, by_status_json: {} }
+}
+
+/**
+ * dqBuildAging_ verbatim: ticket rows -> open-ticket aging rows + per-queue health.
+ * people = dqPeopleIndex_() output or null.
+ */
+export function dqBuildAging_(
+  tickets: Record<string, unknown>[],
+  now: Date,
+  opts: Record<string, any>,
+  people: { byFdId: Record<string, { email?: string; name?: string; tlEmail?: string; tlName?: string }> } | null
+): { aging: Record<string, unknown>[]; queues: Record<string, unknown>[]; dropped: Record<string, unknown> } {
+  const today = dqDateKey_(now, opts.bizTz)
+  const tp = today.split('-'), np = dqAddDays_(today, 1).split('-')
+  const dayStart = dqWallToUtc_(+tp[0], +tp[1], +tp[2], 0, 0, 0, opts.bizTz).getTime()
+  const dayEnd = dqWallToUtc_(+np[0], +np[1], +np[2], 0, 0, 0, opts.bizTz).getTime()
+  const isToday = (d: Date) => { const t = d.getTime(); return t >= dayStart && t < dayEnd }
+  const exMemo: Record<string, boolean> = {}
+  const isExcluded = (g: string) => (g in exMemo ? exMemo[g] : (exMemo[g] = dqInList_(g, opts.excluded) || dqNameHasText_(g, opts.excludedText)))
+  const top = opts.edges.length
+  const queues: Record<string, Record<string, unknown>> = {}
+  const aging: Record<string, unknown>[] = []
+  const openL = dqStatusList_(opts.open), actL = dqStatusList_(opts.actionable)
+  const dropped: Record<string, unknown> = { excludedGroup: 0, notOpenStatus: {}, noCreatedAt: 0, noCreatedSample: '' }
+  const q = (name: string) => (queues[name] = queues[name] || dqEmptyQueue_(name, 'ticket', top + 1))
+  tickets.forEach((t) => {
+    const group = String(t.group_name || '')
+    if (isExcluded(group)) { (dropped.excludedGroup as number)++; return }
+    const name = (opts.queueMap as Record<string, string>)[group] || group || '(no group)'
+    const created = dqParseTsPort_(t.created_at, opts.dataTz)
+    const resolved = dqParseTsPort_(t.resolved_at, opts.dataTz)
+    if (created && isToday(created)) (q(name).created_today as number)++
+    if (resolved && isToday(resolved)) (q(name).resolved_today as number)++
+    const st = String(t.status)
+    if (openL.indexOf(st.trim().toLowerCase()) === -1) {
+      const m = dropped.notOpenStatus as Record<string, number>
+      m[st] = (m[st] || 0) + 1
+      return
+    }
+    if (!created) { (dropped.noCreatedAt as number)++; if (!dropped.noCreatedSample) dropped.noCreatedSample = String(t.created_at); return }
+    const ageH = Math.max(0, (now.getTime() - created.getTime()) / 3600000)
+    const band = dqAgingBand_(ageH, opts.edges)
+    const row = q(name)
+    ;(row.open as number)++
+    const bs = row.by_status_json as Record<string, number>
+    bs[st] = (bs[st] || 0) + 1
+    const act = actL.indexOf(st.trim().toLowerCase()) !== -1
+    if (act) (row.actionable as number)++
+    if (!t.responder_id) (row.unassigned as number)++
+    ;(row.bands_json as number[])[band]++
+    if (band === top) (row.over_top as number)++
+    if (ageH > (row.oldest_h as number)) row.oldest_h = Math.round(ageH * 10) / 10
+    const p = (people && people.byFdId[String(t.responder_id)]) || {}
+    aging.push({
+      ticket_id: String(t.ticket_id), queue: name, group_name: group, status: String(t.status), actionable: act,
+      country: String(t.country || ''), channel: String(t.channel || ''), contact_type_1: String(t.contact_type_1 || ''),
+      created_at: created.toISOString(), age_h: Math.round(ageH * 10) / 10, band,
+      agent_email: p.email || '', agent_name: p.name || (t.responder_id ? 'Agent ' + t.responder_id : ''),
+      tl_email: p.tlEmail || '', tl_name: p.tlName || '', refreshed_at: now.toISOString(),
+    })
+  })
+  aging.sort((a, b) => (b.age_h as number) - (a.age_h as number))
+  const rows = Object.keys(queues).map((k) => { queues[k].as_of = now.toISOString(); return queues[k] })
+    .filter((r) => r.open || r.created_today || r.resolved_today)
+  return { aging, queues: rows, dropped }
+}
+
+// dqParseTs_ is imported lazily to keep the type surface simple; it is the shared adapter.
+import { dqParseTs_ } from '@/features/shared/lib/adapters'
+const dqParseTsPort_ = dqParseTs_
+
+/**
+ * dqBuildChatQueue_ verbatim: Freshchat rows (A..G) -> one 'Chats' queue row.
+ */
+export function dqBuildChatQueue_(chatRows: unknown[][], now: Date, opts: Record<string, any>): Record<string, unknown> {
+  const today = dqDateKey_(now, opts.bizTz)
+  const row = dqEmptyQueue_('Chats', 'chat', opts.edges.length + 1)
+  const maxAgeH = Number(opts.chatMaxAgeH) || 48
+  let newest: Date | null = null
+  let tooOld = 0
+  const seen: Record<string, boolean> = {}
+  chatRows.forEach((r) => {
+    const upd = dqParseTsPort_(r[3], opts.dataTz)
+    if (upd && upd <= now && (!newest || upd > newest)) newest = upd
+    const id = String(r[6] || r[2] || '')
+    if (id && seen[id]) return
+    if (id) seen[id] = true
+    const init = dqParseTsPort_(r[0], opts.dataTz)
+    const res = dqParseTsPort_(r[4], opts.dataTz)
+    if (init && dqDateKey_(init, opts.bizTz) === today) (row.created_today as number)++
+    if (res && dqDateKey_(res, opts.bizTz) === today) (row.resolved_today as number)++
+    if (!init || res || /RESOLV|CLOS/i.test(String(r[1]))) return
+    const ageH = Math.max(0, (now.getTime() - init.getTime()) / 3600000)
+    if (ageH > maxAgeH) { tooOld++; return }
+    const band = dqAgingBand_(ageH, opts.edges)
+    const st = String(r[1] || '(no status)')
+    const bs = row.by_status_json as Record<string, number>
+    bs[st] = (bs[st] || 0) + 1
+    ;(row.open as number)++
+    ;(row.actionable as number)++
+    ;(row.bands_json as number[])[band]++
+    if (band === opts.edges.length) (row.over_top as number)++
+    if (ageH > (row.oldest_h as number)) row.oldest_h = Math.round(ageH * 10) / 10
+  })
+  if (tooOld) (row.by_status_json as Record<string, number>)['Older than ' + maxAgeH + ' h (not counted)'] = tooOld
+  row.as_of = now.toISOString()
+  row.source_as_of = newest ? (newest as Date).toISOString() : ''
+  row.stale = !newest || now.getTime() - (newest as Date).getTime() > (Number(opts.staleAfterMin) || 90) * 60000
+  return row
+}
+
+/** dqCountry_ verbatim. */
+export function dqCountry_(v: unknown): string {
+  const s = String(v || '').trim()
+  return !s || s === 'NA' || s === '#N/A' ? '(unknown)' : s
+}
+
+/** dqChatCountry_ verbatim. */
+export function dqChatCountry_(channelName: unknown, map: unknown): string {
+  const s = String(channelName || '').toLowerCase()
+  const keys = Object.keys((map as Record<string, string>) || {})
+  for (let i = 0; i < keys.length; i++) if (s.indexOf(keys[i]) !== -1) return (map as Record<string, string>)[keys[i]]
+  return '(unknown)'
+}
+
+/**
+ * dqCountInflow_ verbatim: inbound calls + chats + internal escalations per
+ * business date and per hour between fromKey and toKey.
+ */
+export function dqCountInflow_(
+  input: { tickets?: Record<string, unknown>[]; chats?: unknown[][]; calls?: unknown[][] },
+  o: Record<string, any>
+): { daily: Record<string, number>; hourly: Record<string, number>; ranges: Record<string, { from: string; to: string }> } {
+  const daily: Record<string, number> = {}, hourly: Record<string, number> = {}, ranges: Record<string, { from: string; to: string }> = {}
+  const add = (channel: string, at: Date | null, country: string) => {
+    if (!at) return
+    const key = dqDateKey_(at, o.bizTz)
+    if (key < o.fromKey || key > o.toKey) return
+    const r = (ranges[channel] = ranges[channel] || { from: key, to: key })
+    if (key < r.from) r.from = key
+    if (key > r.to) r.to = key
+    const hour = Number(formatDate_(at, o.bizTz, 'H'))
+    const dk = key + '|' + channel + '|' + country
+    daily[dk] = (daily[dk] || 0) + 1
+    const hk = key + '|' + hour + '|' + channel + '|' + country
+    hourly[hk] = (hourly[hk] || 0) + 1
+  }
+  ;(input.tickets || []).forEach((t) => {
+    if (String(t.channel) !== o.escChannel) return
+    if (dqInList_(t.group_name, o.excluded)) return
+    if (t.requester_id && o.cxIds[String(t.requester_id)]) return
+    if (o.escStatuses.indexOf(String(t.status)) === -1 && !(o.escSeen && o.escSeen[String(t.ticket_id)])) return
+    add('escalation', dqParseTsPort_(t.created_at, o.dataTz), dqCountry_(t.country))
+  })
+  const seenChat: Record<string, boolean> = {}
+  ;(input.chats || []).forEach((r) => {
+    const id = String(r[6] || r[2] || '')
+    if (id) { if (seenChat[id]) return; seenChat[id] = true }
+    add('chat', dqParseTsPort_(r[0], o.dataTz), dqChatCountry_(r[5], o.chatCountryMap))
+  })
+  const seenCall: Record<string, boolean> = {}
+  ;(input.calls || []).forEach((r) => {
+    if (String(r[3] || '').toLowerCase() !== 'inbound') return
+    const id = String(r[0] || '')
+    if (id) { if (seenCall[id]) return; seenCall[id] = true }
+    add('call', dqParseTsPort_(r[1], o.dataTz), dqCountry_(r[4]))
+  })
+  ranges.escalation = { from: o.fromKey, to: o.toKey }
+  return { daily, hourly, ranges }
+}
+
+/** dqRollupInflow_ verbatim: daily rows -> week (Sunday start) / month rollups. */
+export function dqRollupInflow_(dailyRows: Record<string, unknown>[], grain: 'week' | 'month', todayKey: string): Record<string, unknown>[] {
+  const out: Record<string, { period: string; channel: unknown; country: unknown; inflow: number; days: Record<string, boolean>; partial: boolean }> = {}
+  let firstDay: string | null = null
+  dailyRows.forEach((r) => { if (!firstDay || String(r.date) < firstDay) firstDay = String(r.date) })
+  dailyRows.forEach((r) => {
+    const period = grain === 'week' ? dqWeekStart_(String(r.date)) : String(r.date).slice(0, 7)
+    const k = period + '|' + r.channel + '|' + r.country
+    const o = (out[k] = out[k] || { period, channel: r.channel, country: r.country, inflow: 0, days: {}, partial: false })
+    o.inflow += Number(r.inflow) || 0
+    o.days[String(r.date)] = true
+  })
+  const curPeriod = grain === 'week' ? dqWeekStart_(todayKey) : todayKey.slice(0, 7)
+  const firstPeriod = firstDay ? (grain === 'week' ? dqWeekStart_(firstDay) : (firstDay as string).slice(0, 7)) : ''
+  return Object.keys(out).sort().map((k) => {
+    const o = out[k]
+    const startsLate = grain === 'week' ? (firstDay as string) > o.period : (firstDay as string) > o.period + '-01'
+    return { period: o.period, channel: o.channel, country: o.country, inflow: o.inflow, days: Object.keys(o.days).length,
+      partial: o.period === curPeriod || (o.period === firstPeriod && startsLate), updated_at: new Date().toISOString() }
+  })
+}
+
+export function dqRatio_(a: number, b: number): number | null {
+  return b > 0 ? a / b : null
+}
+
+/** dqAgentPerf_ verbatim: prod_daily_layers-style rows -> per-agent period rows + 30-day daily rows. */
+export function dqAgentPerf_(
+  prodRows: Record<string, unknown>[],
+  peopleByEmail: Record<string, { name?: string; tlEmail?: string; tlName?: string }>,
+  todayKey: string
+): { perf: Record<string, unknown>[]; daily: Record<string, unknown>[] } {
+  const yesterday = dqAddDays_(todayKey, -1)
+  const monthStart = yesterday.slice(0, 7) + '-01'
+  const periods = [
+    { period: '7d', from: dqAddDays_(todayKey, -7), to: yesterday },
+    { period: 'prev7d', from: dqAddDays_(todayKey, -14), to: dqAddDays_(todayKey, -8) },
+    { period: 'mtd', from: monthStart, to: yesterday },
+  ]
+  const acc: Record<string, any> = {}
+  const daily: Record<string, unknown>[] = []
+  const dailyFrom = dqAddDays_(todayKey, -30)
+  prodRows.forEach((r) => {
+    const email = String(r.email || '').toLowerCase()
+    if (!email || !r.date) return
+    const n = (k: string) => Number((r as Record<string, unknown>)[k]) || 0
+    if (String(r.date) >= dailyFrom && String(r.date) <= yesterday) {
+      daily.push({ date: r.date, email, overall_pct: r.overallProdPct === '' ? '' : Number(r.overallProdPct),
+        inbound_achieved: n('inboundAchieved'), texting_achieved: n('textingAchieved'), wa_achieved: n('waAchieved') })
+    }
+    periods.forEach((p) => {
+      if (String(r.date) < p.from || String(r.date) > p.to) return
+      const k = email + '|' + p.period
+      const a = (acc[k] = acc[k] || { email, name: (r as Record<string, unknown>).agentName, p, days: {}, s: {} })
+      a.days[String(r.date)] = true
+      ;['productiveMinResolution', 'productiveMinAux', 'inboundAchieved', 'inboundTarget', 'inboundMissed', 'textingAchieved',
+        'textingTarget', 'waAchieved', 'waTarget', 'idleMin', 'totalAudits'].forEach((f) => { a.s[f] = (a.s[f] || 0) + n(f) })
+      if (n('totalAudits') > 0 && r.avgScore !== '' && r.avgScore !== null) a.s.scoreSum = (a.s.scoreSum || 0) + Number(r.avgScore) * n('totalAudits')
+    })
+  })
+  const perf = Object.keys(acc).map((k) => {
+    const a = acc[k], s = a.s, who = peopleByEmail[a.email] || {}
+    return {
+      email: a.email, name: who.name || String(a.name || a.email), tl_email: who.tlEmail || '', tl_name: who.tlName || '',
+      period: a.p.period, from_date: a.p.from, to_date: a.p.to, days: Object.keys(a.days).length,
+      overall_pct: dqRatio_(s.productiveMinResolution, s.productiveMinAux), inbound_pct: dqRatio_(s.inboundAchieved, s.inboundTarget),
+      texting_pct: dqRatio_(s.textingAchieved, s.textingTarget), wa_pct: dqRatio_(s.waAchieved, s.waTarget),
+      inbound_achieved: s.inboundAchieved, inbound_missed: s.inboundMissed, texting_achieved: s.textingAchieved,
+      wa_achieved: s.waAchieved, productive_min: Math.round(s.productiveMinAux), idle_min: Math.round(s.idleMin),
+      audits: s.totalAudits, avg_score: dqRatio_(s.scoreSum || 0, s.totalAudits),
+    }
+  })
+  return { perf, daily }
+}
+
+/**
+ * dqTickState_ verbatim: what this tick's sync and aggregates did, for dqCheckinTick_.
+ */
+export function dqTickState_(sync: Record<string, unknown> | null, agg: Record<string, unknown> | null): Record<string, unknown> {
+  const syncOk = !!sync && !sync.skipped
+  return {
+    fresh: syncOk && !!agg,
+    reason: !sync ? 'Freshdesk sync failed' : sync.skipped ? 'Freshdesk sync skipped: ' + sync.skipped : !agg ? 'queue aggregates failed' : '',
+    aggAt: agg ? agg.builtAt : null,
+  }
+}
+
+// ---------------------------------------------------------------- QueuePages.js (queue app)
+
+export const DQ_AGING_FIELDS = ['ticket_id', 'queue', 'status', 'actionable', 'country', 'age_h', 'band', 'agent_name', 'tl_name', 'mine', 'contact_type_1']
+export const DQ_AGING_LIST_CAP = 1500
+
+/**
+ * dqValidateCheckin_ verbatim (QueuePages.js): validates a check-in payload.
+ * auto: { queue -> open } (the numbers shown to the TL). Throws on bad input.
+ */
+export function dqValidateCheckin_(
+  payload: Record<string, any>,
+  auto: Record<string, number> | null,
+  cfg: Cfg
+): Record<string, unknown> {
+  payload = payload || {}
+  const slots = dqSetting_(cfg, 'checkin_slots') as unknown[]
+  if (slots.indexOf(String(payload.slot)) === -1) throw new Error('Unknown check-in slot.')
+  const qs = payload.queues
+  if (!qs || !qs.length) throw new Error('A check-in needs at least one queue.')
+  const corrections: Record<string, { auto: number; corrected: number }> = {}
+  const clean = (qs as Record<string, unknown>[]).map((q) => {
+    const name = String(q.queue || '').trim()
+    if (!name) throw new Error('A queue row has no name.')
+    const agents = Number(q.agents)
+    if (q.agents === '' || q.agents === null || q.agents === undefined || !isFinite(agents) || agents < 0 || Math.floor(agents) !== agents || agents > 200) {
+      throw new Error(name + ': enter how many agents are on it (a whole number).')
+    }
+    const status = String(q.status || '').replace(/\s+/g, ' ').trim()
+    if (!status) throw new Error(name + ': choose how it is going.')
+    if (status.length > 120) throw new Error(name + ': keep the status under 120 characters.')
+    const note = String(q.note || '').trim().slice(0, 1000)
+    if (status !== 'On track' && !note) throw new Error(name + ': say what is driving it, so the next shift can plan for it.')
+    const out: Record<string, unknown> = { queue: name, agents, status, note }
+    if (q.openCorrected !== null && q.openCorrected !== undefined && q.openCorrected !== '') {
+      const oc = Number(q.openCorrected)
+      if (!isFinite(oc) || oc < 0 || Math.floor(oc) !== oc) throw new Error(name + ': the corrected open count must be a whole number.')
+      if (auto && auto[name] !== undefined && oc !== Number(auto[name])) {
+        out.openCorrected = oc
+        corrections[name] = { auto: Number(auto[name]), corrected: oc }
+      }
+    }
+    return out
+  })
+  const reason = String(payload.correctionReason || '').trim().slice(0, 500)
+  if (Object.keys(corrections).length && !reason) throw new Error('You changed an open count from Freshdesk. Say why.')
+  const help = payload.helpNeeded === true
+  const helpNote = String(payload.helpNote || '').trim().slice(0, 1000)
+  if (help && !helpNote) throw new Error('Say what help you need.')
+  return { slot: String(payload.slot), queues: clean, corrections, correctionReason: reason,
+    generalNote: String(payload.generalNote || '').trim().slice(0, 2000), helpNeeded: help, helpNote }
 }

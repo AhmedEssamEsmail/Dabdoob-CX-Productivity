@@ -1,0 +1,26 @@
+/**
+ * Cron: jobTlQueueMetrics (TlQueue.js) — daily TL queue metrics rebuild for
+ * yesterday (Kuwait). Auth matches the other cron routes: Bearer CRON_SECRET,
+ * no session, or an admin.
+ */
+import { NextResponse, type NextRequest } from 'next/server'
+import { apiError } from '@/features/shared/lib/api-error'
+import { jobTlQueueMetrics, rebuildTlQueueMetricsEntry } from '@/features/cx-queue/lib/tlqueue'
+
+function cronOk(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET
+  if (!secret) return true // dev/no-secret mode: requireJobCaller still gates the caller
+  return req.headers.get('authorization') === 'Bearer ' + secret
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    if (!cronOk(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const dates = req.nextUrl.searchParams.get('dates')
+    return NextResponse.json(dates ? await rebuildTlQueueMetricsEntry(dates.split(',')) : await jobTlQueueMetrics())
+  } catch (e) {
+    return apiError(e)
+  }
+}
+
+export const POST = GET
