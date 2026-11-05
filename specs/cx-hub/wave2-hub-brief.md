@@ -2,10 +2,15 @@
 
 Context for whoever implements Hub. Read `PORTING-GUIDE.md` + `10-hub.md` + this file.
 
-## Already done (committed, `0f0224a`)
+## Already done (committed, `0f0224a` + agent waves — DO NOT re-port)
 
-- `src/features/cx-people/lib/work-core.ts` — pwRows_/pwRowsAll_/pwTaskContext_/pwTasksOut_/pwNextMeetings_ (WorkCore+PeopleCore read side; per-owner calendar prefetch feeds the pure scorecard math verbatim).
-- `src/features/cx-hub/lib/home-cards.ts` — HomeCards.js providers `peopleHomeCards_`/`workHomeCards_`/`planHomeCards_` (+`pwOwnOneOnOneCard_`,`pwTally_`,`pwHoursSince_`), all async.
+- `src/features/cx-people/lib/work-core.ts` — pwRows_/pwRowsAll_/pwTaskContext_/pwTasksOut_/pwNextMeetings_.
+- `src/features/cx-hub/lib/home-cards.ts` — HomeCards.js providers (people/work/plan + pwOwnOneOnOneCard_/pwTally_/pwHoursSince_).
+- `src/features/cx-queue/lib/jobs.ts` — **jobDataTick, jobNightlyAggregates, dqCheckinTick_, dqRemindMissedCheckins_, buildQueueAggregates_/buildInflowAggregates_/buildAgentAggregates_, refreshQueueNowJob** — reuse; Hub only needs routes that call them if missing (`/api/queue/refresh` already exists).
+- `src/features/cx-queue/lib/index.ts` + `pages.ts` — dq* helpers + page builders incl. `dqOpenAgingFlags_`, `dqSubmissionsFor_`, `dqBandCounts_`, `dqQueueView_`, `dqSortQueues_`, `dqTodaySnapshots_`.
+- `src/features/cx-people/lib/agents-page.ts` — **getAgentsPage already ported** (agents page lives under people group).
+- `src/features/shared/jobs/freshdesk.ts` — fdSyncIncremental_ etc.
+- `src/app/api/cron/{job-data-tick,job-nightly-aggregates,job-tl-queue}` — exist.
 
 ## getHomePage (`Aggregates.js:568`) — the landing page read; analysis complete
 
@@ -13,11 +18,15 @@ Deps already ported: `requireRole` (identity), `dqBandInfo_`,`dqWithCurrentTl_`,
 
 Still to write:
 - `dqEarliestAt_(subs)` — 4 lines (Aggregates.js:678).
-- `getHomePage()` — verbatim from Aggregates.js:568-676; the `perf_` timer is a console.log lap helper (Repo.js:201) — port as trivial no-throw wrapper.
-- `getAgentsPage()` — Aggregates.js:535-558 (people `agents` page read; served by hub).
-- `refreshQueueNow()` — Aggregates.js:443+ (120 s throttle, script-lock → job-runner lock, calls `fdSyncIncremental_`,`buildQueueAggregates_`,`dqCheckinTick_`,`dqBumpCacheVersion_`,hbFlush). `doPost`/`refreshQueueViaHub` collapses into the same route.
-- Jobs (Aggregates.js + Queue.js:39 + FreshdeskSync.js): `jobDataTick` (freshdesk_sync → queue_aggregates → inflow(>55min) → checkin_tick), `jobNightlyAggregates`/`dqNightlySteps_` (productivity rollup if hosted, agent_aggregates, scorecard if hosted, inflow hourly, year_rollover), `buildQueueAggregates_`/`buildInflowAggregates_`/`buildAgentAggregates_`/`dqBuildAging_`/`dqBuildChatQueue_`/`dqCountInflow_`/`dqRollupInflow_`/`dqAgentPerf_`/`dqCheckinTick_`/`dqTickState_`, `fdSyncIncremental_`/`fdSeenEscalations_`/`dqSyncedTo_` (FreshdeskSync.js:312/144/306).
-- Store fns missing from `platform/stores.ts`: `dqReadObjects_`,`dqRewrite_`,`dqUpsert_`,`dqReadLean_`,`dqMarkRun_`,`dqBumpCacheVersion_`,`dqOpenStore_`,`dqSheet_` (Stores.js:138-600 — sheet/year-store mechanics; port the Postgres subset faithfully, note year-store semantics `agg_inflow_hourly` per-year → single table with year column or yearly tables — DECIDE and document).
+- `getHomePage()` — verbatim from Aggregates.js:568-676 in `src/features/cx-hub/lib/aggregates.ts`; `perf_` = trivial no-throw lap timer. Wires dq* helpers + `homeCards` (already in `cx-hub/lib/home-cards.ts`) + `ecosystemHealth` + `pendingPopupsFor`.
+- `refreshQueueNow()` — thin: route → `refreshQueueNowJob` in cx-queue/lib/jobs.ts if the route doesn't exist (`/api/queue/refresh` — check first).
+- Admin page server fns from `Admin.js`/`RosterSync.js` in Command_Center dir (roster editor, settings editor, dropdown choices, mail log, jobs/health viewer, connected apps, appearance) — survey the actual files and port the read/write surface.
+- `people-holidays` fns — RosterSync.js API: getRosterAdmin/setPersonV2Fields/setPersonOverrides/addHoliday/removeHoliday/syncRosterNow.
+- `my-day` — Assistant.js: getMyDay/getMyDayPart/searchMyMail/markFollowUpDone/createFocusBlock/setAssistantSettings; Gmail/Calendar calls go behind a `myday-google.ts` adapter returning `notConfigured` until creds (list for BLOCKED_TASKS).
+- `ecosystem` — Three.js scene (closure deps Jb/Lr/Pr) + `ecosystemHealth()` data already ported. Check package.json for `three` — if absent, pin a version ≥7 days old and note the add in the report (PM approves dep adds).
+- Store fns missing from `platform/stores.ts` IF getHomePage/admin needs them: `dqReadObjects_`,`dqRewrite_`,`dqUpsert_`,`dqReadLean_`,`dqMarkRun_`,`dqBumpCacheVersion_` (Stores.js:138-600 — ADDITIVE to stores.ts only; year-store semantics already decided: `year` column — follow queue's `queue_snapshots`/`agg_inflow_hourly` precedent).
+- Pages: 5 route files + `cx-hub/components/` — VERBATIM from closures (`Rg`,`Nm`,`Ig`,`Zm`,`Zb`) per the guide's HARD RULE; hub classes in `legacy-apps.css` under `[data-app="hub"]` (incl `--qg-*` tokens + `.md-*` my-day + ecosystem styles).
+- APIs `src/app/api/hub/{home,admin,roster,my-day,ecosystem}/route.ts` (+ `api/hub/[action]` dispatcher if cleaner — match what each page calls).
 - Oracle tests: `tests/golden/hub-*.test.ts` for dqBuildAging_/dqCountInflow_/dqRollupInflow_/dqAgentPerf_/home cards vs `Aggregates.js`,`HomeCards.js`,`Queue.js`,`QueueCore.js`,`Stores.js`,`FreshdeskSync.js`,`PeopleCore.js`,`WorkCore.js`,`Config.js`,`Repo.js`,`Auth.js`,`Popups.js`,`WorkCalendar.js`,`TlSnapshots.js` fixtures.
 
 ## Pages (extract dir `.devin/work/extract/hub/`)
@@ -34,8 +43,8 @@ APIs: `src/app/api/hub/{home,agents,queue-refresh,roster,my-day,ecosystem}/route
 
 ## Tables (`005_hub.sql` reserved)
 
-Live already: tickets, esc_seen, freshchat, maqsam_calls, agg_queue_now, agg_inflow_{daily,weekly,monthly}, health, refresh_log, roster, headcount, days_off, schedule, team_structure, weekly_schedule, view_as, config, prod_*, qa_*, sc_*, kpi_*, md, tlp, tls.
-Missing (queue agent may create shared ones in 007 — coordinate): aging_open_tickets, aging_flags, queue_snapshots, queue_status_submissions, agg_inflow_hourly, cache_stamps, follow_up_done (my-day), mail_log?, actions/meetings/one_on_one (people shard owns).
+007/008/009/010 already created: dq_aging_flags, queue_submissions, queue_snapshots, agg_inflow_hourly, cache_stamps?, actions/meetings/one_on_one (people), tracker + mail tables. Live already: tickets, esc_seen, freshchat, maqsam_calls, agg_queue_now, agg_inflow_{daily,weekly,monthly}, health, refresh_log, roster, headcount, days_off, schedule, team_structure, weekly_schedule, view_as, config, prod_*, qa_*, sc_*, kpi_*, md, tlp, tls.
+STILL MISSING (yours to add in 005_hub.sql): `options` (platform options.ts — dropdown choices, FLAGGED by desk agent), `follow_up_done` (my-day), mail_log if used, cache_stamps if not already in 007 — CHECK the other migration files first to avoid dupes.
 
 ## Watch-outs
 
