@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { apiError } from '@/lib/api-error'
-import { olCaseDelete, olCaseList, olCaseUpsert } from '@/lib/kpi/server'
+import { requireRole } from '@/features/shared/platform/identity'
+import { apiError } from '@/features/shared/lib/api-error'
+import { olCaseDelete, olCaseList, olCaseUpsert } from '@/features/cx-people/lib/kpi/server'
 
 /**
  * kpi_ol_cases — operational-loss cases per agent per month (legacy: written

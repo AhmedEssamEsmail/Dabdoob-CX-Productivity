@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { apiError } from '@/lib/api-error'
-import { getQueueCheckins, submitQueueCheckin } from '@/lib/queue/server'
+import { requireRole } from '@/features/shared/platform/identity'
+import { apiError } from '@/features/shared/lib/api-error'
+import { getQueueCheckins, submitQueueCheckin } from '@/features/cx-queue/lib/server'
 
 /**
  * GET /api/queue/checkins?date=yyyy-MM-dd — { date, slots, submissions } for one

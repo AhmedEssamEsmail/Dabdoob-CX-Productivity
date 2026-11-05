@@ -17,9 +17,9 @@ import {
   LoadError,
   PageHead,
   Section,
-} from '@/components/shell/ui'
-import { toast } from '@/components/shell/Toasts'
-import { fetchJson, useSe } from '@/components/prod/pv-shared'
+} from '@/features/shared/components/shell/ui'
+import { toast } from '@/features/shared/components/shell/Toasts'
+import { fetchJson, useSe } from '@/features/cx-productivity/components/pv-shared'
 
 /**
  * TPH — verbatim port of the legacy `za` page and its parts

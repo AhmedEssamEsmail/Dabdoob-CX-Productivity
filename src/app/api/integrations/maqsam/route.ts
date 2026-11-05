@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { configAll } from '@/lib/platform/settings'
-import { syncAllMirrors } from '@/lib/jobs/mirrors'
-import { apiError } from '@/lib/api-error'
+import { configAll } from '@/features/shared/platform/settings'
+import { syncAllMirrors } from '@/features/shared/jobs/mirrors'
+import { apiError } from '@/features/shared/lib/api-error'
 
 export const maxDuration = 300
 

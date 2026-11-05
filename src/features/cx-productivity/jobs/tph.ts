@@ -5,12 +5,12 @@
  * their io seams need and keeps the legacy job wrap (dqStep_ + hbFlush_).
  */
 
-import { dqAddDays_, dqSetting_, prodFileFor_ } from '@/lib/prod/adapters'
-import { prodToday_ } from '@/lib/prod/engine'
-import { tphBuildPastDays_, tphCaptureCases_ } from '@/lib/tph'
-import type { JobEnv, Row } from './env'
-import { dqStep_ } from './steps'
-import { DAILY_REPORT_TABS, FD_ACTIVITY_TABS, PROD_MONTH_TABS } from './sheets'
+import { dqAddDays_, dqSetting_, prodFileFor_ } from '@/features/shared/lib/adapters'
+import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphBuildPastDays_, tphCaptureCases_ } from '@/features/cx-productivity/lib/tph'
+import type { JobEnv, Row } from '@/features/shared/jobs/env'
+import { dqStep_ } from '@/features/shared/jobs/steps'
+import { DAILY_REPORT_TABS, FD_ACTIVITY_TABS, PROD_MONTH_TABS } from '@/features/shared/jobs/sheets'
 
 /**
  * jobTphHourly verbatim: folds the fresh queue numbers into today's 'auto'

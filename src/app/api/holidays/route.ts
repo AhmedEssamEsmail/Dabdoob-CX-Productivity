@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { apiError } from '@/lib/api-error'
-import { holidayDelete, holidayList, holidayUpsert } from '@/lib/platform/holidays'
+import { requireRole } from '@/features/shared/platform/identity'
+import { apiError } from '@/features/shared/lib/api-error'
+import { holidayDelete, holidayList, holidayUpsert } from '@/features/shared/platform/holidays'
 
 /**
  * GET    /api/holidays?from&to   — active holidays (deleted_at is null), by date.

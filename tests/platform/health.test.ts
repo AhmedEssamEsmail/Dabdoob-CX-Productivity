@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import {
   hbStatus, hbRowState, hbCombine, hbComputeHealth, hbHuman, hbBeat, hbPending, hbReset,
   hbPlanFor, hbWithEvidence, hbRowFromPlan, HB_PLAN, HB_SYSTEMS, HB_RANK,
-} from '@/lib/platform/health'
+} from '@/features/shared/platform/health'
 
 const NOW = Date.parse('2026-10-08T12:00:00Z').valueOf()
 

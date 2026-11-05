@@ -16,11 +16,11 @@
  * is viewing as; realEmail() always answers the signed-in caller.
  */
 
-import { createAuthClient } from '@/lib/auth'
+import { createAuthClient } from '@/features/shared/lib/auth'
 import { db } from './repo'
 import { getConfig } from './settings'
 import { viewAsState, assertWritable } from './viewas'
-import { described } from '@/lib/errors'
+import { described } from '@/features/shared/lib/errors'
 
 export function normEmail(e: unknown): string {
   return String(e || '').trim().toLowerCase()

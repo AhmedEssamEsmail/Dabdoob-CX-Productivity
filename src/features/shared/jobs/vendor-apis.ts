@@ -6,10 +6,10 @@
  * in the same row), ISO instants cannot misparse.
  */
 
-import { DescribedError } from '@/lib/errors'
-import { epochMs, isoMs } from '@/lib/vendor/http'
-import { listMaqsamCalls, maqsamCredsFromEnv } from '@/lib/vendor/maqsam'
-import { listFreshchatConversations, freshchatCredsFromEnv } from '@/lib/vendor/freshchat'
+import { DescribedError } from '@/features/shared/lib/errors'
+import { epochMs, isoMs } from '@/features/shared/vendor/http'
+import { listMaqsamCalls, maqsamCredsFromEnv } from '@/features/shared/vendor/maqsam'
+import { listFreshchatConversations, freshchatCredsFromEnv } from '@/features/shared/vendor/freshchat'
 
 const str = (v: unknown) => String(v === null || v === undefined ? '' : v).trim()
 const num = (v: unknown) => {

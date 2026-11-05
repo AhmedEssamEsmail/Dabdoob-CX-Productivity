@@ -14,16 +14,16 @@
  * never fabricated — migration 04 or TL logging owns them.
  */
 
-import { dqAddDays_, dqSetting_ } from '@/lib/prod/adapters'
-import { prodToday_ } from '@/lib/prod/engine'
-import { tphRunStep_, type TphStep } from '@/lib/tph'
-import { described } from '@/lib/errors'
-import { buildJobEnv, type JobEnv } from './env'
+import { dqAddDays_, dqSetting_ } from '@/features/shared/lib/adapters'
+import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphRunStep_, type TphStep } from '@/features/cx-productivity/lib/tph'
+import { described } from '@/features/shared/lib/errors'
+import { buildJobEnv, type JobEnv } from '@/features/shared/jobs/env'
 import { prodComputeStep_, prodFlagsStep_ } from './productivity'
-import { syncAllMirrors } from './mirrors'
-import { tphGridFromIntervals_, type IntervalRow } from './grid-slots'
-import { prodNowIso_ } from '@/lib/prod/engine'
-import { DAILY_REPORT_TABS } from './sheets'
+import { syncAllMirrors } from '@/features/shared/jobs/mirrors'
+import { tphGridFromIntervals_, type IntervalRow } from '@/features/shared/jobs/grid-slots'
+import { prodNowIso_ } from '@/features/cx-productivity/lib/prod/engine'
+import { DAILY_REPORT_TABS } from '@/features/shared/jobs/sheets'
 
 export type BackfillKind = 'mirrors' | 'grid' | 'tph' | 'layers' | 'flags'
 export const BACKFILL_KINDS: BackfillKind[] = ['mirrors', 'grid', 'tph', 'layers', 'flags']

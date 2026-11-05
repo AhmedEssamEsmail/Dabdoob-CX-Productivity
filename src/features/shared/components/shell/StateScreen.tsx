@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { RouteDef } from '@/components/shell/registry'
+import type { RouteDef } from '@/features/shared/components/shell/registry'
 
 /**
  * The full-area screens the shell swaps in: boot failure, no access, and

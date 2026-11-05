@@ -1,10 +1,9 @@
 import {
   APPS,
-  APP_KEY,
   PAGES,
   type RouteDef,
-} from '@/components/shell/registry'
-import { getBoot, type Bootstrap, type ShellUser } from '@/lib/shell/context'
+} from '@/features/shared/components/shell/registry'
+import { type Bootstrap, type ShellUser } from '@/features/shared/shell/context'
 
 /**
  * Role gates and link resolution ported from the legacy bundle:
@@ -88,8 +87,12 @@ export function appForGroup(group: string): string {
   return Object.keys(APPS).find((key) => APPS[key].groups.includes(group)) ?? 'hub'
 }
 
-/** lt() — page belongs to this app. */
-export const inThisApp = (route: RouteDef): boolean => appForGroup(route.group) === APP_KEY
+/**
+ * lt() — page belongs to the given app context. In the unified deployment the
+ * context is the current route's app (its group), so each page renders the
+ * rail exactly as the legacy app that owned it did.
+ */
+export const inApp = (route: RouteDef, app: string): boolean => appForGroup(route.group) === app
 
 /** Te() — the app title for a page/group. */
 export const appTitle = (routeOrGroup: RouteDef | string): string =>
@@ -101,38 +104,26 @@ export interface ResolvedLink {
   missing: boolean
 }
 
-/** aa() — the other app's web URL from the bootstrap. */
-function appUrl(app: string): string {
-  return getBoot()?.appUrls?.[app] ?? ''
-}
-
 /**
- * we() — resolve a `#/path[?query]` link. Pages in this app become internal
- * `/path` routes; pages in another app become that app's web URL with
- * `?page=path` (the legacy `external:true` branch — "not connected" when the
- * bootstrap has no URL for the app).
+ * we() — resolve a `#/path[?query]` link. In the unified deployment every
+ * registered page routes internally to `/path`. `external` marks a cross-app
+ * target so callers can keep the external glyph/tooltip; `missing` only
+ * occurs for paths no registry page owns.
  */
 export function resolveLink(
   href: string,
   pages: RouteDef[] = PAGES,
-  withQuery = true
+  withQuery = true,
+  ctxApp?: string
 ): ResolvedLink {
   const match = /^#\/?([^?]*)(?:\?(.*))?$/.exec(href)
   const route = match ? pages.find((page) => page.path === match[1]) : undefined
   if (!match || !route) return { href, external: false, missing: false }
-  if (inThisApp(route)) {
-    return {
-      href: `/${route.path}${withQuery && match[2] ? `?${match[2]}` : ''}`,
-      external: false,
-      missing: false,
-    }
+  return {
+    href: `/${route.path}${withQuery && match[2] ? `?${match[2]}` : ''}`,
+    external: ctxApp !== undefined && !inApp(route, ctxApp),
+    missing: false,
   }
-  const base = appUrl(appForGroup(route.group))
-  if (!base) return { href: '', external: true, missing: true }
-  if (!withQuery) return { href: base, external: true, missing: false }
-  const query = new URLSearchParams(match[2] ?? '')
-  query.set('page', match[1] as string)
-  return { href: `${base}?${query.toString()}`, external: true, missing: false }
 }
 
 /** ra() — a group's rail entry links to its first page the user may see. */

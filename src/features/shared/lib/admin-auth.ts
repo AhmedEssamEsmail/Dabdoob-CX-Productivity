@@ -7,7 +7,7 @@
  * 'Forbidden'-style errors for apiError() to map.
  */
 
-import { requireRole } from '@/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
 
 export async function requireAdminCaller(req: Request): Promise<{ email: string; role: string }> {
   const key = req.headers.get('x-migration-key')

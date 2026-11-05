@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { alertsApi, type ShellPopup } from '@/lib/shell/context'
-import { resolveLink } from '@/lib/shell/gates'
-import { timeAgo } from '@/components/shell/ui'
-import OneOnOneAlerts, { chime } from '@/components/shell/OneOnOneAlerts'
-import { Toasts } from '@/components/shell/Toasts'
+import { alertsApi, type ShellPopup } from '@/features/shared/shell/context'
+import { resolveLink } from '@/features/shared/shell/gates'
+import { timeAgo } from '@/features/shared/components/shell/ui'
+import OneOnOneAlerts, { chime } from '@/features/shared/components/shell/OneOnOneAlerts'
+import { Toasts } from '@/features/shared/components/shell/Toasts'
 
 /**
  * ya — reminder popup dialog + the 1:1 alert stack + the toast region.

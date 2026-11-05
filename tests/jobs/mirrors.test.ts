@@ -14,7 +14,7 @@ const h = vi.hoisted(() => ({
   apiCalls: { maqsam: [] as { sinceMs?: number; untilMs?: number }[], freshchat: [] as { sinceMs?: number; untilMs?: number }[] },
 }))
 
-vi.mock('@/lib/jobs/sheets', () => ({
+vi.mock('@/features/shared/jobs/sheets', () => ({
   fetchWorkbookTabs: async (id: string, tabs: string[]) => {
     const book = h.books[id]
     if (!book) throw new Error(`Requested entity was not found. (${id})`)
@@ -27,8 +27,8 @@ vi.mock('@/lib/jobs/sheets', () => ({
   },
 }))
 
-vi.mock('@/lib/jobs/vendor-apis', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/lib/jobs/vendor-apis')>()
+vi.mock('@/features/shared/jobs/vendor-apis', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/features/shared/jobs/vendor-apis')>()
   return {
     ...orig,
     fetchMaqsamRows: async (sinceMs?: number, untilMs?: number) => {
@@ -44,7 +44,7 @@ vi.mock('@/lib/jobs/vendor-apis', async (importOriginal) => {
   }
 })
 
-vi.mock('@/lib/platform/repo', () => ({
+vi.mock('@/features/shared/platform/repo', () => ({
   db: () => ({
     from: (table: string) => ({
       upsert: async (rows: Record<string, unknown>[], opts: { onConflict: string }) => {
@@ -60,15 +60,15 @@ vi.mock('@/lib/platform/repo', () => ({
   }),
 }))
 
-vi.mock('@/lib/platform/settings', () => ({
+vi.mock('@/features/shared/platform/settings', () => ({
   getConfig: async (k: string) => h.cfgStore[k],
   setConfig: async (k: string, v: unknown) => {
     h.cfgStore[k] = v
   },
 }))
 
-import { mirrorMonths, syncAllMirrors, syncMirror } from '@/lib/jobs/mirrors'
-import type { Cfg } from '@/lib/prod/adapters'
+import { mirrorMonths, syncAllMirrors, syncMirror } from '@/features/shared/jobs/mirrors'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const CFG = {
   business_tz: 'Asia/Kuwait',

@@ -24,7 +24,7 @@ import {
   type Cfg,
   type HeadcountRow,
   type SheetBookLike,
-} from './adapters'
+} from '@/features/shared/lib/adapters'
 import {
   prodAdjustAux_,
   prodCasesByEmail_,
@@ -38,7 +38,7 @@ import {
   prodWindowHist_,
 } from './validation'
 
-export { prodActivityKey_ } from './adapters'
+export { prodActivityKey_ } from '@/features/shared/lib/adapters'
 
 // ---------------------------------------------------------------- ProductivityApp.js settings seam
 

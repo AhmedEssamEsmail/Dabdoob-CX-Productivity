@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { requireRole, pwDirectory, pwIsManagerOf } from '@/lib/platform/identity'
-import { apiError, InputError } from '@/lib/api-error'
-import { kpiPayoutFor } from '@/lib/kpi/server'
-import { dqDateKey_, normEmail_ } from '@/lib/prod/adapters'
-import { configAll } from '@/lib/platform/settings'
-import type { Cfg } from '@/lib/prod/adapters'
+import { requireRole, pwDirectory, pwIsManagerOf } from '@/features/shared/platform/identity'
+import { apiError, InputError } from '@/features/shared/lib/api-error'
+import { kpiPayoutFor } from '@/features/cx-people/lib/kpi/server'
+import { dqDateKey_, normEmail_ } from '@/features/shared/lib/adapters'
+import { configAll } from '@/features/shared/platform/settings'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 /**
  * GET /api/kpi/payout?email=&month= — kpiPayout_ (KpiPayout.js) verbatim, its

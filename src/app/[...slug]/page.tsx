@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
-import { PAGES } from '@/components/shell/registry'
-import { UnbuiltPage } from '@/components/shell/StateScreen'
+import { PAGES } from '@/features/shared/components/shell/registry'
+import { UnbuiltPage } from '@/features/shared/components/shell/StateScreen'
 
 /**
  * Registry paths whose pages are not ported yet render the legacy hs()

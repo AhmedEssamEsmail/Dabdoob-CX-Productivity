@@ -1,10 +1,10 @@
-import { requireRole } from '@/lib/auth'
-import { viewAsGuard } from '@/lib/platform/viewas'
-import { apiError } from '@/lib/api-error'
-import { prodReady_ } from '@/lib/prod/engine'
-import { tphLoadStore_ } from '@/lib/tph/page'
-import { tphPastDay_, tphRunStep_ } from '@/lib/tph/run'
-import { TPH_STEPS, TPH_TIME_GUARD_MS } from '@/lib/tph'
+import { requireRole } from '@/features/shared/lib/auth'
+import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { apiError } from '@/features/shared/lib/api-error'
+import { prodReady_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
+import { tphPastDay_, tphRunStep_ } from '@/features/cx-productivity/lib/tph/run'
+import { TPH_STEPS, TPH_TIME_GUARD_MS } from '@/features/cx-productivity/lib/tph'
 import { NextResponse } from 'next/server'
 
 /** runTphDay(date) — every step for one past day in one call. */

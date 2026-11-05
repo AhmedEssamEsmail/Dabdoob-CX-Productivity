@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 // Empty-store supabase stub: every chained call returns the query proxy, which
 // awaits to { data: [], error: null } — so calendar code sees an empty roster,
 // no holidays and config defaults, without any network.
-vi.mock('@/lib/supabase', () => {
+vi.mock('@/features/shared/lib/supabase', () => {
   const res = Promise.resolve({ data: [], error: null })
   const proxy: Record<string, unknown> = new Proxy(
     {},
@@ -16,8 +16,8 @@ vi.mock('@/lib/supabase', () => {
 import {
   dqParseDaysOff, dqIsHoliday, pwDayHours, getWorkingCalendar, wcReset, setTlScheduleSource,
   WC_WEEKDAYS,
-} from '@/lib/platform/calendar'
-import { pwAt } from '@/lib/platform/time'
+} from '@/features/shared/platform/calendar'
+import { pwAt } from '@/features/shared/platform/time'
 
 describe('dqParseDaysOff', () => {
   it('parses "Fri,Sat" and arrays into week order', () => {

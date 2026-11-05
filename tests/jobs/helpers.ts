@@ -3,12 +3,12 @@
  * the table memo (the real env queues writes and flushes at step end — for a
  * synchronous assertion the memo is the truth either way).
  */
-import { dqRosterPeople_, pwDirectory_, type Cfg, type HeadcountRow, type SheetBookLike } from '@/lib/prod/adapters'
-import type { JobEnv, Row } from '@/lib/jobs/env'
-import { sheetBook } from '@/lib/jobs/sheets'
-import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/lib/tph'
-import type { GmailReadAdapter } from '@/lib/platform/mail'
-import { prodIntervalKey_, type ProdInterval } from '@/lib/prod/validation'
+import { dqRosterPeople_, pwDirectory_, type Cfg, type HeadcountRow, type SheetBookLike } from '@/features/shared/lib/adapters'
+import type { JobEnv, Row } from '@/features/shared/jobs/env'
+import { sheetBook } from '@/features/shared/jobs/sheets'
+import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/features/cx-productivity/lib/tph'
+import type { GmailReadAdapter } from '@/features/shared/platform/mail'
+import { prodIntervalKey_, type ProdInterval } from '@/features/cx-productivity/lib/prod/validation'
 
 export interface StubEnvOpts {
   cfg?: Record<string, unknown>

@@ -32,7 +32,7 @@ import {
   prodNameToEmail_,
   prodReadCols_,
   type Cfg,
-} from '../../src/lib/prod/adapters'
+} from '@/features/shared/lib/adapters'
 import {
   computeProductivityForDate_,
   prodActivitiesFromRows_,
@@ -62,7 +62,7 @@ import {
   dqProductivityRollup_,
   runProductivityRange,
   type ProdIo,
-} from '../../src/lib/prod/engine'
+} from '@/features/cx-productivity/lib/prod/engine'
 
 const R = rng(0x51ab3f)
 const CFG = () => (baseFixtures().settings ?? {}) as Cfg

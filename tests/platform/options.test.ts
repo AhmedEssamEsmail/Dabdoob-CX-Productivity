@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { groupOptions, isActiveOption, LIST_KEY_RE, OPTION_MAX_LEN, addOption } from '@/lib/platform/options'
-import type { OptionRow } from '@/lib/platform/options'
+import { groupOptions, isActiveOption, LIST_KEY_RE, OPTION_MAX_LEN, addOption } from '@/features/shared/platform/options'
+import type { OptionRow } from '@/features/shared/platform/options'
 
 describe('groupOptions (allOptions_ core)', () => {
   const rows: OptionRow[] = [

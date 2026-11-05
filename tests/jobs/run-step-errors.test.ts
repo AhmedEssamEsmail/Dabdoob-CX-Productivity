@@ -10,7 +10,7 @@ const h = vi.hoisted(() => ({
   tableResults: {} as Record<string, { data: unknown; error: unknown }>,
 }))
 
-vi.mock('@/lib/auth', () => ({
+vi.mock('@/features/shared/lib/auth', () => ({
   requireRole: async () => ({ email: 'admin@dabdoob.com', role: 'admin' }),
   createAuthClient: async () => ({
     from: (table: string) => {
@@ -24,8 +24,8 @@ vi.mock('@/lib/auth', () => ({
     },
   }),
 }))
-vi.mock('@/lib/platform/viewas', () => ({ viewAsGuard: async () => {}, VIEW_AS_READONLY: 'readonly' }))
-vi.mock('@/lib/tph/page', () => ({
+vi.mock('@/features/shared/platform/viewas', () => ({ viewAsGuard: async () => {}, VIEW_AS_READONLY: 'readonly' }))
+vi.mock('@/features/cx-productivity/lib/tph/page', () => ({
   tphLoadStore_: async () => ({
     cfg: { ss_productivity_id: 'prod-store', business_tz: 'Asia/Kuwait' },
     dir: { by: {}, name: () => '' },

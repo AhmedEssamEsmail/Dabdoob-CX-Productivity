@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireJobCaller } from '@/lib/platform/identity'
-import { buildJobEnv } from '@/lib/jobs/env'
-import { jobProductivityDaily } from '@/lib/jobs/productivity'
+import { requireJobCaller } from '@/features/shared/platform/identity'
+import { buildJobEnv } from '@/features/shared/jobs/env'
+import { jobProductivityDaily } from '@/features/cx-productivity/jobs/productivity'
 
 export const maxDuration = 300
 

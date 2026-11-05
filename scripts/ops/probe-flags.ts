@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 config({ path: '.env.local' })
-import { buildJobEnv } from '@/lib/jobs/env'
-import { prodFlagsStep_ } from '@/lib/jobs/productivity'
+import { buildJobEnv } from '@/features/shared/jobs/env'
+import { prodFlagsStep_ } from '@/features/cx-productivity/jobs/productivity'
 
 async function main() {
   const t0 = Date.now()

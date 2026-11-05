@@ -18,7 +18,11 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 export const LEGACY_DIR =
-  process.env.LEGACY_DIR || path.resolve(HERE, '..', '..', 'original_deprecated')
+  process.env.LEGACY_DIR ||
+  ['original_deprecated', 'Productivity_Depricated']
+    .map((d) => path.resolve(HERE, '..', '..', d))
+    .find((d) => fs.existsSync(path.join(d, 'Config.js'))) ||
+  path.resolve(HERE, '..', '..', 'original_deprecated')
 
 /** Legacy sources available to load verbatim. */
 export function legacyFile(name) {

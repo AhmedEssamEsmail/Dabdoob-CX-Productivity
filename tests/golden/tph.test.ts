@@ -79,8 +79,8 @@ import {
   tphCaptureCases_,
   type TphIo,
   type TphTableAgentRow,
-} from '../../src/lib/tph/index'
-import type { Cfg } from '../../src/lib/prod/adapters'
+} from '@/features/cx-productivity/lib/tph/index'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const CFG = {
   business_tz: 'Asia/Kuwait',

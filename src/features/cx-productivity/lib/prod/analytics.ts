@@ -4,7 +4,7 @@
  * All data arrives as arguments (intervals, flags, layers, hist rows, people, offsetMs).
  */
 
-import { dqAddDays_ } from './adapters'
+import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import {
   prodIn_,
   prodNorm_,

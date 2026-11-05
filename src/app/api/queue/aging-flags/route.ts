@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { apiError } from '@/lib/api-error'
+import { requireRole } from '@/features/shared/platform/identity'
+import { apiError } from '@/features/shared/lib/api-error'
 import {
   flagAgingTicket,
   getOpenAgingFlags,
   resolveAgingFlag,
-} from '@/lib/queue/server'
+} from '@/features/cx-queue/lib/server'
 
 /**
  * GET /api/queue/aging-flags — dqOpenAgingFlags_ on dq_aging_flags joined to

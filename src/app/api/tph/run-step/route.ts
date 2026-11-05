@@ -1,9 +1,9 @@
-import { requireRole } from '@/lib/auth'
-import { viewAsGuard } from '@/lib/platform/viewas'
-import { apiError } from '@/lib/api-error'
-import { prodReady_ } from '@/lib/prod/engine'
-import { tphLoadStore_ } from '@/lib/tph/page'
-import { tphRunStep_, tphPastDay_ } from '@/lib/tph/run'
+import { requireRole } from '@/features/shared/lib/auth'
+import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { apiError } from '@/features/shared/lib/api-error'
+import { prodReady_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
+import { tphRunStep_, tphPastDay_ } from '@/features/cx-productivity/lib/tph/run'
 import { NextResponse } from 'next/server'
 
 /** runTphStep(date, step) — one past-day rebuild step, run from the page. */

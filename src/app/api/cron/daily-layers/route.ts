@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { dqAddDays_ } from '@/lib/prod/adapters'
-import { prodReady_, prodToday_ } from '@/lib/prod/engine'
-import { requireJobCaller } from '@/lib/platform/identity'
-import { buildJobEnv } from '@/lib/jobs/env'
-import { prodComputeStep_ } from '@/lib/jobs/productivity'
-import { dqStep_ } from '@/lib/jobs/steps'
+import { dqAddDays_ } from '@/features/shared/lib/adapters'
+import { prodReady_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { requireJobCaller } from '@/features/shared/platform/identity'
+import { buildJobEnv } from '@/features/shared/jobs/env'
+import { prodComputeStep_ } from '@/features/cx-productivity/jobs/productivity'
+import { dqStep_ } from '@/features/shared/jobs/steps'
 
 export const maxDuration = 300
 

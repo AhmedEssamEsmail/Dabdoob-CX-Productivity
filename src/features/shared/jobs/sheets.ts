@@ -11,8 +11,8 @@
  * 'Maqsam Calls', 'FD_AUX', 'AUXes Exceptions', 'Quality' and 'Headcount'.
  */
 
-import type { SheetBookLike, SheetRangeLike, SheetTabLike } from '@/lib/prod/adapters'
-import { describeDbError, described } from '@/lib/errors'
+import type { SheetBookLike, SheetRangeLike, SheetTabLike } from '@/features/shared/lib/adapters'
+import { describeDbError, described } from '@/features/shared/lib/errors'
 
 /** Tabs read from each productivity month workbook (prodFileFor_). */
 export const PROD_MONTH_TABS = ['Assumptions', 'Maqsam Calls', 'FD_AUX', 'AUXes Exceptions', 'Quality', 'Headcount']

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getViewAsPeople } from '@/lib/platform'
+import { getViewAsPeople } from '@/features/shared/platform'
 
 /** getViewAsPeople: the roster people the owner can view as, by name. */
 export async function GET() {

@@ -4,7 +4,7 @@
  * prod_quarterly_reports and sends it through the mail seam (dry-run safe).
  */
 import { describe, expect, it } from 'vitest'
-import { jobQuarterlyReport } from '@/lib/jobs/quarterly'
+import { jobQuarterlyReport } from '@/features/cx-productivity/jobs/quarterly'
 import { stubEnv } from './helpers'
 
 // '2026-10-08T10:00:00Z' -> October 2026 -> Q3 2026 report.

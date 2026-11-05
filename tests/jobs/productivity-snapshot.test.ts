@@ -4,7 +4,7 @@
  * dates it holds. Exact legacy skip strings are asserted verbatim.
  */
 import { describe, expect, it } from 'vitest'
-import { prodSnapshotIntervals_ } from '@/lib/jobs/productivity'
+import { prodSnapshotIntervals_ } from '@/features/cx-productivity/jobs/productivity'
 import { activityCsv, gmailPayloadWithCsv, stubEnv, stubGmail } from './helpers'
 
 const NOW = Date.parse('2026-10-08T10:00:00Z') // 13:00 Kuwait -> today 2026-10-08, yesterday 2026-10-07

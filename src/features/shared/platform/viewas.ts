@@ -15,7 +15,7 @@
 import { db, cacheGet, cachePut, cacheRemove, appendRow } from './repo'
 import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory } from './identity'
 import { getConfig, ccApp } from './settings'
-import { described } from '@/lib/errors'
+import { described } from '@/features/shared/lib/errors'
 
 const VIEW_AS_TABLE = 'view_as'
 const VIEW_AS_CACHE_SEC = 30

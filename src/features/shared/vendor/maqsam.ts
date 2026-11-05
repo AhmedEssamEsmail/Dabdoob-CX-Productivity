@@ -5,7 +5,7 @@
  * Maqsam Account Settings > API Credentials — with or without the api. prefix).
  */
 
-import { described } from '@/lib/errors'
+import { described } from '@/features/shared/lib/errors'
 import { vendorJson } from './http'
 
 export interface MaqsamCreds {

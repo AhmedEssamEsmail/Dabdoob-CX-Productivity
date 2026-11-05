@@ -37,15 +37,15 @@ import {
   type Directory,
   type HeadcountRow,
   type SheetBookLike,
-} from '@/lib/prod/adapters'
-import { prodNowIso_, prodToday_ } from '@/lib/prod/engine'
-import { prodIntervalKey_, type ProdInterval } from '@/lib/prod/validation'
-import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/lib/tph'
-import { describeDbError } from '@/lib/errors'
-import { db, newId as repoNewId, readRows } from '@/lib/platform/repo'
-import { configAll } from '@/lib/platform/settings'
-import { hbBeat as platformHbBeat, hbFlush as platformHbFlush } from '@/lib/platform/health'
-import { getGmailReadAdapter, sendMail, type GmailReadAdapter, type MailMessage, type SendResult } from '@/lib/platform/mail'
+} from '@/features/shared/lib/adapters'
+import { prodNowIso_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { prodIntervalKey_, type ProdInterval } from '@/features/cx-productivity/lib/prod/validation'
+import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/features/cx-productivity/lib/tph'
+import { describeDbError } from '@/features/shared/lib/errors'
+import { db, newId as repoNewId, readRows } from '@/features/shared/platform/repo'
+import { configAll } from '@/features/shared/platform/settings'
+import { hbBeat as platformHbBeat, hbFlush as platformHbFlush } from '@/features/shared/platform/health'
+import { getGmailReadAdapter, sendMail, type GmailReadAdapter, type MailMessage, type SendResult } from '@/features/shared/platform/mail'
 import { FD_ACTIVITY_TABS, PROD_MONTH_TABS, fetchWorkbookTabs, sheetBook } from './sheets'
 
 export type Row = Record<string, unknown>

@@ -4,7 +4,7 @@
  * are injected row lists; the scoring functions are pure.
  */
 
-import { normEmail_ } from '../prod/adapters'
+import { normEmail_ } from '@/features/shared/lib/adapters'
 
 export const KPI_LOG_HEADERS: Record<string, string[]> = {
   kpi_behaviour_log: ['log_id', 'email', 'date', 'note', 'logged_by', 'logged_at', 'removed_by', 'removed_at'],

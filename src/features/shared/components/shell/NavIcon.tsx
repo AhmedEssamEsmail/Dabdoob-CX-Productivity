@@ -1,4 +1,4 @@
-import { NAV_ICONS } from '@/components/shell/registry'
+import { NAV_ICONS } from '@/features/shared/components/shell/registry'
 
 /** et — nav icon: an svg whose inner markup comes from the gs map. */
 export default function NavIcon({ path }: { path: string }) {

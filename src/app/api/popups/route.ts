@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { currentEmail, popupsPoll } from '@/lib/platform'
+import { currentEmail, popupsPoll } from '@/features/shared/platform'
 
 
 /** popupsPoll: the caller's open pop-ups (the client polls this). */

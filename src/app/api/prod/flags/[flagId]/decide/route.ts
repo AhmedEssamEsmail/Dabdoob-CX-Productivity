@@ -1,7 +1,7 @@
-import { createAuthClient, requireRole } from '@/lib/auth'
-import { flagInScope } from '@/lib/prod-access'
-import { viewAsGuard } from '@/lib/platform/viewas'
-import { apiError, dbErr } from '@/lib/api-error'
+import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { flagInScope } from '@/features/cx-productivity/lib/prod-access'
+import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { apiError, dbErr } from '@/features/shared/lib/api-error'
 import {
   PROD_DEFAULTS,
   PROD_DIRTY_MAX,
@@ -12,7 +12,7 @@ import {
   statusChoices,
   todayKey,
   type ProdFlagRow,
-} from '@/lib/prod-validation'
+} from '@/features/cx-productivity/lib/prod-validation'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const CONFIG_KEYS = [

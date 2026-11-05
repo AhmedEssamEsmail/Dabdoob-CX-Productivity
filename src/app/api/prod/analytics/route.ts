@@ -1,9 +1,9 @@
-import { createAuthClient, requireRole } from '@/lib/auth'
-import { prodAnalyticsFor_, prodRuleView_, prodScope_ } from '@/lib/prod/engine'
-import { prodAnalytics_, prodWeekStart_ } from '@/lib/prod/analytics'
-import { prodToday_ } from '@/lib/prod/engine'
-import { dqAddDays_ } from '@/lib/prod/adapters'
-import type { Cfg } from '@/lib/prod/adapters'
+import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { prodAnalyticsFor_, prodRuleView_, prodScope_ } from '@/features/cx-productivity/lib/prod/engine'
+import { prodAnalytics_, prodWeekStart_ } from '@/features/cx-productivity/lib/prod/analytics'
+import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { dqAddDays_ } from '@/features/shared/lib/adapters'
+import type { Cfg } from '@/features/shared/lib/adapters'
 import { NextResponse } from 'next/server'
 
 /**

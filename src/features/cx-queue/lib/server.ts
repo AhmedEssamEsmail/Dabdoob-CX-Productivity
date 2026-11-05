@@ -29,13 +29,13 @@ import {
   db,
   newId,
   isTrue,
-} from '@/lib/platform/repo'
-import { configAll } from '@/lib/platform/settings'
-import { requireRole } from '@/lib/platform/identity'
-import { assertWritable } from '@/lib/platform/viewas'
-import { dqCachedLive, dqLastRun, readStore } from '@/lib/platform/stores'
-import { InputError } from '@/lib/api-error'
-import { DATE_KEY_RE, inDateRange, monthRange } from '@/lib/fragments'
+} from '@/features/shared/platform/repo'
+import { configAll } from '@/features/shared/platform/settings'
+import { requireRole } from '@/features/shared/platform/identity'
+import { assertWritable } from '@/features/shared/platform/viewas'
+import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
+import { InputError } from '@/features/shared/lib/api-error'
+import { DATE_KEY_RE, inDateRange, monthRange } from '@/features/shared/lib/fragments'
 import {
   dqAgingFlagOut_,
   dqBandInfo_,
@@ -53,7 +53,7 @@ import {
   tlsShifts_,
   type DqAgingFlagOut,
 } from './index'
-import { dqDateKey_, dqSetting_, normEmail_, type Cfg } from '../prod/adapters'
+import { dqDateKey_, dqSetting_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 
 /** Table names in migrations/003 (legacy sheet names -> Postgres). */
 export const DQ_AGING_FLAGS_TABLE = 'dq_aging_flags'

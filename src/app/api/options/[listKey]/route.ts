@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { currentEmail, actorEmail, optionsFor, addOption } from '@/lib/platform'
+import { currentEmail, actorEmail, optionsFor, addOption } from '@/features/shared/platform'
 
 
 /** optionsFor_: the active choices of one dropdown. */

@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { alertsApi, type OneOnOneAlert } from '@/lib/shell/context'
-import { resolveLink } from '@/lib/shell/gates'
-import { kuwaitTime } from '@/components/shell/ui'
+import { alertsApi, type OneOnOneAlert } from '@/features/shared/shell/context'
+import { resolveLink } from '@/features/shared/shell/gates'
+import { kuwaitTime } from '@/features/shared/components/shell/ui'
 
 /**
  * ga — the 1:1 reminder stack: polls /api/alerts/one-on-one, schedules

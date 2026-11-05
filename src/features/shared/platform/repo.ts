@@ -17,7 +17,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/features/shared/lib/supabase'
 
 /** The shared anon-key client every API route in this project already uses. */
 export function db(): SupabaseClient {

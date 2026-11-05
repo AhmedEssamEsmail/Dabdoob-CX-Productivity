@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   notifyHtml, pwOoDue, pwOoEmailApplies, pwOoUpcoming, OO_REM_WINDOW_MS, OO_REM_START_GRACE_MS,
-} from '@/lib/platform/notify'
-import { escapeHtml } from '@/lib/platform/mail'
-import type { OoBooking } from '@/lib/platform/notify'
+} from '@/features/shared/platform/notify'
+import { escapeHtml } from '@/features/shared/platform/mail'
+import type { OoBooking } from '@/features/shared/platform/notify'
 
 describe('notifyHtml (notifyHtml_)', () => {
   it('builds escaped paragraphs, a fact table and where guidance', () => {

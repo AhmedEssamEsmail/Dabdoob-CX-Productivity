@@ -1,8 +1,8 @@
-import { createAuthClient } from '@/lib/auth'
-import { dqAddDays_ } from '@/lib/prod/adapters'
-import { prodNowIso_, prodSetting_, prodToday_ } from '@/lib/prod/engine'
-import { prodNameToEmail_ } from '@/lib/prod/adapters'
-import { described } from '@/lib/errors'
+import { createAuthClient } from '@/features/shared/lib/auth'
+import { dqAddDays_ } from '@/features/shared/lib/adapters'
+import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { prodNameToEmail_ } from '@/features/shared/lib/adapters'
+import { described } from '@/features/shared/lib/errors'
 import {
   TPH_CALLS,
   TPH_HISTORY_DAYS,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { currentEmail, allOptions } from '@/lib/platform'
+import { currentEmail, allOptions } from '@/features/shared/platform'
 
 
 /** getOptions_: every active choice grouped by dropdown key — any signed-in user. */

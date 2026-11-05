@@ -1,8 +1,8 @@
 'use client'
 
 import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Chip, stagger, useEnterAnim, useTip, vsPrev } from '@/components/shell/ui'
-import { daysUntil, type FlagView } from '@/lib/prod-validation'
+import { Chip, stagger, useEnterAnim, useTip, vsPrev } from '@/features/shared/components/shell/ui'
+import { daysUntil, type FlagView } from '@/features/cx-productivity/lib/prod-validation'
 
 /**
  * The productivity pages' shared machinery, mirroring the bundle's module scope:

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   sanitizeInput, newId, normHeader, isTrue, toClientValue, toCellValue,
   cacheGet, cachePut, cacheRemove, cacheClear, STAMP_FIELDS,
-} from '@/lib/platform/repo'
+} from '@/features/shared/platform/repo'
 
 describe('sanitizeInput / stamping (Repo.js)', () => {
   it('drops client-supplied stamps and internal keys', () => {

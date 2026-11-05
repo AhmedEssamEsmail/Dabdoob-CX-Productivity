@@ -14,7 +14,7 @@ import {
   kpiPayout_,
   kpiProbationMonth_,
   kpiR2_,
-} from '../../src/lib/kpi'
+} from '@/features/cx-people/lib/kpi'
 
 const R = rng(0x1f3a5b)
 

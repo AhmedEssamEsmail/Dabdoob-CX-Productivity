@@ -15,9 +15,9 @@ import {
   prodNameToEmail_,
   type Cfg,
   type SheetBookLike,
-} from '../prod/adapters'
+} from '@/features/shared/lib/adapters'
 import { prodList_, prodNowIso_, prodReady_, prodSetting_, prodToday_ } from '../prod/engine'
-import type { HeadcountRow } from '../prod/adapters'
+import type { HeadcountRow } from '@/features/shared/lib/adapters'
 
 export const TPH_SLOT_MIN = 15
 export const TPH_SLOTS = 96

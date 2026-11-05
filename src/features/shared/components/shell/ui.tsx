@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { prefersReducedMotion } from '@/lib/shell/i18n'
+import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 
 /**
  * Shared UI primitives ported from the legacy bundle with exact classes:

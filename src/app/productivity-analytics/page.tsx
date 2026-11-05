@@ -7,7 +7,7 @@ import {
   LoadError,
   PageHead,
   Section,
-} from '@/components/shell/ui'
+} from '@/features/shared/components/shell/ui'
 import {
   Ba,
   CalibrationChart,
@@ -17,7 +17,7 @@ import {
   T,
   Tn,
   useSe,
-} from '@/components/prod/pv-shared'
+} from '@/features/cx-productivity/components/pv-shared'
 
 /**
  * Productivity analytics — verbatim port of the legacy `Fa` page: agents table,
@@ -82,7 +82,7 @@ interface Analytics {
     upheldPct: number | null
     medianDaysToResolve: number | null
   }[]
-  trend: import('@/components/prod/pv-shared').TrendPoint[]
+  trend: import('@/features/cx-productivity/components/pv-shared').TrendPoint[]
   heatmap?: (number | null)[][]
   calibration?: { idle: Record<string, number>; working: Record<string, number> }
 }

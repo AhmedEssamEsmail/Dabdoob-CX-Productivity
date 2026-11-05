@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { apiError, InputError } from '@/lib/api-error'
-import { getTlPerformance } from '@/lib/queue/server'
-import { dqDateKey_, normEmail_ } from '@/lib/prod/adapters'
-import { configAll } from '@/lib/platform/settings'
-import type { Cfg } from '@/lib/prod/adapters'
+import { requireRole } from '@/features/shared/platform/identity'
+import { apiError, InputError } from '@/features/shared/lib/api-error'
+import { getTlPerformance } from '@/features/cx-queue/lib/server'
+import { dqDateKey_, normEmail_ } from '@/features/shared/lib/adapters'
+import { configAll } from '@/features/shared/platform/settings'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 /**
  * GET /api/tl/performance?tl_email=&month= — the TlSnapshots.js snapshot rows for

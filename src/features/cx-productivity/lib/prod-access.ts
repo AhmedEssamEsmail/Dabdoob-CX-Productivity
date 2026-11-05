@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { described } from '@/lib/errors'
+import { described } from '@/features/shared/lib/errors'
 
 /**
  * prodScope_ / pwIsManagerOf_ port: who may see or decide a flag.

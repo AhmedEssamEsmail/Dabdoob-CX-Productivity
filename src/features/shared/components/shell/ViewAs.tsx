@@ -5,8 +5,8 @@ import {
   shellApi,
   type ShellUser,
   type ViewAsPerson,
-} from '@/lib/shell/context'
-import { displayRole, ROLE_LABELS } from '@/lib/shell/gates'
+} from '@/features/shared/shell/context'
+import { displayRole, ROLE_LABELS } from '@/features/shared/shell/gates'
 
 /**
  * Vt + kn — the "View as" banner and people picker, ported 1:1.

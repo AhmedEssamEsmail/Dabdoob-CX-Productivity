@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { requireAdminCaller } from '@/lib/admin-auth'
-import { apiError } from '@/lib/api-error'
-import { configAll } from '@/lib/platform/settings'
-import { backfillDefaults, runBackfill, BACKFILL_KINDS, type BackfillCursor } from '@/lib/jobs/backfill'
+import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
+import { apiError } from '@/features/shared/lib/api-error'
+import { configAll } from '@/features/shared/platform/settings'
+import { backfillDefaults, runBackfill, BACKFILL_KINDS, type BackfillCursor } from '@/features/cx-productivity/jobs/backfill'
 
 export const maxDuration = 300
 

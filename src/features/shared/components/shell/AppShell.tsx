@@ -16,39 +16,37 @@ import {
   setBoot,
   shellApi,
   type Bootstrap,
-} from '@/lib/shell/context'
+} from '@/features/shared/shell/context'
 import {
   applyAppearance,
   D,
   prefersReducedMotion,
   readAppearance,
   useLang,
-} from '@/lib/shell/i18n'
+} from '@/features/shared/shell/i18n'
 import {
   appForGroup,
   appTitle,
   displayRole,
   groupEntryAllowed,
   groupEntryLink,
-  inThisApp,
+  inApp,
   pageAllowed,
   pageHref,
   resolveLink,
   WHO_ROLE_LABELS,
-} from '@/lib/shell/gates'
+} from '@/features/shared/shell/gates'
 import {
-  APP_KEY,
-  APP_TITLE,
   GROUP_DEFAULT_PAGE,
   GROUP_LABELS,
   GROUP_ORDER,
   GROUP_TONE,
   PAGES,
-} from '@/components/shell/registry'
-import NavIcon from '@/components/shell/NavIcon'
-import ErrorBoundary from '@/components/shell/ErrorBoundary'
-import { ViewAsBanner, ViewAsPicker } from '@/components/shell/ViewAs'
-import Popups from '@/components/shell/Popups'
+} from '@/features/shared/components/shell/registry'
+import NavIcon from '@/features/shared/components/shell/NavIcon'
+import ErrorBoundary from '@/features/shared/components/shell/ErrorBoundary'
+import { ViewAsBanner, ViewAsPicker } from '@/features/shared/components/shell/ViewAs'
+import Popups from '@/features/shared/components/shell/Popups'
 
 /**
  * ys — the application shell: brand + rail nav (with the sliding .nav-ind
@@ -101,6 +99,11 @@ export default function AppShell({ children }: { children?: ReactNode }) {
 
   const path = routePath(pathname)
   const route = PAGES.find((page) => page.path === path) ?? PAGES[0]
+  /* The app context follows the current route's group: a Quality page renders
+     the rail, brand and title of the legacy Quality app; a Hub page renders
+     the Hub's. Unknown (non-registry) paths default to the hub context. */
+  const ctxApp = appForGroup(route.group)
+  const ctxTitle = appTitle(ctxApp)
 
   /* xa() — reload when the view-as session changed elsewhere. */
   const viewAsTarget = boot?.viewAs?.canUse ? (boot.viewAs.target ?? null) : null
@@ -165,7 +168,9 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     if (!boot) return
     const req = PAGES.find((page) => page.path === (path || 'overview'))
     if (!req) return
-    const vis = PAGES.filter((page) => pageAllowed(page, boot)).filter(inThisApp)
+    const vis = PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
+      inApp(page, ctxApp)
+    )
     const fb =
       vis.find((page) => page.path === 'my-day') ??
       vis.find((page) => page.path === 'overview') ??
@@ -175,7 +180,12 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     const query = new URLSearchParams(searchParams.toString())
     query.set('from', req.path)
     router.replace(`/${cur.path}?${query.toString()}`)
-  }, [path, boot, router, searchParams])
+  }, [path, boot, router, searchParams, ctxApp])
+
+  /* The document title is the app title of the context, as in each legacy app. */
+  useEffect(() => {
+    document.title = ctxTitle
+  }, [ctxTitle])
 
   /* ia(ca()) — stored appearance holds from the first app paint. */
   useEffect(() => {
@@ -228,7 +238,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   if (bootError) {
     return (
       <main className="state-screen">
-        <h1>{D('{app} could not start', { app: APP_TITLE })}</h1>
+        <h1>{D('{app} could not start', { app: ctxTitle })}</h1>
         <p>{bootError}</p>
         <button
           type="button"
@@ -254,7 +264,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             <h1>{D('{name} has no access', { name: user.name })}</h1>
             <p>
               {user.email} is not an active admin, team lead or agent on the
-              roster, so {APP_TITLE} shows them nothing.
+              roster, so {ctxTitle} shows them nothing.
             </p>
           </main>
         </div>
@@ -273,7 +283,9 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     )
   }
 
-  const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter(inThisApp)
+  const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
+    inApp(page, ctxApp)
+  )
   /* Legacy hash router: an empty path defaults to 'overview'. */
   const requested = PAGES.find((page) => page.path === (path || 'overview'))
   const fallback =
@@ -292,8 +304,8 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         : undefined
   const note =
     noteRoute && noteRoute !== current
-      ? !inThisApp(noteRoute) && groupEntryAllowed(noteRoute, boot)
-        ? { kind: 'external' as const, route: noteRoute, link: resolveLink(`#/${noteRoute.path}`) }
+      ? !inApp(noteRoute, ctxApp) && groupEntryAllowed(noteRoute, boot)
+        ? { kind: 'external' as const, route: noteRoute, link: resolveLink(`#/${noteRoute.path}`, PAGES, true, ctxApp) }
         : { kind: 'denied' as const, route: noteRoute }
       : undefined
 
@@ -302,10 +314,10 @@ export default function AppShell({ children }: { children?: ReactNode }) {
 
   const body = !current ? (
     <div className="state-screen">
-      <h1>{D('Nothing in {app} for you yet', { app: APP_TITLE })}</h1>
+      <h1>{D('Nothing in {app} for you yet', { app: ctxTitle })}</h1>
       <p>
         {D('{app} has no page for your role. Everything else is in the Hub.', {
-          app: APP_TITLE,
+          app: ctxTitle,
         })}
       </p>
       {hubLink.missing ? null : (
@@ -340,7 +352,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               target={hubLink.missing ? undefined : '_top'}
             >
               <span className="brand-mark" aria-hidden="true" />
-              <span className="brand-name">{APP_TITLE}</span>
+              <span className="brand-name">{ctxTitle}</span>
             </a>
             <button
               type="button"
@@ -357,7 +369,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             {GROUP_ORDER.map((group) => {
               /* Other apps: a single entry labelled with the group name that
                  opens that group's first visible page (internal here). */
-              if (appForGroup(group) !== APP_KEY) {
+              if (appForGroup(group) !== ctxApp) {
                 const link = groupEntryLink(group, PAGES, (page) =>
                   groupEntryAllowed(page, boot)
                 )
@@ -497,7 +509,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               </span>
             </p>
           ) : null}
-          <ErrorBoundary title={current?.title ?? APP_TITLE} key={current?.path ?? 'none'}>
+          <ErrorBoundary title={current?.title ?? ctxTitle} key={current?.path ?? 'none'}>
             {body}
           </ErrorBoundary>
         </main>

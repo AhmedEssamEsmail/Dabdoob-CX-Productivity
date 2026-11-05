@@ -1,5 +1,5 @@
-import { requireRole } from '@/lib/auth'
-import { getTphPage, tphLoadStore_ } from '@/lib/tph/page'
+import { requireRole } from '@/features/shared/lib/auth'
+import { getTphPage, tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
 import { NextResponse } from 'next/server'
 
 /** getTphPage(date) — the TPH page's full payload for one day. */

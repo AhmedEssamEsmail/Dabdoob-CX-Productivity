@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { behaviourInput, leaveInput, olCaseInput } from '@/lib/kpi/server'
-import { KPI_LEAVE_TYPES } from '@/lib/kpi'
-import { InputError } from '@/lib/api-error'
+import { behaviourInput, leaveInput, olCaseInput } from '@/features/cx-people/lib/kpi/server'
+import { KPI_LEAVE_TYPES } from '@/features/cx-people/lib/kpi'
+import { InputError } from '@/features/shared/lib/api-error'
 
 describe('behaviourInput (kpi_behaviour_log)', () => {
   it('requires an email and a yyyy-MM-dd date', () => {

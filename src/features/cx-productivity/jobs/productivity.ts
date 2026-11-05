@@ -10,7 +10,7 @@ import {
   dqDateKey_,
   dqSetting_,
   prodNameToEmail_,
-} from '@/lib/prod/adapters'
+} from '@/features/shared/lib/adapters'
 import {
   prodAutoAccept_,
   prodComputeDates_,
@@ -19,15 +19,15 @@ import {
   prodReady_,
   prodSetting_,
   prodToday_,
-} from '@/lib/prod/engine'
-import { prodHeaderCols_, prodIntervalsFromRows_, type ProdIntervalsOpts } from '@/lib/prod/validation'
-import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_ } from '@/lib/tph'
-import { syncAllMirrors } from './mirrors'
-import type { GmailReadAdapter } from '@/lib/platform/mail'
-import { prodCsvRows_ } from './csv'
-import type { JobEnv, Row } from './env'
-import { dqStep_ } from './steps'
-import { DAILY_REPORT_TABS } from './sheets'
+} from '@/features/cx-productivity/lib/prod/engine'
+import { prodHeaderCols_, prodIntervalsFromRows_, type ProdIntervalsOpts } from '@/features/cx-productivity/lib/prod/validation'
+import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_ } from '@/features/cx-productivity/lib/tph'
+import { syncAllMirrors } from '@/features/shared/jobs/mirrors'
+import type { GmailReadAdapter } from '@/features/shared/platform/mail'
+import { prodCsvRows_ } from '@/features/shared/jobs/csv'
+import type { JobEnv, Row } from '@/features/shared/jobs/env'
+import { dqStep_ } from '@/features/shared/jobs/steps'
+import { DAILY_REPORT_TABS } from '@/features/shared/jobs/sheets'
 
 /** subject:"Agents Activity" has:attachment — the daily snapshot email. */
 export const PROD_MAIL_QUERY = 'subject:"Agents Activity" has:attachment'

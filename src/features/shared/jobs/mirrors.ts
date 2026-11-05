@@ -18,12 +18,12 @@
  */
 
 import { createHash } from 'node:crypto'
-import { dqSetting_, prodFileFor_, dqAddDays_, type Cfg } from '@/lib/prod/adapters'
-import { prodToday_ } from '@/lib/prod/engine'
-import { tphClock_ } from '@/lib/tph'
-import { db } from '@/lib/platform/repo'
-import { getConfig, setConfig } from '@/lib/platform/settings'
-import { described } from '@/lib/errors'
+import { dqSetting_, prodFileFor_, dqAddDays_, type Cfg } from '@/features/shared/lib/adapters'
+import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphClock_ } from '@/features/cx-productivity/lib/tph'
+import { db } from '@/features/shared/platform/repo'
+import { getConfig, setConfig } from '@/features/shared/platform/settings'
+import { described } from '@/features/shared/lib/errors'
 import { fetchWorkbookTabs } from './sheets'
 import { fetchMaqsamRows, fetchFreshchatRows } from './vendor-apis'
 

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseConfigValue, configKind, validateConfigValue, CONFIG_DEFAULTS, DQ_SETTINGS, ALL_SETTINGS,
-} from '@/lib/platform/settings'
-import { normEmail, pwIsManagerOf } from '@/lib/platform/identity'
-import type { Directory } from '@/lib/platform/identity'
+} from '@/features/shared/platform/settings'
+import { normEmail, pwIsManagerOf } from '@/features/shared/platform/identity'
+import type { Directory } from '@/features/shared/platform/identity'
 
 describe('parseConfigValue / configKind', () => {
   it('parses booleans, numbers and JSON; keeps the rest as text', () => {

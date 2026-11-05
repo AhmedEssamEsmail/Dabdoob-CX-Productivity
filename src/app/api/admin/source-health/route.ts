@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createAuthClient } from '@/lib/auth'
-import { requireAdminCaller } from '@/lib/admin-auth'
-import { apiError } from '@/lib/api-error'
-import { describeDbError } from '@/lib/errors'
-import { configAll } from '@/lib/platform/settings'
-import { dqSetting_, prodFileFor_ } from '@/lib/prod/adapters'
-import { prodToday_ } from '@/lib/prod/engine'
-import { fetchWorkbookTabs, sheetCreds } from '@/lib/jobs/sheets'
-import { hbRowState } from '@/lib/platform/health'
+import { createAuthClient } from '@/features/shared/lib/auth'
+import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
+import { apiError } from '@/features/shared/lib/api-error'
+import { describeDbError } from '@/features/shared/lib/errors'
+import { configAll } from '@/features/shared/platform/settings'
+import { dqSetting_, prodFileFor_ } from '@/features/shared/lib/adapters'
+import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { fetchWorkbookTabs, sheetCreds } from '@/features/shared/jobs/sheets'
+import { hbRowState } from '@/features/shared/platform/health'
 
 export const maxDuration = 120
 

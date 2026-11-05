@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { requireRole } from '@/lib/platform/identity'
-import { assertWritable } from '@/lib/platform/viewas'
-import { apiError, dbErr } from '@/lib/api-error'
-import { fcrDailyInput } from '@/lib/scorecard/fcr'
-import { db } from '@/lib/platform/repo'
+import { requireRole } from '@/features/shared/platform/identity'
+import { assertWritable } from '@/features/shared/platform/viewas'
+import { apiError, dbErr } from '@/features/shared/lib/api-error'
+import { fcrDailyInput } from '@/features/cx-people/lib/scorecard/fcr'
+import { db } from '@/features/shared/platform/repo'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)

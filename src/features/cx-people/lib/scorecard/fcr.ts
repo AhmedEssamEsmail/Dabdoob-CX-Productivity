@@ -5,9 +5,9 @@
  * scDerive_'s passed/(passed+failed)).
  */
 
-import { InputError } from '@/lib/api-error'
-import { DATE_KEY_RE } from '@/lib/fragments'
-import { normEmail_ } from '../prod/adapters'
+import { InputError } from '@/features/shared/lib/api-error'
+import { DATE_KEY_RE } from '@/features/shared/lib/fragments'
+import { normEmail_ } from '@/features/shared/lib/adapters'
 import { scNum_ } from './index'
 
 export interface FcrDailyInput {

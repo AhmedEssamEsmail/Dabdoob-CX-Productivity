@@ -3,8 +3,8 @@
 import type { ReactNode } from 'react'
 import { Suspense } from 'react'
 import { usePathname } from 'next/navigation'
-import AppShell from '@/components/shell/AppShell'
-import HashShim from '@/components/shell/HashShim'
+import AppShell from '@/features/shared/components/shell/AppShell'
+import HashShim from '@/features/shared/components/shell/HashShim'
 
 /**
  * The page chrome: the ported legacy application shell (rail, nav, footer,

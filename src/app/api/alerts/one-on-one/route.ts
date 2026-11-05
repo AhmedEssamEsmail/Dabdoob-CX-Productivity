@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { currentEmail, oneOnOneAlerts, oneOnOneAlertsSeen } from '@/lib/platform'
+import { currentEmail, oneOnOneAlerts, oneOnOneAlertsSeen } from '@/features/shared/platform'
 
 
 /** oneOnOneAlerts: the in-app 1:1 reminders due now for the signed-in person. */

@@ -1,8 +1,8 @@
-import { requireRole } from '@/lib/auth'
-import { viewAsGuard } from '@/lib/platform/viewas'
-import { apiError } from '@/lib/api-error'
-import { tphLoadStore_ } from '@/lib/tph/page'
-import { saveTphSlots } from '@/lib/tph/write'
+import { requireRole } from '@/features/shared/lib/auth'
+import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { apiError } from '@/features/shared/lib/api-error'
+import { tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
+import { saveTphSlots } from '@/features/cx-productivity/lib/tph/write'
 import { NextResponse } from 'next/server'
 
 /** saveTphSlots — paint a channel/activity or blend calls across slots. */

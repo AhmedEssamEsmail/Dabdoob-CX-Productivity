@@ -12,13 +12,13 @@ const h = vi.hoisted(() => ({
   stepCalls: [] as string[],
 }))
 
-vi.mock('@/lib/jobs/mirrors', () => ({
+vi.mock('@/features/shared/jobs/mirrors', () => ({
   syncAllMirrors: async () => {
     h.mirrorCalls++
     return {}
   },
 }))
-vi.mock('@/lib/jobs/productivity', () => ({
+vi.mock('@/features/cx-productivity/jobs/productivity', () => ({
   prodComputeStep_: async (_env: never, dates: string[]) => {
     h.computeCalls.push(...dates)
     return dates.length * 3
@@ -28,8 +28,8 @@ vi.mock('@/lib/jobs/productivity', () => ({
     return { flagged: 0, added: 1, voided: 0 }
   },
 }))
-vi.mock('@/lib/tph', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/lib/tph')>()
+vi.mock('@/features/cx-productivity/lib/tph', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/features/cx-productivity/lib/tph')>()
   return {
     ...orig,
     tphRunStep_: (d: string, step: string) => {
@@ -40,7 +40,7 @@ vi.mock('@/lib/tph', async (importOriginal) => {
   }
 })
 
-import { runBackfill } from '@/lib/jobs/backfill'
+import { runBackfill } from '@/features/cx-productivity/jobs/backfill'
 import { stubEnv } from './helpers'
 
 describe('runBackfill', () => {

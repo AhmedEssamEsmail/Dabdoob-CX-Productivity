@@ -15,7 +15,7 @@ import {
   normEmail_,
   type Cfg,
   type SheetBookLike,
-} from '../prod/adapters'
+} from '@/features/shared/lib/adapters'
 
 // ---------------------------------------------------------------- QueueCore.js
 

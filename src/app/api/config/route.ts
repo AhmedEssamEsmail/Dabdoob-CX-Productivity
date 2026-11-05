@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase'
-import { dbErr } from '@/lib/api-error'
+import { supabase } from '@/features/shared/lib/supabase'
+import { dbErr } from '@/features/shared/lib/api-error'
 import { NextResponse } from 'next/server'
 
 export async function GET() {

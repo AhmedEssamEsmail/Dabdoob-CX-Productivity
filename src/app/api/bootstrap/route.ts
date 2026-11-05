@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import {
   currentUser, currentEmail, viewAsState, pendingPopupsFor, allOptions, appUrls,
   pwKwTime, pwKwDate, KUWAIT_TZ,
-} from '@/lib/platform'
+} from '@/features/shared/platform'
 
 
 /**
@@ -25,7 +25,7 @@ export async function GET() {
         serverAt: new Date(now).toISOString(),
         timeZone: KUWAIT_TZ,
         isOwner: false,
-        app: 'productivity',
+        app: 'hub',
         appUrls: {},
       })
     }
@@ -39,7 +39,7 @@ export async function GET() {
       serverAt: new Date(now).toISOString(),
       timeZone: KUWAIT_TZ,
       isOwner: st.owner,
-      app: 'productivity',
+      app: 'hub',
       appUrls: urls,
       quality: undefined,
     }

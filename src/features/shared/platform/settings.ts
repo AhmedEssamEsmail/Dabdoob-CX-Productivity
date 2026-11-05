@@ -443,9 +443,9 @@ export async function appUrls(): Promise<Record<string, string>> {
   return out
 }
 
-/** ccApp_: this project is the Productivity app (CC_APP in the legacy build). */
+/** ccApp_: this deployment serves every app; it identifies as the hub. */
 export function ccApp(): string {
-  return 'productivity'
+  return 'hub'
 }
 
 export { isTrue }

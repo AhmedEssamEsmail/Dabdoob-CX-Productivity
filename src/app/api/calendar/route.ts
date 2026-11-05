@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   requireRole, pwDirectory, pwIsManagerOf, getWorkingCalendar, wcDay, pwWorkingHours, normEmail,
-} from '@/lib/platform'
+} from '@/features/shared/platform'
 
 
 /**

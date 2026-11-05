@@ -9,8 +9,8 @@
 import { db } from './repo'
 import { wcReset } from './calendar'
 import { assertWritable } from './viewas'
-import { InputError } from '@/lib/api-error'
-import { DATE_KEY_RE } from '@/lib/fragments'
+import { InputError } from '@/features/shared/lib/api-error'
+import { DATE_KEY_RE } from '@/features/shared/lib/fragments'
 
 export const HOLIDAYS_TABLE = 'holidays'
 

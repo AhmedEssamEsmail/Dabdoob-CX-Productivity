@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { dqOpenAgingFlags_, dqAgingFlagOut_ } from '@/lib/queue'
+import { dqOpenAgingFlags_, dqAgingFlagOut_ } from '@/features/cx-queue/lib'
 import {
   agingFlagInput,
   agingResolveInput,
   checkinInput,
   dqSlotsForDate_,
-} from '@/lib/queue/server'
-import { InputError } from '@/lib/api-error'
-import type { Cfg } from '@/lib/prod/adapters'
+} from '@/features/cx-queue/lib/server'
+import { InputError } from '@/features/shared/lib/api-error'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const CFG: Cfg = {
   business_tz: 'Asia/Kuwait',

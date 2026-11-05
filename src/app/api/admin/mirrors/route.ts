@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { requireAdminCaller } from '@/lib/admin-auth'
-import { apiError } from '@/lib/api-error'
-import { createAuthClient } from '@/lib/auth'
-import { configAll } from '@/lib/platform/settings'
-import { dqSetting_ } from '@/lib/prod/adapters'
-import { fetchWorkbookTabs } from '@/lib/jobs/sheets'
-import { syncAllMirrors, type MirrorTable, MIRROR_TABLES } from '@/lib/jobs/mirrors'
+import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
+import { apiError } from '@/features/shared/lib/api-error'
+import { createAuthClient } from '@/features/shared/lib/auth'
+import { configAll } from '@/features/shared/platform/settings'
+import { dqSetting_ } from '@/features/shared/lib/adapters'
+import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
+import { syncAllMirrors, type MirrorTable, MIRROR_TABLES } from '@/features/shared/jobs/mirrors'
 
 export const maxDuration = 300
 

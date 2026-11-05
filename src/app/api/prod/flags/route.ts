@@ -1,4 +1,4 @@
-import { createAuthClient, requireRole } from '@/lib/auth'
+import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
 import {
   PROD_DEFAULTS,
   addDays,
@@ -8,7 +8,7 @@ import {
   statusChoices,
   todayKey,
   type ProdFlagRow,
-} from '@/lib/prod-validation'
+} from '@/features/cx-productivity/lib/prod-validation'
 import { NextResponse } from 'next/server'
 
 const CONFIG_KEYS = [

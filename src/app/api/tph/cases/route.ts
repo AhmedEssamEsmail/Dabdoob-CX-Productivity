@@ -1,9 +1,9 @@
-import { requireRole } from '@/lib/auth'
-import { viewAsGuard } from '@/lib/platform/viewas'
-import { supabase } from '@/lib/supabase'
-import { apiError, dbErr } from '@/lib/api-error'
-import { tphLoadStore_ } from '@/lib/tph/page'
-import { saveTphCases } from '@/lib/tph/write'
+import { requireRole } from '@/features/shared/lib/auth'
+import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { supabase } from '@/features/shared/lib/supabase'
+import { apiError, dbErr } from '@/features/shared/lib/api-error'
+import { tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
+import { saveTphCases } from '@/features/cx-productivity/lib/tph/write'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {

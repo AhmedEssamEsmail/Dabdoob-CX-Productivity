@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { VIEW_AS_READONLY } from '@/lib/platform/viewas'
+import { VIEW_AS_READONLY } from '@/features/shared/platform/viewas'
 import { DescribedError, describeDbError } from './errors'
 
 export class InputError extends Error {

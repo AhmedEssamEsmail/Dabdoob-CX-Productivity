@@ -1,7 +1,7 @@
-import { createAuthClient, requireRole } from '@/lib/auth'
-import { flagInScope } from '@/lib/prod-access'
-import { flagView, type ProdFlagRow } from '@/lib/prod-validation'
-import { dbErr } from '@/lib/api-error'
+import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { flagInScope } from '@/features/cx-productivity/lib/prod-access'
+import { flagView, type ProdFlagRow } from '@/features/cx-productivity/lib/prod-validation'
+import { dbErr } from '@/features/shared/lib/api-error'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**

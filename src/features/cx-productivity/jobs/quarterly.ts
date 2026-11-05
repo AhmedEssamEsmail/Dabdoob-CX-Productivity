@@ -5,8 +5,8 @@
  * -> platform sendMail (a 'failed' result throws, like MailApp did).
  */
 
-import { dqSetting_, formatDate_ } from '@/lib/prod/adapters'
-import type { JobEnv, Row } from './env'
+import { dqSetting_, formatDate_ } from '@/features/shared/lib/adapters'
+import type { JobEnv, Row } from '@/features/shared/jobs/env'
 
 const QUARTER_START: Record<string, string> = { Q1: '-01-01', Q2: '-04-01', Q3: '-07-01', Q4: '-10-01' }
 const QUARTER_END: Record<string, string> = { Q1: '-03-31', Q2: '-06-30', Q3: '-09-30', Q4: '-12-31' }

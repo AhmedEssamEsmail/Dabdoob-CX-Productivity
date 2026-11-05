@@ -39,7 +39,7 @@ import {
   prodSpansMs_,
   prodSuggestStatus_,
   prodWindowHist_,
-} from '../../src/lib/prod/validation'
+} from '@/features/cx-productivity/lib/prod/validation'
 import {
   prodAnalytics_,
   prodBand_,
@@ -48,8 +48,8 @@ import {
   prodPct_,
   prodWeekStart_,
   type ProdAnalyticsInput,
-} from '../../src/lib/prod/analytics'
-import { prodDateKey_ } from '../../src/lib/prod/adapters'
+} from '@/features/cx-productivity/lib/prod/analytics'
+import { prodDateKey_ } from '@/features/shared/lib/adapters'
 
 const R = rng(0x9e3779b9)
 

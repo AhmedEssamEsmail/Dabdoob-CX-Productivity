@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { requireRole, readRows } from '@/lib/platform'
+import { requireRole, readRows } from '@/features/shared/platform'
 
 
 /** The MailLog tab for Admin: latest 200 attempts, newest first. Admin only. */

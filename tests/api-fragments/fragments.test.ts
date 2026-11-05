@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { holidayInput } from '@/lib/platform/holidays'
-import { fcrDailyInput } from '@/lib/scorecard/fcr'
-import { monthRange, inDateRange, pick } from '@/lib/fragments'
-import { InputError } from '@/lib/api-error'
+import { holidayInput } from '@/features/shared/platform/holidays'
+import { fcrDailyInput } from '@/features/cx-people/lib/scorecard/fcr'
+import { monthRange, inDateRange, pick } from '@/features/shared/lib/fragments'
+import { InputError } from '@/features/shared/lib/api-error'
 
 describe('monthRange', () => {
   it('returns the inclusive from/to of a month (leap year)', () => {

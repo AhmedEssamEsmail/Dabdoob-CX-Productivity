@@ -21,12 +21,12 @@
  * error, leave type is checked against KPI_LEAVE_TYPES, dates are yyyy-MM-dd.
  */
 
-import { db, updateRow, findRow, newId } from '@/lib/platform/repo'
-import { assertWritable } from '@/lib/platform/viewas'
-import { readStore } from '@/lib/platform/stores'
-import { InputError } from '@/lib/api-error'
-import { DATE_KEY_RE, MONTH_RE, inDateRange, monthRange, pick } from '@/lib/fragments'
-import { normEmail_ } from '../prod/adapters'
+import { db, updateRow, findRow, newId } from '@/features/shared/platform/repo'
+import { assertWritable } from '@/features/shared/platform/viewas'
+import { readStore } from '@/features/shared/platform/stores'
+import { InputError } from '@/features/shared/lib/api-error'
+import { DATE_KEY_RE, MONTH_RE, inDateRange, monthRange, pick } from '@/features/shared/lib/fragments'
+import { normEmail_ } from '@/features/shared/lib/adapters'
 import {
   KPI_LEAVE_TYPES,
   kpiLeaveDates_,

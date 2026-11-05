@@ -4,7 +4,7 @@
  * update the latest created) and the stale past-day rebuild.
  */
 import { describe, expect, it } from 'vitest'
-import { jobTphHourly, jobTphPastDays } from '@/lib/jobs/tph'
+import { jobTphHourly, jobTphPastDays } from '@/features/cx-productivity/jobs/tph'
 import { stubEnv } from './helpers'
 
 const NOW = Date.parse('2026-10-08T07:00:00Z') // 10:00 Kuwait -> hour key '10|<channel>' today 2026-10-08

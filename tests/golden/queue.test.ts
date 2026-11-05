@@ -33,8 +33,8 @@ import {
   tlsOnShift_,
   tlsShiftOf_,
   tlsShifts_,
-} from '../../src/lib/queue'
-import type { Cfg } from '../../src/lib/prod/adapters'
+} from '@/features/cx-queue/lib'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const R = rng(0x5eed42)
 const CFG = baseFixtures().settings as Cfg

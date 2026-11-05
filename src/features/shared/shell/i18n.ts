@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import ar from '../../../specs/legacy-parity/data/legacy-i18n-ar.json'
+import ar from '../../../../specs/legacy-parity/data/legacy-i18n-ar.json'
 
 /**
  * Port of the legacy appearance + i18n helpers:

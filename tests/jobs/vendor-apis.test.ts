@@ -4,12 +4,12 @@
  * cannot recur: timestamps are emitted as ISO instants).
  */
 import { describe, expect, it } from 'vitest'
-import { epochMs } from '@/lib/vendor/http'
-import { maqsamBase } from '@/lib/vendor/maqsam'
-import { freshchatBase } from '@/lib/vendor/freshchat'
-import { fetchFreshchatRows, fetchMaqsamRows, freshchatConvToCols, maqsamCallToCols } from '@/lib/jobs/vendor-apis'
-import { DescribedError } from '@/lib/errors'
-import { tphCallMinutesFromRows_, tphChatCases_ } from '@/lib/tph'
+import { epochMs } from '@/features/shared/vendor/http'
+import { maqsamBase } from '@/features/shared/vendor/maqsam'
+import { freshchatBase } from '@/features/shared/vendor/freshchat'
+import { fetchFreshchatRows, fetchMaqsamRows, freshchatConvToCols, maqsamCallToCols } from '@/features/shared/jobs/vendor-apis'
+import { DescribedError } from '@/features/shared/lib/errors'
+import { tphCallMinutesFromRows_, tphChatCases_ } from '@/features/cx-productivity/lib/tph'
 
 describe('maqsamBase / freshchatBase', () => {
   it('normalizes domain spellings to the API host', () => {

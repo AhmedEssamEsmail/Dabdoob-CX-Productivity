@@ -1,6 +1,6 @@
-import { createAuthClient } from '@/lib/auth'
-import { normEmail_, type Cfg } from '@/lib/prod/adapters'
-import { prodNowIso_, prodSetting_, prodToday_ } from '@/lib/prod/engine'
+import { createAuthClient } from '@/features/shared/lib/auth'
+import { normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import {
   TPH_CALLS,
   TPH_OFF,

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getQueueHealthPage } from '@/lib/queue/server'
-import { apiError } from '@/lib/api-error'
+import { getQueueHealthPage } from '@/features/cx-queue/lib/server'
+import { apiError } from '@/features/shared/lib/api-error'
 
 /**
  * GET /api/queue/health — QueueCore.js getQueueHealthPage() verbatim on the

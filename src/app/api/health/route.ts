@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { requireRole, getEcosystemHealth, setupHealth } from '@/lib/platform'
+import { requireRole, getEcosystemHealth, setupHealth } from '@/features/shared/platform'
 
 
 /** getEcosystemHealth: the ecosystem health for Hub home / Admin (admin and TL). */

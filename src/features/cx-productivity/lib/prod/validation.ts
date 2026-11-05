@@ -10,7 +10,7 @@
  * original module stays untouched.
  */
 
-import { dqAddDays_, dqParseTs_, prodActivityKey_, prodDateKey_ } from './adapters'
+import { dqAddDays_, dqParseTs_, prodActivityKey_, prodDateKey_ } from '@/features/shared/lib/adapters'
 
 // Re-export the existing module so this file is the single "validation" surface.
 export * from '../prod-validation'

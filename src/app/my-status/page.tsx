@@ -6,8 +6,8 @@ import {
   LoadError,
   PageHead,
   Section,
-} from '@/components/shell/ui'
-import { toast } from '@/components/shell/Toasts'
+} from '@/features/shared/components/shell/ui'
+import { toast } from '@/features/shared/components/shell/Toasts'
 import {
   CasesLine,
   DecisionChip,
@@ -20,8 +20,8 @@ import {
   Tn,
   useSe,
   type TrendPoint,
-} from '@/components/prod/pv-shared'
-import type { FlagView, RuleView } from '@/lib/prod-validation'
+} from '@/features/cx-productivity/components/pv-shared'
+import type { FlagView, RuleView } from '@/features/cx-productivity/lib/prod-validation'
 
 /**
  * My status — verbatim port of the legacy `Ia` page: the mine card (four weekly

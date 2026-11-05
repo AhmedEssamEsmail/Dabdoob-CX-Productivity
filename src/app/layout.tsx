@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import SiteChrome from "@/components/layout/SiteChrome";
-import BootSplash from "@/components/shell/BootSplash";
+import SiteChrome from "@/features/shared/components/layout/SiteChrome";
+import BootSplash from "@/features/shared/components/shell/BootSplash";
 
 export const metadata: Metadata = {
-  title: "CX Productivity",
-  description: "CX Productivity System",
+  title: "CX Helm",
+  description: "CX Helm — the CX command center",
 };
 
 /**

@@ -19,9 +19,9 @@
  * DB-derived slots from TL-entered ones.
  */
 
-import { prodSetting_ } from '@/lib/prod/engine'
-import { tphHours_ } from '@/lib/tph/page'
-import type { Cfg } from '@/lib/prod/adapters'
+import { prodSetting_ } from '@/features/cx-productivity/lib/prod/engine'
+import { tphHours_ } from '@/features/cx-productivity/lib/tph/page'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const TPH_SLOT_MIN = 15
 const BIZ_TZ = 'Asia/Kuwait'

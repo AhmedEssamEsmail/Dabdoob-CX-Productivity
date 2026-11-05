@@ -3,7 +3,7 @@ import {
   pwTxt, pwStr, pwMs, pwIso, pwKwDate, pwKwTime, pwDateOnly, pwAt, pwDow, pwAddDays, pwToday,
   dqAddDays, pwPrevMonth, pwIsOpenStatus, pwOpenSeriesActions, pwFit, pwRound1, scRound1,
   pwLatestPercent, d0num, scNum, scEmail, scNumRow, dqGroupKey, dqInList, dqNameHasText,
-} from '@/lib/platform/time'
+} from '@/features/shared/platform/time'
 
 describe('Kuwait time helpers (PeopleCore.js)', () => {
   it('pwMs parses date-only and datetime-local strings as Kuwait time', () => {

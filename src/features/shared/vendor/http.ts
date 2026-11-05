@@ -3,7 +3,7 @@
  * and described errors that carry endpoint + status (never credentials).
  */
 
-import { DescribedError, described } from '@/lib/errors'
+import { DescribedError, described } from '@/features/shared/lib/errors'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 

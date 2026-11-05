@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getViewAsState, startViewAs, stopViewAs } from '@/lib/platform'
+import { getViewAsState, startViewAs, stopViewAs } from '@/features/shared/platform'
 
 /**
  * The legacy View as surface (startViewAs / stopViewAs / getViewAsState):

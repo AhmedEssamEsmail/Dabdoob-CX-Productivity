@@ -4,8 +4,8 @@
  * config, write conflicts, fallback — plus the apiError envelope.
  */
 import { describe, expect, it } from 'vitest'
-import { describeDbError, described, DescribedError } from '@/lib/errors'
-import { apiError, dbErr, InputError } from '@/lib/api-error'
+import { describeDbError, described, DescribedError } from '@/features/shared/lib/errors'
+import { apiError, dbErr, InputError } from '@/features/shared/lib/api-error'
 
 const PGRST205 = "Could not find the table 'public.fd_activities' in the schema cache"
 

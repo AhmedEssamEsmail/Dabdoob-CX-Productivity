@@ -1,7 +1,7 @@
-import { createAuthClient } from '@/lib/auth'
-import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/lib/prod/adapters'
-import { prodSetting_, prodToday_ } from '@/lib/prod/engine'
-import { describeDbError } from '@/lib/errors'
+import { createAuthClient } from '@/features/shared/lib/auth'
+import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import { prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
+import { describeDbError } from '@/features/shared/lib/errors'
 import {
   TPH_CALLS,
   TPH_OFF,

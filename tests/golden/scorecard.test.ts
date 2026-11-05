@@ -37,8 +37,8 @@ import {
   scRound1_,
   scSources_,
   scWorkbookFor_,
-} from '../../src/lib/scorecard'
-import type { Cfg } from '../../src/lib/prod/adapters'
+} from '@/features/cx-people/lib/scorecard'
+import type { Cfg } from '@/features/shared/lib/adapters'
 
 const R = rng(0x77aa11)
 const CFG = baseFixtures().settings as Cfg
