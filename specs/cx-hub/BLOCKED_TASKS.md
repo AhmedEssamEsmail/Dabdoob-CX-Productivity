@@ -8,15 +8,15 @@ Everything that cannot be completed autonomously lands here. Each entry: the iss
 
 **Verified working:** `.env.local` service-role credentials reach project `uugeyulccyytvgcabzzx` via PostgREST. 53 live tables enumerated — `qa_*` (7), `sc_*`, `kpi_*`, `md`, `tlp`, `tls`, `team_structure`, `weekly_schedule`, `days_off`, `esc_seen` already exist out-of-band beyond `supabase/migrations/*.sql` (only 4 files). Read/verify/data ops are unblocked without MCP.
 
-**Still needed:** DDL — no `rpc/` functions are exposed, and the `supabase` CLI account (logged in, `projects list` empty) has no access to this project. Enabling `pg_cron` and pushing new migrations requires one of:
-1. `pg_cron` enabled in the Supabase dashboard (Database → Extensions) by the owner, or
-2. The database password / connection string for `psql` or `supabase db push`, or
-3. A CLI login on an account with project access, or
+**Still needed:** DDL — no `rpc/` functions are exposed, the `supabase` CLI account (logged in, `projects list` empty) has no project access, and no `DATABASE_URL`/password/pooler string exists in any env file (checked 2026-11-05).
+
+**Pending migrations `005`–`010` are ready to apply** — consolidated at `supabase/APPLY_PENDING_MIGRATIONS.sql` (1,173 lines, all `IF NOT EXISTS`, safe to re-run). Options:
+1. **Fastest:** paste `supabase/APPLY_PENDING_MIGRATIONS.sql` into Dashboard → SQL Editor → Run (~1 min), then enable `pg_cron` (Database → Extensions) while there, or
+2. Hand over the database password / pooler connection string → `supabase db push` or `psql`, or
+3. A CLI login / PAT on an account owning this project (`supabase link` then `db push`), or
 4. The supabase MCP server restored.
 
-**Reconcile task:** live table set must be diffed against `supabase/migrations/` during each module shard; missing tables become new migration files awaiting a DDL path.
-
-**Status:** DDL blocked; reads unblocked.
+**Status:** DDL blocked; reads unblocked; apply file prepared.
 
 ---
 
@@ -34,7 +34,7 @@ Everything that cannot be completed autonomously lands here. Each entry: the iss
 | G6 | Full Sheets→Supabase historical migration | All `Stores.js` spreadsheet IDs shared to `GOOGLE_SERVICE_ACCOUNT_EMAIL`, or one-time CSV exports |
 | G7 | Drive file attachments (task/action `drive_file_id`) | Drive read scope on legacy files, or export archive |
 
-**ENV AUDIT 2026-11-05 (correction):** `.env.local` contains ONLY `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_*`, `VERCEL_OIDC_TOKEN`. **No** `GOOGLE_SERVICE_ACCOUNT_EMAIL`/`GOOGLE_PRIVATE_KEY`/`GOOGLE_SHEET_ID`, no vendor keys, no `CRON_SECRET`, no `MIGRATION_SECRET_KEY` — they exist only as code references. So this phase needs real credentials handed over, not just scope confirmation.
+**ENV AUDIT 2026-11-05 (correction):** `.env.local` contains ONLY `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_*`, `VERCEL_OIDC_TOKEN` — no Google/vendor/cron keys. **BUT `.env.production` DOES contain `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_PROJECT_ID`, `GOOGLE_SHEET_ID`, `FRESHDESK_*`, `FRESHCHAT_*`, `MAQSAM_*`** — real keys exist in the repo's production env. So the creds question is partly solved: (a) copy `.env.production`'s Google/vendor vars into `.env.local` for local runs, and (b) confirm those keys carry the scopes above (Gmail/Calendar/Drive/Sheet shares). `CRON_SECRET`/`MIGRATION_SECRET_KEY` still absent everywhere.
 
 | # | Item | Needs |
 |---|------|-------|
