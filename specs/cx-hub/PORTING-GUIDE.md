@@ -48,6 +48,18 @@ placeholder (`hs()`), never an invented page.
 
 ## Page port (bundle component → TSX)
 
+**HARD RULE — verbatim presentation, not reinterpretation.** The owner will
+screenshot-diff pages against the legacy app. Every page component MUST
+reuse the legacy class vocabulary found in its closure (`oo-*`, `pw-*`,
+`dk-*`, `md-*`, `qa-*`, `trk-*`, `md-*`, `hb-*`… — those styles are in
+`src/app/legacy-apps.css`, scoped per module by `data-app` on the shell).
+Do NOT substitute `cx-*` primitives, Tailwind utilities, or new class names
+where the closure uses legacy ones. Copy, empty states, element order,
+attribute wiring = verbatim. Reference for the standard:
+`src/features/cx-desk/components/tl-performance-page.tsx` (733 lines for
+one page — that is the expected density). A ~55-line "compact" page for a
+multi-section legacy screen is a parity defect and will be re-ported.
+
 - Port from `pages/<route>.closure.js`. `e("div", props)` → JSX;
   `f(...)`/component calls → `<X .../>`. Keep class names, copy, attribute
   order where readable (`class` stays `class` → `className` in JSX only where
