@@ -24,10 +24,32 @@ export const LEGACY_DIR =
     .find((d) => fs.existsSync(path.join(d, 'Config.js'))) ||
   path.resolve(HERE, '..', '..', 'original_deprecated')
 
-/** Legacy sources available to load verbatim. */
+/**
+ * All legacy app dirs a bare filename can resolve against (the oracle loads
+ * shared + module files for whichever app a module shard is porting).
+ */
+export const LEGACY_DIRS = (() => {
+  const parent = path.resolve(LEGACY_DIR, '..')
+  const dirs = [LEGACY_DIR]
+  try {
+    for (const d of fs.readdirSync(parent)) {
+      const p = path.join(parent, d)
+      if (/_deprecated$/i.test(d) && fs.statSync(p).isDirectory()) dirs.push(p)
+    }
+  } catch {
+    /* no sibling dirs — LEGACY_DIR stands alone */
+  }
+  return dirs
+})()
+
+/** Legacy sources available to load verbatim: bare names search LEGACY_DIRS in order. */
 export function legacyFile(name) {
+  for (const dir of LEGACY_DIRS) {
+    const p = path.join(dir, name)
+    if (fs.existsSync(p)) return p
+  }
   const p = path.join(LEGACY_DIR, name)
-  if (!fs.existsSync(p)) throw new Error(`legacy file missing: ${p}`)
+  if (!fs.existsSync(p)) throw new Error(`legacy file missing: ${name} (searched ${LEGACY_DIRS.join(', ')})`)
   return p
 }
 

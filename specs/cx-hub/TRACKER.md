@@ -5,8 +5,9 @@ Rule (carried from `IMPLEMENTATION_TRACKER.md`): each shard lands as **separate 
 | Shard | Item | Status | Notes |
 |---|---|---|---|
 | 00 | Repo restructure (rename → CX-Hub; features/ layout; move cx-productivity) | in progress | dir renamed by owner 2026-11-05; remaining: feature-folder moves + path fixes |
-| 01 | Unified-app shell context (per-group app ctx, rail/brand/title, internal cross-group links) | **done 2026-11-05** | `gates.ts`, `AppShell.tsx`, `registry.ts`, `bootstrap`, `layout`, `ccApp()` |
-| 02 | Extraction pipeline (per-app bundle decompile → `.devin/work/extract/<app>/`) | pending | tooling; extends existing `.devin/work` scripts |
+| 01 | Unified-app shell context (per-group app ctx, rail/brand/title, internal cross-group links) | **done 2026-11-05** | commit 86f5c43 |
+| 02 | Extraction pipeline (per-app bundle decompile → `.devin/work/extract/<app>/`) | **done 2026-11-05** | `scripts/legacy-extract.mjs`, commit 25079ce; 37 built pages + ecosystem; escalation-matrix/hard-cases/kpi-close/fcr unbuilt-in-legacy |
+| 00 | Repo restructure (rename → CX-Hub; features/ layout; move cx-productivity) | **done 2026-11-05** | rename by owner; moves+imports commit c321d22/86f5c43 |
 | 10 | Hub (overview, admin, people-holidays, my-day, ecosystem + jobs) | pending | XL; ecosystem = full Three.js scene |
 | 20 | Quality (10 pages + QaEngine + workflows + jobs) | pending | XL |
 | — | FCR | **skipped** | D-FCR: dedicated plan later |
