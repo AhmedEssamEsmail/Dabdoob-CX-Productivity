@@ -274,3 +274,80 @@ CREATE TABLE IF NOT EXISTS my_notes (
   updated_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_my_notes_owner ON my_notes(submitted_by);
+
+-- Optional prompt overrides for the 1:1 topic library (PeopleCore.js pwTopicLibrary_):
+-- a row hides/re-words/reorders prompts of the built-in PW_TOPICS list.
+CREATE TABLE IF NOT EXISTS one_on_one_topic_prompts (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  kind TEXT NOT NULL DEFAULT 'agent',
+  topic TEXT NOT NULL DEFAULT '',
+  position INTEGER NOT NULL DEFAULT 0,
+  prompt_text TEXT NOT NULL DEFAULT '',
+  active BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE INDEX IF NOT EXISTS idx_oo_topic_prompts ON one_on_one_topic_prompts(kind, topic, active);
+
+-- ---------- Scorecard stores (Scorecard.js SC_*_HEADERS; yearly-data-store
+-- equivalents kept flat on Postgres) ----------
+
+-- One row per agent per day: Matrix targets/achieved merged with FCR counts.
+CREATE TABLE IF NOT EXISTS sc_daily (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  month TEXT NOT NULL DEFAULT '',
+  date TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  name TEXT NOT NULL DEFAULT '',
+  matrix_day INTEGER NOT NULL DEFAULT 0,
+  inb_target NUMERIC NOT NULL DEFAULT 0,
+  inb_achieved NUMERIC NOT NULL DEFAULT 0,
+  txt_target NUMERIC NOT NULL DEFAULT 0,
+  txt_achieved NUMERIC NOT NULL DEFAULT 0,
+  wa_target NUMERIC NOT NULL DEFAULT 0,
+  wa_achieved NUMERIC NOT NULL DEFAULT 0,
+  audits NUMERIC NOT NULL DEFAULT 0,
+  score_x_audits NUMERIC NOT NULL DEFAULT 0,
+  fcr_passed INTEGER NOT NULL DEFAULT 0,
+  fcr_failed INTEGER NOT NULL DEFAULT 0,
+  fcr_excluded INTEGER NOT NULL DEFAULT 0,
+  computed_at TIMESTAMPTZ,
+  submitted_by TEXT,
+  submitted_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (month, date, email)
+);
+CREATE INDEX IF NOT EXISTS idx_sc_daily_range ON sc_daily(date, email);
+
+-- One row per business-behaviour case read from the workbook.
+CREATE TABLE IF NOT EXISTS sc_behaviour (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  month TEXT NOT NULL DEFAULT '',
+  date TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  note TEXT NOT NULL DEFAULT '',
+  submitted_by TEXT,
+  submitted_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_sc_behaviour_email ON sc_behaviour(email, month);
+
+-- One row per month: which workbook was read, when, and how it went.
+CREATE TABLE IF NOT EXISTS sc_months (
+  month TEXT PRIMARY KEY,
+  workbook_id TEXT NOT NULL DEFAULT '',
+  title TEXT NOT NULL DEFAULT '',
+  refreshed_at TIMESTAMPTZ,
+  refreshed_by TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT '',
+  error TEXT NOT NULL DEFAULT '',
+  matrix_rows INTEGER NOT NULL DEFAULT 0,
+  agents INTEGER NOT NULL DEFAULT 0,
+  first_date TEXT NOT NULL DEFAULT '',
+  last_date TEXT NOT NULL DEFAULT '',
+  skipped_rows INTEGER NOT NULL DEFAULT 0,
+  fcr_rows INTEGER NOT NULL DEFAULT 0,
+  fcr_dated BOOLEAN NOT NULL DEFAULT FALSE,
+  fcr_note TEXT NOT NULL DEFAULT '',
+  behaviour_found BOOLEAN NOT NULL DEFAULT FALSE,
+  behaviour_cases INTEGER NOT NULL DEFAULT 0,
+  behaviour_note TEXT NOT NULL DEFAULT '',
+  updated_by TEXT,
+  updated_at TIMESTAMPTZ
+);

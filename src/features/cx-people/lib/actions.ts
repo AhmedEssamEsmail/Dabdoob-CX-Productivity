@@ -88,7 +88,7 @@ export const PW_ACTION_STATUSES = ['open', 'blocked', 'done', 'dropped']
 export const PW_SOURCE_TYPES = ['one_on_one_agent', 'one_on_one_tl', 'meeting', 'task', 'adhoc']
 export const PW_REVIEW_OUTCOMES = ['carried', 'done', 'blocked', 'dropped']
 
-type PwUser = { email: string; role: string }
+export type PwUser = { email: string; role: string }
 
 /**
  * The guard passed to updateRows for every write to `actions`. It runs against

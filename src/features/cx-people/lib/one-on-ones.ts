@@ -22,8 +22,9 @@ import { dqWeekStart_ } from '@/features/cx-queue/lib'
 import { newId, findRow, updateRow, readRows, cacheRemove } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { requireRole, pwDirectory } from '@/features/shared/platform/identity'
-import { getConfig } from '@/features/shared/platform/settings'
+import { getConfig, configAll } from '@/features/shared/platform/settings'
 import { getWorkingCalendar, wcDay, pwAddWorkingDays } from '@/features/shared/platform/calendar'
+import { pwShiftDefs_ } from './scorecard/index'
 import { resolvePopups } from '@/features/shared/platform/popups'
 import { pwAppend_ } from './actions'
 import type { Directory } from '@/features/shared/lib/adapters'
@@ -572,18 +573,36 @@ export function pwNewestLogFirst_(a: Record<string, any>, b: Record<string, any>
   return pwMs_(b.held_at) - pwMs_(a.held_at) || Number(b._row || 0) - Number(a._row || 0)
 }
 
-/** Shift-clash warnings only (pwScheduleWarnings_): off day / holiday for either person. */
-async function pwScheduleWarnings_(
+/**
+ * pwScheduleWarnings_ — non-blocking heads-ups on a booking: a day off or
+ * public holiday for either person, a slot outside the manager's shift, and a
+ * slot outside the configured TL overlap window (Config `tl_overlap`,
+ * default 13:00-18:30).
+ */
+export async function pwScheduleWarnings_(
   managerEmail: string,
   reportEmail: string,
   whenMs: number,
   durationMin: number,
   dir: Directory,
 ): Promise<string[]> {
-  const out: string[] = []
-  const excuse = await pwExcuseFor_(managerEmail, reportEmail, pwKwDate_(whenMs), dir)
-  if (excuse) out.push(excuse + ' on ' + pwDayLabel_(whenMs) + '.')
-  return out
+  const warnings: string[] = []
+  const date = pwKwDate_(whenMs)
+  const excuse = await pwExcuseFor_(managerEmail, reportEmail, date, dir)
+  if (excuse) warnings.push(excuse + ' on that date. It will not count as missed, but book a working day instead.')
+  const day = await wcDay(managerEmail, date)
+  const endMs = whenMs + durationMin * 60000
+  if (day.working && day.shift) {
+    const def = pwShiftDefs_((await configAll()) as never)[day.shift]
+    if (def && (whenMs < pwAt_(date, def.start) || endMs > pwAt_(date, def.end))) {
+      warnings.push('The slot is outside your ' + day.shift + ' shift (' + def.start + ' to ' + def.end + ').')
+    }
+  }
+  const overlap = (await getConfig('tl_overlap', { start: '13:00', end: '18:30' })) as { start: string; end: string }
+  if (whenMs < pwAt_(date, overlap.start) || endMs > pwAt_(date, overlap.end)) {
+    warnings.push('Outside the ' + overlap.start + ' to ' + overlap.end + ' overlap, you may be the only TL on the floor.')
+  }
+  return warnings
 }
 
 /** Cache bust for the alerts/reminder poll after any booking write (pwOoRemindersChanged_). */
