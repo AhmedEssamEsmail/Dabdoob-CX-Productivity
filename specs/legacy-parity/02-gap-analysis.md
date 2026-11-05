@@ -1,6 +1,6 @@
 # 02 - Gap Analysis (Phase 2)
 
-Compares `01-legacy-inventory.md` with the new repository (`C:\Users\AHMED\KPIs\Dabdoob-CX-Productivity`). Everything not marked PRESENT is a migration gap.
+Compares `01-legacy-inventory.md` with the new repository (`C:\Users\AHMED\KPIs\CX-Hub`). Everything not marked PRESENT is a migration gap.
 
 Status vocabulary: **MISSING** (nothing), **STUB** (placeholder / disabled nav item / pass-through with no rules), **PARTIAL** (exists, known to differ), **UNVERIFIED** (exists; parity not yet measured), **PRESENT** (parity proven by the Phase 3/4 acceptance gates; nothing currently qualifies because no gate has run).
 
