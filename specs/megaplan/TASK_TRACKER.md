@@ -64,7 +64,7 @@
 | WP | Scope | Blocker | Status | Claimed-by | Evidence/Notes |
 |---|---|---|---|---|---|
 | WP-50 | apply pg_cron schedules | `CRON_SECRET` + prod app URL (B5) | blocked | — | SQL draft from WP-24 |
-| WP-51 | run shard-80 full migration | Google sheet access (B2/G6) | blocked | — | mappings from WP-30/31/32 |
+| WP-51 | run shard-80 full migration | — | `audits/migration-run.md` | done | 3316adac | 94 mappings ran 2026-11-06 — 71 tables landed (~254k writes) + 2,091 tracker_records; 6/6 storage_mode→native; tickets needed 1 retry (2 transient batch fetch fails → 176,616/176,616); 9 absent-B6 + 13 empty tabs skipped as documented; 0 PGRST204/NOT-NULL/quota errors; engine got uncommitted readSheetRaw pacing patch |
 | WP-52 | shard-90 items G1–G9 | owner per-item discussion (STOP gate) | blocked | — | roster sync, mail desk, my-day, gmail imports, drive files, V1 import |
 | WP-53 | freshchat fns + fc_messages + daily_report | `FRESHCHAT_API_KEY` absent (B3) | blocked | — | |
 | WP-54 | cutover readiness docs | waves 0–4 done | blocked | — | `audits/cutover-plan.md` |

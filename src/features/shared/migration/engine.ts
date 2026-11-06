@@ -99,13 +99,36 @@ function getSheetsClient() {
   return sheetsClient
 }
 
-export async function readSheet(spreadsheetId: string, sheetName: string) {
+let lastSheetCall = 0
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/** WP-51: raw values read with ~700 ms pacing + transient-quota retry —
+ * the Sheets per-minute read limit turned un-paced full runs into dropped
+ * tabs (dry-run §3 ops note; same treatment validate.ts's readTabError got). */
+async function readSheetRaw(spreadsheetId: string, sheetName: string): Promise<unknown[][]> {
   const sheets = getSheetsClient()
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `'${sheetName}'!A:ZZ`,
-  })
-  const rows = response.data.values || []
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const wait = 700 - (Date.now() - lastSheetCall)
+    if (wait > 0) await sleep(wait)
+    lastSheetCall = Date.now()
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${sheetName}'!A:ZZ`,
+      })
+      return (response.data.values || []) as unknown[][]
+    } catch (e) {
+      const err = e as { code?: number | string; message?: string }
+      const msg = `${err.code ?? ''} ${err.message ?? String(e)}`
+      if (/quota|rate|429/i.test(msg) && attempt < 2) { await sleep(12000); continue }
+      throw e
+    }
+  }
+  throw new Error(`Sheet '${sheetName}': unreachable after retries`)
+}
+
+export async function readSheet(spreadsheetId: string, sheetName: string) {
+  const rows = await readSheetRaw(spreadsheetId, sheetName)
   if (rows.length < 2) return []
   const headers = (rows[0] as string[]).map((h) => String(h).trim().toLowerCase())
   return rows.slice(1).map((row) => {
@@ -217,11 +240,7 @@ export async function backfillTrackerRecords(supabase: SupabaseClient): Promise<
     const key = `tracker:${b.trackerId}`
     try {
       const spreadsheetId = SPREADSHEETS[b.spreadsheet] || b.spreadsheet
-      const raw = await (async () => {
-        const sheets = getSheetsClient()
-        const res = await sheets.spreadsheets.values.get({ spreadsheetId, range: `'${b.sheet}'!A:ZZ` })
-        return (res.data.values || []) as unknown[][]
-      })()
+      const raw = await readSheetRaw(spreadsheetId, b.sheet)
       if (raw.length <= b.headerRow) { out[key] = { read: 0, migrated: 0, skipped: 0, errors: [`'${b.sheet}' empty`] }; continue }
       const normHeader = (s: unknown) => String(s ?? '').trim().replace(/\s+/g, ' ').toLowerCase()
       const headers = (raw[b.headerRow - 1] || []).map(normHeader)

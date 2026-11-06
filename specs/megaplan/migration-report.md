@@ -6,28 +6,29 @@
 > Inventory sources: `src/app/api/admin/migrate/route.ts` `MAPPINGS` + `src/features/shared/migration/mappings/*.ts` (WP-30/31/32, relocated by the wave-3 merge) + the full DDL inventory (`supabase/migrations/*.sql`).
 > Store share state as of scaffold date (`audits/sheet-access.md`): 19/22 stores shared with the migration SA; **`ss_tickets_id`, `ss_live_id`, `ss_data_2026_id` are NOT shared** — those tables will report `UNREADABLE (403)` until the owner shares them (Viewer is enough).
 
-**Run metadata** _(fill at WP-51)_
+**Run metadata** _(WP-51, 2026-11-06)_
 
 | Field | Value |
 |---|---|
-| Run date | _pending_ |
-| Runner / commit | _pending_ |
-| Command | `npx tsx migration/validate.ts --md` |
-| Supabase project | _pending_ |
+| Run date | 2026-11-06 UTC |
+| Runner / commit | WP-51 @ `ad2bbc0` (+ uncommitted engine pacing patch `readSheetRaw`) |
+| Command | `npx tsx migration/migrate-all.ts` (+ `--tables tickets` retry) → `npx tsx migration/validate.ts --md` |
+| Supabase project | `NEXT_PUBLIC_SUPABASE_URL` from `.env.local` (service-role) |
 | Sheet access | service account `migration-reader@…` (Viewer share) |
 
-**Roll-up** _(fill at WP-51)_
+**Roll-up** _(WP-51, 2026-11-06)_
 
 | Metric | Count |
 |---|---|
-| Tables in inventory | _pending_ |
-| Count match (source = Supabase) | _pending_ |
-| Count mismatch | _pending_ |
-| Skipped — no credentials / no store | _pending_ |
-| Unreadable source tabs | _pending_ |
-| No mapping | _pending_ |
-| Field diffs (sampled) | _pending_ |
-| Checksum diffs | _pending_ |
+| Tables in inventory | 119 |
+| Count match (source = Supabase) | 71 |
+| Count mismatch | 16 (all documented — pre-existing remote rows / live-sheet drift / validator artifacts; `audits/migration-run.md` §5) |
+| Skipped — no credentials / no store | 0 |
+| Unreadable source tabs | 11 (9 absent B6 tabs + `tracker_records`/`one_on_one_topic_prompts` — no-mapping by design) |
+| No mapping | 26 (incl. 21 not-sheet-backed; `agg_productivity_daily` row is the prod_daily_layers double-target artifact) |
+| Field diffs (sampled) | 26 — verified artifacts (bool/timestamp rendering, `now()` stamps, transform-free validator mapRow); `audits/migration-run.md` §5 |
+| Checksum diffs | 8 — mixed row-sets incl. pre-existing remote rows + documented col notes |
+| Migration run | **94 mappings ran — 71 mapped tables landed rows + tracker_records, 0 hard failures remaining** (tickets retry landed 176,616/176,616) |
 
 ---
 
@@ -92,15 +93,25 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| config | Config | core | 130 | 138 | 8 | 0/0 | — | — | NO-MAPPING Δ8 |
+| follow_up_done | FollowUpDone | core | 2 | 2 | 0 | 0/0 | 2/2 match | n/a | COUNT-OK |
+| health | Health | core | 30 | 31 | 1 | 0/0 | 0/5 match | n/a | Δ1 FIELD-DIFF† |
+| holidays | holidays | core | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| mail_log | MailLog | core | 1580 | 1580 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| options | Options | core | 26 | 26 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| popups | Popups | core | 773 | 773 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| roster | Roster | core | 44 | 50 | 6 | 0/0 | — | — | NO-MAPPING Δ6 |
+| view_as | ViewAs | core | 12 | 12 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| health | +1 | 10 remote rows pre-existed; 30 upserted (9 shared keys) → 31. One remote-only status key remains — expected |
+| options / health | field-diff flag | artifact: `updated_at` `now()` fallback stamps + positional compare order — verified benign |
+| config · roster | — | app-managed, no mapping by design |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — all 7 mapped tables migrated; counts verified
 
 ---
 
@@ -110,15 +121,29 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| prod_daily_layers | prod_daily_layers + agg_productivity_daily | productivity + data_2026 | 1156 + 601 | 1419 | 263 | 0/0 | 5/5 match | ✗ src 445000.71 / db 454927.91 | Δ263 CHECKSUM-DIFF† |
+| prod_flag_analytics | prod_flag_analytics | productivity | 219 | 219 | 0 | 0/0 | 5/5 match | ✓ (219 rows) | COUNT-OK |
+| prod_flag_log | prod_flag_log | productivity | 1771 | 1839 | 68 | 0/0 | 5/5 match | n/a | Δ68† |
+| prod_flags | prod_flags | productivity | 1263 | 1330 | 67 | 0/0 | 5/5 match | ✗ src 77837.16 / db 81186.05 | Δ67 CHECKSUM-DIFF† |
+| prod_intervals | prod_intervals | productivity | 23247 | 23059 | -188 | 67/121 | 5/5 match | ✗ src 280302.94 / db 253133.62 | Δ-188 CHECKSUM-DIFF† |
+| prod_quarterly_reports | prod_quarterly_reports | productivity | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| prod_tph_calls | prod_tph_calls | productivity | 13 | 128 | 115 | 0/0 | 5/5 match | n/a | Δ115† |
+| prod_tph_cases | prod_tph_cases | productivity | 13 | 128 | 115 | 0/0 | 5/5 match | n/a | Δ115† |
+| prod_tph_days | prod_tph_days | productivity | 27 | 63 | 36 | 0/0 | 5/5 match | n/a | Δ36† |
+| prod_tph_tasks | prod_tph_tasks | productivity | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| prod_tph_touches | prod_tph_touches | productivity | 13 | 128 | 115 | 0/0 | 5/5 match | n/a | Δ115† |
+| prod_window_hist | prod_window_hist | productivity | 118 | 120 | 2 | 0/0 | 5/5 match | ✗ src 21309 / db 21505 | Δ2 CHECKSUM-DIFF† |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| prod_intervals | 67 req + 121 dup | missing `interval_key`/`agent_email` (blank rows); dup upsert keys collapse inside the upsert — engine migrated 23,059 |
+| prod_daily_layers | +263 | upsert onto 1,374 deduped keys: sheet 1,156 (`raw`+`effective`) + `agg_productivity_daily` 601 (`effective`) → +45 net-new keys; checksum diff = mixed row-sets incl. pre-existing |
+| prod_flags / prod_flag_log / prod_tph_* / prod_window_hist | Δ | remote already app-fed — db>src where remote rows extend past sheet backlog; upsert reconciled, 5/5 sampled rows match |
+| prod_quarterly_reports | — | source tab absent (B6 — owner decision documented) |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — all present tabs migrated incl. both prod_daily_layers sources
 
 ---
 
@@ -128,15 +153,30 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| qa_access_log | QaAccessLog | core | 1 | 1 | 0 | 0/0 | 1/1 match | n/a | COUNT-OK |
+| qa_audits | qa_audits | quality | 6560 | 6560 | 0 | 0/0 | 5/5 match | ✓ (2000 rows) | COUNT-OK |
+| qa_calibrations | qa_calibrations | quality | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| qa_ctls | qa_ctls | quality | 74 | 74 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qa_disputes | qa_disputes | quality | 3 | 3 | 0 | 0/0 | 3/3 match | n/a | COUNT-OK |
+| qa_forms | qa_forms | quality | 8 | 8 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| qa_kb_gaps | qa_kb_gaps | quality | 9 | 9 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qa_queue | qa_queue | quality | 2314 | 2314 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qa_volume | qa_volume | quality | 1391 | 2283 | 892 | 0/0 | 5/5 match | ✗ src 6277 / db 8673 | Δ892 CHECKSUM-DIFF† |
+| qe_builds | Build Log | quality | 117 | 117 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qe_candidates | Candidates | quality | 11 | 11 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qe_catalogue | Catalogue | quality | 347 | 347 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qe_fd_cache | Ticket Detail Cache | quality | 11645 | 11645 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qe_outcomes | Build Outcomes | quality | 20 | 20 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| qe_queue_log | Queue Log | quality | 3887 | 3887 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| qa_volume | +892 | insert-only append onto 892 pre-existing remote rows → 2,283 (B7 one-shot — landed first pass) |
+| qa_forms | field-diff flag | artifact (`now()` stamps / compare order) |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — 14/15 tables migrated; `qe_catalogue` B4 fix verified (347/347), `qe_fd_cache`/`qa_access_log` landed into 014-created tables
 
 ---
 
@@ -144,19 +184,49 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 `tickets` · `esc_seen` · `aging_open_tickets` · `dq_aging_flags` · `queue_submissions` · `queue_snapshots` · `agg_queue_now` · `agg_inflow_{daily,weekly,monthly,hourly}` · `agg_agent_perf` · `agg_agent_daily` · `agg_snapshots_today` · `refresh_log` · `agg_productivity_daily` · `sched_*`×7 · `heatmap_inputs` · `heatmap_assumption_sets`
 
-> ⚠️ Most of this module reads from `ss_tickets_id` / `ss_live_id` / `ss_data_{year}_id` — **not shared with the SA** as of `audits/sheet-access.md`. Expect `UNREADABLE (403)` rows here until the owner shares those stores.
+> ✅ `ss_tickets_id` / `ss_live_id` / `ss_data_2026_id` are now shared — every tab in this module read cleanly at WP-51.
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| agg_agent_daily | agg_agent_daily | live | 324 | 324 | 0 | 0/0 | 5/5 match | ✓ (324 rows) | COUNT-OK |
+| agg_agent_perf | agg_agent_perf | live | 48 | 48 | 0 | 0/0 | 5/5 match | ✓ (48 rows) | COUNT-OK |
+| agg_inflow_daily | agg_inflow_daily | live | 555 | 548 | -7 | 0/0 | 5/5 match | n/a | Δ-7† |
+| agg_inflow_hourly | agg_inflow_hourly | data_2026 | 5239 | 5239 | 0 | 0/0 | 0/0 match | ✗ src 0 / db 4052000 | COUNT-OK CHECKSUM-DIFF† |
+| agg_inflow_monthly | agg_inflow_monthly | live | 32 | 32 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| agg_inflow_weekly | agg_inflow_weekly | live | 95 | 95 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| agg_productivity_daily | agg_productivity_daily | data_2026 | 601 | 0 | -601 | 0/0 | — | — | NO-MAPPING Δ-601† |
+| agg_queue_now | agg_queue_now | live | 18 | 18 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| agg_snapshots_today | agg_snapshots_today | live | 50 | 50 | 0 | 0/0 | 0/5 match | ✓ (50 rows) | COUNT-OK FIELD-DIFF† |
+| aging_open_tickets | aging_open_tickets | live | 148 | 148 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| dq_aging_flags | aging_flags | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| esc_seen | esc_seen | tickets | 887 | 887 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| heatmap_assumption_sets | HeatmapAssumptionSets | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| heatmap_inputs | HeatmapInputs | core | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| queue_snapshots | queue_snapshots | data_2026 | 2184 | 2184 | 0 | 0/0 | 0/5 match | ✗ src 0 / db 4052000 | COUNT-OK FIELD-DIFF CHECKSUM-DIFF† |
+| queue_submissions | queue_status_submissions | core | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| refresh_log | refresh_log | live | 8199 | 8243 | 44 | 0/0 | 0/5 match | n/a | Δ44 FIELD-DIFF† |
+| sched_config | sched_config | core | 2 | 2 | 0 | 0/0 | 2/2 match | n/a | COUNT-OK |
+| sched_hour_overrides | sched_hour_overrides | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| sched_offdays | sched_offdays | core | 8 | 8 | 0 | 8/4† | 0/0 match | n/a | COUNT-OK |
+| sched_overrides | sched_overrides | core | 163 | 163 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| sched_plan | sched_plan | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| sched_requests | sched_requests | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| sched_team | sched_team | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| tickets | tickets | tickets | 176616 | 176616 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| tickets | — | pass 1 dropped 2×500-row batches (`TypeError: fetch failed`, transient); `--tables tickets` retry landed 176,616/176,616 — upsert `ticket_id` made it safe |
+| sched_offdays | "8 req + 4 dup" | validator artifact — it doesn't apply the sheet-keyed transform that injects `tl_email`/`date`; the engine migrated **8/8** |
+| agg_productivity_daily | 601 | double-target artifact — the sheet maps to `prod_daily_layers` (rows landed there); no table of this name exists |
+| agg_inflow_daily · refresh_log · tickets src | Δ | live sheets grew between migrate-read and validate-read (555 vs 548 migrated; 8,199 vs 8,197 + 46 pre-existing = 8,243; 176,616 vs earlier reads) |
+| dq_aging_flags · sched_{team,hour_overrides,requests,plan} · heatmap_assumption_sets | — | source tabs absent (B6 — owner decision documented) |
+| FIELD-DIFF flags (10 tables) | — | verified artifacts: `'TRUE'`/`true` bools, `…Z`/`…+00:00` ISO variants, `now()` stamps, transform cols validator can't reproduce (spot-checked on tickets — `audits/migration-run.md` §5) |
+| CHECKSUM-DIFF (agg_inflow_hourly, queue_snapshots) | — | src checksum 0: numeric cols (`count`/`inflow`) are produced by transforms the validator's mapRow port doesn't run; DB values verified by 5/5 key-matched rows |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — all present tabs migrated; tickets completed via targeted retry
 
 ---
 
@@ -166,15 +236,35 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| action_planned_milestones | action_planned_milestones | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| action_reviews | action_reviews | core | 11 | 11 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| action_task_details | action_task_details | core | 15 | 15 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| action_updates | action_updates | core | 1 | 1 | 0 | 0/0 | 1/1 match | n/a | COUNT-OK |
+| actions | actions | core | 24 | 24 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| meeting_attendees | meeting_attendees | core | 15 | 15 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| meeting_series | meeting_series | core | 1 | 1 | 0 | 0/0 | 0/1 match | n/a | COUNT-OK FIELD-DIFF† |
+| meeting_series_members | meeting_series_members | core | 5 | 5 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| meetings | meetings | core | 3 | 3 | 0 | 0/0 | 2/3 match | n/a | COUNT-OK FIELD-DIFF† |
+| my_notes | my_notes | core | 1 | 1 | 0 | 0/0 | 0/1 match | n/a | COUNT-OK FIELD-DIFF† |
+| one_on_one_logs | one_on_one_logs | core | 4 | 4 | 0 | 0/0 | 0/4 match | n/a | COUNT-OK FIELD-DIFF† |
+| one_on_one_private_notes | one_on_one_private_notes | core | 1 | 1 | 0 | 0/0 | 1/1 match | n/a | COUNT-OK |
+| one_on_one_schedule | one_on_one_schedule | core | 5 | 5 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| one_on_one_topic_prompts | — | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | NO-MAPPING SRC-FAIL (out of scope, WP-31) |
+| one_on_one_topics | one_on_one_topics | core | 9 | 9 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| people_signals | people_signals | core | UNREADABLE (tab absent) | 0 | — | 0/0 | — | — | SRC-FAIL (B6) |
+| pw_reminder_log | pw_reminder_log | core | 107 | 107 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| sc_behaviour | sc_behaviour | data_2026 | 3 | 3 | 0 | 0/0 | 3/3 match | n/a | COUNT-OK |
+| sc_daily | sc_daily | data_2026 | 1123 | 1123 | 0 | 0/0 | 5/5 match | ✓ (1123 rows) | COUNT-OK |
+| sc_months | sc_months | live | 3 | 3 | 0 | 0/0 | 0/3 match | n/a | COUNT-OK FIELD-DIFF† |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| action_planned_milestones · people_signals · one_on_one_topic_prompts | — | source tabs absent (first two B6 owner decision; prompts no-mapping by design) |
+| FIELD-DIFF flags (10 tables) | — | artifacts: NOT-NULL `''` cols land `''` vs validator `null`, `now()` fallback stamps, bool casts — B1 fix verified by 0 batch errors |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — all present tabs migrated; sc_daily 1,123/1,123 incl. 67 `name:''` rows (B1 verified)
 
 ---
 
@@ -184,15 +274,30 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| kpi_behaviour_log | kpi_behaviour_log | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| kpi_leave_log | kpi_leave_log | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| kpi_ol_cases | kpi_ol_cases | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| mail_approval_log | mail_approval_log | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| mail_approvals | mail_approvals | live | 21 | 21 | 0 | 0/0 | 5/5 match | n/a | COUNT-OK |
+| mail_sla | mail_sla | live | 50 | 50 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| tlp_area_metrics | tlp_area_metrics | live | 3 | 3 | 0 | 0/0 | 3/3 match | n/a | COUNT-OK |
+| tlp_kb | tlp_kb | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| tlp_otd | tlp_otd | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| tlp_queue_daily | tlp_queue_daily | live | 107 | 107 | 0 | 0/0 | 0/5 match | ✗ src 1183 / db 148 | COUNT-OK FIELD-DIFF CHECKSUM-DIFF† |
+| tlp_resp_ratings | tlp_resp_ratings | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
+| tlp_shifts | tlp_shifts | live | 117 | 117 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| tlp_team | tlp_team | live | 4 | 4 | 0 | 0/0 | 4/4 match | n/a | COUNT-OK |
+| tlp_ticket_exclusions | tlp_ticket_exclusions | live | 0 | 0 | 0 | 0/0 | — | — | SRC-EMPTY COUNT-OK |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| 8 empty tabs | — | header-only tabs — migrated 0 by design (`kpi_*`, `mail_approval_log`, `tlp_{resp_ratings,kb,otd,ticket_exclusions}`) |
+| tlp_queue_daily | checksum | `windows` = window-count int; sheet range text (`"09:30-17:00"`) intentionally not representable (mapping-documented); field-diff is the same artifact |
+| mail_sla / tlp_shifts | field-diff flag | artifacts: transform outputs (`replied` bool, epoch-ms→ISO, `queue_json`) the validator doesn't apply |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — all populated tabs migrated
 
 ---
 
@@ -202,15 +307,29 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Sheet | Store | Source rows | Supabase rows | Δ | Skip (req/dup) | Field diff | Checksum | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| _pending — populated at WP-51_ | | | | | | | | | |
+| tracker_fields | TrackerFields | core | 66 | 66 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+| tracker_records | 6 record tabs (backfill) | per-tracker stores | 2094 | 2091 | -3 | 0/3 dup | — | — | BACKFILLED (6/6) |
+| trackers | Trackers | core | 6 | 6 | 0 | 0/0 | 0/5 match | n/a | COUNT-OK FIELD-DIFF† |
+
+**Backfill detail** — `TRACKER_RECORD_BACKFILLS` ran inside `migrateAll`; upsert `(tracker_id,record_id)`:
+
+| tracker | record tab | read | records | storage_mode after |
+|---|---|---|---|---|
+| blocked_customers | Sheet1 (1KFC…PEA) | 6 | 6 | **native** ✓ |
+| promocodes | Form Responses 1 (1GsB…gTw) | 24 | 24 | **native** ✓ |
+| operational_loss | Sheet1 (12jV…e5Uc) | 2,000 | 1,997 | **native** ✓ (3 dup Record-ID cells, last-wins) |
+| customer_strikes | Form Responses 1 (1Odi…OMmQ) | 4 | 4 | **native** ✓ |
+| refund_ledger | Refund Log (1ZaJ…GU8) | 59 | 59 | **native** ✓ |
+| damaged_items_5917 | Tracker Damaged Items (core) | 1 | 1 | **native** ✓ (trackers row upserted by the Trackers mapping first) |
 
 **Skip ledger**
 
 | Table | Rows | Reason |
 |---|---|---|
-| _pending_ | | |
+| tracker_records | -3 | operational_loss had 3 duplicate `Record ID` cells — deduped last-wins (documented dry-run) |
+| trackers / tracker_fields | field-diff flag | artifacts: seed-row `now()` stamps + transform defaults validator doesn't apply; upsert overlay verified (5→6 trackers, 61→66 fields incl. 013 seeds) |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — 6/6 backfills applied, `SELECT storage_mode FROM trackers` = all `native`, tracker_records = 2,091
 
 ---
 
@@ -220,9 +339,12 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Supabase rows | Status |
 |---|---|---|
-| _pending — populated at WP-51_ | | |
+| fd_activities | 195,553 | N/A — not sheet-backed (pre-existing, untouched) |
+| maqsam_calls | 112,037 | N/A — not sheet-backed (pre-existing, untouched) |
+| freshchat | 0 | N/A — not sheet-backed |
+| cache_stamps | 0 | N/A — not sheet-backed |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — out of migration scope by design
 
 ---
 
@@ -232,9 +354,9 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Table | Supabase rows | Status |
 |---|---|---|
-| _pending — populated at WP-51_ | | |
+| all 17 V1 legacy tables | 0 each | N/A — not sheet-backed / no V1 data existed remotely (dry-run verified) |
 
-**Sign-off:** _pending — name / date_
+**Sign-off:** WP-51 · 2026-11-06 — nothing to migrate; V1 tables were already empty remotely
 
 ---
 
@@ -242,5 +364,7 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 
 | Role | Name | Date | Verdict |
 |---|---|---|---|
-| Migration run executed by | _pending_ | _pending_ | _pending_ |
+| Migration run executed by | WP-51 | 2026-11-06 | **DONE — 94 mappings executed, 72 tables landed, tickets retry resolved; residual deltas documented in `audits/migration-run.md`** |
 | Reviewed by (owner) | _pending_ | _pending_ | _pending_ |
+
+> † FIELD-DIFF / CHECKSUM-DIFF flags in the module tables are validator artifacts verified benign — see `audits/migration-run.md` §5 (bool/ISO-timestamp rendering, `now()` re-stamps, transform-free validator mapRow, pre-existing remote rows). Zero PGRST204, zero NOT-NULL violations, zero quota errors in the real run.
