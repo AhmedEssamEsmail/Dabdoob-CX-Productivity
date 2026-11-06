@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
-import { AgeChip, AsOfHint, Head, LoadError, Skeleton, ageRank, bandTop, fetchJson, fmt, useHashParams, useSe } from './shared'
+import { AgeChip, AgeLadder, AsOfHint, Head, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 
 const PAGE = 50
 
@@ -69,6 +69,14 @@ export function AgingPage({ route }: { route: { title: string } }) {
     n?.tickets.forEach((P: any[]) => x[Math.min(P[6], x.length - 1)]++)
     return x
   }, [n])
+  const grid = useMemo(() => {
+    const x: Record<string, number[]> = {}
+    n?.tickets.forEach((P: any[]) => {
+      const U = x[(P[1] as string)] || (x[P[1]] = n.bands.labels.map(() => 0))
+      U[Math.min(P[6], U.length - 1)]++
+    })
+    return Object.entries(x).sort((P, U) => U[1].reduce((V, de) => V + de, 0) - P[1].reduce((V, de) => V + de, 0))
+  }, [n])
   const rows = useMemo(() => {
     if (!n) return []
     const x = search.trim()
@@ -76,15 +84,43 @@ export function AgingPage({ route }: { route: { title: string } }) {
       (P: any[]) => (band === null ? P[6] >= S : P[6] === band) && (!queue || P[1] === queue) && (!tl || P[8] === tl) && (!mine || P[9]) && (!unassigned || !P[7]) && (!flagged || flags.has(P[0])) && (!x || String(P[0]).includes(x))
     )
   }, [n, band, S, queue, tl, mine, unassigned, flagged, flags, search])
+  const pick = (x: number | null, P = '') => {
+    setBand(x)
+    setQueue(P)
+    setShown(PAGE)
+  }
+  const showAll = (x: boolean) => {
+    setBand(null)
+    setTop(x ? 0 : null)
+    setQueue('')
+    setTl('')
+    setSearch('')
+    setUnassigned(false)
+    setFlagged(false)
+    setShown(PAGE)
+  }
   const title = n ? (band !== null ? n.bands.labels[band] : S >= T ? `Open ${bandTop(n.bands.edges[T - 1])} or more` : 'All open tickets') + (queue ? ` in ${queue}` : '') : ''
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!n && !error}>
       <Head
         title={n?.scope === 'agent' ? 'My aging cases' : route.title}
         sub={n?.scope === 'agent' ? 'Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.' : 'Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.'}
-        aside={n ? <AsOfHint iso={n.dataAsOf} /> : null}
+        aside={
+          n ? (
+            <>
+              <AsOfHint iso={n.dataAsOf} />
+              {n.scope !== 'agent' ? <RefreshNow onDone={reload} /> : null}
+            </>
+          ) : null
+        }
       />
       {error ? <LoadError message={error} onRetry={reload} /> : null}
+      {n?.scope === 'agent' ? (
+        <p className="cx-hint">
+          Freshdesk is read every 15 minutes, about 20 minutes behind. A ticket you have just resolved stays on this list until the next read
+          {n.syncedAt ? ` (last one ${hm(n.syncedAt)} Kuwait)` : ''}.
+        </p>
+      ) : null}
       {!n && !error ? <><Skeleton tall lines={3} /><Skeleton lines={8} /></> : null}
       {n ? (
         <>
@@ -94,19 +130,47 @@ export function AgingPage({ route }: { route: { title: string } }) {
               <span className="cx-section__hint">{fmt(n.total)} open. Select a band or a cell to list its tickets.</span>
             </div>
             <div className="cx-panel cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-4)' }}>
-              <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
-                {(counts as number[]).map((c: number, i: number) => (
-                  <button key={i} type="button" className="cx-ladder__seg cc-pick" data-age={ageRank(i, counts.length)} style={{ ['--n' as string]: Math.max(c, 4) }} aria-pressed={band === i} aria-label={`${n.bands.labels[i]}: ${c} tickets`} onClick={() => { setBand(band === i ? null : i); setShown(PAGE) }}>
-                    <span>{c}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="cx-ladder__legend" aria-hidden="true">
-                {n.bands.labels.map((l: string, i: number) => <span key={i} style={{ ['--n' as string]: Math.max(counts[i], 4) }}>{l}</span>)}
-              </div>
+              <AgeLadder counts={counts as number[]} bands={n.bands} pressed={queue ? null : band} onPick={(x) => pick(x)} />
+              {grid.length > 1 ? (
+                <div className="cx-tablewrap">
+                  <table className="cx-agegrid">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        {n.bands.labels.map((x: string) => (
+                          <th key={x} scope="col">{x}</th>
+                        ))}
+                        <th scope="col" className="cx-total">All</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grid.map(([x, P]) => (
+                        <tr key={x}>
+                          <th scope="row">{x}</th>
+                          {P.map((U, V) => (
+                            <td key={V}>
+                              <button
+                                type="button"
+                                data-age={ageRank(V, n.bands.labels.length)}
+                                data-zero={U === 0 ? 'true' : undefined}
+                                aria-pressed={band === V && queue === x}
+                                aria-label={`${x}, ${n.bands.labels[V]}: ${U} tickets`}
+                                onClick={() => pick(V, x)}
+                              >
+                                {U}
+                              </button>
+                            </td>
+                          ))}
+                          <td className="cx-total cx-num">{P.reduce((U, V) => U + V, 0)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
             </div>
             <p className="cx-hint">
-              Age counts from the time the ticket was created, to now. {n.excludedGroups.join(', ')} are left out (documentation and notification-only groups). Chats are not on this board, so this total is lower than &quot;Open now&quot; on Queue health. A blue status is CX&apos;s to work; a grey one is waiting on another team or the customer.
+              Age counts from the time the ticket was created, to now. Colour goes from grey to deep red as the wait grows, and the stripe on each row gets thicker. {n.excludedGroups.join(', ')} are left out (documentation and notification-only groups). Chats are not on this board (they come from the daily report), so this total is lower than &quot;Open now&quot; on Queue health. A blue status is CX&apos;s to work; a grey one is waiting on another team or the customer.
               {n.capped ? ` Showing the oldest ${fmt(n.tickets.length)} of ${fmt(n.total)}.` : ''}
             </p>
           </section>
@@ -139,8 +203,8 @@ export function AgingPage({ route }: { route: { title: string } }) {
               {n.scope === 'tl' ? <label className="cx-toggle"><input type="checkbox" checked={mine} onChange={(e) => setMine((e.target as HTMLInputElement).checked)} /><span>My team only</span></label> : null}
               {n.scope !== 'agent' ? <label className="cx-toggle"><input type="checkbox" checked={unassigned} onChange={(e) => { setUnassigned((e.target as HTMLInputElement).checked); setShown(PAGE) }} /><span>Not assigned only</span></label> : null}
               {n.flags?.length ? <label className="cx-toggle"><input type="checkbox" checked={flagged} onChange={(e) => { setFlagged((e.target as HTMLInputElement).checked); setShown(PAGE) }} /><span>Help asked ({n.flags.length})</span></label> : null}
-              <button className="cx-btn" type="button" onClick={() => { setBand(null); setTop(0); setShown(PAGE) }}>Show tickets open {bandTop(n.bands.edges[T - 1])} or more</button>
-              <button className="cx-btn cx-btn--quiet" type="button" onClick={() => { setBand(null); setTop(null); setShown(PAGE) }}>Show all open</button>
+              <button className="cx-btn" type="button" onClick={() => showAll(false)}>Show tickets open {bandTop(n.bands.edges[T - 1])} or more</button>
+              <button className="cx-btn cx-btn--quiet" type="button" onClick={() => showAll(true)}>Show all open</button>
             </div>
             <div className="cx-panel cx-tablewrap">
               <table className="cx-table cx-table--nowrap">

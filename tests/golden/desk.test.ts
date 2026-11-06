@@ -641,20 +641,20 @@ describe('mdSyncSla_ / mdSyncApprovals_ / jobMailDesk (MailDesk.js)', () => {
     const fixture = deskInstall(f)
     const legacyRes = deskCall('jobMailDesk', [], fixture)
     const portRes = await portCall(() => jobMailDesk())
-    // Legacy requireJobCaller_ -> viewAsGuard_; the port's jobMailDesk has no caller check —
-    // a documented access-check gap (the port runs it via cron routes, not a public action).
+    // Legacy requireJobCaller_ -> viewAsGuard_; the port's jobMailDesk calls the same
+    // requireJobCaller guard (it is cron-routed, but the hand-run path refuses identically).
     expect(legacyRes.err).toBe('View as is read-only — exit to make changes.')
-    expect(portRes.err).toBeUndefined()
+    expect(portRes.err).toBe(legacyRes.err)
   })
 
-  it('jobMailDesk by a non-admin hand: legacy refuses, the port runs (access gap)', async () => {
+  it('jobMailDesk by a non-admin hand refuses identically', async () => {
     const f = fx({ userEmail: 'agent@dabdoob.com', gmailThreads: THREADS, tables: { tlp_shifts: SHIFTS, mail_sla: [], mail_approvals: [], popups: [], mail_approval_log: [] } })
     const fixture = deskInstall(f)
     const legacyRes = deskCall('jobMailDesk', [], fixture)
     const portRes = await portCall(() => jobMailDesk())
-    // requireJobCaller_ exists only on the GAS side; the port's jobMailDesk is cron-routed.
+    // requireJobCaller_ is ported: the port's jobMailDesk refuses a non-admin hand too.
     expect(legacyRes.err).toBe('Scheduled jobs can only be run by an admin.')
-    expect(portRes.ok).toBeTruthy()
+    expect(portRes.err).toBe(legacyRes.err)
   })
 
   it('no Gmail read adapter: the port fails closed where the fake Gmail simply returns threads', async () => {
@@ -1114,17 +1114,17 @@ describe('tlpRateProject (TlPerformance.js)', () => {
     const legacyRes = deskCall('tlpRateProject', ['act-1', 90, 'Clean delivery'], fixture)
     const portRes = await portCall(() => tlpRateProject('act-1', 90, 'Clean delivery'))
     expectSame(portRes, legacyRes, 'tlpRateProject')
-    // Documented write diffs on action_task_details:
-    //  (1) legacy updateRow_ stamps updated_by/updated_at; the port's raw .update() does not.
-    //  (2) legacy writes rated_at through pwTxt_ (' prefix); the port stores the plain ISO.
+    // Documented write diff on action_task_details:
+    //  legacy writes rated_at through pwTxt_ (' prefix); the port stores the plain ISO.
+    //  (updated_by/updated_at stamping was brought over with updateRow_ — identical now.)
     const legacyDetail = deskTable('action_task_details').find((r) => r.action_id === 'act-1')!
     const portDetail = (hubDb.tables.action_task_details || []).find((r) => r.action_id === 'act-1')!
     expect(String(legacyDetail.rated_at).replace(/^'/, '')).toBe(ISO(NOW))
     expect(legacyDetail.updated_by).toBe('admin@dabdoob.com')
     expect(String(legacyDetail.updated_at)).toBe(ISO(NOW))
     expect(portDetail.rated_at).toBe(ISO(NOW))
-    expect(portDetail.updated_by).toBe('pre@dabdoob.com') // untouched by the port
-    expect(portDetail.updated_at).toBe('2020-01-01T00:00:00.000Z')
+    expect(portDetail.updated_by).toBe('admin@dabdoob.com')
+    expect(portDetail.updated_at).toBe(ISO(NOW))
     // The shared fields still match, ' normalized.
     const strip = (r: Row) => {
       const c = { ...(JSON.parse(JSON.stringify(r)) as Row) }
@@ -1322,8 +1322,8 @@ describe('setupDesk (TlPerformance.js)', () => {
     const legacyRes = deskCall('setupDesk', [], fixture)
     const portRes = await portCall(() => setupDesk())
     expectSame(portRes, legacyRes, 'setupDesk report')
-    // Config values identical; updated_by differs by design (legacy stamps the real
-    // actor via actorEmail_, the port stamps the 'system:setup' actor setConfig was given).
+    // Config values identical; updated_by identical too (legacy stamps the real actor
+    // via actorEmail_, the port's setConfig now stamps the same user email).
     const legacyCfg = deskTable('Config')
     const portCfg = hubDb.tables.config || []
     const value = (rows: Row[]) => {
@@ -1336,7 +1336,7 @@ describe('setupDesk (TlPerformance.js)', () => {
     const seeded = legacyCfg.filter((r) => String(r.key).indexOf('tlp_') === 0 || String(r.key).indexOf('mail_') === 0)
     expect(seeded.length).toBeGreaterThan(5)
     expect(seeded.every((r) => r.updated_by === 'admin@dabdoob.com')).toBe(true)
-    expect((portCfg.find((r) => r.key === 'tlp_weights') || {}).updated_by).toBe('system:setup')
+    expect((portCfg.find((r) => r.key === 'tlp_weights') || {}).updated_by).toBe('admin@dabdoob.com')
     expect(JSON.parse(String(pv.tlp_tl_areas))).toEqual(JSON.parse(String(lv.tlp_tl_areas)))
     expect(pv.admin_emails).toContain('k.elnaggar@dabdoob.com')
   })

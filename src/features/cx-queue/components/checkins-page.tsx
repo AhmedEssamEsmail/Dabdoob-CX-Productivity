@@ -20,6 +20,30 @@ const byStatusLine = (t: Record<string, number>) => {
 const delta = (t: number | null) => (t === null ? '–' : t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0')
 const draftOf = (t: any) => ({ agents: t.agents === null ? '' : String(t.agents), status: t.status || '', note: t.note || '', correct: t.openCorrected !== null && t.openCorrected !== undefined, openCorrected: t.openCorrected === null || t.openCorrected === undefined ? '' : String(t.openCorrected) })
 
+/* Fa/Da/Ia — the cx-dayrail of today's four check-in slots. */
+const SLOT_STATUS: Record<string, string> = { done: 'ok', due: 'warn', missed: 'bad', upcoming: 'neutral' }
+function whoText(t: any, n: number): string {
+  if (t.state === 'done') return `${String(t.submittedBy).split('@')[0].replace('.', ' ')}, ${hm(t.submittedAt)}`
+  if (t.state === 'due') return 'Due now. Not submitted yet.'
+  if (t.state === 'missed') return 'Missed. Not submitted.'
+  const s = Math.max(0, Math.round((new Date(t.at).getTime() - n) / 6e4))
+  return s >= 60 ? `In ${Math.floor(s / 60)} h ${s % 60} min` : `In ${s} min`
+}
+function DayRail({ slots, now }: { slots: any[]; now: string }) {
+  const s = new Date(now).getTime()
+  return (
+    <ol className="cx-dayrail" aria-label="Check-ins today">
+      {slots.map((k: any) => (
+        <li key={k.slot} className="cx-dayrail__slot" data-status={SLOT_STATUS[k.state]} aria-current={k.state === 'due' ? 'step' : undefined}>
+          <span className="cx-dayrail__time">{k.slot}</span>
+          <span className="cx-dayrail__name">{k.name}</span>
+          <span className="cx-dayrail__who">{whoText(k, s)}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 export function CheckinsPage({ route }: { route: { title: string } }) {
   const params = useHashParams()
   const [slot, setSlot] = useState(() => params.get('slot') ?? '')
@@ -85,15 +109,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
       {!a || !cur ? <><Skeleton tall lines={2} /><Skeleton lines={10} /></> : (
         <>
           <section className="cx-panel" aria-label="Today's check-ins">
-            <div className="dq-slots">
-              {a.slots.map((k: any) => (
-                <button key={k.slot} type="button" className={`dq-slot dq-slot--${k.state}${k.slot === a.current ? ' on' : ''}`} onClick={() => k.state !== 'upcoming' && setSlot(k.slot)}>
-                  <b>{k.slot}</b>
-                  <span>{k.name}</span>
-                  <i>{k.state === 'done' ? `by ${String(k.submittedBy).split('@')[0]}` : k.state}</i>
-                </button>
-              ))}
-            </div>
+            <DayRail slots={a.slots} now={a.now} />
           </section>
           {missed.length ? (
             <div className="cx-note" data-status="warn">

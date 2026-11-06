@@ -2,9 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* Queue & Workforce shared widgets — ports of the closure-bundle helpers
  * (dq-head, cx-chip, cx-agechip, dq-refresh, the useSe loader, Kuwait formatters,
+ * the cc-sweep/cc-tip/count-up machinery (bt/Oe/ps/fs/Bt/nn/gs/On/$a/Qe),
+ * the Ca filter bar, it status-line, vs chip, xe skeletons,
  * and the Qa dropdown + options cache from checkins.closure.js).
  */
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
 
 export const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
@@ -66,20 +68,9 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
   )
 }
 
+/** dt — the pages' skeleton shortcut over xe: tall <= 2 lines is a tile strip. */
 export function Skeleton({ lines = 3, tall = false }: { lines?: number; tall?: boolean }) {
-  return (
-    <div className="cx-panel cx-panel--pad cc-skel" aria-hidden="true">
-      <span className="skeleton cc-skel__title" />
-      {Array.from({ length: lines }, (_, i) => (
-        <span key={i} className="cc-skel__row">
-          <span className="skeleton" />
-          <span className="skeleton" style={{ inlineSize: `${[78, 62, 90, 54, 70, 46, 84, 58][i % 8]}%` }} />
-          <span className="skeleton" />
-        </span>
-      ))}
-      {tall ? <span className="skeleton cc-skel__ladder" /> : null}
-    </div>
-  )
+  return tall && lines <= 2 ? <Xe shape="tiles" n={3} /> : <Xe shape={tall ? 'ladder' : 'rows'} n={tall ? lines - 1 : lines} />
 }
 
 export class FetchError extends Error {
@@ -130,6 +121,426 @@ export function useHashParams(): URLSearchParams {
     const i = location.hash.indexOf('?')
     return new URLSearchParams(i === -1 ? '' : location.hash.slice(i + 1))
   }, [])
+}
+
+// ---------------------------------------------------------------------------
+// The cc-sweep / cc-tip / count-up machinery (bt/Oe/ps/fs/Bt/nn/gs/On/$a/Qe),
+// the it() status line, vs() chip, Ca() filter bar and xe() skeletons — all
+// verbatim ports of the closure-bundle helpers.
+// ---------------------------------------------------------------------------
+
+/** bt — true when motion should be suppressed. */
+export function reduceMotion(): boolean {
+  return (
+    (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) ||
+    document.documentElement.hasAttribute('data-reduce-motion')
+  )
+}
+
+const SWEEP_MS = 820 // ka
+
+/** Oe — the cc-sweep "is-in/is-done" reveal applied to a ref'd container. */
+export function useSweep(ref: React.RefObject<HTMLElement | null>): void {
+  const state = useRef(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (state.current) {
+      el.classList.add('is-in')
+      if (state.current === 2) el.classList.add('is-done')
+      return
+    }
+    if (document.hidden || reduceMotion()) {
+      state.current = 2
+      el.classList.add('is-in', 'is-done')
+      return
+    }
+    state.current = 1
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-in')))
+    setTimeout(() => {
+      state.current = 2
+      el.classList.add('is-in', 'is-done')
+    }, SWEEP_MS)
+  })
+}
+
+/** Qe — the per-row stagger delay var, capped at 12. */
+export const sweepStyle = (i: number) => ({ '--i': Math.min(i, 12) }) as React.CSSProperties
+
+/** ps — the cc-tip hover/focus tooltip on a cc-chart container (includes the Oe sweep). */
+export function useTip(): {
+  ref: React.RefObject<HTMLDivElement | null>
+  tipFor: (text: string) => Record<string, unknown>
+  tipEl: React.ReactNode
+} {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useSweep(ref)
+  const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null)
+  const on = (text: string) => (e: React.SyntheticEvent) => {
+    const el = ref.current
+    if (!el) return
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const box = el.getBoundingClientRect()
+    const x = Math.max(64, Math.min(box.width - 64, r.left + r.width / 2 - box.left))
+    setTip({ text, x, y: Math.max(0, r.top - box.top) })
+  }
+  const off = () => setTip(null)
+  const tipFor = (text: string) => ({
+    'aria-label': text,
+    onPointerEnter: on(text),
+    onFocus: on(text),
+    onPointerLeave: off,
+    onBlur: off,
+  })
+  const tipEl = tip ? (
+    <span className="cc-tip" aria-hidden="true" style={{ left: `${tip.x}px`, top: `${tip.y}px` }}>
+      {tip.text}
+    </span>
+  ) : null
+  return { ref, tipFor, tipEl }
+}
+
+const COUNT_MS = 900 // qn
+const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩' // Aa
+
+/** On — latin digits -> arabic-indic when the document is rtl-ar. */
+export function arDigits(t: string): string {
+  return document.documentElement.lang !== 'ar'
+    ? t
+    : t.replace(/(\d)([.,])(?=\d)/g, (_m, d: string, s: string) => d + (s === '.' ? '٫' : '٬')).replace(/\d/g, (d) => AR_DIGITS[+d])
+}
+
+/** $a — decimals to keep while counting (max 2). */
+const fracDigits = (t: number) => Math.min(2, (String(t).split('.')[1] ?? '').length)
+
+/** fs — the eased count-up: returns the span ref, progress k and the eased value. */
+function useCountUp(t: number | null): { ref: React.RefObject<HTMLElement | null>; k: number; ease: number } {
+  const ref = useRef<HTMLElement | null>(null)
+  const started = useRef(false)
+  const [k, setK] = useState(1)
+  useEffect(() => {
+    if (started.current || t === null || t === 0 || reduceMotion() || document.hidden) return
+    started.current = true
+    setK(0)
+    let raf = 0
+    let to = 0
+    const run = () => {
+      const t0 = performance.now()
+      const step = (now: number) => {
+        const p = Math.min(1, (now - t0) / COUNT_MS)
+        setK(p)
+        if (p < 1) raf = requestAnimationFrame(step)
+      }
+      raf = requestAnimationFrame(step)
+      to = window.setTimeout(() => {
+        cancelAnimationFrame(raf)
+        setK(1)
+      }, COUNT_MS + 100)
+    }
+    const el = ref.current
+    const io =
+      el && typeof IntersectionObserver === 'function'
+        ? new IntersectionObserver((entries) => {
+            if (entries.some((u) => u.isIntersecting)) {
+              io?.disconnect()
+              run()
+            }
+          })
+        : null
+    if (io && el) io.observe(el)
+    else run()
+    return () => {
+      io?.disconnect()
+      cancelAnimationFrame(raf)
+      clearTimeout(to)
+      setK(1)
+    }
+  }, [t])
+  return { ref, k, ease: 1 - (1 - k) ** 3 }
+}
+
+/** Bt — the dual span: animated live text + the final value for screen readers. */
+export function CountSpans({ live, final, spanRef }: { live: string; final: string; spanRef: React.RefObject<HTMLElement | null> }) {
+  return (
+    <Fragment>
+      <span ref={spanRef as React.RefObject<HTMLSpanElement>} aria-hidden="true">
+        {arDigits(live)}
+      </span>
+      <span className="sr-only">{arDigits(final)}</span>
+    </Fragment>
+  )
+}
+
+/** nn — an animated number: counts up to `value`, formatted by `format`. */
+export function Count({ value, format = String }: { value: number; format?: (n: number) => string }) {
+  const { ref, k, ease } = useCountUp(Number.isFinite(value) ? value : null)
+  const final = format(value)
+  const live = k >= 1 ? final : format(Number((value * ease).toFixed(fracDigits(value))))
+  return <CountSpans live={live} final={final} spanRef={ref} />
+}
+
+const TEXT_NUM_RE = /^(\D*?)(-?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(\D*)$/ // Ta
+
+/** gs — like nn but inside an arbitrary string: only the number counts up. */
+export function CountText({ v }: { v: unknown }) {
+  const s = v == null ? '' : String(v)
+  const m = TEXT_NUM_RE.exec(s)
+  const n = m ? Number(m[2] + m[3].replace(/,/g, '') + (m[4] ?? '')) : null
+  const { ref, k, ease } = useCountUp(n)
+  if (!m || n === null || k >= 1) return <CountSpans live={s} final={s} spanRef={ref} />
+  const dec = m[4] ? m[4].length - 1 : 0
+  const p = (n * ease).toLocaleString('en-US', {
+    minimumFractionDigits: dec,
+    maximumFractionDigits: dec,
+    useGrouping: m[3].includes(','),
+  })
+  return <CountSpans live={m[1] + p + m[5]} final={s} spanRef={ref} />
+}
+
+/** Ra — how many band edges are at or under `hours`: the bucket index for AgeChip. */
+export const edgeRank = (hours: number, edges: number[]) => edges.reduce((s, a, l) => (hours >= a ? l + 1 : s), 0)
+
+/** ct — a delta: +n, −n, 0 or –. */
+export const deltaFmt = (n: number | null): string => (n === null ? '–' : n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '0')
+
+/** qa — the known status ordering for it(). */
+const STATUS_ORDER = ['open', 'new', 'assigned', 'pending on cx', 'pending']
+
+/** Je — status sort rank: counted first, "customer" after, "not counted" last. */
+function statusRank(t: string): number {
+  const n = t.toLowerCase()
+  if (n.includes('not counted')) return 40
+  if (n.includes('customer')) return 30
+  const s = STATUS_ORDER.indexOf(n)
+  return s === -1 ? 20 : s
+}
+
+/** Oa — ALL-CAPS statuses are title-cased. */
+const statusTitle = (t: string) => (t === t.toUpperCase() ? t.charAt(0) + t.slice(1).toLowerCase() : t)
+
+/** it — "Open 12 · Assigned 8 (also Not counted 2)" for the row's status line. */
+export function statusLine(t: Record<string, number> | null | undefined): string {
+  const n = Object.entries(t || {})
+  const s = n
+    .filter(([l]) => statusRank(l) < 40)
+    .sort((l, r) => statusRank(l[0]) - statusRank(r[0]) || r[1] - l[1])
+    .map(([l, r]) => `${statusTitle(l)} ${r.toLocaleString('en-US')}`)
+    .join(' · ')
+  const a = n.filter(([l]) => statusRank(l) >= 40).map(([l, r]) => `${l} ${r.toLocaleString('en-US')}`)
+  return a.length ? `${s} (also ${a.join(', ')})` : s
+}
+
+/** vs — the cx-chip wrapper. */
+export function StatusChip({ status, children, title }: { status: string; children: React.ReactNode; title?: string }) {
+  return (
+    <span className="cx-chip" data-status={status} title={title}>
+      {children}
+    </span>
+  )
+}
+
+interface FilterPick {
+  value: string
+  onChange: (v: string) => void
+  all?: string
+  options: { value: string; label: string }[]
+}
+
+/**
+ * Ca — the cx-filters bar: owner/team selects, a pw-seg priority pick and a
+ * search box. Verbatim: only the props passed are rendered (the queue board
+ * passes just `search`).
+ */
+export function CxFilters({
+  owner,
+  team,
+  priority,
+  search,
+  label,
+  children,
+}: {
+  owner?: FilterPick
+  team?: FilterPick
+  priority?: { value: string; onChange: (v: string) => void; options: string[] }
+  search?: { value: string; onChange: (v: string) => void; placeholder: string }
+  label: string
+  children?: React.ReactNode
+}) {
+  const sel = (name: string, p: FilterPick) => (
+    <label className="cx-filter" key={name}>
+      <span className="sr-only">{name}</span>
+      <select className="select" value={p.value} onChange={(e) => p.onChange(e.target.value)}>
+        <option value="">{p.all}</option>
+        {p.options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+  return (
+    <div className="cx-filters" role="group" aria-label={label}>
+      {owner ? sel('Owner', owner) : null}
+      {team ? sel('Team', team) : null}
+      {priority ? (
+        <div className="pw-seg" role="group" aria-label="Priority">
+          <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
+            Any priority
+          </button>
+          {priority.options.map((o) => (
+            <button key={o} type="button" aria-pressed={priority.value === o} onClick={() => priority.onChange(priority.value === o ? '' : o)}>
+              {o}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {search ? (
+        <label className="cx-filter cx-filter--search">
+          <span className="sr-only">Search</span>
+          <input
+            className="input"
+            type="search"
+            value={search.value}
+            placeholder={search.placeholder}
+            onInput={(e) => search.onChange((e.target as HTMLInputElement).value)}
+          />
+        </label>
+      ) : null}
+      {children}
+    </div>
+  )
+}
+
+/** ys — Refresh now, with the retry cooldown countdown. */
+export function RefreshNow({ onDone }: { onDone: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [until, setUntil] = useState(0)
+  // eslint-disable-next-line react-hooks/purity -- verbatim: cooldown timer seeds from Date.now()
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (until <= Date.now()) return
+    const iv = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(iv)
+  }, [until])
+  const left = Math.max(0, Math.ceil((until - now) / 1000))
+  const go = () => {
+    setBusy(true)
+    setMsg('')
+    fetchJson('/api/queue/refresh', {}).then(
+      (c) => {
+        setBusy(false)
+        const o = c.refreshed && c.synced_to ? `Freshdesk changes up to ${hm(c.synced_to)} Kuwait time.` : ''
+        setMsg((o + ' ' + (c.message || '')).replace(/\s*Try again in \d+ s\.$/, '').trim())
+        if (c.retryInS) {
+          setUntil(Date.now() + c.retryInS * 1000)
+          setNow(Date.now())
+        }
+        if (c.refreshed) onDone()
+      },
+      (c) => {
+        setBusy(false)
+        setMsg(c.message)
+      },
+    )
+  }
+  return (
+    <span className="dq-refresh">
+      <button type="button" className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={go}>
+        {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
+      </button>
+      {msg ? (
+        <span className="cx-section__hint" role="status">
+          {msg}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+/** _s — the cx-ladder of age buckets, with cc-tip hovers; pickable on some pages. */
+export function AgeLadder({
+  counts,
+  bands,
+  pressed,
+  onPick,
+}: {
+  counts: number[]
+  bands: { labels: string[] }
+  pressed?: number | null
+  onPick?: (i: number | null) => void
+}) {
+  const { ref, tipFor, tipEl } = useTip()
+  return (
+    <div ref={ref} className="cc-chart" onKeyDown={onPick && pressed != null ? (e) => e.key === 'Escape' && onPick(null) : undefined}>
+      {tipEl}
+      <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
+        {counts.map((h, p) => (
+          <button
+            key={p}
+            type="button"
+            className={onPick ? 'cx-ladder__seg cc-pick' : 'cx-ladder__seg'}
+            data-age={ageRank(p, counts.length)}
+            style={{ '--n': Math.max(h, 4) } as React.CSSProperties}
+            {...(tipFor(`${bands.labels[p]}: ${h} tickets`) as object)}
+            aria-pressed={onPick ? pressed === p : undefined}
+            onClick={onPick ? () => onPick(pressed === p ? null : p) : undefined}
+            tabIndex={onPick ? 0 : -1}
+          >
+            <span>
+              <CountText v={h} />
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className="cx-ladder__legend" aria-hidden="true">
+        {counts.map((h, p) => (
+          <span key={p} style={{ '--n': Math.max(h, 4) } as React.CSSProperties}>
+            {bands.labels[p]}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const SKEL_CHART = [55, 70, 48, 82, 64, 90, 58, 74, 40, 68, 86, 60, 52] // xa
+const SKEL_ROW = [78, 62, 90, 54, 70, 46, 84, 58, 66, 50] // Tn
+
+/** xe — the legacy skeleton shapes: tiles, chart, ladder and rows. */
+export function Xe({ shape, n = 6 }: { shape: 'tiles' | 'chart' | 'ladder' | 'rows'; n?: number }) {
+  if (shape === 'tiles') {
+    return (
+      <div className="cc-skel__tiles" aria-hidden="true">
+        {Array.from({ length: n }, (_, i) => (
+          <span key={i} className="skeleton cc-skel__tile" />
+        ))}
+      </div>
+    )
+  }
+  return (
+    <div className="cx-panel cx-panel--pad cc-skel" aria-hidden="true">
+      <span className="skeleton cc-skel__title" />
+      {shape === 'ladder' ? <span className="skeleton cc-skel__ladder" /> : null}
+      {shape === 'chart' ? (
+        <div className="cc-skel__chart">
+          {SKEL_CHART.map((h, i) => (
+            <span key={i} className="skeleton" style={{ blockSize: `${h}%` }} />
+          ))}
+        </div>
+      ) : null}
+      {shape === 'rows' || shape === 'ladder'
+        ? Array.from({ length: n }, (_, i) => (
+            <span key={i} className="cc-skel__row">
+              <span className="skeleton" />
+              <span className="skeleton" style={{ inlineSize: `${SKEL_ROW[i % SKEL_ROW.length]}%` }} />
+              <span className="skeleton" />
+            </span>
+          ))
+        : null}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
