@@ -11,7 +11,7 @@ import {
   StatusChip,
   qaTicketLabel,
   useSe,
-} from './qa-shared2'
+} from './qa-shared'
 
 export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
   const n = useRef('')

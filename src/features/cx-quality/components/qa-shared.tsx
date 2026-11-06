@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /**
  * cx-quality shared widgets — the module pieces the ten Quality closures
- * share. Legacy symbol names are kept in comments for traceability:
+ * share (qa-shared2 merged in; the closures it served had the same symbols).
+ * Legacy symbol names are kept in comments for traceability:
  *   P            — google.script.run seam  → qa() POST /api/qa/<fn> {args}
  *   se/dn        — data loader + named-thunk cache, qa() — useCallback
  *   de           — QaPage shell, D — QaSection (non-collapsible, aside slot)
@@ -38,6 +39,9 @@ import {
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
+/* Re-exports so the pages draw from one file (merged from qa-shared2). */
+export { Chip, LinesSkeleton, LoadError, toast }
+
 /* --- api seam -----------------------------------------------------------
  * L(fn, ...args) — legacy called google.script.run[fn](...args). The
  * dispatcher lives at POST /api/qa/<fn> with {args: [...]}.
@@ -53,8 +57,11 @@ export async function fetchJson(url: string, body?: any): Promise<any> {
   return j
 }
 
-const L = (fn: string, ...args: any[]): Promise<any> =>
+/** qa(fn, ...args) — the dispatcher (exported; internal alias L). */
+export const qa = (fn: string, ...args: any[]): Promise<any> =>
   fetchJson(`/api/qa/${fn}`, { args })
+
+const L = qa
 
 /** P — verbatim call surface (all ten Quality pages). */
 export const P = {

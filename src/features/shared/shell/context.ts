@@ -56,7 +56,12 @@ export interface Bootstrap {
   appUrls?: Record<string, string>
 }
 
-/** Server-compatible fallback while the real bootstrap endpoint is pending. */
+/**
+ * Dev-only fallback while a local bootstrap endpoint is unavailable. Grants
+ * admin on purpose so the shell is usable offline — it must NEVER apply in
+ * production, where a failed /api/bootstrap has to fail closed (loadBootstrap
+ * propagates the error instead of masking the session as an admin).
+ */
 export const FALLBACK_BOOT: Bootstrap = {
   user: { role: 'admin', name: 'CX Admin', email: 'admin@dabdoob.com' },
   isOwner: true,
@@ -109,15 +114,20 @@ export const alertsApi = {
   popupsPoll: () => getJson<{ popups: ShellPopup[] }>('/api/popups'),
 }
 
-/** Load the bootstrap: `__CC_BOOT__` wins, then /api/bootstrap, else fallback. */
+/**
+ * Load the bootstrap: `__CC_BOOT__` wins, then /api/bootstrap. On failure the
+ * admin-shaped FALLBACK_BOOT applies in development only; production fails
+ * closed by propagating the error (the shell renders its error screen).
+ */
 export async function loadBootstrap(): Promise<Bootstrap> {
   const inline = window.__CC_BOOT__
   delete window.__CC_BOOT__
   if (inline) return inline
   try {
     return await shellApi.getBootstrap()
-  } catch {
-    return FALLBACK_BOOT
+  } catch (e) {
+    if (process.env.NODE_ENV !== 'production') return FALLBACK_BOOT
+    throw e
   }
 }
 

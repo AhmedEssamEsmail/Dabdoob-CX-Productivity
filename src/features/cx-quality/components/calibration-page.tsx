@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Quality Calibration page
  * (calibration.closure.js symbols Us page, Ws assign, Hs trend, Qs diff,
- *  AuditForm Zn via qa-shared2).
+ *  AuditForm Zn via qa-shared).
  */
 import { useState } from 'react'
 import {
@@ -15,7 +15,7 @@ import {
   TicketRef,
   qaPct,
   useSe,
-} from './qa-shared2'
+} from './qa-shared'
 import {
   useTip,
   vsPrev,

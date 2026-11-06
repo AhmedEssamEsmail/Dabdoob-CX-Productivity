@@ -1,9 +1,10 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* Queue & Workforce shared widgets — ports of the closure-bundle helpers
- * (dq-head, cx-chip, cx-agechip, dq-refresh, the useSe loader, Kuwait formatters).
+ * (dq-head, cx-chip, cx-agechip, dq-refresh, the useSe loader, Kuwait formatters,
+ * and the Qa dropdown + options cache from checkins.closure.js).
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
 
 export const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
@@ -129,6 +130,190 @@ export function useHashParams(): URLSearchParams {
     const i = location.hash.indexOf('?')
     return new URLSearchParams(i === -1 ? '' : location.hash.slice(i + 1))
   }, [])
+}
+
+// ---------------------------------------------------------------------------
+// The server-backed dropdown (checkins.closure.js symbols qt/Ot/ea/kn/ls/Qa).
+// Options live per listKey and are shared by every mounted select; "Other…"
+// appends through POST /api/options/<listKey>, which the data layer refuses
+// in a View as session (assertWritable_).
+// ---------------------------------------------------------------------------
+
+const OPT_OTHER = '__other__' // qt
+let optData: Record<string, string[]> = {} // ot
+const optInflight = new Map<string, Promise<unknown>>() // Ot
+const optSubs = new Set<() => void>() // It
+
+/** ss/kn: write one list's options, then notify subscribers. */
+function optPut(listKey: string, options: string[]): void {
+  optData = { ...optData, [listKey]: options }
+  optSubs.forEach((f) => f())
+}
+
+/** ls: subscribe a component to the shared options store. */
+function useOpt<T>(read: () => T, deps: unknown[] = []): T {
+  const [v, setV] = useState(read)
+  useEffect(() => {
+    const f = () => setV(() => read())
+    optSubs.add(f)
+    f()
+    return () => {
+      optSubs.delete(f)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- verbatim ls(): re-subscribes on the caller's deps
+  }, deps)
+  return v
+}
+
+/**
+ * Qa verbatim: a dropdown backed by GET /api/options/<listKey>, with an
+ * "Other…" choice that posts a new option and selects it. While the choices
+ * load the select is disabled and shows "Loading choices…"; a current value
+ * that is not in the list is prepended so it stays visible.
+ */
+export function ListSelect({
+  listKey,
+  label,
+  value,
+  onChange,
+  placeholder = 'Choose…',
+  required,
+  disabled,
+  hint,
+}: {
+  listKey: string
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  required?: boolean
+  disabled?: boolean
+  hint?: string
+}) {
+  const p = useId()
+  const d = useOpt(() => optData[listKey], [listKey])
+  const [u, c] = useState(false)
+  const [o, f] = useState('')
+  const [g, m] = useState(false)
+  const [b, v] = useState('')
+  const [y, w] = useState('')
+  const M = useRef<HTMLInputElement | null>(null)
+  useEffect(() => {
+    if (d !== undefined) return
+    let q = optInflight.get(listKey)
+    if (!q) {
+      q = fetchJson('/api/options/' + encodeURIComponent(listKey)).then((N) => optPut(listKey, (N.options as string[]) ?? []))
+      optInflight.set(listKey, q)
+      q.catch(() => optInflight.delete(listKey))
+    }
+    q.catch((N) => w((N as Error).message))
+  }, [listKey, d])
+  useEffect(() => {
+    if (u) M.current?.focus()
+  }, [u])
+  const $ = d ?? []
+  const L = value && !$.includes(value) ? [value, ...$] : $
+  function H(q: React.ChangeEvent<HTMLSelectElement>) {
+    const N = q.currentTarget.value
+    if (N === OPT_OTHER) {
+      c(true)
+      v('')
+      return
+    }
+    c(false)
+    onChange(N)
+  }
+  async function O() {
+    if (g) return
+    m(true)
+    v('')
+    try {
+      const q = await fetchJson('/api/options/' + encodeURIComponent(listKey), { value: o })
+      optPut(listKey, q.options)
+      onChange(q.value)
+      c(false)
+      f('')
+    } catch (q: any) {
+      v(q.message)
+    } finally {
+      m(false)
+    }
+  }
+  function T() {
+    c(false)
+    f('')
+    v('')
+  }
+  const S = hint ? `${p}-hint` : undefined
+  const C = b || y ? `${p}-err` : undefined
+  return (
+    <div className="field">
+      <label htmlFor={p} className="field-label">
+        {label}
+        {required ? (
+          <span className="req" aria-hidden="true">
+            {' '}
+            *
+          </span>
+        ) : null}
+      </label>
+      <select
+        id={p}
+        className="select"
+        value={u ? OPT_OTHER : value}
+        onChange={H}
+        disabled={disabled || d === undefined}
+        required={required}
+        aria-describedby={[S, C].filter(Boolean).join(' ') || undefined}
+      >
+        <option value="" disabled={required}>
+          {d === undefined ? 'Loading choices…' : placeholder}
+        </option>
+        {L.map((q) => (
+          <option key={q} value={q}>
+            {q}
+          </option>
+        ))}
+        <option value={OPT_OTHER}>Other…</option>
+      </select>
+      {hint ? (
+        <p id={S} className="field-hint">
+          {hint}
+        </p>
+      ) : null}
+      {u ? (
+        <div className="other-row">
+          <input
+            ref={M}
+            className="input"
+            type="text"
+            maxLength={120}
+            value={o}
+            aria-label={`New choice for ${label}`}
+            placeholder="Type the new choice"
+            onInput={(q) => f(q.currentTarget.value)}
+            onKeyDown={(q) => {
+              if (q.key === 'Enter') {
+                q.preventDefault()
+                O()
+              } else if (q.key === 'Escape') T()
+            }}
+          />
+          <button type="button" className="btn btn-primary" onClick={O} disabled={g || !o.trim()}>
+            {g ? 'Adding…' : 'Add choice'}
+          </button>
+          <button type="button" className="btn btn-quiet" onClick={T} disabled={g}>
+            Cancel
+          </button>
+        </div>
+      ) : null}
+      {b || y ? (
+        <p id={C} className="field-error" role="alert">
+          {b || `Choices did not load: ${y}`}
+        </p>
+      ) : null}
+    </div>
+  )
 }
 
 export { PageHead }

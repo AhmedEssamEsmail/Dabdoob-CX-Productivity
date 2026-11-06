@@ -2,9 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Check-ins page (checkins.closure.js symbol Xa). */
 import { useEffect, useState } from 'react'
-import { AgeChip, Head, LoadError, Skeleton, fetchJson, hm, useHashParams, useSe } from './shared'
+import { AgeChip, Head, ListSelect, LoadError, Skeleton, fetchJson, hm, useHashParams, useSe } from './shared'
 
-const STATUSES = ['On track', 'Busy but coping', 'Behind, need a plan', 'Swamped, help needed']
 const STATUS_ORDER = (t: string) => {
   const n = t.toLowerCase()
   if (n.includes('not counted')) return 40
@@ -147,13 +146,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                         <label className="cx-label" htmlFor={`q-${k.queue.replace(/\W+/g, '-')}-ag`}>Agents on it now</label>
                         <input className="cx-input cx-num" id={`q-${k.queue.replace(/\W+/g, '-')}-ag`} type="number" min={0} inputMode="numeric" value={draft[k.queue].agents} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], agents: (e.target as HTMLInputElement).value } }))} />
                       </div>
-                      <div className="cx-field">
-                        <label className="cx-label" htmlFor={`q-${k.queue.replace(/\W+/g, '-')}-st`}>How is it going?</label>
-                        <select className="cx-select" id={`q-${k.queue.replace(/\W+/g, '-')}-st`} value={draft[k.queue].status} onChange={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], status: (e.target as HTMLSelectElement).value } }))}>
-                          <option value="">Choose…</option>
-                          {(draft[k.queue].status && !STATUSES.includes(draft[k.queue].status) ? [draft[k.queue].status, ...STATUSES] : STATUSES).map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
+                      <ListSelect listKey="queue.status" label="How is it going?" value={draft[k.queue].status} onChange={(s) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], status: s } }))} />
                     </div>
                     <div className="cx-field">
                       <label className="cx-label" htmlFor={`q-${k.queue.replace(/\W+/g, '-')}-n`}>What is driving it? <span className="cx-faint" style={{ fontWeight: 400, visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></label>

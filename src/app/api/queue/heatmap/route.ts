@@ -1,6 +1,6 @@
 /**
  * /api/queue/heatmap — Heatmap.js page read + mutations.
- * GET            -> getHeatmapPage; GET ?input=<id>[&set=<id>] -> getHeatmapInput
+ * GET            -> getHeatmapPage; GET ?input=<id> -> getHeatmapInput
  * POST {op:...}  -> saveHeatmapInput | parseHeatmapUpload | buildHeatmapFromSource |
  *                  runPriorHeatmapRegression | saveHeatmapAssumptions | setHeatmapCountries
  */
@@ -14,8 +14,8 @@ import {
 export async function GET(req: NextRequest) {
   try {
     const input = req.nextUrl.searchParams.get('input')
-    if (input) return NextResponse.json(await getHeatmapInput(input, req.nextUrl.searchParams.get('set') || undefined))
-    return NextResponse.json(await getHeatmapPage())
+    if (input) return NextResponse.json(await getHeatmapInput(input))
+    return NextResponse.json(await getHeatmapPage(req.nextUrl.searchParams.get('page') || undefined))
   } catch (e) {
     return apiError(e)
   }
@@ -23,16 +23,21 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = (await req.json()) as Record<string, unknown>
     const op = String(body.op || 'save')
-    const fn =
-      op === 'parse' ? parseHeatmapUpload
-      : op === 'build' ? buildHeatmapFromSource
-      : op === 'regression' ? () => runPriorHeatmapRegression(body.inputId)
-      : op === 'assumptions' ? saveHeatmapAssumptions
-      : op === 'countries' ? () => setHeatmapCountries(body.countries)
-      : saveHeatmapInput
-    return NextResponse.json(await fn(body))
+    const out =
+      op === 'parse'
+        ? await parseHeatmapUpload(body.fileName ?? body.name, body.base64 ?? body.data)
+        : op === 'build'
+          ? await buildHeatmapFromSource(body.spreadsheetId, body.opts as Record<string, unknown> | undefined)
+          : op === 'regression'
+            ? await runPriorHeatmapRegression()
+            : op === 'assumptions'
+              ? await saveHeatmapAssumptions(body.name, body.assumptions)
+              : op === 'countries'
+                ? await setHeatmapCountries(body.countries, body.aliases)
+                : await saveHeatmapInput(body.name, body.source, body.heatmap)
+    return NextResponse.json(out)
   } catch (e) {
     return apiError(e)
   }

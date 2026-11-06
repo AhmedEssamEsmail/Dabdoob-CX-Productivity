@@ -14,7 +14,7 @@ import {
   TicketRef,
   qaTicketLabel,
   useSe,
-} from './qa-shared2'
+} from './qa-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
 export function KbGapsPage({ route }: { route: { title: string } }) {

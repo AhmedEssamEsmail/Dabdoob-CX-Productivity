@@ -108,7 +108,14 @@ export async function currentUser(): Promise<PlatformUser> {
   return { email, name: row ? String(row.name || email) : email, role: 'unknown', tlEmail: null }
 }
 
-/** Throws unless the caller has one of the given roles. Returns the user (requireRole_). */
+/**
+ * Throws unless the caller has one of the given roles (requireRole_,
+ * Auth.js:80-86 — the legacy denial message). The single implementation
+ * lives here; shared/lib/auth.ts re-exports it so the API routes that
+ * import requireRole from there resolve to this one copy. (It cannot be
+ * re-exported the other way: the golden tests mock shared/lib/auth down
+ * to createAuthClient, so this module must carry the implementation.)
+ */
 export async function requireRole(roles: string[]): Promise<PlatformUser> {
   const u = await currentUser()
   if (roles.indexOf(u.role) === -1) {

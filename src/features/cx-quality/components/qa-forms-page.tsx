@@ -11,7 +11,7 @@ import {
   LoadError,
   P,
   useSe,
-} from './qa-shared2'
+} from './qa-shared'
 import { PageHead } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 

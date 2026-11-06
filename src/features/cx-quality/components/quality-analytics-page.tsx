@@ -24,7 +24,7 @@ import {
   qaBand,
   qaPct,
   useSe,
-} from './qa-shared2'
+} from './qa-shared'
 import {
   LoadError,
   useTip,
