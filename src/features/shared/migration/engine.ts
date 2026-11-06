@@ -49,11 +49,29 @@ const NUM_COLS = new Set([
   'total_audits', 'avg_score', 'productive_min_aux',
   'productive_min_resolution', 'idle_min', 'tickets', ...QQ_NUM, ...DO_NUM,
 ])
+// Dry-run B4 — DO_NUM lists 'value' globally for tlp_otd.value (the only
+// numeric `value`); everywhere else it must stay text: options.value and
+// qe_catalogue.value are TEXT NOT NULL ('Egypt'/'Field Change' → NaN → null
+// → require-skip killed 26 + 347 rows) and sched_config.value is jsonb
+// ('0' must stay the string). Scoped back per-table below.
+NUM_COLS.delete('value')
+const NUM_COLS_BY_TABLE: Record<string, Set<string>> = {
+  tlp_otd: new Set(['value']),
+  // audits is NUMERIC on sc_daily (would lose fractions under parseInt) but
+  // INTEGER on agg_agent_perf — scoped below.
+  sc_daily: new Set(['audits']),
+}
 const INT_COLS = new Set([
   'case_count', 'distinct_cases', 'review_open_ms', 'total_flags',
   'auto_accepted', 'year', 'total_cases', 'resolved_on_first', 'windows',
   ...QQ_INT, ...DO_INT,
 ])
+INT_COLS.delete('priority') // tickets-only int; action_task_details uses 'P1'/'P2' text
+INT_COLS.delete('audits')   // numeric on sc_daily; int only on agg_agent_perf
+const INT_COLS_BY_TABLE: Record<string, Set<string>> = {
+  tickets: new Set(['priority']),
+  agg_agent_perf: new Set(['audits']),
+}
 type TransformCtx = { spreadsheet: string; table: string; index: number }
 const ROW_TRANSFORMS: Record<string, (row: Record<string, unknown>, ctx: TransformCtx) => void> = {
   ...QQ_TRANSFORMS, ...DO_TRANSFORMS,
@@ -93,19 +111,24 @@ export async function readSheet(spreadsheetId: string, sheetName: string) {
   return rows.slice(1).map((row) => {
     const obj: Record<string, unknown> = {}
     headers.forEach((header, i) => {
-      const v = row[i]
-      obj[header] = v === undefined || v === '' ? null : v
+      // Verbatim cells, '' included (legacy route behaviour — dry-run B1):
+      // nulling '' here would hide empty cells from mapRow's ''-branch, so
+      // NULL_AS_EMPTY and the created_at/updated_at/computed_at fallback
+      // could only ever fire on absent headers, never empty cells.
+      obj[header] = row[i]
     })
     return obj
   })
 }
 
-function mapRow(row: Record<string, unknown>, mapping: TableMapping, index: number): Record<string, unknown> {
+function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   const nullAsEmpty = NULL_AS_EMPTY_MAP[mapping.table]
   for (const col of mapping.columns) {
     const sheetHeader = mapping.sheetToDb?.[col] || col
     let v = row[sheetHeader]
+    // NULL_AS_EMPTY must precede the timestamp fallback: a NOT-NULL DEFAULT ''
+    // col (e.g. mail_log.error) takes '' , never an ISO stamp.
     if (v === undefined || v === '') {
       out[col] = nullAsEmpty?.has(col)
         ? ''
@@ -118,16 +141,15 @@ function mapRow(row: Record<string, unknown>, mapping: TableMapping, index: numb
       try { v = JSON.parse(v) } catch { /* keep string */ }
     } else if (col === 'removed') {
       v = v === 'true' || v === true || v === 'TRUE'
-    } else if (NUM_COLS.has(col)) {
+    } else if (NUM_COLS.has(col) || NUM_COLS_BY_TABLE[mapping.table]?.has(col)) {
       v = parseFloat(String(v))
       if (Number.isNaN(v)) v = null
-    } else if (INT_COLS.has(col)) {
+    } else if (INT_COLS.has(col) || INT_COLS_BY_TABLE[mapping.table]?.has(col)) {
       v = parseInt(String(v), 10)
       if (Number.isNaN(v)) v = null
     }
     out[col] = v
   }
-  ROW_TRANSFORMS[mapping.table]?.(out, { spreadsheet: mapping.spreadsheet, table: mapping.table, index })
   return out
 }
 
@@ -146,8 +168,18 @@ export async function migrateTable(supabase: SupabaseClient, mapping: TableMappi
     return { read: 0, migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' not found or empty`] }
   }
 
+  // Dry-run B2 — authored contract (see ROW_TRANSFORMS docblock in the
+  // mapping modules): transforms mutate the RAW sheet row BEFORE mapRow and
+  // are keyed by mapping.sheet (agg_productivity_daily and prod_daily_layers
+  // share a table, so table alone cannot key them). They write synthetic
+  // cells mapRow then picks up (date/note-pack/layer/year/log_id/extra_json/
+  // segments_json + bool/JSON/epoch-ms normalisation). Table-key fallback
+  // keeps any sibling-authored table keys working.
+  const tf = ROW_TRANSFORMS[mapping.sheet] || ROW_TRANSFORMS[mapping.table]
+  if (tf) rows.forEach((r, i) => tf(r, { spreadsheet: mapping.spreadsheet, table: mapping.table, index: i }))
+
   let mapped = rows
-    .map((r, i) => mapRow(r, mapping, i))
+    .map((r) => mapRow(r, mapping))
     .filter((r) => !(mapping.require || []).some((col) => r[col] === null || r[col] === undefined))
   const skipped = rows.length - mapped.length
 
@@ -212,7 +244,10 @@ export async function backfillTrackerRecords(supabase: SupabaseClient): Promise<
           record_id: String(cells[idIdx] ?? '') || `row-${row_n}`,
           row_n,
           values,
-          submitted_by: String(cells[byIdx] ?? '').trim().toLowerCase() || null,
+          // submitted_by is `text NOT NULL DEFAULT ''` — an absent/empty cell
+          // must land '', never null (dry-run B1: blocked_customers and
+          // operational_loss have no submitter column at all).
+          submitted_by: String(cells[byIdx] ?? '').trim().toLowerCase(),
           submitted_at: cells[atIdx] || null,
         }
       })

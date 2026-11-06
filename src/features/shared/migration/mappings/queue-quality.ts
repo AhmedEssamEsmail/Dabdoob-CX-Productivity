@@ -154,20 +154,23 @@ export const MAPPINGS: TableMapping[] = [
     // DQ_SUBMISSIONS_HEADERS (QueueCore.js). Tab 'queue_status_submissions' on
     // dataSpreadsheet_() = CC2 Core (Repo.js ensureTable_) — specs/cx-hub/
     // 80-data-migration.md lists it under CC2 Live; the code wins.
-    // DECISION: submission_id has no UNIQUE index in 003 — plain insert now;
-    // add UNIQUE(submission_id) for idempotent re-runs.
+    // 014_migration_hardening.sql adds UNIQUE(submission_id) — upsertOn set so
+    // re-runs are idempotent (was plain insert).
     spreadsheet: 'core', sheet: 'queue_status_submissions', table: 'queue_submissions',
     columns: ['submission_id', 'slot_date', 'slot', 'snapshot_key', 'status', 'queues_json',
       'corrections_json', 'correction_reason', 'general_note', 'help_needed', 'help_note',
       'submitted_by', 'submitted_at', 'updated_by', 'updated_at'],
+    upsertOn: 'submission_id',
     require: ['submission_id'],
   },
   {
-    // DQ_FLAGS_HEADERS (QueueCore.js). Tab 'aging_flags' on CC2 Core.
-    // DECISION: flag_id has no UNIQUE index — same re-run caveat as above.
+    // DQ_FLAGS_HEADERS (QueueCore.js). Tab 'aging_flags' on CC2 Core (absent
+    // in the dry-run — lazy ensureTable_; B6 verdict in migration-report.md).
+    // 014 adds UNIQUE(flag_id) — upsertOn set for idempotent re-runs.
     spreadsheet: 'core', sheet: 'aging_flags', table: 'dq_aging_flags',
     columns: ['flag_id', 'ticket_id', 'note', 'tl_email', 'resolved_at', 'resolved_by',
       'resolved_note', 'submitted_by', 'submitted_at'],
+    upsertOn: 'flag_id',
     require: ['flag_id'],
   },
 
@@ -250,9 +253,10 @@ export const MAPPINGS: TableMapping[] = [
   {
     // Quality.js QA_ACCESS_LOG_HEADERS — "the Core tab QaAccessLog" (line ~655,
     // ensureTable_ -> dataSpreadsheet_ = CC2 Core, NOT the quality store).
-    // DECISION: `qa_access_log` is absent from every migration file; server.ts
-    // reads/writes it tolerantly. Verify the table exists remotely before
-    // running, or create it (email, action, submitted_by, submitted_at).
+    // Remote table absent (dry-run §3 B3) — created by
+    // 014_migration_hardening.sql in this exact shape. Insert-only audit log:
+    // no natural unique, a re-run duplicates (one-shot table list in
+    // migration-report.md).
     spreadsheet: 'core', sheet: 'QaAccessLog', table: 'qa_access_log',
     columns: ['email', 'action', 'submitted_by', 'submitted_at'],
   },
@@ -280,8 +284,10 @@ export const MAPPINGS: TableMapping[] = [
     // PRODUCTIVITY_COMPUTED_HEADERS (ProdCore.js) — camelCase headers like
     // prod_daily_layers. env.ts TABLE_ALIAS routes the legacy
     // 'agg_productivity_daily' store into prod_daily_layers with
-    // layer='effective' — ROW_TRANSFORMS injects it. upsertOn matches the
-    // engine's io.upsert(['date','email']).
+    // layer='effective' — ROW_TRANSFORMS injects it. upsertOn is the app's
+    // real conflict target: env.ts:349 hard-codes ['date','email','layer']
+    // ((date,email) alone is NOT unique — the 'raw' layer shares it;
+    // dry-run B8). Needs the 014 unique index on (date,email,layer).
     spreadsheet: 'data_2026', sheet: 'agg_productivity_daily', table: 'prod_daily_layers',
     columns: ['layer', 'agent_name', 'date', 'email',
       'inbound_avail_min', 'inbound_target', 'inbound_achieved', 'inbound_missed',
@@ -304,7 +310,7 @@ export const MAPPINGS: TableMapping[] = [
       avg_score: 'avgscore', productive_min_aux: 'productiveminaux',
       productive_min_resolution: 'productiveminresolution', idle_min: 'idlemin',
     },
-    upsertOn: 'date,email',
+    upsertOn: 'date,email,layer',
     require: ['email', 'date'],
   },
 
@@ -414,10 +420,10 @@ export const MAPPINGS: TableMapping[] = [
     require: ['kind', 'value'],
   },
   {
-    // 'Ticket Detail Cache' -> qe_fd_cache. DECISION: no `qe_fd_cache` table
-    // exists in supabase/migrations (the ported engine never writes it — the
-    // Freshdesk-API fallback is stubbed as blocked). Included per WP-30 scope;
-    // needs a CREATE TABLE (or drop this entry) before it can run.
+    // 'Ticket Detail Cache' -> qe_fd_cache. Remote table absent (dry-run §3
+    // B3) — created by 014_migration_hardening.sql in this exact 13-column
+    // shape with id PRIMARY KEY, so upsertOn 'id' is safe and re-runs are
+    // idempotent.
     spreadsheet: 'quality', sheet: 'Ticket Detail Cache', table: 'qe_fd_cache',
     columns: ['id', 'group_name', 'contact_type_1', 'contact_type_2',
       'contact_type_3', 'subject', 'status', 'country',
@@ -427,6 +433,7 @@ export const MAPPINGS: TableMapping[] = [
       contact_type_2: 'contact type 2', contact_type_3: 'contact type 3',
       order_id: 'order id', created_at: 'created at', cached_at: 'cached at',
     },
+    upsertOn: 'id',
     require: ['id'],
   },
 ]
@@ -582,9 +589,8 @@ export const SUGGESTED_JSON_COLS = [
  *    engine's `|| ''` reads treat null and '' alike.
  */
 export const DECISIONS: string[] = [
-  'qe_fd_cache table does not exist in migrations — create it or drop the mapping',
-  'qa_access_log table absent from migrations — verify it exists remotely',
-  'add UNIQUE(submission_id) on queue_submissions and UNIQUE(flag_id) on dq_aging_flags for idempotent re-runs',
+  'qe_fd_cache / qa_access_log absent remotely (dry-run B3) — 014_migration_hardening.sql creates them in the mapping shapes (qe_fd_cache.id PRIMARY KEY -> upsertOn id; qa_access_log stays insert-only)',
+  '014 adds UNIQUE(submission_id) on queue_submissions and UNIQUE(flag_id) on dq_aging_flags — upsertOn now set on both mappings; re-runs idempotent',
   'dqRewrite_-style stores insert full snapshots — truncate/pre-delete before a second run',
   'sched_plan.segments_json is reconstructed from queue_h/people_h/task_h budgets, not original segments',
   'aging_flags/queue_status_submissions/sched_* read from CC2 Core (dataSpreadsheet_), not CC2 Live as 80-data-migration.md lists — doc correction needed',

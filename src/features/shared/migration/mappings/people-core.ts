@@ -251,6 +251,10 @@ export const MAPPINGS: TableMapping[] = [
     // insert-only: BIGSERIAL id, no unique conflict target — re-run duplicates.
     // Sheet (WorkCalendar.js DQ_HOLIDAYS_HEADERS) also has holiday_id/updated_by/
     // updated_at — no DB columns for them; see header note.
+    // DECISION (dry-run B9, WP-F22): map-what-fits — the tab is header-only
+    // (0 rows), so the three sheet-only cols are dropped rather than adding
+    // schema. If rows appear and the owner wants holiday_id preserved, add
+    // columns first, then extend this list.
     spreadsheet: 'core', sheet: 'holidays', table: 'holidays',
     columns: ['country', 'date', 'name', 'deleted_at', 'submitted_by', 'submitted_at'],
     require: ['country', 'date'],

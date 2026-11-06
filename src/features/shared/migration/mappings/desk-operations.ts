@@ -178,19 +178,23 @@ export const MAPPINGS: TableMapping[] = [
     // the comma-separated ranges ('' -> null). Data-fidelity note: the count
     // is preserved; the range text is not representable in an integer column
     // (the desk page renders String(windows) either way).
-    // No UNIQUE on (date,tl_email) — plain insert; see DECISIONS/PRE_RUN_SQL.
+    // 014_migration_hardening.sql adds UNIQUE(date,tl_email) — upsertOn set so
+    // re-runs are idempotent (was plain insert; PRE_RUN_SQL kept below as the
+    // standalone equivalent).
     spreadsheet: 'live', sheet: 'tlp_queue_daily', table: 'tlp_queue_daily',
     columns: ['date', 'tl_email', 'windows', 'queue_min', 'calls_in', 'calls_serviced', 'calls_abandoned',
       'calls_other', 'answer_rate', 'text_touches', 'text_tickets', 'resp_count', 'resp_avg_min',
       'resp_missing', 'text_source', 'computed_at'],
+    upsertOn: 'date,tl_email',
     require: ['date', 'tl_email'],
   },
   {
-    // No UNIQUE on (tl_email,month) — plain insert; see DECISIONS/PRE_RUN_SQL.
+    // 014 adds UNIQUE(tl_email,month) — upsertOn set for idempotent re-runs.
     spreadsheet: 'live', sheet: 'tlp_team', table: 'tlp_team',
     columns: ['tl_email', 'month', 'quality', 'fcr', 'productivity', 'agents', 'updated_at',
       'kpi_score', 'kpi_prod', 'kpi_qual', 'kpi_fcr', 'kpi_behavior', 'kpi_agents', 'ol_agents',
       'ineligible_agents', 'red_zone', 'action_plan', 'probation_agents', 'partial_agents'],
+    upsertOn: 'tl_email,month',
     require: ['tl_email', 'month'],
   },
   {
@@ -275,6 +279,11 @@ const truthyOr_ = (v: unknown, dflt: boolean): boolean => {
 }
 
 export const ROW_TRANSFORMS: Record<string, RowTransform> = {
+  // WP-F21 residual — people-core sheet key: attended is BOOLEAN NOT NULL
+  // DEFAULT TRUE; '' must land as the default true (truthyOr_ semantics).
+  meeting_attendees: (row) => {
+    row.attended = truthyOr_(row.attended, true)
+  },
   Trackers: (row) => {
     row.form_backed = truthyOr_(row.form_backed, false)
   },
@@ -327,6 +336,24 @@ export const NULL_AS_EMPTY: Record<string, string[]> = {
     'requester', 'reply_to', 'cc', 'excerpt', 'status', 'decision_text', 'decided_by',
     'sent_status', 'sent_message_id', 'client_token'],
   mail_approval_log: ['action', 'decision', 'text', 'by', 'sent_status', 'to', 'cc', 'error'],
+  // WP-F21 residual — people/core tables whose empty cells must land as ''
+  // (all verified TEXT NOT NULL DEFAULT '' in 002/008; meeting_attendees.attended
+  // is BOOLEAN NOT NULL DEFAULT TRUE — handled by the transform below instead).
+  actions: ['description', 'series_id', 'topic', 'outcome_note', 'closed_by'],
+  action_reviews: ['note', 'prev_outcome_note'],
+  action_updates: ['rag', 'next_step', 'drive_file_id', 'file_name', 'mime_type', 'planned_milestone_id'],
+  action_task_details: ['priority', 'blocked_reason', 'rag_self', 'delivery_ref', 'expectation',
+    'outcome_rating', 'outcome_note', 'rated_by'],
+  one_on_one_schedule: ['log_id', 'rescheduled_to', 'reason', 'deleted_by', 'delete_reason', 'prev_status'],
+  one_on_one_logs: ['schedule_id', 'no_action_reason', 'deleted_by', 'delete_reason', 'delete_cascade_json'],
+  one_on_one_topics: ['skipped_reason', 'evidence_json'],
+  meetings: ['notes', 'decisions'],
+  my_notes: ['tag'],
+  mail_log: ['cc', 'error'],
+  health: ['last_note', 'last_error'],
+  sc_daily: ['name'],
+  sc_months: ['error', 'fcr_note', 'behaviour_note'],
+  sc_behaviour: ['date'],
 }
 
 /**
@@ -349,10 +376,10 @@ export const SUGGESTED_NUM_COLS = [
 export const SUGGESTED_JSON_COLS = ['queue_json', 'window_json', 'assumptions_json']
 
 /**
- * Optional pre-run DDL: natural unique indexes that let the two tables
- * without one upsert idempotently. If applied, set `upsertOn: 'date,tl_email'`
- * on tlp_queue_daily and `upsertOn: 'tl_email,month'` on tlp_team; without it
- * they plain-insert (fine for a single WP-51 run — a re-run duplicates).
+ * Standalone equivalent of the two uniques now drafted in
+ * supabase/migrations/014_migration_hardening.sql — both upsertOns are
+ * already set on the mappings above, so applying 014 (or these two
+ * statements) makes re-runs idempotent. Kept for manual/single-run use.
  */
 export const PRE_RUN_SQL = [
   'CREATE UNIQUE INDEX IF NOT EXISTS tlp_queue_daily_date_tl_uidx ON tlp_queue_daily (date, tl_email)',
@@ -538,7 +565,7 @@ export const TRACKER_FLIP_SQL =
 export const DECISIONS: string[] = [
   'storage_mode flip (WP-F6): DECIDED — per-descriptor postBackfill flips storage_mode->native after a successful backfill (D-DATA "migrate then continue"; audit §5#3 recommendation). A tracker whose read fails is NOT flipped. TRACKER_FLIP_SQL is the consolidated fallback.',
   'WP-F4 field seed: DECIDED via SQL — supabase/migrations/013_tracker_fields_seed.sql ships the 61 built-in field rows (verbatim seedTrackerRegistry_ output, verified against the live TrackerFields tab). The TrackerFields->tracker_fields mapping then overlays the real tab (66 rows) on top.',
-  'tlp_queue_daily/tlp_team have no natural UNIQUE constraint (003/007 DDL) — they plain-insert; apply PRE_RUN_SQL + set upsertOn for idempotent re-runs.',
+  'tlp_queue_daily/tlp_team uniques landed in 014_migration_hardening.sql — upsertOn now set on both mappings; re-runs idempotent. PRE_RUN_SQL kept as the standalone equivalent.',
   'tlp_queue_daily.windows: legacy stored range STRINGS; the column is integer and the port writes a count — transform counts ranges; the original range text is unrepresentable (flagged for the report).',
   'HeatmapInputs rows, if any appear before WP-51, hold base64-gzip chunks in data_1..4 — runner must gunzip into a plain-JSON data_1 (port hmUnpack_ JSON.parses data_1). Tab is empty today; mapping + note in place.',
   'HeatmapAssumptionSets tab does not exist yet in CC2 Core — expected "not found or empty" log, not an error.',

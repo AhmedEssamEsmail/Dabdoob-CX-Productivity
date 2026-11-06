@@ -33,6 +33,11 @@ export const MAPPINGS: TableMapping[] = [
   },
   {
     // Sheet headers are camelCase: agentName, inboundAvailMin, overallProdPct, computedAt...
+    // Sheet carries a real `layer` column (578 'effective' + 578 'raw' rows —
+    // dry-run §2). upsertOn is the app's true conflict target
+    // (shared/jobs/env.ts:349 hard-codes ['date','email','layer'] for this
+    // table): (date,email) alone is NOT unique — two layers share it
+    // (dry-run B8). Needs the 014 unique index; see that file.
     spreadsheet: 'productivity', sheet: 'prod_daily_layers', table: 'prod_daily_layers',
     columns: ['layer', 'agent_name', 'date', 'email',
       'inbound_avail_min', 'inbound_target', 'inbound_achieved', 'inbound_missed',
@@ -55,6 +60,7 @@ export const MAPPINGS: TableMapping[] = [
       avg_score: 'avgscore', productive_min_aux: 'productiveminaux',
       productive_min_resolution: 'productiveminresolution', idle_min: 'idlemin',
     },
+    upsertOn: 'date,email,layer',
     require: ['email', 'date'],
   },
   {
@@ -69,34 +75,63 @@ export const MAPPINGS: TableMapping[] = [
     upsertOn: 'date,agent_email',
   },
   {
+    // Tab absent in CC2 Prod (dry-run B6 — owner decision pending; see
+    // migration-report.md). Columns follow the shape the ported job actually
+    // appends (jobs/quarterly.ts:61-71 = 003 DDL = remote V1 shape) so a
+    // created tab with app headers would migrate correctly. NB `quarter` is
+    // INTEGER in DDL — a real tab must carry quarter numbers, or the engine's
+    // INT set needs 'quarter'.
     spreadsheet: 'productivity', sheet: 'prod_quarterly_reports', table: 'prod_quarterly_reports',
-    columns: ['quarter', 'agent_email', 'report_json', 'computed_at'],
-    upsertOn: 'quarter,agent_email',
+    columns: ['report_id', 'quarter', 'year', 'start_date', 'end_date',
+      'report_json', 'created_at'],
+    upsertOn: 'report_id',
+    require: ['report_id'],
   },
   {
+    // Sheet cols `date,agent_email,slots_json,sources_json,by,at` — match
+    // remote exactly (dry-run B5). upsertOn 'date,agent_email' is the app's
+    // real conflict target (tph/write.ts:108); plain 'date' collapsed 27
+    // agent rows to 3 in the dry-run.
     spreadsheet: 'productivity', sheet: 'prod_tph_days', table: 'prod_tph_days',
-    columns: ['date', 'calls_json', 'computed_at'],
-    upsertOn: 'date',
+    columns: ['date', 'agent_email', 'slots_json', 'sources_json', 'by', 'at'],
+    upsertOn: 'date,agent_email',
+    require: ['date', 'agent_email'],
   },
   {
+    // Sheet cols `task_id,date,agent_email,channel,start,end,by,at,removed`
+    // (dry-run B5). App upserts on task_id (tph/write.ts:171,198). Remote
+    // lacks `removed` — 014 adds it (the app writes the column anyway).
     spreadsheet: 'productivity', sheet: 'prod_tph_tasks', table: 'prod_tph_tasks',
-    columns: ['date', 'calls_json', 'computed_at'],
-    upsertOn: 'date',
+    columns: ['task_id', 'date', 'agent_email', 'channel', 'start', 'end',
+      'by', 'at', 'removed'],
+    upsertOn: 'task_id',
+    require: ['task_id'],
   },
   {
+    // Sheet cols `date,source,cases_json,by,at` (dry-run B5). App upserts on
+    // (date,source) — 'tl'/'auto'/'rebuilt' source rows coexist per date
+    // (tph/write.ts:227).
     spreadsheet: 'productivity', sheet: 'prod_tph_cases', table: 'prod_tph_cases',
-    columns: ['date', 'calls_json', 'computed_at'],
-    upsertOn: 'date',
+    columns: ['date', 'source', 'cases_json', 'by', 'at'],
+    upsertOn: 'date,source',
+    require: ['date'],
   },
   {
+    // Sheet cols `date,touches_json,computed_at` (dry-run B5). App upserts on
+    // date (tph/index.ts:1517).
     spreadsheet: 'productivity', sheet: 'prod_tph_touches', table: 'prod_tph_touches',
-    columns: ['date', 'calls_json', 'computed_at'],
+    columns: ['date', 'touches_json', 'computed_at'],
     upsertOn: 'date',
+    require: ['date'],
   },
   {
+    // Already correct in the dry-run (the only well-shaped tph mapping):
+    // sheet `date,calls_json,computed_at`; app upserts on date
+    // (tph/index.ts:1579).
     spreadsheet: 'productivity', sheet: 'prod_tph_calls', table: 'prod_tph_calls',
     columns: ['date', 'calls_json', 'computed_at'],
     upsertOn: 'date',
+    require: ['date'],
   },
   {
     spreadsheet: 'quality', sheet: 'qa_audits', table: 'qa_audits',
