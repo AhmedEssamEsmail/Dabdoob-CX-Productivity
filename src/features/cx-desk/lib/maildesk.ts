@@ -20,8 +20,9 @@ import { readStore, dqLastRun } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'
 import { normEmail, pwDirectory, requireJobCaller, requireRole, type Directory } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { pwIso, pwKwDate, pwKwTime, pwToday, dqAddDays } from '@/features/shared/platform/time'
-import { getGmailReadAdapter, sendGmailReply } from '@/features/shared/platform/mail'
+import { pwKwDate, pwKwTime, pwToday, dqAddDays } from '@/features/shared/platform/time'
+import { getGmailAdapter, getGmailReadAdapter, sendGmailReply } from '@/features/shared/platform/mail'
+import { hbBeat, hbRun } from '@/features/shared/platform/health'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { dqMarkRun_ } from './jobshared'
 
@@ -334,10 +335,14 @@ export async function mdThreads_(query: unknown): Promise<MdMsg[][]> {
       rfcId: h('Message-ID'),
       snippet: String((m as { snippet?: string }).snippet || ''),
     }
-    const arr = byThread.get(msg.threadId) || []
+    // Threads.list capped at MD_MAX_THREADS threads: a 51st distinct thread is out.
+    let arr = byThread.get(msg.threadId)
+    if (!arr) {
+      if (byThread.size >= MD_MAX_THREADS) break
+      arr = []
+      byThread.set(msg.threadId, arr)
+    }
     arr.push(msg)
-    byThread.set(msg.threadId, arr)
-    if (byThread.size >= MD_MAX_THREADS) break
   }
   return [...byThread.values()]
 }
@@ -473,36 +478,32 @@ export async function mdSyncApprovals_(): Promise<string> {
   return rows.length + ' approval threads.'
 }
 
-/** The 10-minute job. A failed half is a warning on the Health board. */
+/** The job (10-minute trigger in legacy; 15-min pg_cron per D-SCHED). A failed half is a warning on the Health board. */
 export async function jobMailDesk(): Promise<{ note: string }> {
   await requireJobCaller() // cron entry: admin-only hand-run; View as refuses
-  const out: string[] = []
-  let bad = false
-  try {
-    out.push(await mdSyncSla_())
-  } catch (x) {
-    bad = true
-    out.push('Response tracking failed: ' + ((x as Error)?.message || x))
-  }
-  try {
-    out.push(await mdSyncApprovals_())
-  } catch (x2) {
-    bad = true
-    out.push('Approvals failed: ' + ((x2 as Error)?.message || x2))
-  }
-  await dqMarkRun_('mail_desk')
-  if (bad) await hbBeatWarn_('mail_desk', out.join(' '))
-  return { note: out.join(' ') }
-}
-
-async function hbBeatWarn_(job: string, note: string) {
-  try {
-    const { hbBeat, hbFlush } = await import('@/features/shared/platform/health')
-    hbBeat(job, 'warn', note)
-    await hbFlush()
-  } catch {
-    /* heartbeats never break the job */
-  }
+  return hbRun(
+    'mail_desk',
+    async () => {
+      const out: string[] = []
+      let bad = false
+      try {
+        out.push(await mdSyncSla_())
+      } catch (x) {
+        bad = true
+        out.push('Response tracking failed: ' + ((x as Error)?.message || x))
+      }
+      try {
+        out.push(await mdSyncApprovals_())
+      } catch (x2) {
+        bad = true
+        out.push('Approvals failed: ' + ((x2 as Error)?.message || x2))
+      }
+      await dqMarkRun_('mail_desk')
+      if (bad) hbBeat('mail_desk', 'warn', out.join(' '))
+      return { note: out.join(' ') }
+    },
+    (r) => r.note,
+  )
 }
 
 // =====================================================================
@@ -681,17 +682,22 @@ export async function mailApprovalDecide(threadId: string, decision: string, tex
   let sentId = ''
   let err = ''
   if (!dry) {
-    try {
-      const mime = mdReplyMime_({ to: addr.to, cc: addr.cc, subject: String(claimed.subject), inReplyTo: String(claimed.rfc_message_id), body })
-      sentId = await sendGmailReply(mime, String(claimed.thread_id), {
-        to: addr.to,
-        cc: addr.cc.join(','),
-        subject: String(claimed.subject),
-        kind: 'mail_approval',
-        ref: String(claimed.thread_id),
-      }, user.email)
-    } catch (e) {
-      err = String((e as Error)?.message || e)
+    // sendGmailReply_ had no dry-run switch: an unconfigured send must fail, not record 'sent'.
+    if (!getGmailAdapter()) {
+      err = 'Gmail send is not configured (GMAIL_SEND_ENABLED + GMAIL_API_URL/GMAIL_API_KEY).'
+    } else {
+      try {
+        const mime = mdReplyMime_({ to: addr.to, cc: addr.cc, subject: String(claimed.subject), inReplyTo: String(claimed.rfc_message_id), body })
+        sentId = await sendGmailReply(mime, String(claimed.thread_id), {
+          to: addr.to,
+          cc: addr.cc.join(','),
+          subject: String(claimed.subject),
+          kind: 'mail_approval',
+          ref: String(claimed.thread_id),
+        }, user.email)
+      } catch (e) {
+        err = String((e as Error)?.message || e)
+      }
     }
   }
   // 3. Record the outcome; a failed send puts it back to pending.

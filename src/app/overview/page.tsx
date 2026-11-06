@@ -2,5 +2,5 @@
 import { OverviewPage } from '@/features/cx-hub/components/overview-page'
 
 export default function Page() {
-  return <OverviewPage route={{ title: 'Hub home' }} />
+  return <OverviewPage route={{ title: 'Home' }} />
 }

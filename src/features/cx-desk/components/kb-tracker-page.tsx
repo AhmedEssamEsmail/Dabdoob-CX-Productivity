@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* ------------------------------------------------------------------ *
  * KB tracker — port of the legacy Desk page: articles requested of the
@@ -212,6 +213,7 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
     e.preventDefault()
     void run.run(async () => {
       onSaved(await api.kbSave(f))
+      toast('Saved.')
     })
   }
   return (
@@ -265,7 +267,7 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
 
 const ROUTE = {
   title: 'KB tracker',
-  purpose: 'Articles the team asked the Knowledge base owner to write or fix, and how fast they were done.',
+  purpose: 'Knowledge-base updates: when each was asked for, when it was done, and whether it was accurate.',
 }
 
 export default function KbTrackerPage() {

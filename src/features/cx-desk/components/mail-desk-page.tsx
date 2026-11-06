@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* ------------------------------------------------------------------ *
  * Mail Desk — port of the legacy Google Apps Script page.
@@ -105,11 +106,7 @@ const STATUS_LABEL: Record<string, string> = {
   answered_in_gmail: 'Answered in Gmail',
 }
 
-const toastFn: ((t: { id: number; text: string; tone: string }) => void) | null = null
-let toastSeq = 0
-function toast(text: string, tone = 'ok') {
-  toastFn?.({ id: ++toastSeq, text, tone })
-}
+/* Toasts come from the shared shell emitter (the legacy `ne`). */
 
 function Skeleton() {
   return (
@@ -368,7 +365,7 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
 
 const ROUTE = {
   title: 'Mail desk',
-  purpose: 'Refund and operational-loss requests plus the reply SLA for chargeback and refund update mails.',
+  purpose: 'Approval mails to answer in their thread, and MyFatoorah refund updates and chargebacks: who was on queue, who replied and when.',
 }
 
 export default function MailDeskPage() {

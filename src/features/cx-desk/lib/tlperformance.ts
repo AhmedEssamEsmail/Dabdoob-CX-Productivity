@@ -632,11 +632,11 @@ export async function setupDesk() {
 }
 
 /**
- * installDeskTriggers: the 10-minute Gmail poll is a Vercel cron / pg_cron
- * schedule, not scriptable from here. Kept for API parity — returns the
- * schedule note the cron config carries.
+ * installDeskTriggers: the Gmail poll (10-minute trigger in legacy) is a
+ * pg_cron schedule at the 15-minute D-SCHED floor, not scriptable from here.
+ * Kept for API parity — returns the schedule note the cron config carries.
  */
 export async function installDeskTriggers() {
   await requireRole(['admin'])
-  return 'Installed: jobMailDesk every 10 minutes (scheduled via cron, not installable from the app).'
+  return 'Installed: jobMailDesk every 15 minutes (pg_cron per D-SCHED; not installable from the app).'
 }

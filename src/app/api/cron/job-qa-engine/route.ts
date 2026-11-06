@@ -1,12 +1,14 @@
 /**
- * Cron: jobQaQueue (Quality.js) — build the day's sample when the live engine
- * is on (qeBuildQueue_ 'day'), then import the Queue Log into qa_queue, then
- * CTL reminders. Auth matches the other cron routes: Bearer CRON_SECRET, no
- * session, or an admin.
+ * Cron: jobQualityDaily + jobQualityHistory (Quality.js) — build the day's
+ * sample when the live engine is on (qeBuildQueue_ 'day'), then import the
+ * Queue Log into qa_queue (qa_queue_import), the history step (Forms history
+ * when the SA creds exist + the Queue Log reconcile, qa_history_import), then
+ * CTL reminders (qa_ctl_reminders). Auth matches the other cron routes:
+ * Bearer CRON_SECRET, no session, or an admin.
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { apiError } from '@/features/shared/lib/api-error'
-import { qaQueueStep_, qaCtlReminders, qaReconcileQueueLog } from '@/features/cx-quality/lib/server'
+import { qaQueueStep_, qaCtlReminders, qaHistoryStep_ } from '@/features/cx-quality/lib/server'
 
 function cronOk(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
@@ -20,9 +22,9 @@ export async function GET(req: NextRequest) {
     const out: Record<string, unknown> = {}
     out.import = await qaQueueStep_('cron:qa-engine')
     try {
-      out.reconcile = await qaReconcileQueueLog()
+      out.history = await qaHistoryStep_('cron:qa-engine')
     } catch (e) {
-      out.reconcile = { skipped: (e as Error)?.message || String(e) }
+      out.history = { skipped: (e as Error)?.message || String(e) }
     }
     try {
       out.ctlReminders = await qaCtlReminders()

@@ -3,6 +3,7 @@ import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
 import { apiError } from '@/features/shared/lib/api-error'
 import { configAll } from '@/features/shared/platform/settings'
 import { backfillDefaults, runBackfill, BACKFILL_KINDS, type BackfillCursor } from '@/features/cx-productivity/jobs/backfill'
+import { assertWritable } from '@/features/shared/platform/viewas'
 
 export const maxDuration = 300
 
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
       force?: boolean
       budgetMs?: number
     }
+    await assertWritable()
     const cfg = await configAll()
     const dflt = backfillDefaults(cfg)
     const kinds = (body.kinds || BACKFILL_KINDS) as typeof BACKFILL_KINDS

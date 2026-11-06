@@ -6,6 +6,7 @@ import { configAll } from '@/features/shared/platform/settings'
 import { dqSetting_ } from '@/features/shared/lib/adapters'
 import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
 import { syncAllMirrors, type MirrorTable, MIRROR_TABLES } from '@/features/shared/jobs/mirrors'
+import { assertWritable } from '@/features/shared/platform/viewas'
 
 export const maxDuration = 300
 
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
         slice: sl ? rows.slice(Math.max(0, Number(sl[0]) || 0), Math.min(rows.length, Number(sl[1]) || 0)) : undefined,
       })
     }
+    await assertWritable()
     const tables = body.table ? ([body.table] as MirrorTable[]) : MIRROR_TABLES
     for (const t of tables) {
       if (!MIRROR_TABLES.includes(t)) {

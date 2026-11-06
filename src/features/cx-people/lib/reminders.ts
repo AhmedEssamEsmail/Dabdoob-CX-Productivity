@@ -25,7 +25,9 @@ import {
   normEmail_, pwKwDate_, pwKwTime_, pwMs_, pwToday_, pwDateOnly_,
 } from '@/features/shared/lib/adapters'
 import { updateRows } from '@/features/shared/platform/repo'
-import { pwDirectory } from '@/features/shared/platform/identity'
+import { pwDirectory, requireJobCaller } from '@/features/shared/platform/identity'
+import { dqStep_ } from '@/features/shared/jobs/steps'
+import type { JobEnv } from '@/features/shared/jobs/env'
 import { pwIsWorkingDate, pwAddWorkingDays, pwWorkingDaysBetween } from '@/features/shared/platform/calendar'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import { raisePopup } from '@/features/shared/platform/popups'
@@ -314,4 +316,27 @@ export async function runMeetingActionReminders_(nowMs?: number) {
     }
   }
   return { emailed }
+}
+
+// ------------------------------------------------ trigger entries (PeopleTriggers.js)
+
+/**
+ * PeopleTriggers.js job entries, verbatim: requireJobCaller_ + hbRun_('<job>',
+ * run*_) — here requireJobCaller() + dqStep_(env, '<job>', run*_). The
+ * /api/cron/* routes run the identical step inline; these are the
+ * verbatim-named public surface for callers that already hold a JobEnv.
+ */
+export async function jobMissedOneOnOneCheck(env: JobEnv) {
+  await requireJobCaller()
+  return dqStep_(env, 'missed_1on1_check', () => runMissedOneOnOneCheck_(Date.now()))
+}
+
+export async function jobTaskReminders(env: JobEnv) {
+  await requireJobCaller()
+  return dqStep_(env, 'task_reminders', () => runTaskReminders_(Date.now()))
+}
+
+export async function jobMeetingActionReminders(env: JobEnv) {
+  await requireJobCaller()
+  return dqStep_(env, 'meeting_reminders', () => runMeetingActionReminders_(Date.now()))
 }

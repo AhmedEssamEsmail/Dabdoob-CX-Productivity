@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* ------------------------------------------------------------------ *
  * TL performance — port of the legacy Desk page (TlPerformance.js):
@@ -247,6 +248,7 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
     setErr('')
     try {
       await onSave(v, n)
+      toast(`Rated ${LABEL[g]} ${v}.`)
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e))
     } finally {
@@ -393,6 +395,7 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
               setErr('')
               try {
                 setData(await api.otdSave(month, vals))
+                toast('OTD saved.')
               } catch (e) {
                 setErr(e instanceof Error ? e.message : String(e))
               } finally {
@@ -694,8 +697,8 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
 }
 
 const ROUTE = {
-  title: 'Team lead performance',
-  purpose: 'Team KPI, responsibility areas rated each week, projects, queue hours and reply tracking.',
+  title: 'TL performance',
+  purpose: "A team lead's week: team scores, responsibilities, projects against expectation, queue hours and mails to answer.",
 }
 
 export default function TlPerformancePage() {

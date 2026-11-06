@@ -258,6 +258,10 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
         try {
           const r = await prodFlagsStep_(env, [d])
           result.done.push({ date: d, kind: 'flags', rows: r.added ?? 0 })
+          // redetectProductivityFlags verbatim: re-detected dates are marked dirty so the
+          // next layers run recomputes their effective productivity (changed flags change
+          // effective statuses even when the intervals are untouched).
+          if (!dirty.includes(d)) dirty.push(d)
         } catch (e) {
           const de = described(e)
           result.failed.push({ date: d, kind: 'flags', error: de.message, hint: de.hint })

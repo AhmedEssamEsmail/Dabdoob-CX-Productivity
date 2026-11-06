@@ -5,6 +5,7 @@
  */
 import { NextResponse } from 'next/server'
 import { apiError } from '@/features/shared/lib/api-error'
+import { assertWritable } from '@/features/shared/platform/viewas'
 import {
   createFocusBlock,
   debugMyDay,
@@ -30,7 +31,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = ((await req.json().catch(() => ({}))) || {}) as Record<string, unknown>
-    switch (String(body.action || '')) {
+    const action = String(body.action || '')
+    if (action !== 'searchMail' && action !== 'debug') await assertWritable()
+    switch (action) {
       case 'searchMail':
         return NextResponse.json(await searchMyMail(String(body.query || '')))
       case 'focusBlock':

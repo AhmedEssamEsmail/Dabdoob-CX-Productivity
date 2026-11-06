@@ -41,8 +41,10 @@ const ee = {
 }
 
 // Dropdown options (G.getDropdownOptions / addDropdownOption — the shared picklists API).
+// The route answers { listKey, options } — getDropdownOptions returns the bare list.
 const G = {
-  getDropdownOptions: (listKey: string) => fetchJson('/api/options/' + encodeURIComponent(listKey)) as Promise<string[]>,
+  getDropdownOptions: (listKey: string) =>
+    (fetchJson('/api/options/' + encodeURIComponent(listKey)) as Promise<{ options: string[] }>).then((r) => r.options),
   addDropdownOption: (listKey: string, value: string) =>
     fetchJson('/api/options/' + encodeURIComponent(listKey), {
       method: 'POST',

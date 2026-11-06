@@ -17,7 +17,9 @@
 
 import { pwKwDate_, pwKwTime_ } from '@/features/shared/lib/adapters'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
-import { pwDirectory } from '@/features/shared/platform/identity'
+import { pwDirectory, requireJobCaller } from '@/features/shared/platform/identity'
+import { dqStep_ } from '@/features/shared/jobs/steps'
+import type { JobEnv } from '@/features/shared/jobs/env'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import { wcDay } from '@/features/shared/platform/calendar'
 import {
@@ -127,4 +129,17 @@ export async function runOneOnOneReminders_(nowMs?: number) {
   // Nothing in the next 24 h: look again in an hour (a booking made by hand in the sheet still gets seen).
   await setConfig(OO_REM_NEXT_CONFIG, String(isFinite(next) ? next : now + 3600000), undefined, actor)
   return { emailed, next: isFinite(next) ? new Date(next).toISOString() : '' }
+}
+
+// ------------------------------------------------- trigger entry (OneOnOneReminders.js)
+
+/**
+ * jobOneOnOneReminders (OneOnOneReminders.js), verbatim: requireJobCaller_ +
+ * hbRun_('oo_reminders', runOneOnOneReminders_) — the /api/cron/oo-reminders
+ * route runs the identical step inline; this is the verbatim-named entry for
+ * callers that already hold a JobEnv.
+ */
+export async function jobOneOnOneReminders(env: JobEnv) {
+  await requireJobCaller()
+  return dqStep_(env, 'oo_reminders', () => runOneOnOneReminders_(Date.now()))
 }

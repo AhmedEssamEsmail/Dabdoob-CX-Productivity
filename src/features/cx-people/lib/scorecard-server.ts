@@ -27,9 +27,11 @@ import {
 import { readStore } from '@/features/shared/platform/stores'
 import { db } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { requireRole, pwDirectory } from '@/features/shared/platform/identity'
+import { requireRole, requireJobCaller, pwDirectory } from '@/features/shared/platform/identity'
 import { getConfig, setConfig, configAll } from '@/features/shared/platform/settings'
-import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
+import { fetchWorkbookTabs, sheetCreds } from '@/features/shared/jobs/sheets'
+import { dqStep_ } from '@/features/shared/jobs/steps'
+import type { JobEnv } from '@/features/shared/jobs/env'
 import { described } from '@/features/shared/lib/errors'
 import {
   scAggregate_,
@@ -493,6 +495,29 @@ export async function scNightly_() {
   const out = []
   for (const m of months) out.push(await scRefreshMonth_(m, 'nightly'))
   return out
+}
+
+/**
+ * jobScorecardNightly (PeopleTriggers.js), verbatim: requireJobCaller_ +
+ * hbRun_('scorecard', scNightly_). The workbook read needs the Sheets service
+ * account; without creds the run degrades honestly ({configured:false,skipped})
+ * instead of writing error rows for a read that could never succeed. The
+ * /api/cron/scorecard-nightly route runs the identical step inline; this is the
+ * verbatim-named entry for callers that already hold a JobEnv.
+ */
+export async function jobScorecardNightly(env: JobEnv) {
+  await requireJobCaller()
+  return dqStep_(env, 'scorecard', async () => {
+    if (!sheetCreds()) {
+      return {
+        configured: false,
+        skipped:
+          'Google Sheets credentials are not configured (GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY).',
+        months: [] as unknown[],
+      }
+    }
+    return { configured: true, months: await scNightly_() }
+  })
 }
 
 /** Refresh now, for leaders: up to three months, each at most once a minute (the workbook read takes a few seconds). */

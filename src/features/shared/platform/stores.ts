@@ -108,5 +108,9 @@ export async function dqLastRun(job: string): Promise<string> {
   } catch {
     /* no config */
   }
+  /* Queue-side dqMarkRun_ stamps 'dq_last_run_<job>' in the script-cache
+     stand-in instead of config; read it before the health fallback. */
+  const stamped = cacheGet('dq_last_run_' + job)
+  if (stamped) return stamped
   return dqLastOkElsewhere(job)
 }

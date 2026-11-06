@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* ------------------------------------------------------------------ *
  * KPI logs — port of the legacy Desk page (KpiLogs.js): three hand-kept
@@ -154,6 +155,7 @@ function LogForm({
     void run.run(async () => {
       await api.kpiLogSave(kind, f)
       setF(blank)
+      toast('Logged.')
       onSaved()
     })
   }
@@ -181,6 +183,7 @@ function RemoveBtn({ kind, id, onDone }: { kind: string; id: string; onDone: () 
         onClick={() =>
           void run.run(async () => {
             await api.kpiLogRemove(kind, id)
+            toast('Removed.')
             onDone()
           })
         }
@@ -194,7 +197,7 @@ function RemoveBtn({ kind, id, onDone }: { kind: string; id: string; onDone: () 
 
 const ROUTE = {
   title: 'KPI logs',
-  purpose: 'Behaviour cases, unplanned leaves and SLA exclusions that the scorecard reads.',
+  purpose: "What no system records: HR-confirmed behaviour cases, unplanned leaves, and tickets left out of an area's SLA. The scorecard reads them.",
 }
 
 export default function KpiLogsPage() {

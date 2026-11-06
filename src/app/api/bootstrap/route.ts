@@ -3,6 +3,7 @@ import {
   currentUser, currentEmail, viewAsState, pendingPopupsFor, allOptions, appUrls,
   pwKwTime, pwKwDate, KUWAIT_TZ,
 } from '@/features/shared/platform'
+import { qaBootFlags } from '@/features/cx-quality/lib/server'
 
 
 /**
@@ -29,7 +30,11 @@ export async function GET() {
         appUrls: {},
       })
     }
-    const [popups, options, urls] = await Promise.all([pendingPopupsFor(email), allOptions(), appUrls()])
+    const [popups, options, urls, quality] = await Promise.all([
+      pendingPopupsFor(email), allOptions(), appUrls(),
+      /* qaBootFlags_ (Quality.js): auditor / disputeOwner / kbEditor for the Quality page gates. */
+      qaBootFlags(user),
+    ])
     const out: Record<string, unknown> = {
       user,
       popups,
@@ -41,7 +46,7 @@ export async function GET() {
       isOwner: st.owner,
       app: 'hub',
       appUrls: urls,
-      quality: undefined,
+      quality,
     }
     /* Legacy viewAs.canUse = the owner gate; target stays null when off. */
     out.viewAs = { canUse: st.owner, target: st.target || null }

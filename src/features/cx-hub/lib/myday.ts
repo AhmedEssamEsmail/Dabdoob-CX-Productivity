@@ -565,6 +565,7 @@ export async function asTlFollowUps_(nowMs: number): Promise<Record<string, unkn
 
 /** markFollowUpDone verbatim — one appended row; the cached part drops it. */
 export async function markFollowUpDone(threadId: string, lastAtMs: number): Promise<Record<string, unknown>> {
+  await assertWritable() // FollowUpDone is a core-store write: View as refused it via the wrapped sheet
   const owner = await requireAssistantOwner_()
   const id = String(threadId || '')
   if (!/^[0-9a-f]{8,32}$/i.test(id)) throw new Error('Unknown thread.')
@@ -753,6 +754,7 @@ export async function createFocusBlock(startIso: string, endIso: string, title?:
 
 /** setAssistantSettings verbatim — whitelisted keys only. */
 export async function setAssistantSettings(patch: Record<string, unknown>): Promise<Record<string, unknown>> {
+  await assertWritable() // Config writes sat behind the same wrapped core sheet
   const owner = await requireAssistantOwner_()
   for (const k of Object.keys(patch || {})) {
     if (!AS_SETTING_KEYS[k]) throw new Error('Unknown setting: ' + k)
@@ -774,6 +776,7 @@ export async function setAssistantSettings(patch: Record<string, unknown>): Prom
  * assistant_digest_installed config flag the digest cron route checks.
  */
 export async function installAssistantDigestTrigger(): Promise<string> {
+  await assertWritable() // Config writes sat behind the same wrapped core sheet
   const owner = await requireAssistantOwner_()
   await setConfig('assistant_digest_installed', true, 'My day: the 07:30 Kuwait morning digest is scheduled.', owner)
   return 'Morning digest scheduled for about 07:30 Kuwait time. Mail follows the mail_dry_run setting.'

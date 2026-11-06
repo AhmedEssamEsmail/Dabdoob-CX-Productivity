@@ -13,6 +13,7 @@ import { requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
 import { raisePopup } from '@/features/shared/platform/popups'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
+import { hbBeat, hbFlush } from '@/features/shared/platform/health'
 import { described } from '@/features/shared/lib/errors'
 import {
   dqAgingOpts_, dqAgentPerf_, dqBuildAging_, dqBuildChatQueue_, dqCheckpoints_, dqCountInflow_,
@@ -43,18 +44,23 @@ export async function dqLogRun_(job: string, started: number, status: string, in
   }, 'system:job')
 }
 
-/** dqStep_ verbatim: run one job step, log its failure, return null on error. */
+/** dqStep_ verbatim: run one job step, beat its heartbeat, log its failure, return null on error. */
 async function dqStep_<T>(name: string, fn: () => Promise<T>): Promise<T | null> {
   try {
-    return await fn()
+    const r = await fn()
+    const sk = (r as { skipped?: unknown } | null | undefined)?.skipped
+    hbBeat(name, 'ok', sk ? 'Skipped: ' + String(sk) : '')
+    return r
   } catch (e) {
-    await dqLogRun_(name, Date.now(), 'error', { error: e instanceof Error ? e.message : String(e) })
+    const msg = e instanceof Error ? e.message : String(e)
+    await dqLogRun_(name, Date.now(), 'error', { error: msg })
+    hbBeat(name, 'error', msg)
     return null
   }
 }
 
 /** dqMarkRun_ verbatim: 'job last finished ok' stamp for dqLastRun_. */
-async function dqMarkRun_(job: string): Promise<void> {
+export async function dqMarkRun_(job: string): Promise<void> {
   cachePut('dq_last_run_' + job, new Date().toISOString(), 60 * 60 * 24 * 30)
 }
 
@@ -97,9 +103,12 @@ export async function buildQueueAggregates_(now?: Date): Promise<Record<string, 
     if (chats.length) {
       const chatRow = dqBuildChatQueue_(chats, now, opts)
       res.queues.push(chatRow)
-    }
-  } catch {
+      const cr = chatRow as unknown as Record<string, unknown>
+      hbBeat('daily_report', cr.stale ? 'warn' : 'ok', cr.stale ? 'Freshchat tab not updated since ' + String(cr.source_as_of || 'unknown') : '')
+    } else hbBeat('daily_report', 'warn', 'Freshchat tab is empty')
+  } catch (e) {
     /* Freshchat store absent: the board just has no chat row. */
+    hbBeat('daily_report', 'error', 'Freshchat read failed: ' + (e instanceof Error ? e.message : String(e)))
   }
   await dqRewrite_('aging_open_tickets', res.aging)
   await dqRewrite_('agg_queue_now', res.queues)
@@ -132,14 +141,18 @@ export async function buildInflowAggregates_(opts?: { hourly?: boolean }): Promi
   let calls: unknown[][] = []
   try {
     chats = (await readStore('freshchat')).rows.map((r) => (Array.isArray(r.cols) ? r.cols : []) as unknown[])
-  } catch { /* no freshchat mirror */ }
+  } catch (e) {
+    hbBeat('daily_report', 'error', 'Freshchat read failed: ' + (e instanceof Error ? e.message : String(e)))
+  }
   try {
     calls = (await readStore('maqsam_calls')).rows.map((r) => {
       const c = (Array.isArray(r.cols) ? r.cols : []) as unknown[]
       // Mirror cols are D..K; the legacy Maqsam read maps them back to [id, start, state, direction, country].
       return [r.dedupe_key || c[0] || '', c[0], c[2], c[3], c[7]]
     })
-  } catch { /* no maqsam mirror */ }
+  } catch (e) {
+    hbBeat('daily_report', 'error', 'Maqsam read failed: ' + (e instanceof Error ? e.message : String(e)))
+  }
   const escChannel = String(dqSetting_(cfg, 'inflow_escalation_channel'))
   const since = dqAddDays_(fromKey, -1)
   const { data: tickets } = await db()
@@ -295,6 +308,7 @@ export async function dqCheckinTick_(now: Date | null, tick: Record<string, unkn
     if (now < cp.readAfter || have[cp.key]) continue
     if (now.getTime() - cp.at.getTime() > 6 * 3600000) continue
     if (tick && (!tick.fresh || (tick.aggAt && new Date(String(tick.aggAt)) < cp.readAfter))) {
+      hbBeat('queue_snapshot', 'warn', 'Check-in ' + cp.key + ' not captured yet: ' + String(tick.reason || 'aggregates built before the read time'))
       continue
     }
     live = live || (await dqCachedLive('agg_queue_now'))
@@ -310,6 +324,7 @@ export async function dqCheckinTick_(now: Date | null, tick: Record<string, unkn
       const { error } = await db().from('queue_snapshots').upsert(rows, { onConflict: 'snapshot_key,queue' })
       if (error) throw described(error, { table: 'queue_snapshots' })
       captured++
+      hbBeat('queue_snapshot', 'ok', 'Captured ' + cp.key)
       if (cp.date === today) todays = todays.concat(rows)
     }
   }
@@ -323,21 +338,25 @@ export async function dqCheckinTick_(now: Date | null, tick: Record<string, unkn
 /** jobDataTick verbatim: Freshdesk delta -> queue + aging -> inflow (hourly) -> check-in snapshots. */
 export async function jobDataTick(): Promise<Record<string, unknown>> {
   await requireJobCaller()
-  const now = new Date()
-  const sync = await dqStep_('freshdesk_sync', async () => {
-    if (!hasFreshdeskKey()) {
-      await dqLogRun_('freshdesk_sync', Date.now(), 'skipped', { note: 'FRESHDESK_API_KEY is not set; ticket state left as-is.' })
-      return { skipped: 'FRESHDESK_API_KEY is not set' }
+  try {
+    const now = new Date()
+    const sync = await dqStep_('freshdesk_sync', async () => {
+      if (!hasFreshdeskKey()) {
+        await dqLogRun_('freshdesk_sync', Date.now(), 'skipped', { note: 'FRESHDESK_API_KEY is not set; ticket state left as-is.' })
+        return { skipped: 'FRESHDESK_API_KEY is not set' }
+      }
+      return fdSyncIncremental_(150000)
+    })
+    const agg = await dqStep_('queue_aggregates', () => buildQueueAggregates_(new Date()))
+    const last = await dqLastRun('inflow')
+    if (!last || now.getTime() - new Date(last).getTime() > 55 * 60000) {
+      await dqStep_('inflow', () => buildInflowAggregates_({}))
     }
-    return fdSyncIncremental_(150000)
-  })
-  const agg = await dqStep_('queue_aggregates', () => buildQueueAggregates_(new Date()))
-  const last = await dqLastRun('inflow')
-  if (!last || now.getTime() - new Date(last).getTime() > 55 * 60000) {
-    await dqStep_('inflow', () => buildInflowAggregates_({}))
+    const captured = await dqStep_('checkin_tick', () => dqCheckinTick_(new Date(), dqTickState_(sync, agg as Record<string, unknown> | null)))
+    return { sync, agg: agg ? { aging: (agg as Record<string, unknown[]>).aging.length, queues: (agg as Record<string, unknown[]>).queues.length } : null, captured }
+  } finally {
+    await hbFlush()
   }
-  const captured = await dqStep_('checkin_tick', () => dqCheckinTick_(new Date(), dqTickState_(sync, agg as Record<string, unknown> | null)))
-  return { sync, agg: agg ? { aging: (agg as Record<string, unknown[]>).aging.length, queues: (agg as Record<string, unknown[]>).queues.length } : null, captured }
 }
 
 /** The refreshQueueNow internals (Aggregates.js:466): sync -> aggregates -> checkin capture. */
@@ -349,6 +368,7 @@ export async function refreshQueueNowJob(): Promise<{ sync: unknown; agg: Record
   const agg = await dqStep_('queue_aggregates', () => buildQueueAggregates_(new Date()))
   const tick = dqTickState_(sync, agg as Record<string, unknown> | null)
   await dqStep_('checkin_tick', () => dqCheckinTick_(new Date(), tick))
+  await hbFlush()
   return { sync, agg: agg as Record<string, unknown> | null, tick }
 }
 
@@ -356,17 +376,21 @@ export async function refreshQueueNowJob(): Promise<{ sync: unknown; agg: Record
 export async function jobNightlyAggregates(): Promise<Record<string, unknown>> {
   await requireJobCaller()
   const cfg = await cfg_()
-  await dqStep_('agent_aggregates', buildAgentAggregates_)
-  await dqStep_('inflow', () => buildInflowAggregates_({ hourly: true }))
-  await dqStep_('year_rollover', async () => {
-    const today = dqDateKey_(new Date(), cfg)
-    if (today.slice(5) >= '12-15') {
-      // Postgres stores are not per-year spreadsheets: nothing to provision.
-      // The `year` columns keep the legacy partitioning semantics.
-    }
-    return null
-  })
-  return { ok: true }
+  try {
+    await dqStep_('agent_aggregates', buildAgentAggregates_)
+    await dqStep_('inflow', () => buildInflowAggregates_({ hourly: true }))
+    await dqStep_('year_rollover', async () => {
+      const today = dqDateKey_(new Date(), cfg)
+      if (today.slice(5) >= '12-15') {
+        // Postgres stores are not per-year spreadsheets: nothing to provision.
+        // The `year` columns keep the legacy partitioning semantics.
+      }
+      return null
+    })
+    return { ok: true }
+  } finally {
+    await hbFlush()
+  }
 }
 
 export { DQ_SNAPSHOT_HEADERS }

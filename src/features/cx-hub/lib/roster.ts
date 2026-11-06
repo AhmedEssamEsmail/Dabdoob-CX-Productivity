@@ -23,6 +23,8 @@ import {
   updateRows,
 } from '@/features/shared/platform'
 import { assertWritable } from '@/features/shared/platform/viewas'
+import { requireJobCaller } from '@/features/shared/platform/identity'
+import { hbBeat, hbFlush } from '@/features/shared/platform/health'
 import { wcReset, dqParseDaysOff } from '@/features/shared/platform/calendar'
 import { dqLogRun_ } from '@/features/cx-queue/lib/jobs'
 import { normEmail_, dqKeyPart_, dqSetting_, formatDate_, type Cfg } from '@/features/shared/lib/adapters'
@@ -359,6 +361,29 @@ export async function syncRosterNow(): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin'])
   await assertWritable()
   return dqSyncRoster_(undefined, user.email)
+}
+
+/**
+ * jobRosterSync (RosterSync.js:265) verbatim: the daily scheduled run —
+ * dqStep_('roster_sync') semantics (ok/error heartbeat + dqLogRun_ on error,
+ * never rethrows) inside hbFlush_. GATED G1: no cron route exists until the
+ * HCT mirror (dq_hct) is populated; dqSyncRoster_ itself throws the adapter's
+ * honest error while the source is unconnected.
+ */
+export async function jobRosterSync(): Promise<Record<string, unknown> | null> {
+  await requireJobCaller()
+  try {
+    const r = await dqSyncRoster_()
+    hbBeat('roster_sync', 'ok', '')
+    return r
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    await dqLogRun_('roster_sync', Date.now(), 'error', { error: msg })
+    hbBeat('roster_sync', 'error', msg)
+    return null
+  } finally {
+    await hbFlush()
+  }
 }
 
 function dqRosterBase_(row: Record<string, unknown>): { role: string; tlEmail: string; known: boolean } {

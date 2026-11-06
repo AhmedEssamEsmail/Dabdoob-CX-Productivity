@@ -16,7 +16,8 @@
  *    port stores the plain value in Postgres (no formula concern). Compared
  *    after stripping a leading ' on legacy cells.
  *  - Health heartbeats: jobMailDesk on GAS always beats into the Health tab
- *    (hbRun_); the port only warns on a failed half.
+ *    (hbRun_); the port wraps the same way since the WP-15 fix — the job test
+ *    asserts the 'ok' row on both sides.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -623,11 +624,14 @@ describe('mdSyncSla_ / mdSyncApprovals_ / jobMailDesk (MailDesk.js)', () => {
     expect(deskProps().DQ_LAST_mail_desk).toBe(ISO(NOW))
     const cfg = (hubDb.tables.config || []).find((r) => r.key === 'dq_last_mail_desk')
     expect(cfg && cfg.value).toBe(ISO(NOW))
-    // Legacy hbRun_ always writes a Health row for mail_desk; the port only warns on failure.
+    // Legacy hbRun_ always writes a Health row for mail_desk; the port wraps the
+    // job in hbRun the same way (WP-15 fix): one row, last_status 'ok'.
     const legacyHealth = deskTable('Health').filter((r) => r.job === 'mail_desk')
     expect(legacyHealth.length).toBe(1)
     expect(legacyHealth[0].last_status).toBe('ok')
-    expect((hubDb.tables.health || []).filter((r) => r.job === 'mail_desk').length).toBe(0)
+    const portHealth = (hubDb.tables.health || []).filter((r) => r.job === 'mail_desk')
+    expect(portHealth.length).toBe(1)
+    expect(portHealth[0].last_status).toBe('ok')
   })
 
   it('jobMailDesk under view-as refuses identically', async () => {

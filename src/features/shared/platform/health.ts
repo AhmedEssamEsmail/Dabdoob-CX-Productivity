@@ -236,7 +236,18 @@ export async function hbFlush(): Promise<number> {
       const row = index[j]
       if (!row) {
         const p = plan || { job: j, system: 'hub', link: false, label: j, every: 1440, grace: 180 }
-        appends.push(hbRowFromPlan(p, q.at))
+        const o = hbRowFromPlan(p, q.at)
+        /* Legacy hbFlush_ writes the beat fields onto the appended row too —
+           without them the first-ever beat is silently dropped. */
+        o.last_run_at = q.at.toISOString()
+        o.last_status = q.status
+        o.last_note = q.note.slice(0, 500)
+        if (q.status === 'ok') o.last_ok_at = q.at.toISOString()
+        if (q.status === 'error') {
+          o.last_error_at = q.at.toISOString()
+          o.last_error = q.note.slice(0, 500)
+        }
+        appends.push(o)
         continue
       }
       const patch: Record<string, unknown> = {}

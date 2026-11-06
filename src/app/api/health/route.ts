@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireRole, getEcosystemHealth, setupHealth } from '@/features/shared/platform'
+import { assertWritable } from '@/features/shared/platform/viewas'
 
 
 /** getEcosystemHealth: the ecosystem health for Hub home / Admin (admin and TL). */
@@ -17,6 +18,7 @@ export async function GET() {
 export async function POST() {
   try {
     await requireRole(['admin'])
+    await assertWritable()
     return NextResponse.json({ message: await setupHealth() })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)

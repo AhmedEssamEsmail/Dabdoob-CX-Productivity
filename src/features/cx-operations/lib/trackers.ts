@@ -24,7 +24,7 @@
  *    at these sizes).
  */
 
-import { db, isTrue, newId, normHeader, readRows } from '@/features/shared/platform/repo'
+import { db, isTrue, newId, normHeader } from '@/features/shared/platform/repo'
 import { readStore } from '@/features/shared/platform/stores'
 import {
   actorEmail,
@@ -34,7 +34,6 @@ import {
 } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { addOption, allOptions, optionsFor, OPTION_MAX_LEN } from '@/features/shared/platform/options'
-import { getConfig, setConfig } from '@/features/shared/platform/settings'
 
 const TRACKERS_TABLE = 'trackers'
 const TRACKER_FIELDS_TABLE = 'tracker_fields'
@@ -278,7 +277,7 @@ const nativeIo: TrackerIo = {
       }),
     )
   },
-  async appendHeaders(t, headers) {
+  async appendHeaders(t) {
     // Native trackers were created with all their headers; nothing to append.
     return nativeIo.headers(t)
   },
@@ -848,7 +847,8 @@ export async function updateTrackerField(trackerId: string, fieldId: string, def
     throw new Error(children[0].label + ' depends on ' + f.label + ', so its kind of answer cannot change.')
   }
   const listed = d.type === 'dropdown' || d.type === 'dependent'
-  const { error } = await db()
+  // patchTrackerFieldRow_: fail closed when the (tracker_id, field_id) row is gone.
+  const { data: patched, error } = await db()
     .from(TRACKER_FIELDS_TABLE)
     .update({
       label: d.label,
@@ -860,7 +860,9 @@ export async function updateTrackerField(trackerId: string, fieldId: string, def
     .eq('tracker_id', t.id)
     .eq('field_id', f.id)
     .neq('active', false)
+    .select('field_id')
   if (error) throw new Error(error.message)
+  if (!patched || !patched.length) throw new Error('That field no longer exists. Reload the page.')
   await seedFieldChoices_(t, f.id, d, await actorEmail())
   return readTrackerData_(await trackerOrThrow_(t.id), user)
 }

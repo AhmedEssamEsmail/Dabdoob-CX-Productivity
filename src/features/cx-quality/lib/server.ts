@@ -14,8 +14,9 @@
 
 import { appendRow, cacheGet, cachePut, db, newId, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
-import { requireRole, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
+import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
+import { hbBeat, hbFlush, hbRun } from '@/features/shared/platform/health'
 import { getWorkingCalendar } from '@/features/shared/platform/calendar'
 import { optionsFor } from '@/features/shared/platform/options'
 import { resolvePopups } from '@/features/shared/platform/popups'
@@ -2060,7 +2061,27 @@ async function qaImportQueue_(): Promise<{ added: number; expired: number; noDat
   const note =
     res.added + ' added' + (res.expired ? ', ' + res.expired + ' no longer in the queue' : '') + (res.noDate ? ', ' + res.noDate + ' without an action date taken off' : '') +
     ' (' + (live ? 'own engine' : 'old app') + ')' + (parsed.unmatched.length ? '; not on the roster: ' + parsed.unmatched.join(', ') : '')
+  if (parsed.unmatched.length) hbBeat('qa_queue_import', 'warn', note)
   return { added: res.added, expired: res.expired, noDate: res.noDate, date: parsed.date, unmatched: parsed.unmatched, note }
+}
+
+/**
+ * dqStep_ verbatim (Stores.js): run one named job step — beat ok (a skipped run
+ * is healthy) or error, flush, return null on error so the chain continues.
+ */
+async function qaDqStep_<T>(job: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    const r = await fn()
+    hbBeat(job, 'ok', r && typeof r === 'object' && !Array.isArray(r) && (r as Row).skipped ? 'Skipped: ' + String((r as Row).skipped) : '')
+    return r
+  } catch (e) {
+    const msg = (e as Error)?.message || String(e)
+    console.log(job + ' failed: ' + msg)
+    hbBeat(job, 'error', msg)
+    return null
+  } finally {
+    await hbFlush()
+  }
 }
 
 /** importQaQueueNow verbatim: the Audit Desk's "Build / import the queue now". */
@@ -2072,61 +2093,66 @@ export async function importQaQueueNow(): Promise<Row> {
       const { qeBuildQueue } = await import('./engine-live')
       const b = await qeBuildQueue('day', user.email, { keepKeys: await qaStartedLogKeys_(), extraTaken: await qaRequestedTaken_() })
       const imp = await qaImportQueue_()
+      hbBeat('qa_queue_import', 'ok', '')
       return { added: imp.added, note: 'Built ' + b.queued + ' for ' + b.agents + ' agents; ' + imp.note }
     }
-    const imp = await qaImportQueue_()
-    return { added: imp.added, note: imp.note }
-  } catch (e) {
-    return { added: 0, note: 'Import failed: ' + ((e as Error)?.message || e) }
+    return (await qaDqStep_('qa_queue_import', () => qaImportQueue_())) || { added: 0, note: 'Import failed; see the Health tab.' }
+  } finally {
+    await hbFlush()
   }
 }
 
-/** qaQueueStep_ verbatim: build (when live) then import; used by the cron. */
-export async function qaQueueStep_(actor: string): Promise<Row> {
-  if (await qaEngineLive_()) {
-    const { qeBuildQueue } = await import('./engine-live')
-    const b = await qeBuildQueue('day', actor, { keepKeys: await qaStartedLogKeys_(), extraTaken: await qaRequestedTaken_() })
-    const imp = await qaImportQueue_()
-    imp.note = 'Built ' + b.queued + ' for ' + b.agents + ' agents (window ' + b.windowFrom + ' to ' + b.windowTo + '); ' + imp.note
-    imp.build = b as Row
-    return imp as Row
-  }
-  return qaImportQueue_() as Promise<Row>
+/** qaQueueStep_ verbatim + the jobQualityDaily dqStep_ wrap: build (when live) then import; used by the cron. */
+export async function qaQueueStep_(actor: string): Promise<Row | null> {
+  return qaDqStep_('qa_queue_import', async () => {
+    if (await qaEngineLive_()) {
+      const { qeBuildQueue } = await import('./engine-live')
+      const b = await qeBuildQueue('day', actor, { keepKeys: await qaStartedLogKeys_(), extraTaken: await qaRequestedTaken_() })
+      const imp = await qaImportQueue_()
+      imp.note = 'Built ' + b.queued + ' for ' + b.agents + ' agents (window ' + b.windowFrom + ' to ' + b.windowTo + '); ' + imp.note
+      imp.build = b as Row
+      return imp as Row
+    }
+    return qaImportQueue_() as Promise<Row>
+  })
 }
 
 /** qaCtlReminders_ verbatim: backfill CTL popups + one email a day per due/overdue CTL. */
 export async function qaCtlReminders(): Promise<Row> {
-  const today = qaToday_()
-  const dir = await pwDirectory()
-  const open = (await qaRows_('qa_ctls')).filter((c) => c.status === 'open')
-  const raised = await qaEnsureCtlPopups_()
-  const due = open.filter((c) => String(c.due_date) <= today && String(c.reminded_date) !== today)
-  for (const c of due) {
-    const late = String(c.due_date) < today
-    await notify(
-      {
-        to: String(c.tl_email), kind: 'qa_ctl_reminder', ref: String(c.ctl_id),
-        subject: (late ? 'Overdue CTL: ' : 'CTL due today: ') + dir.name(String(c.agent_email)),
-        intro: 'The CTL for ' + dir.name(String(c.agent_email)) + '\'s quality audit is ' + (late ? 'overdue (was due ' + c.due_date + ').' : 'due today.'),
-        where: 'Quality > CTLs',
-      },
-      'system:quality'
-    )
-  }
-  if (due.length) {
-    await qaTx_(async () => {
-      const ids: Record<string, boolean> = {}
-      due.forEach((c) => {
-        ids[String(c.ctl_id)] = true
+  await requireJobCaller() /* jobQualityDaily's requireJobCaller_: sessionless cron or admin — also gates the dispatcher hand-run */
+  return hbRun('qa_ctl_reminders', async () => {
+    const today = qaToday_()
+    const dir = await pwDirectory()
+    const open = (await qaRows_('qa_ctls')).filter((c) => c.status === 'open')
+    const raised = await qaEnsureCtlPopups_()
+    const due = open.filter((c) => String(c.due_date) <= today && String(c.reminded_date) !== today)
+    for (const c of due) {
+      const late = String(c.due_date) < today
+      await notify(
+        {
+          to: String(c.tl_email), kind: 'qa_ctl_reminder', ref: String(c.ctl_id),
+          subject: (late ? 'Overdue CTL: ' : 'CTL due today: ') + dir.name(String(c.agent_email)),
+          intro: 'The CTL for ' + dir.name(String(c.agent_email)) + '\'s quality audit is ' + (late ? 'overdue (was due ' + c.due_date + ').' : 'due today.'),
+          where: 'Quality > CTLs',
+        },
+        'system:quality'
+      )
+    }
+    if (due.length) {
+      await qaTx_(async () => {
+        const ids: Record<string, boolean> = {}
+        due.forEach((c) => {
+          ids[String(c.ctl_id)] = true
+        })
+        const fresh = (await qaRows_('qa_ctls')).filter((c) => ids[String(c.ctl_id)])
+        fresh.forEach((c) => {
+          c.reminded_date = today
+        })
+        await qaUpsertIn_('qa_ctls', ['ctl_id'], fresh)
       })
-      const fresh = (await qaRows_('qa_ctls')).filter((c) => ids[String(c.ctl_id)])
-      fresh.forEach((c) => {
-        c.reminded_date = today
-      })
-      await qaUpsertIn_('qa_ctls', ['ctl_id'], fresh)
-    })
-  }
-  return { reminded: due.length, popups: raised }
+    }
+    return { reminded: due.length, popups: raised }
+  })
 }
 
 /** qaEnsureCtlPopups_ verbatim: raise the qa_ctl_due popup for each open CTL that has none. */
@@ -2157,8 +2183,9 @@ async function qaEnsureCtlPopups_(): Promise<number> {
   return missing.length
 }
 
-/** qaEnsureCtlPopups export (the job wrapper). */
+/** qaEnsureCtlPopups export (the job wrapper): requireJobCaller_ — dispatcher hand-run is admin-or-cron only. */
 export async function qaEnsureCtlPopups(): Promise<Row> {
+  await requireJobCaller()
   return { raised: await qaEnsureCtlPopups_() }
 }
 
@@ -2169,6 +2196,7 @@ export async function qaEnsureCtlPopups(): Promise<Row> {
 /** backfillQaSampleBasis verbatim: writes sample_basis on every audit that has none. */
 export async function backfillQaSampleBasis(): Promise<string> {
   await qaRequireRole_(['admin'])
+  await assertWritable()
   const out = await qaTx_(async () => {
     const rows = (await qaRows_('qa_audits')).filter((a) => String(a.kind || 'audit') === 'audit' && !String(a.sample_basis || '').trim())
     const by: Record<string, number> = {}
@@ -2186,6 +2214,7 @@ export async function backfillQaSampleBasis(): Promise<string> {
 /** backfillQaInteractionDates verbatim: copies the queue row's interaction_at onto audits that have none. */
 export async function backfillQaInteractionDates(): Promise<string> {
   await qaRequireRole_(['admin'])
+  await assertWritable()
   const out = await qaTx_(async () => {
     const at: Record<string, string> = {}
     ;(await qaRows_('qa_queue')).forEach((q) => {
@@ -2204,19 +2233,65 @@ export async function backfillQaInteractionDates(): Promise<string> {
 }
 
 /**
- * qaImportHistory_ (QaMigrate.js): real row-mapping of the old workbook's tabs
- * into the qa_* tables. Admin-only; implemented in migrate.ts.
+ * importQualityAuditHistory (QaMigrate.js): the old workbook's response tabs
+ * into qa_audits. requireJobCaller_ verbatim: a sessionless cron run or an
+ * admin; the Google-Sheets read itself stays env-gated (GOOGLE_* creds, G5).
  */
 export async function qaImportHistory(opts?: { budgetMs?: number; secret?: string }): Promise<Row> {
-  const user = await qaRequireRole_(['admin'])
-  await assertWritable()
+  await requireJobCaller()
   const { qaImportHistory_ } = await import('./migrate')
-  return qaImportHistory_(user.email, opts)
+  return qaImportHistory_(await actorEmail(), opts)
 }
 
-/** qaReconcileQueueLog_ (QaMigrate.js): mark log rows audited / expired from qa_audits. */
+/**
+ * qaReconcileQueueLog_ (QaMigrate.js): mark log rows audited / expired from
+ * qa_audits. Runs inside jobQualityHistory's qa_history_import step in legacy,
+ * so the gate is requireJobCaller_ (the sessionless cron must reach it) and the
+ * heartbeat name is the step's.
+ */
 export async function qaReconcileQueueLog(): Promise<Row> {
+  await requireJobCaller()
+  return hbRun('qa_history_import', async () => {
+    const { qaReconcileQueueLog_ } = await import('./migrate')
+    return qaReconcileQueueLog_()
+  })
+}
+
+/**
+ * jobQualityHistory's dqStep_('qa_history_import', …) verbatim: the two
+ * Google-Forms response sheets into qa_audits — skipped while the
+ * GOOGLE_SERVICE_ACCOUNT_* creds are absent (G5) — then the Queue Log
+ * reconcile. Called by the cron; resumable and idempotent like the trigger.
+ */
+export async function qaHistoryStep_(actor: string): Promise<Row | null> {
+  return qaDqStep_('qa_history_import', async () => {
+    const { qaImportHistory_, qaReconcileQueueLog_ } = await import('./migrate')
+    const h: Row =
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY
+        ? await qaImportHistory_(actor, { budgetMs: 270000, secret: String((await getConfig('qa_history_secret', '')) || '') })
+        : { done: true, imported: 0, skipped: 0, unmatched: {}, notes: ['History sheets not read: GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY are not configured'], note: '' }
+    const r = (await qaReconcileQueueLog_()) as Row
+    h.note =
+      String(h.note || '') +
+      (r.skipped ? ' Reconcile skipped: ' + r.skipped + '.' : ' Reconcile: ' + r.updated + ' queue rows marked audited (' + r.revived + ' were expired).')
+    if (!h.done) hbBeat('qa_history_import', 'warn', 'History import ran out of time; it resumes tomorrow (or run importQualityAuditHistory).')
+    return h
+  })
+}
+
+/** restartQualityAuditHistory verbatim: forget the history cursors so the next import rescans both sheets. */
+export async function restartQualityAuditHistory(): Promise<string> {
   await qaRequireRole_(['admin'])
-  const { qaReconcileQueueLog_ } = await import('./migrate')
-  return qaReconcileQueueLog_()
+  await assertWritable()
+  const { restartQualityAuditHistory_ } = await import('./migrate')
+  return restartQualityAuditHistory_()
+}
+
+/** checkQaEngineSettings verbatim: the settings the engine will use (defaults + qa_engine_settings), validated. */
+export async function checkQaEngineSettings(): Promise<string> {
+  await qaRequireRole_(['admin'])
+  const S = await qeSettings_()
+  const msg = 'qa_engine_settings OK. Effective: ' + JSON.stringify(S)
+  console.log(msg)
+  return msg
 }

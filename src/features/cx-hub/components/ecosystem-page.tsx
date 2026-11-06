@@ -2559,7 +2559,7 @@ function Scene3D(n: { health: any; onSelect: (id: string) => void }) {
 // ---------------------------------------------------------------------------
 const Kb = 300 * 1e3
 
-const Lr = (n: string) => `/${n}`
+const Lr = (n: string) => `#/${n}`
 
 const Hr = 'hub'
 

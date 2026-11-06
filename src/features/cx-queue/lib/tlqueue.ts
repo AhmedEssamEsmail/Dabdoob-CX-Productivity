@@ -10,6 +10,8 @@ import { configAll } from '@/features/shared/platform/settings'
 import { requireJobCaller } from '@/features/shared/platform/identity'
 import { readStore } from '@/features/shared/platform/stores'
 import { described } from '@/features/shared/lib/errors'
+import { hbRun } from '@/features/shared/platform/health'
+import { dqMarkRun_ } from './jobs'
 import type { TlsShift } from './index'
 import { dqDateKey_, dqParseTs_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { SCH_TABLES } from './scheduler'
@@ -158,13 +160,21 @@ export async function rebuildTlQueueMetrics(dates: string[]): Promise<Record<str
   return { shifts: shiftRows.length, days: dailyRows.length }
 }
 
-/** jobTlQueueMetrics verbatim name: the scheduled daily rebuild (yesterday, Kuwait). */
+/** jobTlQueueMetrics verbatim name: the scheduled daily rebuild (yesterday, Kuwait) — hbRun_ + dqMarkRun_ as TlQueue.js:470. */
 export async function jobTlQueueMetrics(): Promise<Record<string, unknown>> {
   await requireJobCaller()
   const cfg = (await configAll()) as Cfg
   const today = dqDateKey_(new Date(), cfg)
   const yesterday = dqAddDaysLocal(today, -1)
-  return rebuildTlQueueMetrics([yesterday])
+  return hbRun(
+    'tl_queue_metrics',
+    async () => {
+      const n = await rebuildTlQueueMetrics([yesterday])
+      await dqMarkRun_('tl_queue_metrics')
+      return n
+    },
+    (r) => String(r.shifts) + ' shifts, ' + String(r.days) + ' days'
+  )
 }
 
 function dqAddDaysLocal(key: string, n: number): string {

@@ -46,6 +46,8 @@ const HANDLERS: Record<string, (a: unknown[]) => Promise<unknown>> = {
   backfillQaInteractionDates: () => qa.backfillQaInteractionDates(),
   qaImportHistory: (a) => qa.qaImportHistory((a[0] || {}) as never),
   qaReconcileQueueLog: () => qa.qaReconcileQueueLog(),
+  restartQualityAuditHistory: () => qa.restartQualityAuditHistory(),
+  checkQaEngineSettings: () => qa.checkQaEngineSettings(),
   qaCtlReminders: () => qa.qaCtlReminders(),
   qaEnsureCtlPopups: () => qa.qaEnsureCtlPopups(),
 }
