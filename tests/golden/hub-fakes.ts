@@ -224,18 +224,74 @@ function mkQuery(table: string) {
 }
 
 export function supabaseModule() {
-  return { supabase: { from: (t: string) => mkQuery(t) } }
+  // The real module exports `supabase` and `createClient` (auth.ts:getViewAsUser
+  // uses the latter); the mock must cover both or consumers see undefined.
+  return {
+    supabase: { from: (t: string) => mkQuery(t) },
+    createClient: () => ({ from: (t: string) => mkQuery(t) }),
+  }
 }
 
+const fakeAuthClient = async () => ({
+  auth: {
+    getUser: async () => ({
+      data: { user: hubDb.userEmail ? { email: hubDb.userEmail } : null },
+      error: null,
+    }),
+  },
+})
+
+/**
+ * The whole public surface of src/features/shared/lib/auth.ts — a vi.mock
+ * factory replaces the module wholesale, so any export missing here becomes
+ * `undefined` for consumers that still import from 'lib/auth' (the earlier
+ * "requireRole is not a function" regression). getUser/requireAuth/
+ * getViewAsUser mirror their real bodies; requireRole delegates to the single
+ * real implementation in platform/identity.ts (the lazy import keeps it out of
+ * the mock-factory cycle, and identity resolves createAuthClient + supabase
+ * through these same fakes at call time).
+ */
 export function authModule() {
   return {
-    createAuthClient: async () => ({
-      auth: {
-        getUser: async () => ({
-          data: { user: hubDb.userEmail ? { email: hubDb.userEmail } : null },
-          error: null,
-        }),
-      },
-    }),
+    createAuthClient: fakeAuthClient,
+    getUser: async () => {
+      const supabase = await fakeAuthClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      return user
+    },
+    requireAuth: async () => {
+      const supabase = await fakeAuthClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error('Unauthorized')
+      return user
+    },
+    requireRole: async (roles: string[]) =>
+      (await import('@/features/shared/platform/identity')).requireRole(roles),
+    getViewAsUser: async (userEmail: string) => {
+      // Same query the real getViewAsUser runs (lib/auth.ts) — mkQuery is
+      // Record<string, unknown>, so the chain needs a shape cast.
+      interface Q {
+        select(c: string): Q
+        eq(c: string, v: unknown): Q
+        order(c: string, o: { ascending: boolean }): Q
+        limit(n: number): Q
+        single(): Promise<{ data: Record<string, unknown> | null; error: unknown }>
+      }
+      const { data: viewAsRecord } = await (mkQuery('view_as') as unknown as Q)
+        .select('*')
+        .eq('owner_email', userEmail)
+        .eq('action', 'start')
+        .order('submitted_at', { ascending: false })
+        .limit(1)
+        .single()
+      if (viewAsRecord && viewAsRecord.target_email) {
+        return viewAsRecord.target_email as string
+      }
+      return null
+    },
   }
 }

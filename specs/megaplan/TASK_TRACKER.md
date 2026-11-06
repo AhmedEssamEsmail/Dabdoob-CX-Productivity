@@ -7,10 +7,10 @@
 
 | WP | Scope | Depends | Files | Status | Claimed-by | Evidence/Notes |
 |---|---|---|---|---|---|---|
-| WP-00 | Fix auth-mock regression (`requireRole` etc. in `authModule()`), audit all golden fakes | — | `tests/golden/hub-fakes.ts`, `desk-fakes.ts`, `ops-fakes.ts`, `fixtures-people.js` | pending | — | vitest must go 24-fail → green |
-| WP-01 | tsc: heatmap.ts:230 null-safety | — | `src/features/cx-queue/lib/heatmap.ts` | pending | — | 4 tsc errors total; ops-fakes covered by WP-00 |
-| WP-02 | eslint: prefer-const heatmap-engine.ts:262 | — | `src/features/cx-queue/lib/heatmap-engine.ts` | pending | — | 1 error; 295 warnings out of scope |
-| WP-03 | Build + dev smoke + e2e baseline → `audits/w0-baseline.md` | WP-00,01,02 | none (report only) | pending | — | |
+| WP-00 | Fix auth-mock regression (`requireRole` etc. in `authModule()`), audit all golden fakes | — | `tests/golden/hub-fakes.ts`, `desk-fakes.ts`, `ops-fakes.ts`, `fixtures-people.js` | done | wave0-agent-A | vitest 41 files/817 tests green; tsc 0 errors. Regression already fixed in HEAD (requireRole unified in `platform/identity`, port imports via `platform`); hardened `authModule()`→full `lib/auth` surface (requireRole lazy-delegates to real identity.ts; getUser/requireAuth/getViewAsUser vs hubDb) + `createClient` added to `supabaseModule()`. ops-fakes/desk-fakes/fixtures-people audited — no mock gaps; ops-fakes tsc errs absent at HEAD |
+| WP-01 | tsc: heatmap.ts:230 null-safety | — | `src/features/cx-queue/lib/heatmap.ts` | done | wave0-agent-B | `npx tsc --noEmit` → 0 errors; `sh.getLastColumn ? … : 0` guard already at :230 in HEAD (84ba588) — baseline err count stale; ops-fakes errs also absent from HEAD |
+| WP-02 | eslint: prefer-const heatmap-engine.ts:262 | — | `src/features/cx-queue/lib/heatmap-engine.ts` | done | wave0-agent-C | `npx eslint .` → 0 errors, 294 warnings; `ue` already `const` at :262 in HEAD (baseline err count stale) |
+| WP-03 | Build + dev smoke + e2e baseline → `audits/w0-baseline.md` | WP-00,01,02 | none (report only) | done | orchestrator | build ✓ 154 pages; smoke 11×200/3×401; e2e 12/85 — auth-fixture gap → WP-F1 |
 
 ## Wave 1 — Module audits (parallel)
 
@@ -73,7 +73,7 @@
 
 | WP | Module | Scope | Depends | Status | Claimed-by | Evidence/Notes |
 |---|---|---|---|---|---|---|
-| _(none yet — audit WPs append `WP-F1`, `WP-F2`, … here)_ | | | | | | |
+| WP-F1 | e2e auth path: Playwright specs can't log in (`tl@example.com`/`password` — stub login gone post-`84ba588`); needs test Supabase users or login seam | — | `e2e/`, auth config | pending | — | 73/85 e2e failures, single root cause (WP-03 baseline) |
 
 ## Blocked register (mirrors `../cx-hub/BLOCKED_TASKS.md`; keep in sync)
 
@@ -87,3 +87,4 @@
 ## Log
 
 - 2026-11-06 — Megaplan created. Gate baseline: tsc 4 errors · vitest 24 fail/504 pass · eslint 1 err+295 warn. Root causes identified: stale `authModule()` mock (requireRole moved to `shared/lib/auth`), heatmap null-safety, unfinished ops/desk golden scaffolds.
+- 2026-11-06 (later) — **Re-baseline:** commits `84ba588`→`b051bb8` landed in parallel (requireRole unified into `platform/identity`, `qa-shared2` deleted, verbatim queue re-ports, `desk.test.ts` 130 tests + `operations.test.ts` created, FALLBACK_BOOT dev-gated). WP-20/WP-21 scope may be substantially owner-done — agents must verify against HEAD, not the review text. WP-02 verified `done`: eslint already 0 errors at execution.

@@ -2,6 +2,8 @@
 
 > Detailed review of the 8 deprecated Google Apps Script apps (`C:\Users\AHMED\KPIs\*_deprecated`, the product spec) against `C:\Users\AHMED\KPIs\CX-Hub`. Verified 2026-11-06 by direct code inspection + running the gates. Evidence conventions follow `../legacy-parity/README.md`: `[V]` verified in repo, `[B]` read from a bundle extract under `.devin/work/extract/`, `[H]` hypothesis for a wave-1 audit to confirm.
 
+> **Re-baseline note:** owner commits `84ba588`→`b051bb8` landed in parallel during this review and already resolved several findings (`desk.test.ts` 130 tests + `operations.test.ts` created, `requireRole` unified into `platform/identity`, `qa-shared2` deleted, verbatim queue board/scheduler/analytics/aging re-ports, `FALLBACK_BOOT` dev-gated). Wave-1 audits must re-verify every claim against HEAD rather than trusting this document's text.
+
 ## 1. Method
 
 1. Enumerated every registry route, every legacy public server function (no trailing underscore = browser-callable; shard docs `../cx-hub/10..90-*.md` carry the verbatim lists), every HB_PLAN job, every store/tab, every integration, every shell/platform aspect.
