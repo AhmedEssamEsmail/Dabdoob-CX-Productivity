@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS mail_approval_log (
   by text NOT NULL DEFAULT '',
   at timestamptz,
   sent_status text NOT NULL DEFAULT '',
-  to text NOT NULL DEFAULT '',
+  "to" text NOT NULL DEFAULT '',
   cc text NOT NULL DEFAULT '',
   error text NOT NULL DEFAULT ''
 );

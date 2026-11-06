@@ -4,19 +4,30 @@ Everything that cannot be completed autonomously lands here. Each entry: the iss
 
 ---
 
-## B1 — Supabase DDL access (pg_cron + migrations) — PARTIALLY RESOLVED 2026-11-05
+## B1 — Supabase DDL access — RESOLVED 2026-11-06
 
-**Verified working:** `.env.local` service-role credentials reach project `uugeyulccyytvgcabzzx` via PostgREST. 53 live tables enumerated — `qa_*` (7), `sc_*`, `kpi_*`, `md`, `tlp`, `tls`, `team_structure`, `weekly_schedule`, `days_off`, `esc_seen` already exist out-of-band beyond `supabase/migrations/*.sql` (only 4 files). Read/verify/data ops are unblocked without MCP.
+**Resolved:** Supabase MCP authenticated (`database:write`). Applied via `apply_migration`, all recorded in `supabase_migrations.schema_migrations`:
 
-**Still needed:** DDL — no `rpc/` functions are exposed, the `supabase` CLI account (logged in, `projects list` empty) has no project access, and no `DATABASE_URL`/password/pooler string exists in any env file (checked 2026-11-05).
+| Migration | Result |
+|---|---|
+| `005_hub` | ✅ follow_up_done, cache_stamps, roster columns |
+| `006_quality` | ✅ qa_forms/ctls/disputes/calibrations/kb_gaps + qe_* (5) |
+| `007_queue` | ✅ 22 queue/sched/tlp/heatmap tables + app_all policies |
+| `002_platform_gap` | ✅ options, popups, mail_log, holidays, one_on_one_schedule — **remote never received 002** |
+| `003_domain_gap` | ✅ kpi_behaviour_log, kpi_leave_log, tlp_team, tlp_area_metrics, dq_aging_flags, queue_submissions — **remote never received these either** |
+| `008a_rename_legacy_sc` | ✅ colliding empty `sc_*` tables (unrelated `agent_email`/`behaviour_score` shape) renamed to `*_legacy_pre008` |
+| `008_people` | ✅ 19 people/actions/1:1/meeting/scorecard tables |
+| `009_operations` | ✅ trackers + 5 built-in seeds |
+| `010_desk` | ✅ 7 desk tables (fixed `"to"` quoting bug in file) |
+| `011_rls_policies` | ✅ RLS enabled + `app_all` policies on all 70 module tables |
+| `012_pg_cron` / `013_pg_net` | ✅ extensions installed (pg_cron 1.6.4) |
+| `014_fix_tickets_schema` | ✅ colliding JSON-shape `tickets` (0 rows) renamed to `tickets_legacy_pre003`; real FD_TICKET_HEADERS schema created |
 
-**Pending migrations `005`–`010` are ready to apply** — consolidated at `supabase/APPLY_PENDING_MIGRATIONS.sql` (1,173 lines, all `IF NOT EXISTS`, safe to re-run). Options:
-1. **Fastest:** paste `supabase/APPLY_PENDING_MIGRATIONS.sql` into Dashboard → SQL Editor → Run (~1 min), then enable `pg_cron` (Database → Extensions) while there, or
-2. Hand over the database password / pooler connection string → `supabase db push` or `psql`, or
-3. A CLI login / PAT on an account owning this project (`supabase link` then `db push`), or
-4. The supabase MCP server restored.
+Remote-only operations recorded in `supabase/migrations/011_remote_reconcile.sql` for fresh-environment replay. `supabase/APPLY_PENDING_MIGRATIONS.sql` is **applied** — kept as reference only.
 
-**Status:** DDL blocked; reads unblocked; apply file prepared.
+**Verified after apply:** 119 public tables, all RLS-enabled; `qa_audits`/`health` match expected schemas exactly; pg_cron 1.6.4 + pg_net installed.
+
+**Remaining (moved to B5):** actually scheduling `cron.schedule(...)` jobs needs the deployed app URL + `CRON_SECRET`.
 
 ---
 
@@ -73,13 +84,22 @@ Everything that cannot be completed autonomously lands here. Each entry: the iss
 
 ---
 
-## B5 — Cron secret & schedule verification
+## B5 — Cron secret & job scheduling
 
-**Issue:** `vercel.json` cron entries call routes protected by `CRON_SECRET`; sub-hourly jobs must move to `pg_cron` (D-SCHED). Whether `CRON_SECRET` is set in the Vercel project env, and the current deploy's cron list, can't be verified without Vercel access.
+**Issue:** `pg_cron` 1.6.4 + `pg_net` are now installed remotely, but scheduling the actual `cron.schedule(...)` jobs needs two things that aren't confirmed:
 
-**Fix:** confirm `CRON_SECRET` exists in Vercel env; after pg_cron lands, disable the moved entries in `vercel.json` (code-side, but a deploy is needed to take effect).
+1. `CRON_SECRET` in Vercel env (absent locally) — the jobs call `/api/cron/*` via `net.http_get` with the secret header; scheduling them without a matching secret means every run 401s.
+2. The canonical app base URL for `net.http_get('<url>/api/cron/...')` — likely the production Vercel URL; confirm before baking into SQL.
 
-**Status:** pending — verify when B1 is unblocked.
+**Job list ready to schedule once those exist** (from `007_queue.sql` + people crons, all 15-min/daily per D-SCHED, no 1-min cadences):
+- `jobDataTick` `*/15 * * * *` → `/api/cron/job-data-tick`
+- `jobNightlyAggregates` `30 6 * * *` → `/api/cron/job-nightly-aggregates`
+- `jobTlQueueMetrics` `15 0 * * *` → `/api/cron/job-tl-queue-metrics`
+- People crons (`oo-reminders`, `meeting-reminders`, etc. — see `src/app/api/cron/`)
+
+**Fix:** set `CRON_SECRET` in Vercel env + confirm the app URL, then the schedule SQL is a one-shot `cron.schedule` batch.
+
+**Status:** pending — infrastructure ready, needs the two secrets/URL.
 
 ---
 
