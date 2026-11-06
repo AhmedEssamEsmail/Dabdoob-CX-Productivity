@@ -141,6 +141,20 @@ function mkQuery(table: string) {
       filters.push((r) => r[col] === v || String(r[col]) === String(v))
       return builder
     },
+    neq(col: string, v: unknown) {
+      filters.push((r) => !(r[col] === v || String(r[col]) === String(v)))
+      return builder
+    },
+    in(col: string, vs: unknown[]) {
+      const set = (vs || []).map(String)
+      filters.push((r) => set.indexOf(String(r[col])) !== -1)
+      return builder
+    },
+    or() {
+      // supabase .or(expr) — not needed by the ported paths under test; kept as a no-op so
+      // chained calls do not blow up when a code path adds one.
+      return builder
+    },
     order(col: string, opts?: { ascending?: boolean }) {
       orderCol = col
       orderAsc = !opts || opts.ascending !== false
