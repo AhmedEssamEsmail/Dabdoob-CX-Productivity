@@ -21,7 +21,7 @@ const delta = (t: number | null) => (t === null ? '–' : t > 0 ? `+${t}` : t < 
 const draftOf = (t: any) => ({ agents: t.agents === null ? '' : String(t.agents), status: t.status || '', note: t.note || '', correct: t.openCorrected !== null && t.openCorrected !== undefined, openCorrected: t.openCorrected === null || t.openCorrected === undefined ? '' : String(t.openCorrected) })
 
 export function CheckinsPage({ route }: { route: { title: string } }) {
-  const [params] = useState(useHashParams)
+  const params = useHashParams()
   const [slot, setSlot] = useState(() => params.get('slot') ?? '')
   const { data: a, error, reload, setData } = useSe('queue.checkins', () => fetchJson('/api/queue/checkins-page' + (slot ? '?slot=' + slot : '')), [slot])
   const [draft, setDraft] = useState<Record<string, any>>({})

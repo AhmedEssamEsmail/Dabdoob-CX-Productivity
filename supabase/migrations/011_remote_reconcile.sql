@@ -192,6 +192,31 @@ BEGIN
   END LOOP;
 END $$;
 
+-- ---------- Base-table policies (remote op 015, applied 2026-11-06) ----------
+-- The parity audit found the app's data layer (createClient -> anon key)
+-- locked out of every pre-existing table: RLS enabled, zero policies, so
+-- bootstrap resolved role:'unknown' for all sessions. Same app_all posture
+-- applied here (route-level requireRole remains the real boundary).
+DO $$
+DECLARE t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY[
+    'roster','config','view_as','refresh_log','health',
+    'prod_intervals','prod_flags','prod_flag_log','prod_daily_layers','prod_window_hist',
+    'prod_flag_analytics','prod_quarterly_reports',
+    'prod_tph_days','prod_tph_tasks','prod_tph_cases','prod_tph_touches','prod_tph_calls',
+    'qa_flags','qa_flag_log','qa_daily','qa_months','qa_queue','qa_audits','qa_volume',
+    'fcr_daily','fcr_weekly','fcr_monthly',
+    'kpi_logs','kpi_ol_cases','kpi_unplanned_leave',
+    'headcount','team_structure','schedule','days_off','weekly_schedule','tls','tlp','md',
+    'fd_activities','maqsam_calls','freshchat'
+  ]
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS app_all ON public.%I', t);
+    EXECUTE format('CREATE POLICY app_all ON public.%I FOR ALL USING (true) WITH CHECK (true)', t);
+  END LOOP;
+END $$;
+
 -- ---------- Extensions needed by the scheduled-job layer ----------
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;

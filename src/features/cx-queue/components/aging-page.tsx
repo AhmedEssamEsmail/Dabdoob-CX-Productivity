@@ -48,7 +48,7 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
 
 export function AgingPage({ route }: { route: { title: string } }) {
   const { data: n, error, reload } = useSe('queue.aging', () => fetchJson('/api/queue/aging'))
-  const [params] = useState(useHashParams)
+  const params = useHashParams()
   const deep = params.has('unassigned') || params.has('flagged') || params.has('ticket')
   const [band, setBand] = useState<number | null>(null)
   const [top, setTop] = useState<number | null>(deep ? 0 : null)
