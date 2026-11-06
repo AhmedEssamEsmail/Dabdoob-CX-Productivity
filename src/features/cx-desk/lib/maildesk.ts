@@ -18,7 +18,7 @@
 import { db, newId } from '@/features/shared/platform/repo'
 import { readStore, dqLastRun } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'
-import { normEmail, pwDirectory, requireRole, type Directory } from '@/features/shared/platform/identity'
+import { normEmail, pwDirectory, requireJobCaller, requireRole, type Directory } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { pwIso, pwKwDate, pwKwTime, pwToday, dqAddDays } from '@/features/shared/platform/time'
 import { getGmailReadAdapter, sendGmailReply } from '@/features/shared/platform/mail'
@@ -475,6 +475,7 @@ export async function mdSyncApprovals_(): Promise<string> {
 
 /** The 10-minute job. A failed half is a warning on the Health board. */
 export async function jobMailDesk(): Promise<{ note: string }> {
+  await requireJobCaller() // cron entry: admin-only hand-run; View as refuses
   const out: string[] = []
   let bad = false
   try {

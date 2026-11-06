@@ -475,7 +475,7 @@ export async function tlpRateProject(actionId: string, value: unknown, note?: st
   const at = new Date().toISOString()
   const { error } = await db()
     .from('action_task_details')
-    .update({ outcome_rating: v, outcome_note: noteTxt, rated_by: user.email, rated_at: at })
+    .update({ outcome_rating: v, outcome_note: noteTxt, rated_by: user.email, rated_at: at, updated_by: user.email, updated_at: at })
     .eq('action_id', String(actionId))
   if (error) throw new Error(error.message)
   const { error: uerr } = await db()
@@ -594,7 +594,7 @@ export async function otdSave(month: string, values: unknown[]) {
  * not match. (The GAS "create the tabs" step is the migration file here.)
  */
 export async function setupDesk() {
-  await requireRole(['admin'])
+  const user = await requireRole(['admin'])
   await assertWritable()
   const cfg = await configAll()
   const report: string[] = []
@@ -603,7 +603,7 @@ export async function setupDesk() {
   for (const set of sets) {
     for (const k of Object.keys(set)) {
       if (k in cfg) continue
-      await setConfig(k, set[k].value, set[k].description, 'system:setup')
+      await setConfig(k, set[k].value, set[k].description, String(user.email))
       report.push('Setting added: ' + k)
     }
   }
@@ -621,11 +621,11 @@ export async function setupDesk() {
         report.push('NOT SET: ' + o.names[0] + (hits.length ? ' matches ' + hits.map((h) => h.email).join(', ') : ' is not on the Roster') + '. Add them to tlp_tl_areas by hand.')
       }
     }
-    await setConfig('tlp_tl_areas', owners, TLP_SETTINGS.tlp_tl_areas.description, 'system:setup')
+    await setConfig('tlp_tl_areas', owners, TLP_SETTINGS.tlp_tl_areas.description, String(user.email))
   } else report.push('tlp_tl_areas already set: left as it is.')
   const admins = String((await getConfig('admin_emails', '')) || '').split(',').map(normEmail).filter(String)
   if (admins.indexOf(TLP_MANAGER_EMAIL) === -1) {
-    await setConfig('admin_emails', admins.concat([TLP_MANAGER_EMAIL]).join(','), '', 'system:setup')
+    await setConfig('admin_emails', admins.concat([TLP_MANAGER_EMAIL]).join(','), '', String(user.email))
     report.push('Admin access added: ' + TLP_MANAGER_EMAIL)
   }
   return report.join('\n')
