@@ -40,8 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# migration
-migration/
+# migration (repo-root scratch tooling only — src/features/shared/migration/ stays tracked)
+/migration/
 
 /playwright-report/
 /test-results/
