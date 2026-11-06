@@ -16,7 +16,7 @@ import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { wcReset } from '@/features/shared/platform/calendar'
 import { InputError } from '@/features/shared/lib/api-error'
 import { dqNum_ } from './index'
-import { normEmail_, pwAddDays_, pwIso_, pwKwDate_, pwMs_, PW_KW_OFFSET_MS } from '@/features/shared/lib/adapters'
+import { normEmail_, pwAddDays_, pwDateOnly_, pwIso_, pwKwDate_, pwMs_, PW_KW_OFFSET_MS } from '@/features/shared/lib/adapters'
 
 export const SCH_TABLES = {
   config: 'sched_config', team: 'sched_team', offdays: 'sched_offdays', overrides: 'sched_overrides',
@@ -88,65 +88,70 @@ async function schDelete_(name: string, pred: (r: Record<string, unknown>) => bo
   return hits.length
 }
 
-function schNum_(v: unknown, d: number): number {
+export function schNum_(v: unknown, d: number): number {
   const n = Number(v)
   return isNaN(n) ? d : n
 }
 
-function schDate_(y: number, m: number, d: number): Date {
+export function schDate_(y: number, m: number, d: number): Date {
   return new Date(y, m, d)
 }
 
 /** yyyy-MM-dd of a local date — same as V1's Utilities.formatDate. */
-function schKey_(d: Date): string {
+export function schKey_(d: Date): string {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 }
 
-function schParse_(s: string): Date | null {
+export function schParse_(s: string): Date | null {
   const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/)
   return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null
 }
 
 /** Every date in a month, as Date objects. */
-function schMonthDays_(year: number, month0: number): Date[] {
+export function schMonthDays_(year: number, month0: number): Date[] {
   const out: Date[] = []
   const last = new Date(year, month0 + 1, 0).getDate()
   for (let d = 1; d <= last; d++) out.push(schDate_(year, month0, d))
   return out
 }
 
-function schMonthTag_(year: number, month0: number): string {
+export function schMonthTag_(year: number, month0: number): string {
   return year + '-' + String(month0 + 1).padStart(2, '0')
 }
 
-function schMonthName_(year: number, month0: number): string {
+export function schMonthName_(year: number, month0: number): string {
   return SCH_MONTH_NAMES[month0] + ' ' + year
 }
 
 /** First hour slot of a shift: its start rounded up ('09:30' -> 10, '13:00' -> 13). */
-function schHourOf_(hhmm: unknown): number {
+export function schHourOf_(hhmm: unknown): number {
   const m = String(hhmm || '').match(/^(\d{1,2}):?(\d{2})?/)
   if (!m) return 0
   return Math.ceil(parseInt(m[1], 10) + (parseInt(m[2] || '0', 10) / 60) - 1e-9)
 }
 
 /** 'HH:MM' as decimal hours, for drawing the true shift edges. */
-function schDecimal_(hhmm: unknown): number {
+export function schDecimal_(hhmm: unknown): number {
   const m = String(hhmm || '').match(/^(\d{1,2}):?(\d{2})?/)
   return m ? parseInt(m[1], 10) + parseInt(m[2] || '0', 10) / 60 : 0
 }
 
 /** Any stored date-ish value to yyyy-MM-dd. */
-function schDateKey_(v: unknown): string {
+export function schDateKey_(v: unknown): string {
   if (v === null || v === undefined || v === '') return ''
-  return v instanceof Date ? pwKwDate_(v) : String(v).slice(0, 10)
+  return v instanceof Date ? pwKwDate_(v) : pwDateOnly_(v)
 }
 
 /** A month cell to 'yyyy-MM' ('2026-10' text, or a full date). — kept for parity with V1. */
 
 /** Productive hours in a shift, once the break is taken out. */
-function schProductiveHours_(cfg: Cfg): number {
+export function schProductiveHours_(cfg: Cfg): number {
   return schNum_(cfg.shift_hours, 9) - schNum_(cfg.break_minutes, 60) / 60
+}
+
+/** V1 recurring tasks do not exist in V2 (a TL task has one deadline), so nothing recurs. */
+function schRecurrenceDates_(): string[] {
+  return []
 }
 
 /**
@@ -155,19 +160,19 @@ function schProductiveHours_(cfg: Cfg): number {
  * The number is ABSOLUTE, not month-relative, so any rotation built on it carries on
  * across the month boundary instead of restarting.
  */
-function schWeekIndex_(d: Date): number {
+export function schWeekIndex_(d: Date): number {
   return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000 + 4) / 7)
 }
 
-function schVariantKey_(tag: string): string {
+export function schVariantKey_(tag: string): string {
   return 'roster_variant_' + tag
 }
 
-function schVariant_(cfg: Cfg, tag: string): number {
+export function schVariant_(cfg: Cfg, tag: string): number {
   return Math.max(0, parseInt(String(cfg[schVariantKey_(tag)]), 10) || 0)
 }
 
-function monthOf(year: unknown, month: unknown): { tag: string; year: number; month0: number } {
+export function monthOf(year: unknown, month: unknown): { tag: string; year: number; month0: number } {
   const y = schNum_(year, NaN)
   const m0 = schNum_(month, NaN)
   const mk = schMonthTag_(y, m0)
@@ -175,7 +180,7 @@ function monthOf(year: unknown, month: unknown): { tag: string; year: number; mo
   return { tag: mk, year: y, month0: m0 }
 }
 
-function daysInMonth(mk: string): SchDay[] {
+export function daysInMonth(mk: string): SchDay[] {
   const [y, mo] = mk.split('-').map(Number)
   const n = new Date(Date.UTC(y, mo, 0)).getUTCDate()
   const out: SchDay[] = []
@@ -244,14 +249,14 @@ async function schLoadTeam_(): Promise<SchTeamRow[]> {
 }
 
 /** Anyone whose dates overlap the month at all. */
-function schActiveTLs_(team: SchTeamRow[], year: number, month0: number): string[] {
+export function schActiveTLs_(team: SchTeamRow[], year: number, month0: number): string[] {
   const first = schKey_(schDate_(year, month0, 1))
   const last = schKey_(new Date(year, month0 + 1, 0))
   return team.filter((t) => (!t.start || t.start <= last) && (!t.end || t.end >= first)).map((t) => t.name)
 }
 
 /** Is this lead actually here on this date? Catches mid-month joins and exits. */
-function schTlActiveOn_(team: SchTeamRow[] | undefined, name: string, dateKey: string): boolean {
+export function schTlActiveOn_(team: SchTeamRow[] | undefined, name: string, dateKey: string): boolean {
   const t = (team || []).filter((x) => x.name === name)[0]
   if (!t) return false
   if (t.start && dateKey < t.start) return false
@@ -304,7 +309,7 @@ async function schLoadOffDates_(): Promise<Record<string, boolean>> {
 // ---------------------------------------------------------------- overrides and requests
 
 /** The wfh / reason flags are packed into the note column as JSON (plain text still reads as the reason). */
-function schNoteMeta_(note: unknown): { wfh: boolean; reason: string; meta: Record<string, unknown> } {
+export function schNoteMeta_(note: unknown): { wfh: boolean; reason: string; meta: Record<string, unknown> } {
   const s = String(note || '')
   if (s.startsWith('{')) {
     try {
@@ -317,7 +322,7 @@ function schNoteMeta_(note: unknown): { wfh: boolean; reason: string; meta: Reco
   return { wfh: false, reason: s, meta: {} }
 }
 
-function schNotePack_(meta: Record<string, unknown>): string {
+export function schNotePack_(meta: Record<string, unknown>): string {
   return JSON.stringify(meta)
 }
 
@@ -485,7 +490,7 @@ async function schCommitments_(year: number, month0: number, tlNames: string[], 
  * walks forward each week, so nobody permanently draws the unpopular pair, and the
  * starting offsets are spread so the blocks do not all land on the same days.
  */
-function schRestPlanner_(cfg: Cfg, workDays: number): (tlIdx: number, tl: string, day: Date) => boolean {
+export function schRestPlanner_(cfg: Cfg, workDays: number): (tlIdx: number, tl: string, day: Date) => boolean {
   const offLen = 7 - workDays
   const fixed = cfg._offDays || {}
   const offDates = cfg._offDates || {}
@@ -494,7 +499,7 @@ function schRestPlanner_(cfg: Cfg, workDays: number): (tlIdx: number, tl: string
     if (offDates[tl + '|' + schKey_(day)]) return true
     const f = fixed[tl]
     if (f && f.length) return f.indexOf(dow) !== -1
-    const start = (tlIdx * offLen + schWeekIndex_(day) + (cfg._variant ?? 0)) % 7
+    const start = (tlIdx * offLen + schWeekIndex_(day) + (Number(cfg._variant) | 0)) % 7
     for (let k = 0; k < offLen; k++) if ((start + k) % 7 === dow) return true
     return false
   }
@@ -504,7 +509,7 @@ interface SchRosterSlot { AM: string[]; PM: string[]; OFF: string[]; WFH: Record
 interface SchRoster { plan: Record<string, SchRosterSlot>; exceptions: Record<string, unknown>[] }
 interface SchOvrMap { [date: string]: { [tl: string]: { shift: string; wfh: boolean; reason: string } } }
 
-function schBuildRoster_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
+export function schBuildRoster_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
   return String(cfg.shift_rotation || 'weekly').toLowerCase() === 'daily'
     ? schRosterDaily_(tls, days, cfg, overrides)
     : schRosterWeekly_(tls, days, cfg, overrides)
@@ -514,7 +519,7 @@ function schBuildRoster_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOv
  * WEEKLY BLOCKS — the default. A lead is given one home shift per Sun–Saturday week and
  * works it on every day they are in. PM IS NEVER FOLLOWED BY AM. Verbatim port.
  */
-function schRosterWeekly_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
+export function schRosterWeekly_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
   const workDays = schNum_(cfg.working_days, 5)
   const offLen = Math.max(1, 7 - workDays)
   const noPmAm = String(cfg.forbid_pm_then_am || 'yes').toLowerCase() !== 'no'
@@ -540,7 +545,7 @@ function schRosterWeekly_(tls: string[], days: Date[], cfg: Cfg, overrides: SchO
     const cycle = Math.floor(wk / n)
     const seats = n % 2 === 0 ? n / 2 : ((cycle % 2) + 2) % 2 === 0 ? Math.ceil(n / 2) : Math.floor(n / 2)
     const take = Math.max(1, Math.min(n, seats))
-    const start = (((wk + (cfg._variant ?? 0)) % n) + n) % n
+    const start = (((wk + (Number(cfg._variant) | 0)) % n) + n) % n
     const set: Record<string, boolean> = {}
     for (let i = 0; i < take; i++) set[roll[(start + i) % n]] = true
     return set
@@ -677,7 +682,7 @@ function schRosterWeekly_(tls: string[], days: Date[], cfg: Cfg, overrides: SchO
 }
 
 /** DAILY GREEDY — the original strategy, kept behind `shift_rotation: 'daily'`. Verbatim port. */
-function schRosterDaily_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
+export function schRosterDaily_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOvrMap): SchRoster {
   const workDays = schNum_(cfg.working_days, 5)
   const peakSet = String(cfg.peak_days || '').split(',').map((x) => parseInt(x, 10)).filter((n) => !isNaN(n))
   const peakPref = String(cfg.peak_shift || 'BALANCE').toUpperCase()
@@ -766,7 +771,7 @@ function schRosterDaily_(tls: string[], days: Date[], cfg: Cfg, overrides: SchOv
 }
 
 /** The clock hours one shift occupies. AM 09:30–18:30 is 10…18. */
-function schShiftHours_(shift: string, cfg: Cfg): number[] {
+export function schShiftHours_(shift: string, cfg: Cfg): number[] {
   const startH = schHourOf_(shift === 'AM' ? cfg.shift_am_start : cfg.shift_pm_start)
   const n = schNum_(cfg.shift_hours, 9)
   const hours: number[] = []
@@ -774,10 +779,10 @@ function schShiftHours_(shift: string, cfg: Cfg): number[] {
   return hours
 }
 
-interface SchAlloc { shift?: string; queue: number; people: number; task: number; productive?: number; breakH?: number; offQueueHours?: number[]; soleHours?: number[] }
+interface SchAlloc { shift?: string; role?: string; queue: number; people: number; task: number; productive?: number; breakH?: number; offQueueHours?: number[]; soleHours?: number[] }
 
 /** What one lead's shift asks for, before the floor gets a say. Verbatim port. */
-function schAllocate_(role: string, cfg: Cfg): SchAlloc {
+export function schAllocate_(role: string, cfg: Cfg): SchAlloc {
   const productive = schProductiveHours_(cfg)
   const p = role === 'primary'
   const q = schNum_(p ? cfg.primary_queue_h : cfg.secondary_queue_h, p ? 7 : 3)
@@ -796,7 +801,7 @@ function schAllocate_(role: string, cfg: Cfg): SchAlloc {
  * Decides one whole day for the whole team at once: a running count of who is still on
  * the queue, so an hour is only spent when another lead is still on it. Verbatim port.
  */
-function schDayPlan_(roster: { tl: string; shift: string; role: string }[], cfg: Cfg): Record<string, SchAlloc> {
+export function schDayPlan_(roster: { tl: string; shift: string; role: string }[], cfg: Cfg): Record<string, SchAlloc> {
   const breakH = Math.round(schNum_(cfg.break_minutes, 60) / 60)
   const leads = (roster || []).map((r) => {
     const a = schAllocate_(r.role, cfg)
@@ -834,7 +839,7 @@ function schDayPlan_(roster: { tl: string; shift: string; role: string }[], cfg:
     n -= gPeople
     const gTask = Math.min(L.want.task, n)
     out[L.tl] = {
-      shift: L.shift,
+      shift: L.shift, role: L.role,
       queue: L.hours.length - gBreak - gPeople - gTask,
       people: gPeople,
       task: gTask,
@@ -847,7 +852,7 @@ function schDayPlan_(roster: { tl: string; shift: string; role: string }[], cfg:
 }
 
 /** Every date's day plan, keyed date -> tl -> allocation. */
-function schDayPlans_(plan: Record<string, SchRosterSlot>, days: Date[], cfg: Cfg): Record<string, Record<string, SchAlloc>> {
+export function schDayPlans_(plan: Record<string, SchRosterSlot>, days: Date[], cfg: Cfg): Record<string, Record<string, SchAlloc>> {
   const out: Record<string, Record<string, SchAlloc>> = {}
   days.forEach((day) => {
     const key = schKey_(day)
@@ -864,7 +869,7 @@ function schDayPlans_(plan: Record<string, SchRosterSlot>, days: Date[], cfg: Cf
 }
 
 /** Spreads each open task's estimated hours across the owner's task capacity. Verbatim port. */
-function schPlaceTasks_(
+export function schPlaceTasks_(
   plan: Record<string, SchRosterSlot>,
   days: Date[],
   cfg: Cfg,
@@ -888,8 +893,14 @@ function schPlaceTasks_(
     .filter((t) => t.status !== 'Cancelled')
     .filter((t) => schNum_(t.estHours, 0) > 0)
     .forEach((t) => {
-      // V2 TL tasks do not recur (schRecurrenceDates_ is empty), so only the one-off path remains.
-      if (t.status !== 'Done') demands.push({ task: t, dueKey: schDateKey_(t.due) || '', recurring: false })
+      const rec = String(t.recurrence || '').trim()
+      if (rec) {
+        // V2 TL tasks do not recur (schRecurrenceDates_ is empty), so a recurring task
+        // yields no demands — same as legacy routing it through the empty stub.
+        schRecurrenceDates_().forEach((dk) => demands.push({ task: t, dueKey: dk, recurring: true }))
+      } else if (t.status !== 'Done') {
+        demands.push({ task: t, dueKey: schDateKey_(t.due) || '', recurring: false })
+      }
     })
 
   demands.sort((a, b) => {
@@ -956,7 +967,7 @@ function schPlaceTasks_(
  * Turns a shift's duty hours into clock hours. Hours the day plan freed (offQueueHours)
  * take, in order: break, people work, task time. Verbatim port.
  */
-function schHourGrid_(cell: SchCell | undefined, cfg: Cfg, bookedPeopleH: number): Record<number, { kind: string; label: string; booked?: boolean; manual?: boolean; meeting?: boolean }> {
+export function schHourGrid_(cell: SchCell | undefined, cfg: Cfg, bookedPeopleH: number): Record<number, { kind: string; label: string; booked?: boolean; manual?: boolean; meeting?: boolean }> {
   if (!cell || cell.shift === 'OFF') return {}
   const startH = schHourOf_(cell.start)
   const clock = schNum_(cfg.shift_hours, 9)
@@ -1198,7 +1209,7 @@ async function schBuildTimeline_(plan: SchPlan): Promise<Record<string, unknown>
 }
 
 /** Management information is stripped here, not hidden in the browser. */
-function schForRole_(full: { plan: SchPlan; timeline: Record<string, unknown> }, isAdmin: boolean): { plan: SchPlan; timeline: Record<string, unknown> } {
+export function schForRole_(full: { plan: SchPlan; timeline: Record<string, unknown> }, isAdmin: boolean): { plan: SchPlan; timeline: Record<string, unknown> } {
   if (isAdmin) return full
   const plan = { ...full.plan, gaps: [] as Record<string, unknown>[], problems: [] as Record<string, unknown>[], exceptions: [] as Record<string, unknown>[] }
   const timeline = { ...full.timeline, conflicts: [] as Record<string, unknown>[] }
@@ -1206,7 +1217,7 @@ function schForRole_(full: { plan: SchPlan; timeline: Record<string, unknown> },
 }
 
 /** How many TL-days differ in shift between two plans. */
-function schChangedCells_(a: { plan: SchPlan }, b: { plan: SchPlan }): number {
+export function schChangedCells_(a: { plan: SchPlan }, b: { plan: SchPlan }): number {
   let n = 0
   a.plan.tls.forEach((tl) => {
     a.plan.days.forEach((d) => {
@@ -1495,7 +1506,7 @@ export async function schedulerSetHourOverride(payload: Record<string, unknown>)
 
 // ---------------------------------------------------------------- public: requests
 
-function schRequestOut_(r: Record<string, unknown>, user: { email: string }, dir: Directory): Record<string, unknown> {
+export function schRequestOut_(r: Record<string, unknown>, user: { email: string }, dir: Directory): Record<string, unknown> {
   const meta = schNoteMeta_(r.note).meta
   const typ = String(r.type || '').toLowerCase()
   const withEmail = normEmail_(r.with_email ?? r.to_email)

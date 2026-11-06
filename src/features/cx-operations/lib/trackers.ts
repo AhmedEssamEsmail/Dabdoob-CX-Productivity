@@ -79,7 +79,8 @@ export interface Tracker {
   viewerRoles: string[]
   editorRoles: string[]
   builderRoles: string[]
-  ownerEmail: string
+  /** Set only on the createTracker literal (legacy keeps owner_email in the row, off the tracker object). */
+  ownerEmail?: string
   archived: boolean
   fields: TrackerField[]
 }
@@ -153,6 +154,8 @@ export function trackerIsReadOnly_(t: Pick<Tracker, 'accessMode' | 'spreadsheetI
 // ---------------------------------------------------------------------------
 
 function trackerFromRow_(r: Row): Tracker {
+  // owner_email is stored on the row but legacy trackerFromRow_ does not expose
+  // it on the tracker object — keep the same keys for oracle parity.
   return {
     id: String(r.tracker_id),
     name: String(r.name),
@@ -169,7 +172,6 @@ function trackerFromRow_(r: Row): Tracker {
     viewerRoles: rolesList_(r.viewer_roles),
     editorRoles: rolesList_(r.editor_roles),
     builderRoles: rolesList_(r.builder_roles),
-    ownerEmail: String(r.owner_email || ''),
     archived: !!r.archived_at,
     fields: [],
   }
@@ -271,7 +273,7 @@ const nativeIo: TrackerIo = {
         const k = normHeader(h)
         if (k === normHeader(t.recordIdHeader)) return r.recordId
         if (k === normHeader(t.submittedByHeader)) return r.submittedBy
-        if (k === normHeader(t.submittedAtHeader)) return r.submittedAt
+        if (k === normHeader(t.submittedAtHeader)) return r.submittedAt ? new Date(r.submittedAt) : '' // a Date, like the sheet cell trackerCellOut_ formats
         const f = t.fields.filter((x) => normHeader(x.header) === k)[0]
         return f ? (r.values[f.id] ?? '') : ''
       }),
@@ -588,7 +590,11 @@ async function ensureTrackerSystemColumns_(t: Tracker, io: TrackerIo): Promise<s
   const missing = [t.recordIdHeader, t.submittedByHeader, t.submittedAtHeader].filter(
     (h, i, a) => !have[normHeader(h)] && a.indexOf(h) === i,
   )
-  if (missing.length) return io.appendHeaders(t, missing)
+  if (missing.length) {
+    // The first physical write; the legacy vaWrap'd setValues refuses here under View as.
+    await assertWritable()
+    return io.appendHeaders(t, missing)
+  }
   return headers
 }
 
@@ -625,6 +631,8 @@ async function writeTrackerRow_(
     : newTrackerRecordId_()
   const submittedBy = await actorEmail()
   const submittedAt = now.toISOString()
+  // The first physical write; the legacy vaWrap'd setValues refuses here under View as.
+  await assertWritable()
   const row = await io.append(t, { recordId, submittedBy, submittedAt, values })
   return { recordId, row, submittedBy, submittedAt }
 }
@@ -737,6 +745,8 @@ async function addTrackerColumn_(t: Tracker, label: string): Promise<'bound' | '
   const headers = await io.headers(t)
   if (headers.some((h) => normHeader(h) === normHeader(label))) return 'bound'
   if (t.storage === 'native') return 'native' // a native field's column is its values key — no header row to grow
+  // First physical write on this path; the legacy vaWrap'd setValue refuses here under View as.
+  await assertWritable()
   await io.appendHeaders(t, [label])
   return 'appended'
 }
@@ -763,6 +773,9 @@ async function registerTrackerFields_(t: Tracker, defs: FieldDef[], actor: strin
       submitted_at: new Date().toISOString(),
     }
   })
+  // First physical write on the bound/native addTrackerField path (the legacy
+  // appendRows_ setValues refuses here under View as).
+  await assertWritable()
   const { error } = await db().from(TRACKER_FIELDS_TABLE).insert(rows)
   if (error) throw new Error(error.message)
   for (const d of defs) await seedFieldChoices_(t, d.id!, d, actor)
@@ -807,7 +820,8 @@ export async function addTrackerRecord(trackerId: string, values: Record<string,
   const t = await trackerOrThrow_(trackerId)
   refuseTrackerWrite_(t)
   if (!trackerPerms_(t, user).add) throw new Error('You can view ' + t.name + ' but not add to it.')
-  await assertWritable()
+  // No early assertWritable: legacy validates first; the vaWrap guard fires at
+  // the first cell write inside writeTrackerRow_.
   const clean = validateTrackerRecord_(t, values, await allOptions())
   const res = await writeTrackerRow_(t, clean, user)
   return { recordId: res.recordId, submittedBy: res.submittedBy, submittedAt: res.submittedAt }
@@ -819,7 +833,8 @@ export async function addTrackerField(trackerId: string, def: Partial<FieldDef>)
   const t = await trackerOrThrow_(trackerId)
   refuseTrackerWrite_(t)
   if (!trackerPerms_(t, user).build) throw new Error('Only ' + t.builderRoles.join(' / ') + ' can add fields to ' + t.name + '.')
-  await assertWritable()
+  // No early assertWritable: legacy normalises first; the guard fires inside
+  // addTrackerColumn_ (external) or registerTrackerFields_ (bound/native).
   const d = await normaliseFieldDef_(t, def)
   await addTrackerColumn_(t, d.label)
   await registerTrackerFields_(t, [d], await actorEmail())
@@ -836,7 +851,6 @@ export async function updateTrackerField(trackerId: string, fieldId: string, def
   const t = await trackerOrThrow_(trackerId)
   refuseTrackerWrite_(t)
   if (!trackerPerms_(t, user).build) throw new Error('Only ' + t.builderRoles.join(' / ') + ' can change fields of ' + t.name + '.')
-  await assertWritable()
   const f = t.fields.filter((x) => x.id === String(fieldId || ''))[0]
   if (!f) throw new Error('That field no longer exists. Reload the page.')
   if (f.type === 'computed' || f.auto) throw new Error(f.label + ' is filled automatically and cannot be edited here.')
@@ -847,7 +861,10 @@ export async function updateTrackerField(trackerId: string, fieldId: string, def
     throw new Error(children[0].label + ' depends on ' + f.label + ', so its kind of answer cannot change.')
   }
   const listed = d.type === 'dropdown' || d.type === 'dependent'
-  // patchTrackerFieldRow_: fail closed when the (tracker_id, field_id) row is gone.
+  // patchTrackerFieldRow_: viewAsGuard_() is the first line on the legacy side
+  // (all validation above still runs before it), then fail closed when the
+  // (tracker_id, field_id) row is gone.
+  await assertWritable()
   const { data: patched, error } = await db()
     .from(TRACKER_FIELDS_TABLE)
     .update({
@@ -874,7 +891,8 @@ export async function updateTrackerField(trackerId: string, fieldId: string, def
  */
 export async function createTracker(def: { name?: string; fields?: Partial<FieldDef>[] }) {
   const user = await requireRole(['admin', 'tl'])
-  await assertWritable()
+  // No early assertWritable: legacy validates everything first; the vaWrap guard
+  // fires at ss.insertSheet — the port's first physical write is the registry insert.
   def = def || {}
   const name = String(def.name || '').replace(/\s+/g, ' ').trim()
   if (!name) throw new Error('Give the tracker a name.')
@@ -929,6 +947,8 @@ export async function createTracker(def: { name?: string; fields?: Partial<Field
 
   const actor = await actorEmail()
   const now = new Date().toISOString()
+  // First physical write (legacy: ss.insertSheet -> the vaWrap guard fires here).
+  await assertWritable()
   const { error } = await db().from(TRACKERS_TABLE).insert({
     tracker_id: t.id,
     name,
@@ -982,7 +1002,9 @@ export async function createTracker(def: { name?: string; fields?: Partial<Field
  */
 export async function setupTrackers() {
   const user = await requireRole(['admin'])
-  await assertWritable()
+  // No blanket assertWritable: legacy degrades per tracker — the write guards fire
+  // where the first write would (ensureTrackerSystemColumns_ / addOption), so a
+  // tracker that needs no writes still reports its line under View as.
   const reg = await trackerRegistry_()
   const out: string[] = []
   for (const id of reg.order) {

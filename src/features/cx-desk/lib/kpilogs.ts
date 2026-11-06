@@ -159,16 +159,21 @@ export async function kpiLogRemove(kind: string, id: string) {
   const user = await requireRole(['admin', 'tl'])
   const t = KL_TABLES[kind]
   if (!t) throw new Error('Unknown log.')
-  await assertWritable()
   const r = (await readStore(t[0])).rows.filter((x) => String(x[t[1]]) === String(id) && !x.removed_at)[0]
   if (!r) throw new Error('That entry is no longer there.')
   if (user.role !== 'admin' && normEmail(r.logged_by) !== user.email) {
     throw new Error('Only the person who logged it, or an admin, can remove it.')
   }
-  const { error } = await db()
+  await assertWritable() // legacy's viewAsGuard_ fires at dqUpsertIn_ — after the row checks
+  // still-unremoved claim: legacy withLock_ serializes the read+write; here the
+  // update itself refuses a row someone else removed between our read and now.
+  const { data: claimed, error } = await db()
     .from(t[0])
     .update({ removed_by: user.email, removed_at: new Date().toISOString() })
     .eq(t[1], String(id))
+    .is('removed_at', null)
+    .select(t[1])
   if (error) throw new Error(error.message)
+  if (!claimed || !claimed.length) throw new Error('That entry is no longer there.')
   return { id: String(id) }
 }

@@ -103,10 +103,12 @@ function mkQuery(table: string) {
       rows = out
     } else if (isWrite === 'update') {
       const all = rowsOf(table)
-      all.forEach((r) => {
-        if (filters.every((f) => f(r))) Object.assign(r, patchObj)
-      })
-      rows = all.filter((r) => filters.every((f) => f(r)))
+      // UPDATE ... WHERE pred RETURNING: the returned rows are the ones that
+      // matched pred BEFORE the patch — re-running the filters after Object.assign
+      // would drop claims on the patched column (`.is('removed_at', null)` style).
+      const matched = all.filter((r) => filters.every((f) => f(r)))
+      matched.forEach((r) => Object.assign(r, patchObj))
+      rows = matched
       hubDb.updated.push({ table, key: undefined, patch: patchObj })
     } else if (isWrite === 'delete') {
       hubDb.tables[table] = rowsOf(table).filter((r) => !filters.every((f) => f(r)))
@@ -143,6 +145,11 @@ function mkQuery(table: string) {
     },
     neq(col: string, v: unknown) {
       filters.push((r) => !(r[col] === v || String(r[col]) === String(v)))
+      return builder
+    },
+    is(col: string, v: unknown) {
+      // IS NULL: '' counts as null (the documented ''<->null storage seam).
+      filters.push((r) => (v === null ? r[col] === null || r[col] === undefined || r[col] === '' : r[col] === v))
       return builder
     },
     in(col: string, vs: unknown[]) {

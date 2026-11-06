@@ -17,7 +17,7 @@ import { getConfig } from './settings'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'
 
-const MAIL_LOG_TABLE = 'mail_log'
+export const MAIL_LOG_TABLE = 'mail_log'
 
 export interface MailMessage {
   to: string | string[]

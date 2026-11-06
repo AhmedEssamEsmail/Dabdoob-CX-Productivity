@@ -139,6 +139,10 @@ export function hbPending(): Record<string, QueuedBeat> {
 /** Test hook: drop the queue and the last-write stamps. */
 export function hbReset(): void {
   Object.keys(HB_QUEUE).forEach((k) => delete HB_QUEUE[k])
+  // hb_last_<job> lives in the script cache on the GAS side; the oracle resets it
+  // per call, so the module-map stand-in must reset here too or a later test's
+  // same-status beat is skipped within HB_MIN_GAP_MIN (frozen clock => gap never passes).
+  Object.keys(HB_LAST_WRITE).forEach((k) => delete HB_LAST_WRITE[k])
   cacheRemove(HB_CACHE_KEY)
 }
 

@@ -186,3 +186,48 @@ Missing / thin — feed to WP-21:
 1. **WP-F18 (route auth):** `/api/desk/job/mail` is the only cron route without a `cronOk` Bearer gate — want the 6-line `cronOk` pattern copied from `api/cron/job-tl-queue` as part of WP-24/50 wiring, or fix now? (It's outside cx-desk so I logged rather than changed it.)
 2. **WP-F19 (adapter contract):** when the Gmail read adapter lands (WP-52/G2), it should (a) fetch at thread level (or document that query-matching message lists are the contract), and (b) expose `accountEmail` so `mdOurs_`/`mdReplyAddresses_` get the `me` legacy had. Confirm these go on the WP-52 acceptance list.
 3. **HB_PLAN `mail_desk` `every:10/grace:20`:** the plan row still says "every 10 min" (legacy verbatim); at the 15-min D-SCHED cadence beats land within the window, so the board stays green — keep the verbatim label or set `every:15` when WP-24 writes the pg_cron SQL? I'd keep `every:15, grace:20` for honesty — needs an owner call only if they want the legacy label preserved.
+
+## 10. WP-21 wave-2 golden pass (residual vectors)
+
+**Result: 130 → 160 tests, all green.** Every §6 missing/thin vector landed as a `// wave-2 extension` describe — all 12 items covered:
+
+| §6 vector | Describe |
+|---|---|
+| `mailApprovalDecide` `dry_run:false` — unconfigured → `send_failed`+rollback; stub adapter → real `sent`/`sent_message_id`/mail_log/Cc strip | `mailApprovalDecide real-send path` |
+| `mailDeskRefresh` non-approver refusal + non-admin-approver hitting `requireJobCaller` | `mailDeskRefresh` |
+| `installDeskTriggers` admin note + non-admin refusal (pins D-SCHED cadence string) | `installDeskTriggers` |
+| `mdThreads_` grouping order, `MD_MAX_THREADS` cap, `rfcId`/Reply-To extraction, `getMessage` failure propagation | `mdThreads_` |
+| `mdSyncSla_` popup edges — none when >6h old at first sight, none on pre-existing row, `resolvePopups` on `→replied` | `mdSyncSla_ popup edges` |
+| `mdOurs_` `our_senders` + roster/admin/extra precedence | `mdOurs_ precedence` |
+| `mailDeskPage` `dryRun` `'false'`/bool/missing + approvals pending/sending/decided sort | `mailDeskPage dryRun + approvals ordering` |
+| `mailApprovalReset` exact `now-5min` boundary (`<=` refuses) | `mailApprovalReset 5-minute boundary` |
+| `tlPerformancePage` `part()` — dead `tlp_team` → note + `null` section, rest renders | `tlPerformancePage partial failure` |
+| `tlpRateArea` below-threshold note + unknown-area refusal vs `assertWritable` position | `tlpRateArea ordering under view-as` |
+| `kpiLogRemove` already-removed race (no-lock seam documented) | `kpiLogRemove claim ordering` |
+| `mail_desk` beat-merge — half-failed run → `warn` + joined note | `jobMailDesk half-failure` |
+
+### Divergences found → fixed
+
+| File | Change |
+|---|---|
+| `lib/maildesk.ts` (`mdSyncSla_`) | `old` map held references to the same fake-DB row objects the upsert later mutated → `was.status` read as `replied` before the transition check → `resolvePopups('mail_sla_due')` never fired. Old rows now snapshotted `{ ...r }` before upsert — restores legacy value-copy semantics. |
+| `lib/tlperformance.ts` | area literal emitted `kb: null` on every area; legacy only assigns `kb` on the `Knowledge base` area → `kb` made optional, set only by the KB post-processing (key-presence parity, not just value parity). |
+| `lib/tlperformance.ts` (`rowsOf`) | `readStore` swallowed mid-scan store failures into `exists:false` → `part()` saw a quiet empty section. Legacy `dqReadObjects_` missingOk only forgives an unconfigured store; a read that *fails* propagates. `rowsOf` now rethrows via `readRows` when `!exists` → `tlPerformancePage` notes land identically. |
+| `src/features/shared/platform/health.ts` (`hbReset`) | docstring promised "drop the queue and the last-write stamps" but `HB_LAST_WRITE` (module-map stand-in for the `hb_last_<job>` script-cache stamps) survived → a second same-status beat inside `HB_MIN_GAP_MIN` was filtered out, so the approvals-half-failure test found no `mail_desk` health row. Legacy's script cache resets per oracle call; `hbReset` now clears the map too. |
+
+### Fixture/infra additions + lessons (test-only)
+
+- `desk-fakes.ts`: `Threads.list` honours `maxResults`, `gmailThrow` list/get failure hooks, `Messages.send` stub for the real-send path, `base64EncodeWebSafe` for MIME vectors.
+- `jobMailDesk` warn-note join is a space join (`'A. B'`), not the `'; '` a first draft expected — pinned expectations updated to the legacy strings.
+- `kpiLogRemove` double-remove: the oracle `__reset__` re-seeds stores per call, so the second call gets the store cells the first call stamped (fed back via `deskSheetCells` into `fixture.spreadsheets`); the port reads its own updated `hubDb` either way.
+- Half-failure vectors: `hubDb.missing.add('<table>')` exercises the legacy fail path on both sides now that `rowsOf` propagates instead of swallowing.
+
+### Gates (post-wave-2)
+
+| Gate | Result |
+|---|---|
+| `npx vitest run tests/golden/desk.test.ts` | **160/160** |
+| `npx tsc --noEmit` | **0 errors** |
+| `npx vitest run` | **1098/1098 across 47 files** |
+
+No new WP-F rows — WP-F18/F19 remain the standing follow-ups; every wave-2 divergence was within small-fix scope.

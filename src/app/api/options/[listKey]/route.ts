@@ -17,6 +17,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ listKey: strin
 /** addOption_: a value typed into "Other". View as refuses via assertWritable(). */
 export async function POST(req: Request, ctx: { params: Promise<{ listKey: string }> }) {
   try {
+    await currentEmail()
     const { listKey } = await ctx.params
     const body = (await req.json()) as { value?: unknown }
     const r = await addOption(listKey, body.value, await actorEmail())

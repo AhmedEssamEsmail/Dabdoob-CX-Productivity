@@ -169,3 +169,48 @@ Residual vectors worth adding:
 1. **WP-F4 (blocking WP-32/51):** external-tracker cutover — flip `storage_mode→'native'` when backfilling `tracker_records`, or teach the io seam to serve `tracker_records` for migrated externals? Owner rule (D-DATA: "migrate then continue in Supabase") favours the flip; the 009 comment ("storage stays 'external'") suggests provenance preservation. Needs owner decision or a WP-32 implementation note.
 2. **WP-F2:** preferred seed mechanism for built-in `tracker_fields` — port `seedTrackerRegistry_` as an admin re-seed (keeps BUILTIN_TRACKERS in TS, self-heals), or extend a migration with ~57 INSERT rows (drift risk vs Trackers.js)?
 3. The stray `nul` file at repo root (`?? nul` in `git status`, pre-existing) — not from this WP; leave or clean?
+
+## 10. WP-20 wave-2 golden pass (residual vectors)
+
+**Result: 159 → 188 tests, all green.** Every §6 residual vector landed as a `// wave-2 extension` describe — all 13 items covered:
+
+| §6 vector | Describe |
+|---|---|
+| `money` dec cap counts raw-string chars (`1,234.500` passes / `1,234.5000` throws) | `money: decimals counted on the raw string` |
+| View-as refusal on all 5 write fns | `View as write refusals on all five write fns` |
+| Native end-to-end `createTracker`→`addTrackerRecord`→`getTrackerRecords` | `native tracker end-to-end via nativeIo` |
+| `updateTrackerField` child-protection / self-dep / computed-auto refusal / nonexistent / 0-row patch throw | `updateTrackerField protection branches` |
+| `normaliseFieldDef_` `keptDep` (dep edit, no `choicesByParent`) | `normaliseFieldDef_ keptDep path` |
+| `ensureTrackerSystemColumns_` external append at first blank tail | `ensureTrackerSystemColumns_ external path` |
+| `readTrackerData_` 300/301 cap, `outside`, `total` pre-slice, `submittedBy` case-fold | `readTrackerData_ boundaries` |
+| `trackerRegistry_` edges (position NaN→0, column_header→label fallback, `active` '' variants) | `trackerRegistry_ row-parsing edges` |
+| `getTrackersPage` chosen-read throw → `error` + `current:null`; `canCreate` false for agent | `getTrackersPage residual vectors` |
+| `setupTrackers` unreachable→error line; `OPTION_MAX_LEN`/`'other'`/dedupe skips; non-dropdown skipped | `setupTrackers residual branches` |
+| `addTrackerField` `'bound'` (label matches unmapped header → no append) | `addTrackerField bound path` |
+| `addTrackerRecord` `auto`≠`actor_name` not written; `\r\n`→`\n`; `recordIdFormat` `{n}`=1 | `addTrackerRecord residuals` |
+| dep-key option add round-trip (`tracker.<id>.<field>.<hash>` list key) | `dependent option round-trip via updateTrackerField` |
+
+### Divergences found → fixed (all inside `src/features/cx-operations/` unless noted)
+
+| File | Change |
+|---|---|
+| `lib/trackers.ts` | `trackerFromRow_` emitted `ownerEmail`; legacy `trackerFromRow_()` does not → dropped from the registry shape (the test-side `stripOwner` normaliser is now a no-op) |
+| `lib/trackers.ts` | `assertWritable` called at fn entry in `addTrackerRecord` / `addTrackerField` / `updateTrackerField` / `createTracker` — legacy validates+normalises first and View-As refuses lazily at the first physical write through `vaWrap_`. Assertions moved to the equivalent write boundaries; `ensureTrackerSystemColumns_` only asserts when headers are actually appended (read-headers path stays write-free); `setupTrackers` top-level assert likewise moved to the per-tracker write |
+| `lib/trackers.ts` (`nativeIo`) | `submittedAt` normalised to a Date before `submittedBy/At` formatting so `getTrackerRecords` stamps `yyyy-MM-dd HH:mm` Kuwait exactly like the legacy mirror tab |
+
+### Fixture lessons (test-only)
+
+- **Vacuous-pass trap:** an early `promoSheet()` lacked the `Total (computed)` header so `map.missing` fail-closed identically on both sides — `expectSame` "passed" without exercising reads. Vectors now seed complete system+field headers unless the vector itself targets the missing-column boundary.
+- **`promoFx` tables replace, not merge** — overriding `tables:` without restating `tracker_fields`/`options` silently dropped them; several "divergences" were fixture starvation.
+- **Oracle `__reset__` per call:** sequential legacy calls need the post-write tab cells fed back into `fixture.data`/`fixture.spreadsheets` (`@@ms:` re-marking for ISO strings) or call N+1 sees call-1-fresh state.
+- Legacy View-As enforcement is lazy — validation and field mapping legitimately run before the refusal; port assertions must sit at the write boundary, not the fn head.
+
+### Gates (post-wave-2)
+
+| Gate | Result |
+|---|---|
+| `npx vitest run tests/golden/operations.test.ts` | **188/188** |
+| `npx tsc --noEmit` | **0 errors** |
+| `npx vitest run` | **1098/1098 across 47 files** |
+
+No new WP-F rows — every divergence found was within small-fix scope.

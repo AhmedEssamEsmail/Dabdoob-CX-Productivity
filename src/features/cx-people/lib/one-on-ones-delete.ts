@@ -244,7 +244,7 @@ export async function oneOnOnesDeleteLog(logId: string, reason: string) {
       'action_reviews',
       'review_id',
       c.revert.map((x) => ({ key: x.r.review_id, patch: { reverted_at: now } })),
-      { actor: user.email },
+      { actor: user.email, stampUpdates: false }, // action_reviews has no updated_* columns
     )
   }
   if (
@@ -282,7 +282,7 @@ export async function oneOnOnesDeleteLog(logId: string, reason: string) {
     'log_id',
     log.log_id,
     { deleted_at: now, deleted_by: user.email, delete_reason: why, delete_cascade_json: JSON.stringify(cascade) },
-    { actor: user.email },
+    { actor: user.email, stampUpdates: false }, // one_on_one_logs has no updated_* columns
   )
   pwOoRemindersChanged_()
   return {
@@ -404,13 +404,13 @@ export async function oneOnOnesRestore(type: string, id: string) {
     await updateRows(
       'action_reviews', 'review_id',
       c.reverted.map((r: Record<string, any>) => ({ key: r.reviewId, patch: { reverted_at: '' } })),
-      { actor: user.email },
+      { actor: user.email, stampUpdates: false }, // action_reviews has no updated_* columns
     )
   }
   await updateRow(
     'one_on_one_logs', 'log_id', log.log_id,
     { deleted_at: '', deleted_by: '', delete_reason: '', delete_cascade_json: '' },
-    { actor: user.email },
+    { actor: user.email, stampUpdates: false }, // one_on_one_logs has no updated_* columns
   )
   pwOoRemindersChanged_()
   return { type: 'log', id: String(id) }

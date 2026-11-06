@@ -1,40 +1,59 @@
 import { test, expect } from '@playwright/test'
+import { E2E_USERS, login } from './users'
 
 test.describe('My Status Page', () => {
   test.beforeEach(async ({ page }) => {
     // Login as agent
-    await page.goto('/auth/login')
-    await page.fill('input[type="email"]', 'agent@example.com')
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button[type="submit"]')
+    await login(page, E2E_USERS.agent)
+    await page.waitForURL('/')
   })
 
   test('agent can view own productivity score', async ({ page }) => {
     await page.goto('/my-status')
-    
-    await expect(page.locator('h1')).toContainText('My Status')
-    await expect(page.locator('h2')).toContainText('Productivity Score')
+
+    await expect(page.getByRole('heading', { name: 'My status' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible()
   })
 
   test('productivity score displays correctly', async ({ page }) => {
     await page.goto('/my-status')
-    
-    const score = page.locator('text=%')
-    await expect(score).toBeVisible()
+
+    const facts = page.locator('.pv-facts')
+    if (await facts.count()) {
+      // Weekly metrics render as a dl; the two productivity figures are %
+      await expect(facts.getByText('Productivity as logged')).toBeVisible()
+      await expect(facts.locator('dd', { hasText: '%' }).first()).toBeVisible()
+    } else {
+      // A fresh agent has no logged time — the page says so instead
+      await expect(page.getByText('No logged time this week yet.')).toBeVisible()
+    }
   })
 
   test('intervals list displays correctly', async ({ page }) => {
     await page.goto('/my-status')
-    
-    await expect(page.locator('h2')).toContainText('Recent Intervals')
-    const intervals = page.locator('div:has-text("min")')
-    await expect(intervals.first()).toBeVisible()
+
+    const flags = page.locator('.pv-cards article')
+    if (await flags.count()) {
+      // Each flag shows the Logged/Suggested/Reviewed strip and a decision chip
+      await expect(flags.first().locator('.pv-strip')).toBeVisible()
+      await expect(flags.first().locator('.cx-chip[data-status]')).toBeVisible()
+    } else {
+      await expect(
+        page.getByRole('heading', { name: 'No flags in the last 45 days' })
+      ).toBeVisible()
+    }
   })
 
   test('status colors match design', async ({ page }) => {
     await page.goto('/my-status')
-    
-    const badges = page.locator('[data-status]')
-    await expect(badges.first()).toBeVisible()
+
+    const badges = page.locator('.cx-chip[data-status]')
+    if (await badges.count()) {
+      await expect(badges.first()).toBeVisible()
+    } else {
+      await expect(
+        page.getByRole('heading', { name: 'No flags in the last 45 days' })
+      ).toBeVisible()
+    }
   })
 })

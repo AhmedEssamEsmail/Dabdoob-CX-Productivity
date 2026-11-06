@@ -53,6 +53,10 @@ import { opsInstall, opsCall, opsSame, opsTable, opsSheetCells, opsOptions, port
 import { json } from './helpers-oracle'
 
 const NOW = Date.parse('2026-10-08T09:00:00Z') // 2026-10-08 12:00 Kuwait
+const H = 3600000
+const ISO = (ms: number) => new Date(ms).toISOString()
+/** Sparse oracle rows: a cell past the written run reads as '' (getDataRange pads to lastColumn). */
+const cellStr = (row: unknown[] | undefined, i: number) => (row && i < row.length ? String(row[i]) : '')
 
 const ROSTER = [
   { email: 'admin@dabdoob.com', name: 'Admin Person', role: 'admin', tl_email: '', active: true },
@@ -990,5 +994,573 @@ describe('setupTrackers (Trackers.js: setupTrackers)', () => {
   it('refuses a non-admin identically', async () => {
     const f = promoFx({ userEmail: 'tl@dabdoob.com', spreadsheets: promoSheet() })
     await opsSame('setupTrackers', [], f, () => setupTrackers())
+  })
+})
+
+// =====================================================================
+// wave-2 extension — audits/operations.md §6 residual vectors
+// =====================================================================
+
+describe('money: decimals counted on the raw string (wave-2 extension)', () => {
+  // TRACKER_MONEY_DECIMALS counts chars after '.' in the RAW input, not the parsed
+  // number: '1,234.500' passes (dec=3), '1,234.5000' refuses (dec=4).
+  const t = promoTracker()
+  for (const cap of ['1,234.500', '1,234.5000', '1234.5000']) {
+    it(JSON.stringify(cap), async () => {
+      const input = { promo_code: 'S', kind: 'Fixed', value: '5', cap_kd: cap }
+      await opsSame('validateTrackerRecord_', [t, input], promoFx(), async () => validateTrackerRecord_(t, input, await allOptions()))
+    })
+  }
+})
+
+describe('View as write refusals on all five write fns (wave-2 extension)', () => {
+  const vaRow = (target: string) => ({
+    owner_email: 'admin@dabdoob.com',
+    action: 'start',
+    target_email: target,
+    app: 'operations',
+    submitted_by: 'admin@dabdoob.com',
+    submitted_at: ISO(NOW - H),
+  })
+  const vaFx = (over: OpsFx = {}, target = 'agent@dabdoob.com'): OpsFx => {
+    const f = promoFx({ spreadsheets: promoSheet(), ...over })
+    return { ...f, tables: { ...(f.tables || {}), view_as: [vaRow(target)] } }
+  }
+
+  it('addTrackerRecord: an agent target reaches the write, refused identically', async () => {
+    await opsSame('addTrackerRecord', ['promocodes', { promo_code: 'S', kind: 'Fixed', value: '5' }], vaFx(), () =>
+      addTrackerRecord('promocodes', { promo_code: 'S', kind: 'Fixed', value: '5' }),
+    )
+  })
+  it('addTrackerField / updateTrackerField: a TL-builder target reaches the write, refused identically', async () => {
+    const buildable = { ...promoTracker(), builderRoles: ['admin', 'tl'] }
+    const f = vaFx(
+      { tables: { trackers: [trkRow(buildable)], tracker_fields: buildable.fields.map((x) => fldRow(buildable, x)) } },
+      'tl@dabdoob.com',
+    )
+    await opsSame('addTrackerField', ['promocodes', { label: 'Channel', type: 'dropdown', required: true, choices: ['Calls'] }], f, () =>
+      addTrackerField('promocodes', { label: 'Channel', type: 'dropdown', required: true, choices: ['Calls'] }),
+    )
+    await opsSame('updateTrackerField', ['promocodes', 'promo_code', { label: 'Promo Renamed', type: 'text' }], f, () =>
+      updateTrackerField('promocodes', 'promo_code', { label: 'Promo Renamed', type: 'text' }),
+    )
+  })
+  it('createTracker: a TL target reaches the write, refused identically', async () => {
+    const def = { name: 'Refund QA', fields: [{ label: 'Ticket', type: 'text', required: true }] }
+    await opsSame('createTracker', [def], vaFx({}, 'tl@dabdoob.com'), () => createTracker(def))
+  })
+  it('setupTrackers: an admin target reaches the per-tracker writes — refused identically', async () => {
+    // boss@ is a second admin (admin_emails), so requireRole passes. All five
+    // builtin registry rows are already present (the mature-sheet state the port
+    // is born into), so legacy seedTrackerRegistry_ appends nothing and the
+    // read-only guard fires at each tracker's own first write — a per-tracker
+    // error line on both sides. promocodes' sheet lacks record_id so its guard
+    // fires inside ensureTrackerSystemColumns_; the four builtins' tabs are
+    // unreachable and report the same missing-tab line on both sides.
+    const builtins = [
+      trkRow({ id: 'blocked_customers', name: 'Blocked customers', spreadsheetId: 'blt-bc', tab: 'Sheet1' }),
+      trkRow({ id: 'operational_loss', name: 'Operational loss', spreadsheetId: 'blt-ol', tab: 'Sheet1' }),
+      trkRow({ id: 'customer_strikes', name: 'Customer strikes', spreadsheetId: 'blt-cs', tab: 'Form Responses 1' }),
+      trkRow({ id: 'refund_ledger', name: 'Refund calculator backend', spreadsheetId: 'blt-rl', tab: 'Refund Log', accessMode: 'view_only' }),
+    ]
+    const noSys = {
+      'promo-ss': {
+        'Form Responses 1': [
+          ['Promo Code', 'Percentage or Fixed Value?', 'Value (Fixed or Percentage)', 'Cap', 'Terms Link', 'Start Date', 'Region', 'City', 'Created By', 'Email Address', 'Timestamp'],
+          ['SALE10', 'Percentage', '10', '50', 'https://x.y/terms', '2026-10-01', 'Kuwait', 'Kuwait City', 'Andy Agent', 'agent@dabdoob.com', '@@ms:' + (NOW - 86400000)],
+        ],
+      },
+    }
+    const f = vaFx({ settings: { admin_emails: 'admin@dabdoob.com,boss@dabdoob.com' }, spreadsheets: noSys }, 'boss@dabdoob.com')
+    // promoFx's `...over` replaces the whole `tables` object — mutate it so the
+    // default TrackerFields/Options tabs survive (a missing tab makes legacy
+    // seed the registry, and the seed write is refused before the loop runs).
+    f.tables = { ...(f.tables || {}), trackers: [trkRow(promoTracker()), ...builtins] }
+    const { fixture } = opsInstall(f)
+    const legacyRes = opsCall('setupTrackers', [], fixture)
+    const portRes = await portCall(() => setupTrackers())
+    const legacyLines = legacyRes.ok as string[]
+    expect(legacyLines.length).toBe(5)
+    expect(legacyLines[0]).toBe('Promocodes: View as is read-only — exit to make changes.')
+    expect(String(portRes.ok)).toBe(legacyLines.join('\n'))
+  })
+  it('ordering pin: an invalid call under view-as — both validate first now (audit #11 resolved)', async () => {
+    // The port's blanket assertWritable used to fire before validation (audit
+    // #11). The guards now sit at the first physical write, like vaWrap_, so an
+    // invalid record reports the validation error under View as on both sides.
+    const f = vaFx()
+    await opsSame('addTrackerRecord', ['promocodes', { promo_code: 'S', kind: 'Fixed', value: 'not a number' }], f, () =>
+      addTrackerRecord('promocodes', { promo_code: 'S', kind: 'Fixed', value: 'not a number' }),
+    )
+  })
+})
+
+describe('native tracker end-to-end via nativeIo (wave-2 extension)', () => {
+  // A native tracker lives in tracker_records on the port; the oracle reads a
+  // same-named tab inside the __data__ book (the trackers spreadsheet when
+  // CC_TRACKERS_SPREADSHEET_ID is unset). We mirror both into the fixture.
+  const native = ((): Tracker => ({
+    id: 'qa_board',
+    name: 'QA Board',
+    storage: 'native',
+    spreadsheetId: '',
+    tab: 'Tracker QA Board',
+    headerRow: 1,
+    accessMode: 'edit',
+    formBacked: false,
+    recordIdHeader: 'record_id',
+    recordIdFormat: 'TK-{n}',
+    submittedByHeader: 'submitted_by',
+    submittedAtHeader: 'submitted_at',
+    viewerRoles: ['admin', 'tl', 'agent'],
+    editorRoles: ['admin', 'tl', 'agent'],
+    builderRoles: ['admin', 'tl'],
+    ownerEmail: '',
+    archived: false,
+    fields: [
+      { id: 'ticket', label: 'Ticket', header: 'Ticket', type: 'text', required: true, listKey: '', parentFieldId: '', auto: '', position: 1 },
+      { id: 'verdict', label: 'Verdict', header: 'Verdict', type: 'dropdown', required: true, listKey: 'tracker.qa_board.verdict', parentFieldId: '', auto: '', position: 2 },
+    ],
+  }))()
+  const nativeFx = (): OpsFx =>
+    promoFx({
+      tables: {
+        trackers: [trkRow({ id: 'qa_board', name: 'QA Board', storage: 'native', spreadsheetId: '', tab: 'Tracker QA Board', recordIdFormat: 'TK-{n}', builderRoles: ['admin', 'tl'], viewerRoles: ['admin', 'tl', 'agent'], editorRoles: ['admin', 'tl', 'agent'] })],
+        tracker_fields: native.fields.map((f) => fldRow(native, f)),
+        options: [
+          { list_key: 'tracker.qa_board.verdict', value: 'Pass', sort: '', active: true },
+          { list_key: 'tracker.qa_board.verdict', value: 'Fail', sort: '', active: true },
+        ],
+        tracker_records: [
+          { tracker_id: 'qa_board', record_id: 'TK-3', row_n: 2, submitted_by: 'agent@dabdoob.com', submitted_at: '2026-10-07T10:00:00.000Z', values: { ticket: 'T-1', verdict: 'Pass' } },
+        ],
+      },
+      spreadsheets: {},
+    })
+  /** The legacy mirror tab (inside the oracle's trackers spreadsheet). */
+  const nativeTab = (extraRows: unknown[][] = []): unknown[][] => [
+    ['record_id', 'submitted_by', 'submitted_at', 'Ticket', 'Verdict'],
+    ['TK-3', 'agent@dabdoob.com', '@@ms:' + Date.parse('2026-10-07T10:00:00Z'), 'T-1', 'Pass'],
+    ...extraRows,
+  ]
+  const installNative = (f: OpsFx) => {
+    const { fixture } = opsInstall(f)
+    const data = (fixture.data = fixture.data || {})
+    data['Tracker QA Board'] = nativeTab()
+    return { fixture, data }
+  }
+
+  it('addTrackerRecord -> getTrackerRecords: row_n ordering, values jsonb, formatted ids', async () => {
+    const { fixture, data } = installNative(nativeFx())
+    const addLegacy = opsCall('addTrackerRecord', ['qa_board', { ticket: 'T-2', verdict: 'Fail' }], fixture)
+    const addPort = await portCall(() => addTrackerRecord('qa_board', { ticket: 'T-2', verdict: 'Fail' }))
+    expectSame(addPort, addLegacy, 'native addTrackerRecord')
+    expect(addPort.ok).toEqual({ recordId: 'TK-4', submittedBy: 'admin@dabdoob.com', submittedAt: '2026-10-08T09:00:00.000Z' })
+    // The port stored ONE tracker_records row with the values jsonb.
+    const rec = (hubDb.tables.tracker_records || []).find((r) => r.record_id === 'TK-4')!
+    expect(rec.row_n).toBe(3)
+    expect(rec.values).toEqual({ ticket: 'T-2', verdict: 'Fail' })
+    // The oracle wrote the same cells into its native tab.
+    const legacyRow = opsTable('Tracker QA Board').find((r) => r.record_id === 'TK-4')!
+    expect(legacyRow.submitted_by).toBe('admin@dabdoob.com')
+    expect(legacyRow.Ticket).toBe('T-2')
+    expect(legacyRow.Verdict).toBe('Fail')
+    // __reset__ re-seeds __FIXTURES__ from the host fixture on every call, so the
+    // read-back call feeds the oracle the tab cells it just wrote (the ISO Date
+    // cell back as a '@@ms' marker). The port reads its own tracker_records.
+    data['Tracker QA Board'] = (opsSheetCells('__data__', 'Tracker QA Board') as unknown[][]).map((r) =>
+      r.map((c) => (typeof c === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(c) ? '@@ms:' + Date.parse(c) : c)),
+    )
+    // Records page reads both sides identically: newest first, 'yyyy-MM-dd HH:mm' Kuwait.
+    const getLegacy = opsCall('getTrackerRecords', ['qa_board'], fixture)
+    const getPort = await portCall(() => getTrackerRecords('qa_board'))
+    expectSame(getPort, getLegacy, 'native getTrackerRecords')
+    const rows = (getPort.ok as { rows: { recordId: string; submittedAt: string }[] }).rows
+    expect(rows[0].recordId).toBe('TK-4')
+    expect(rows[0].submittedAt).toBe('2026-10-08 12:00')
+    expect(rows[1].submittedAt).toBe('2026-10-07 13:00')
+  })
+  it('a native field add is values-key only on the port (the tab column is a sheet concept)', async () => {
+    // Legacy appends a physical column to the native tab; the port skips the header
+    // write entirely ('native'). The stored field row + data read still match.
+    const buildable = { ...native, builderRoles: ['admin', 'tl'] }
+    const f = promoFx({
+      tables: {
+        trackers: [trkRow({ id: 'qa_board', name: 'QA Board', storage: 'native', spreadsheetId: '', tab: 'Tracker QA Board', recordIdFormat: 'TK-{n}', builderRoles: ['admin', 'tl'], viewerRoles: ['admin', 'tl', 'agent'], editorRoles: ['admin', 'tl', 'agent'] })],
+        tracker_fields: native.fields.map((x) => fldRow(buildable, x)),
+        options: [
+          { list_key: 'tracker.qa_board.verdict', value: 'Pass', sort: '', active: true },
+          { list_key: 'tracker.qa_board.verdict', value: 'Fail', sort: '', active: true },
+        ],
+        tracker_records: [
+          { tracker_id: 'qa_board', record_id: 'TK-3', row_n: 2, submitted_by: 'agent@dabdoob.com', submitted_at: '2026-10-07T10:00:00.000Z', values: { ticket: 'T-1', verdict: 'Pass' } },
+        ],
+      },
+      spreadsheets: {},
+      userEmail: 'tl@dabdoob.com',
+    })
+    const { fixture } = installNative(f)
+    const def = { label: 'Notes', type: 'text', required: false }
+    const legacyRes = opsCall('addTrackerField', ['qa_board', def], fixture)
+    const portRes = await portCall(() => addTrackerField('qa_board', def))
+    expectSame(portRes, legacyRes, 'native addTrackerField')
+    // Legacy appended the 'Notes' header; the port has no header row to grow.
+    const legacyHeaders = opsSheetCells('__data__', 'Tracker QA Board')[0]
+    expect(legacyHeaders[legacyHeaders.length - 1]).toBe('Notes')
+  })
+})
+
+describe('updateTrackerField protection branches (wave-2 extension)', () => {
+  const f = () => promoFx({ spreadsheets: promoSheet() })
+  it('a child dependent pins the parent type', async () => {
+    await opsSame('updateTrackerField', ['promocodes', 'region', { label: 'Region', type: 'text' }], f(), () =>
+      updateTrackerField('promocodes', 'region', { label: 'Region', type: 'text' }),
+    )
+  })
+  it('self-parenting resolves to the same dropdown-parent refusal on both sides', async () => {
+    // normaliseFieldDef_ excludes the edited field from the parent list, so a
+    // self-reference trips 'must depend on a dropdown field' before the
+    // 'cannot depend on itself' line — identical ordering on both.
+    await opsSame('updateTrackerField', ['promocodes', 'region', { label: 'Region', type: 'dependent', parentFieldId: 'region' }], f(), () =>
+      updateTrackerField('promocodes', 'region', { label: 'Region', type: 'dependent', parentFieldId: 'region' }),
+    )
+  })
+  it('computed and auto fields refuse edits identically', async () => {
+    await opsSame('updateTrackerField', ['promocodes', 'total', { label: 'Total X', type: 'text' }], f(), () =>
+      updateTrackerField('promocodes', 'total', { label: 'Total X', type: 'text' }),
+    )
+    await opsSame('updateTrackerField', ['promocodes', 'created_by', { label: 'Creator', type: 'text' }], f(), () =>
+      updateTrackerField('promocodes', 'created_by', { label: 'Creator', type: 'text' }),
+    )
+  })
+  it('a nonexistent (or inactive) field id refuses identically', async () => {
+    await opsSame('updateTrackerField', ['promocodes', 'ghost', { label: 'X', type: 'text' }], f(), () =>
+      updateTrackerField('promocodes', 'ghost', { label: 'X', type: 'text' }),
+    )
+    // active=FALSE is filtered at registry read on both sides -> same refusal.
+    const t = promoTracker()
+    const f2 = promoFx({
+      spreadsheets: promoSheet(),
+      tables: {
+        trackers: [trkRow(t)],
+        tracker_fields: t.fields.map((x) => fldRow(t, { ...x, active: x.id === 'city' ? false : true })),
+      },
+    })
+    await opsSame('updateTrackerField', ['promocodes', 'city', { label: 'City', type: 'dependent', parentFieldId: 'region' }], f2, () =>
+      updateTrackerField('promocodes', 'city', { label: 'City', type: 'dependent', parentFieldId: 'region' }),
+    )
+  })
+})
+
+describe('normaliseFieldDef_ keptDep path (wave-2 extension)', () => {
+  // Editing a dependent field WITHOUT resending choicesByParent keeps the stored
+  // dep lists: total==0 but keptDep is true (same parent), so no throw.
+  const t = promoTracker()
+  const editing = t.fields.filter((x) => x.id === 'city')[0] as unknown as TrackerField
+  it('direct: no choicesByParent, same parent -> kept, no throw', async () => {
+    const def = { label: 'City', type: 'dependent', required: false, parentFieldId: 'region' }
+    await opsSame('normaliseFieldDef_', [t, def, null, editing], promoFx(), async () => normaliseFieldDef_(t, def, null, editing))
+  })
+  it('via updateTrackerField: the dep options survive the edit on both sides', async () => {
+    const f = promoFx({ spreadsheets: promoSheet() })
+    const { fixture } = opsInstall(f)
+    const def = { label: 'City', type: 'dependent', required: false, parentFieldId: 'region' }
+    const legacyRes = opsCall('updateTrackerField', ['promocodes', 'city', def], fixture)
+    const portRes = await portCall(() => updateTrackerField('promocodes', 'city', def))
+    expectSame(portRes, legacyRes, 'updateTrackerField keptDep')
+    // The seeded dep lists are still there (Kuwait City / Riyadh).
+    const legacyOpts = opsOptions()
+    const portOpts = await allOptions()
+    Object.keys(legacyOpts).forEach((k) => expect(portOpts[k]).toEqual(legacyOpts[k]))
+  })
+})
+
+describe('ensureTrackerSystemColumns_ external path (wave-2 extension)', () => {
+  it('missing sys headers append at the first blank-tail position on both sides', async () => {
+    // A sheet with field headers + a trailing blank column and NO sys columns.
+    const sheetNoSys = {
+      'promo-ss': {
+        'Form Responses 1': [
+          ['Promo Code', 'Percentage or Fixed Value?', 'Value (Fixed or Percentage)', 'Region', 'City', ''],
+          ['SALE10', 'Percentage', '10', 'Kuwait', 'Kuwait City', ''],
+        ],
+      },
+    }
+    const f = promoFx({ spreadsheets: sheetNoSys })
+    const { fixture, sheetIo } = opsInstall(f)
+    const legacyRes = opsCall('addTrackerRecord', ['promocodes', { promo_code: 'B', kind: 'Fixed', value: '7', region: 'Kuwait', city: 'Kuwait City' }], fixture)
+    const portRes = await portCall(() => addTrackerRecord('promocodes', { promo_code: 'B', kind: 'Fixed', value: '7', region: 'Kuwait', city: 'Kuwait City' }))
+    expectSame(portRes, legacyRes, 'addTrackerRecord sys-col append')
+    // Headers: the blank tail is overwritten by record_id / Email Address / Timestamp.
+    const legacyHeaders = opsSheetCells('promo-ss', 'Form Responses 1')[0]
+    const portHeaders = await sheetIo.io.headers(promoTracker())
+    expect(portHeaders).toEqual(legacyHeaders.map(String))
+    expect(portHeaders.slice(-3)).toEqual(['record_id', 'Email Address', 'Timestamp'])
+  })
+})
+
+describe('readTrackerData_ boundaries (wave-2 extension)', () => {
+  // promoSheet() lacks the computed field's header, so mapTrackerColumns_ fails
+  // closed there (headerProblems, rows []). These sheets add 'Total (computed)'
+  // so the vectors exercise the real read path on both sides.
+  const bigSheet = (n: number) => {
+    const rows: unknown[][] = [[...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)']]
+    for (let i = 1; i <= n; i++) {
+      rows.push(['P' + i, 'Fixed', '5', '', '', '', 'Kuwait', 'Kuwait City', 'X', 'R' + i, i === n ? 'AGENT@dabdoob.com' : 'agent@dabdoob.com', '@@ms:' + (NOW - i * 60000), ''])
+    }
+    return { 'promo-ss': { 'Form Responses 1': rows } }
+  }
+  it('exactly 300 rows is not limited; 301 is capped and reversed', async () => {
+    for (const n of [TRACKER_MAX_ROWS, TRACKER_MAX_ROWS + 1]) {
+      await opsSame('getTrackerRecords', ['promocodes'], promoFx({ spreadsheets: bigSheet(n) }), () => getTrackerRecords('promocodes'), 'rows ' + n)
+    }
+  })
+  it('an agent sees only her own rows; submittedBy is case-folded', async () => {
+    const f = promoFx({ spreadsheets: bigSheet(3), userEmail: 'agent@dabdoob.com' })
+    const { fixture } = opsInstall(f)
+    const legacyRes = opsCall('getTrackerRecords', ['promocodes'], fixture)
+    const portRes = await portCall(() => getTrackerRecords('promocodes'))
+    expectSame(portRes, legacyRes, 'agent rows')
+    const rows = (portRes.ok as { rows: { recordId: string; submittedBy: string }[] }).rows
+    expect(rows.every((r) => r.submittedBy === 'agent@dabdoob.com')).toBe(true)
+    expect(rows.length).toBe(3) // 'AGENT@dabdoob.com' folded to her own
+  })
+  it('outside rows keep their flag; total counts pre-slice', async () => {
+    const sheet = {
+      'promo-ss': {
+        'Form Responses 1': [
+          [...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)'],
+          ['A', 'Fixed', '5', '', '', '', 'Kuwait', 'Kuwait City', 'X', 'R1', '', '@@ms:' + (NOW - 60000), ''], // no submitted_by -> outside
+          ['B', 'Fixed', '5', '', '', '', 'Kuwait', 'Kuwait City', 'X', 'R2', 'agent@dabdoob.com', '@@ms:' + NOW, ''],
+        ],
+      },
+    }
+    await opsSame('getTrackerRecords', ['promocodes'], promoFx({ spreadsheets: sheet }), () => getTrackerRecords('promocodes'))
+    const res = await portCall(() => getTrackerRecords('promocodes'))
+    const out = res.ok as { rows: { outside: boolean }[]; total: number }
+    expect(out.total).toBe(2)
+    expect(out.rows.filter((r) => r.outside).length).toBe(1)
+  })
+})
+
+describe('trackerRegistry_ row-parsing edges (wave-2 extension)', () => {
+  it('position non-numeric->0, column_header falls back to label, active variants', async () => {
+    const t = promoTracker()
+    const f = promoFx({
+      tables: {
+        trackers: [trkRow(t), trkRow({ id: 'archived_one', name: 'Old', archived: true })],
+        tracker_fields: [
+          { ...fldRow(t, { id: 'f_alpha', position: 9, label: 'Alpha' }), column_header: '' }, // '' -> registry falls back to label
+          { ...fldRow(t, { id: 'f_bad_pos', position: 99, label: 'BadPos' }), position: 'abc' }, // -> 0, sorts first
+          { ...fldRow(t, { id: 'f_inactive', position: 5, label: 'Inactive' }), active: 'FALSE' }, // excluded
+          { ...fldRow(t, { id: 'f_active_lower', position: 6, label: 'ActiveLower' }), active: 'false' }, // excluded
+        ],
+      },
+    })
+    const { fixture } = opsInstall(f)
+    const legacyRes = opsCall('trackerRegistry_', [], fixture)
+    const portRes = await portCall(() => trackerRegistry_())
+    expectSame(portRes, legacyRes, 'trackerRegistry_ edges')
+    const reg = portRes.ok as { order: string[]; byId: Record<string, Tracker> }
+    expect(reg.order).toEqual(['promocodes']) // archived filtered
+    const ids = reg.byId.promocodes.fields.map((x) => x.id)
+    expect(ids[0]).toBe('f_bad_pos') // 'abc' -> position 0 -> first
+    expect(ids).not.toContain('f_inactive')
+    expect(ids).not.toContain('f_active_lower')
+    const alpha = reg.byId.promocodes.fields.find((x) => x.id === 'f_alpha')!
+    expect(alpha.header).toBe('Alpha') // '' fell back to the label
+  })
+})
+
+describe('getTrackersPage residual vectors (wave-2 extension)', () => {
+  it('a chosen tracker whose tab is missing: error string + current null, identical', async () => {
+    // The sheet exists but the tab does not -> both sides throw the same line
+    // into `error` and keep current null.
+    const f = promoFx({ spreadsheets: { 'promo-ss': { OtherTab: [['x']] } } })
+    await opsSame('getTrackersPage', ['promocodes'], f, () => getTrackersPage('promocodes'))
+    const res = await portCall(() => getTrackersPage('promocodes'))
+    const out = res.ok as { current: unknown; error: string }
+    expect(out.current).toBeNull()
+    expect(out.error).toBe('The tab "Form Responses 1" of Promocodes is missing. Ask an admin to check the source sheet.')
+  })
+  it('canCreate is false for an agent', async () => {
+    const f = promoFx({ spreadsheets: promoSheet(), userEmail: 'agent@dabdoob.com' })
+    await opsSame('getTrackersPage', [], f, () => getTrackersPage())
+    const res = await portCall(() => getTrackersPage())
+    expect((res.ok as { canCreate: boolean }).canCreate).toBe(false)
+  })
+})
+
+describe('setupTrackers residual branches (wave-2 extension)', () => {
+  it('an unreachable tracker reports its error line identically; skips (long/other/dup/non-dropdown) hold', async () => {
+    const ledger = {
+      id: 'ledger', name: 'Ledger', storage: 'external', spreadsheetId: 'ledger-ss', tab: 'Gone',
+      headerRow: 1, accessMode: 'edit', formBacked: false, recordIdHeader: 'record_id', recordIdFormat: '',
+      submittedByHeader: 'submitted_by', submittedAtHeader: 'submitted_at',
+      viewerRoles: ['admin', 'tl'], editorRoles: ['admin', 'tl'], builderRoles: ['admin'], ownerEmail: '', archived: false, fields: [],
+    } as Tracker
+    const sheet = {
+      'promo-ss': {
+        'Form Responses 1': [
+          ['Promo Code', 'Percentage or Fixed Value?', 'Value (Fixed or Percentage)', 'Cap', 'Terms Link', 'Start Date', 'Region', 'City', 'Created By', 'record_id', 'Email Address', 'Timestamp'],
+          ['A', 'Percentage', '10', '', '', '', 'Kuwait', 'Kuwait City', 'X', 'OL1', 'a@x', '@@ms:' + NOW],
+          ['B', 'fixed', '10', '', '', '', 'KSA', 'Riyadh', 'X', 'OL2', 'a@x', '@@ms:' + NOW],
+          ['C', 'Other', '10', '', '', '', 'other', 'Riyadh', 'X', 'OL3', 'a@x', '@@ms:' + NOW], // 'other' skipped
+          ['D', 'Fixed', '10', '', '', '', 'KSA', 'Riyadh', 'X', 'OL4', 'a@x', '@@ms:' + NOW], // 'KSA' dup (case-insensitive)
+          ['E', 'x'.repeat(200), '10', '', '', '', 'Q'.repeat(200), 'Riyadh', 'X', 'OL5', 'a@x', '@@ms:' + NOW], // > OPTION_MAX_LEN skipped
+        ],
+      },
+      // no 'ledger-ss' spreadsheet -> the ledger's tab is unreachable
+    }
+    const t = promoTracker()
+    const f = promoFx({
+      spreadsheets: sheet,
+      tables: {
+        trackers: [trkRow(t), trkRow(ledger)],
+        tracker_fields: t.fields.map((x) => fldRow(t, x)),
+        options: [],
+      },
+    })
+    const { fixture } = opsInstall(f)
+    const legacyRes = opsCall('setupTrackers', [], fixture)
+    const portRes = await portCall(() => setupTrackers())
+    const legacyLines = legacyRes.ok as string[]
+    // The unreachable tracker's error line is byte-identical (the io throws the
+    // same missing-tab message the oracle's sheet raises).
+    const ledgerLine = legacyLines.find((l) => l.indexOf('Ledger:') === 0)!
+    expect(ledgerLine).toBe('Ledger: The tab "Gone" of Ledger is missing. Ask an admin to check the source sheet.')
+    expect(String(portRes.ok || '')).toContain(ledgerLine)
+    // Seeded options identical on both sides (long/'other'/dup all skipped).
+    const optsLegacy = opsOptions()
+    const optsPort = await allOptions()
+    Object.keys(optsLegacy).forEach((k) => expect(optsPort[k]).toEqual(optsLegacy[k]))
+    expect(optsPort['tracker.promocodes.region']).toEqual(['Kuwait', 'KSA'])
+  })
+})
+
+describe('addTrackerField bound path (wave-2 extension)', () => {
+  it('a label that already sits in the sheet binds instead of appending a column', async () => {
+    // 'Notes' exists as a sheet header but maps no field -> addTrackerColumn_ 'bound'.
+    // The sheet carries every mapped field header (incl. 'Total (computed)') so
+    // the post-add read has no missing columns on either side.
+    const sheetWithExtra = {
+      'promo-ss': {
+        'Form Responses 1': [
+          [...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)', 'Notes'],
+          ['A', 'Fixed', '5', '', '', '', 'Kuwait', 'Kuwait City', 'X', 'OL1', 'a@x', '@@ms:' + NOW, '', 'pre-existing note'],
+        ],
+      },
+    }
+    const buildable = { ...promoTracker(), builderRoles: ['admin'] }
+    const f = promoFx({
+      spreadsheets: sheetWithExtra,
+      tables: { trackers: [trkRow(buildable)], tracker_fields: buildable.fields.map((x) => fldRow(buildable, x)) },
+    })
+    const { fixture, sheetIo } = opsInstall(f)
+    const legacyRes = opsCall('addTrackerField', ['promocodes', { label: 'Notes', type: 'text', required: false }], fixture)
+    const portRes = await portCall(() => addTrackerField('promocodes', { label: 'Notes', type: 'text', required: false }))
+    expectSame(portRes, legacyRes, 'addTrackerField bound')
+    // No second 'Notes' column was written on either side.
+    const legacyHeaders = opsSheetCells('promo-ss', 'Form Responses 1')[0]
+    const portHeaders = await sheetIo.io.headers(promoTracker())
+    expect(portHeaders.filter((h) => h === 'Notes').length).toBe(1)
+    expect(legacyHeaders.filter((h) => String(h) === 'Notes').length).toBe(1)
+    // The fresh read picks the pre-existing cell up as the field's value.
+    const data = portRes.ok as { fields: { id: string }[]; rows: { values: Record<string, unknown> }[] }
+    const nf = data.fields[data.fields.length - 1]
+    expect(data.rows[0].values[nf.id]).toBe('pre-existing note')
+  })
+})
+
+describe('addTrackerRecord residuals (wave-2 extension)', () => {
+  it("an auto field that is not 'actor_name' is never written", async () => {
+    // auto:'formula' is still an auto field: validateTrackerRecord_ never reads
+    // client input for it and writeTrackerRow_ writes nothing — the sheet cell
+    // stays ''. A submitted key for it is an unknown-key refusal? No — it IS a
+    // known field id, so validation passes and the write simply skips it.
+    const t = {
+      ...promoTracker(),
+      fields: [...promoTracker().fields, { id: 'auto_calc', label: 'Auto Calc', header: 'Auto Calc', type: 'text' as const, required: false, listKey: '', parentFieldId: '', auto: 'formula', position: 11 }],
+    }
+    const sheet = {
+      'promo-ss': {
+        'Form Responses 1': [
+          [...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)', 'Auto Calc'],
+          ['SALE10', 'Percentage', '10', '50', 'https://x.y/t', '2026-10-01', 'Kuwait', 'Kuwait City', 'Andy', 'OL4', 'agent@dabdoob.com', '@@ms:' + (NOW - 86400000), '9', 'kept'],
+        ],
+      },
+    }
+    const f = promoFx({ spreadsheets: sheet })
+    // Keep the default Options rows (kind: 'Fixed' must validate) — promoFx's
+    // `...over` would replace the whole `tables` object, so mutate it instead.
+    f.tables = { ...(f.tables || {}), trackers: [trkRow(t)], tracker_fields: t.fields.map((x) => fldRow(t, x)) }
+    const { fixture, sheetIo } = opsInstall(f)
+    const legacyRes = opsCall('addTrackerRecord', ['promocodes', { promo_code: 'B', kind: 'Fixed', value: '5' }], fixture)
+    const portRes = await portCall(() => addTrackerRecord('promocodes', { promo_code: 'B', kind: 'Fixed', value: '5' }))
+    expectSame(portRes, legacyRes, 'auto!=actor_name not written')
+    const autoIdx = promoSheet()['promo-ss']['Form Responses 1'][0].length + 1 // 'Auto Calc' = last column
+    const rows = await sheetIo.io.lines(t)
+    const last = rows[rows.length - 1]
+    expect(String(last[autoIdx])).toBe('') // Auto Calc cell untouched
+    const legacyCells = opsSheetCells('promo-ss', 'Form Responses 1')
+    const legacyLast = legacyCells[legacyCells.length - 1]
+    expect(cellStr(legacyLast, autoIdx)).toBe('') // sparse legacy row: never written
+    expect(cellStr(last, autoIdx - 1)).toBe('') // Total (computed) never written either
+    expect(cellStr(legacyLast, autoIdx - 1)).toBe('')
+  })
+  it('\r\n input normalises to \n before storing', async () => {
+    const input = { promo_code: 'A\r\nB', kind: 'Fixed', value: '5' }
+    // Full header incl. 'Total (computed)' so the write reaches the row.
+    const sheet = { 'promo-ss': { 'Form Responses 1': [[...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)']] } }
+    const f = promoFx({ spreadsheets: sheet })
+    const { fixture, sheetIo } = opsInstall(f)
+    const legacyRes = opsCall('addTrackerRecord', ['promocodes', input], fixture)
+    const portRes = await portCall(() => addTrackerRecord('promocodes', input))
+    expectSame(portRes, legacyRes, 'crlf normalisation')
+    const rows = await sheetIo.io.lines(promoTracker())
+    expect(String(rows[rows.length - 1][0])).toBe('A\nB')
+    const legacyCells = opsSheetCells('promo-ss', 'Form Responses 1')
+    expect(cellStr(legacyCells[legacyCells.length - 1], 0)).toBe('A\nB')
+  })
+  it('recordIdFormat {n}=1 when no prior ids exist', async () => {
+    const empty = { 'promo-ss': { 'Form Responses 1': [[...promoSheet()['promo-ss']['Form Responses 1'][0], 'Total (computed)']] } }
+    const f = promoFx({ spreadsheets: empty })
+    const { port } = await opsSame('addTrackerRecord', ['promocodes', { promo_code: 'B', kind: 'Fixed', value: '5' }], f, () =>
+      addTrackerRecord('promocodes', { promo_code: 'B', kind: 'Fixed', value: '5' }),
+    )
+    expect((port.ok as { recordId: string }).recordId).toBe('OL1')
+  })
+})
+
+describe('dependent option round-trip via updateTrackerField (wave-2 extension)', () => {
+  it('choicesByParent seeds hashed tracker.<id>.<field>.<hash> lists; the validator then accepts them', async () => {
+    const f = promoFx({ spreadsheets: promoSheet() })
+    const { fixture } = opsInstall(f)
+    const def = { label: 'City', type: 'dependent', required: false, parentFieldId: 'region', choicesByParent: { Kuwait: ['Jahra'], KSA: ['Jeddah'] } }
+    const legacyRes = opsCall('updateTrackerField', ['promocodes', 'city', def], fixture)
+    const portRes = await portCall(() => updateTrackerField('promocodes', 'city', def))
+    expectSame(portRes, legacyRes, 'dep-key option seeding')
+    const kuwaitKey = trackerDepKey_('promocodes', 'city', 'Kuwait')
+    expect((await allOptions())[kuwaitKey]).toContain('Jahra')
+    expect(opsOptions()[kuwaitKey]).toContain('Jahra')
+    // Round-trip: 'Jahra' under the hashed dep key is a valid answer for
+    // region=Kuwait on both sides (and still refused for KSA).
+    const t = promoTracker()
+    const depFx = promoFx({
+      spreadsheets: promoSheet(),
+      tables: {
+        options: [
+          { list_key: 'tracker.promocodes.kind', value: 'Percentage', sort: '', active: true },
+          { list_key: 'tracker.promocodes.kind', value: 'Fixed', sort: '', active: true },
+          { list_key: 'tracker.promocodes.region', value: 'Kuwait', sort: '', active: true },
+          { list_key: 'tracker.promocodes.region', value: 'KSA', sort: '', active: true },
+          { list_key: kuwaitKey, value: 'Jahra', sort: '', active: true },
+        ],
+      },
+    })
+    const input = { promo_code: 'S', kind: 'Fixed', value: '5', region: 'Kuwait', city: 'Jahra' }
+    await opsSame('validateTrackerRecord_', [t, input], depFx, async () => validateTrackerRecord_(t, input, await allOptions()))
+    const bad = { ...input, region: 'KSA' }
+    await opsSame('validateTrackerRecord_', [t, bad], depFx, async () => validateTrackerRecord_(t, bad, await allOptions()))
   })
 })

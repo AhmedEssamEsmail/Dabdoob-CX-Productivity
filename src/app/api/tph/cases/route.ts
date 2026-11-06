@@ -7,24 +7,29 @@ import { saveTphCases } from '@/features/cx-productivity/lib/tph/write'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const date = searchParams.get('date')
-  const source = searchParams.get('source')
+  try {
+    await requireRole(['admin', 'tl'])
+    const { searchParams } = new URL(req.url)
+    const date = searchParams.get('date')
+    const source = searchParams.get('source')
 
-  let query = supabase.from('prod_tph_cases').select('*')
+    let query = supabase.from('prod_tph_cases').select('*')
 
-  if (date) {
-    query = query.eq('date', date)
+    if (date) {
+      query = query.eq('date', date)
+    }
+    if (source) {
+      query = query.eq('source', source)
+    }
+
+    const { data, error } = await query.order('date', { ascending: false })
+
+    if (error) return dbErr('prod_tph_cases', error)
+
+    return NextResponse.json(data)
+  } catch (e) {
+    return apiError(e)
   }
-  if (source) {
-    query = query.eq('source', source)
-  }
-
-  const { data, error } = await query.order('date', { ascending: false })
-
-  if (error) return dbErr('prod_tph_cases', error)
-
-  return NextResponse.json(data)
 }
 
 

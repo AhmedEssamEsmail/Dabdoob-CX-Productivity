@@ -198,8 +198,13 @@ export async function tlpAreasFor_(tlEmail: string): Promise<{ area: string; tar
 }
 
 async function rowsOf(name: string): Promise<Row[]> {
-  const { rows } = await readStore(name)
-  return rows
+  // dqReadObjects_(missingOk): [] when the store simply isn't there — but a read
+  // that fails propagates (legacy dqSheet_ opens fine, then getLastRow throws).
+  // readStore swallows that failure into exists=false; readRows rethrows it so
+  // tlPerformancePage's part() notes land on both sides.
+  const r = await readStore(name)
+  if (!r.exists) return readRows(name) // rethrow the real error message
+  return r.rows
 }
 
 /** The TL's tasks for the page: open ones, and delivered ones from the last 90 days or not rated yet. */
@@ -320,7 +325,8 @@ export async function tlPerformancePage(tlEmail?: string) {
     note: string
     history: { week: string; value: number }[]
     measured: { pct: number | null; met: number; total: number; rule: string; from: string } | null
-    kb: ReturnType<typeof tlpKbMetrics_> | null
+    /** Legacy adds the key only to the 'Knowledge base' area — absent elsewhere, not null. */
+    kb?: ReturnType<typeof tlpKbMetrics_> | null
   }
   const areas = await part('Responsibilities', async (): Promise<AreaOut[]> => {
     const ratings = (await rowsOf('tlp_resp_ratings')).filter((r) => normEmail(r.tl_email) === tl)
@@ -354,7 +360,6 @@ export async function tlPerformancePage(tlEmail?: string) {
               from: String(m.from),
             }
           : null,
-        kb: null,
       }
     })
   }, [] as AreaOut[])
@@ -429,7 +434,6 @@ export async function tlpRateArea(tlEmail: string, area: string, value: unknown,
   const dir = await pwDirectory()
   const tl = normEmail(tlEmail)
   if (!pwIsManagerOf(user, tl, dir) || tl === user.email) throw new Error("Only the team lead's manager rates their responsibilities.")
-  await assertWritable()
   const v = tlpCheckValue_(value)
   const noteTxt = String(note || '').trim().slice(0, 2000)
   const zones = ((await tlpSetting_('tlp_rating_zones')) || {}) as { meets?: number; exceeds?: number }
@@ -439,6 +443,7 @@ export async function tlpRateArea(tlEmail: string, area: string, value: unknown,
   if (!(await tlpAreasFor_(tl)).some((a) => a.area === area)) {
     throw new Error('"' + area + '" is not one of this team lead\'s areas (Admin: tlp_tl_areas).')
   }
+  await assertWritable() // legacy's viewAsGuard_ fires inside dqUpsertIn_ — after every check above
   const week = tlpWeek_(pwToday())
   const row = {
     rating_id: week + '|' + tl + '|' + area,
@@ -638,5 +643,6 @@ export async function setupDesk() {
  */
 export async function installDeskTriggers() {
   await requireRole(['admin'])
+  await assertWritable() // legacy newTrigger_ guards before ScriptApp — refuse View as the same way
   return 'Installed: jobMailDesk every 15 minutes (pg_cron per D-SCHED; not installable from the app).'
 }

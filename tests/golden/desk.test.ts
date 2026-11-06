@@ -40,6 +40,7 @@ import {
   tlsShifts_,
   tlsOnQueue_,
   tlsMailDue_,
+  mdThreads_,
   mdSyncSla_,
   mdSyncApprovals_,
   jobMailDesk,
@@ -67,6 +68,7 @@ import {
   kbTrackerSave,
   otdSave,
   setupDesk,
+  installDeskTriggers,
 } from '@/features/cx-desk/lib/tlperformance'
 import { kpiLogsPage, kpiLogSave, kpiLogRemove } from '@/features/cx-desk/lib/kpilogs'
 import { normEmail } from '@/features/shared/platform/identity'
@@ -77,7 +79,9 @@ import {
   deskSame,
   deskStore,
   deskTable,
+  deskSheetCells,
   deskProps,
+  deskOracle,
   portCall,
   type DeskFx,
 } from './desk-fakes'
@@ -1555,5 +1559,536 @@ describe('kpiLogsPage (KpiLogs.js)', () => {
   })
   it('empty logs render identically', async () => {
     await deskSame('kpiLogsPage', [], pageFx({ tables: { kpi_behaviour_log: [], kpi_leave_log: [], tlp_ticket_exclusions: [] } }), () => kpiLogsPage())
+  })
+})
+
+// =====================================================================
+// Wave-2 extension: residual vectors from specs/megaplan/audits/desk.md §6
+// =====================================================================
+
+describe('mdThreads_ (wave-2 extension): grouping, cap, headers, failure', () => {
+  it('multi-message threads keep fixture order; rfcId/replyTo/cc extracted', async () => {
+    const { port } = await deskSame('mdThreads_', ['any query'], fx({ gmailThreads: THREADS }), () => mdThreads_('any query'))
+    const groups = port.ok as Row[][]
+    expect(groups.length).toBe(7)
+    const t7 = groups.find((g) => g[0].threadId === 't7')!
+    expect(t7[0].replyTo).toBe('decisions@vendor.com')
+    expect(t7[0].rfcId).toBe('<rfc-t7m1@mail>')
+    expect(t7[0].cc).toBe('team@vendor.com, finance@dabdoob.com')
+    const t1 = groups.find((g) => g[0].threadId === 't1')!
+    expect(t1.map((m) => m.id)).toEqual(['t1m1', 't1m2', 't1m3'])
+  })
+  it('the 50-thread cap: 51 threads yield 50 groups on both sides', async () => {
+    const many = Array.from({ length: 51 }, (_, i) => ({
+      id: 'cap' + i,
+      messages: [gmsg('cap' + i, 'cap' + i + 'm1', NOW - i * 60000, 'alerts@myfatoorah.com', 'Refund Status Update ORD-' + i)],
+    }))
+    const { port, legacy } = await deskSame('mdThreads_', ['q'], fx({ gmailThreads: many }), () => mdThreads_('q'))
+    expect((port.ok as Row[][]).length).toBe(50)
+    expect((port.ok as Row[][]).map((g) => g[0].threadId)).toEqual((legacy.ok as Row[][]).map((g) => g[0].threadId))
+  })
+  it('a get failure propagates the same message on both sides', async () => {
+    // thread id == message id 'boom' so the one marker hits Threads.get AND getMessage.
+    const boom = [{ id: 'boom', messages: [gmsg('boom', 'boom', NOW - H, 'a@b.com', 'x')] }]
+    await deskSame('mdThreads_', ['q'], fx({ gmailThreads: boom, gmailThrowGet: 'boom' }), () => mdThreads_('q'), 'mdThreads_ get failure')
+    await deskSame(
+      'mdSyncSla_',
+      [],
+      jobFx({ gmailThreads: boom, gmailThrowGet: 'boom', tables: { tlp_shifts: SHIFTS, mail_sla: [], popups: [], mail_approval_log: [] } }),
+      () => mdSyncSla_(),
+      'mdSyncSla_ get failure',
+    )
+  })
+})
+
+describe('mdSyncSla_ popup edges (wave-2 extension)', () => {
+  const slaFx = (threads: typeof THREADS, tables: Record<string, Row[]> = {}, over: DeskFx = {}): DeskFx =>
+    jobFx({ gmailThreads: threads, tables: { tlp_shifts: SHIFTS, mail_sla: [], mail_approvals: [], popups: [], mail_approval_log: [], ...tables }, ...over })
+
+  it('a mail first seen more than 6h old opens without a popup', async () => {
+    const old = [{ id: 'told', messages: [gmsg('told', 'toldm1', NOW - 7 * H, 'alerts@myfatoorah.com', 'Refund Status Update ORD-old')] }]
+    const f = slaFx(old)
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mdSyncSla_', [], fixture)
+    const portRes = await portCall(() => mdSyncSla_())
+    expectSame(portRes, legacyRes, 'mdSyncSla_ >6h')
+    expectStoreSame('mail_sla', 'mail_sla', 'mail_sla >6h')
+    expectTabSame('popups', 'Popups', 'popups >6h')
+    const pops = normRows(hubDb.tables.popups || []).rows
+    expect(pops.length).toBe(0) // the <6h gate suppresses the popup on both sides
+    const row = (hubDb.tables.mail_sla || [])[0]
+    expect(row.status).toBe('open')
+  })
+
+  it('a fresh open mail whose row already existed raises no popup', async () => {
+    const t8 = [{ id: 't8', messages: [gmsg('t8', 't8m1', NOW - 30 * 60000, 'alerts@myfatoorah.com', 'Refund Status Update ORD-8')] }]
+    const existing = [
+      { message_id: 't8m1', thread_id: 't8', kind: 'refund_status', subject: 'Refund Status Update ORD-8', from_email: 'alerts@myfatoorah.com',
+        received_at: ISO(NOW - 40 * 60000), expected_tls: 'noha@dabdoob.com', status: 'open', replied_at: '', replied_by: '',
+        minutes_to_reply: '', breached: false, by_expected: false, covering_missed: false, snippet: 'seen before',
+        updated_at: ISO(NOW - 35 * 60000), due_at: ISO(NOW + H), next_shift: false },
+    ]
+    const f = slaFx(t8, { mail_sla: existing })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mdSyncSla_', [], fixture)
+    const portRes = await portCall(() => mdSyncSla_())
+    expectSame(portRes, legacyRes, 'mdSyncSla_ existing row')
+    expectStoreSame('mail_sla', 'mail_sla', 'mail_sla existing')
+    expectTabSame('popups', 'Popups', 'popups existing')
+    expect(normRows(hubDb.tables.popups || []).rows.length).toBe(0) // `was` exists -> no popup
+    expect((hubDb.tables.mail_sla || [])[0].status).toBe('open')
+  })
+
+  it('a transition to replied resolves the open popup', async () => {
+    const t9 = [
+      {
+        id: 't9',
+        messages: [
+          gmsg('t9', 't9m1', NOW - 3 * H, 'alerts@myfatoorah.com', 'Refund Status Update ORD-9'),
+          gmsg('t9', 't9m2', NOW - H, 'Noha <noha@dabdoob.com>', 'Re: Refund Status Update ORD-9'),
+        ],
+      },
+    ]
+    const seeded = [
+      { message_id: 't9m1', thread_id: 't9', kind: 'refund_status', subject: 'Refund Status Update ORD-9', from_email: 'alerts@myfatoorah.com',
+        received_at: ISO(NOW - 3 * H), expected_tls: 'noha@dabdoob.com', status: 'open', replied_at: '', replied_by: '',
+        minutes_to_reply: '', breached: false, by_expected: false, covering_missed: false, snippet: '',
+        updated_at: ISO(NOW - 2 * H), due_at: ISO(NOW + 4 * H), next_shift: false },
+    ]
+    const popup = [
+      { popup_id: 'pop-9', recipient: 'noha@dabdoob.com', kind: 'mail_sla_due', title: 'MyFatoorah refund update: reply needed',
+        body: 'needs a reply', link: '#/mail-desk', ref: 't9m1', created_at: ISO(NOW - 3 * H), resolved_at: '',
+        submitted_by: 'system:mail_desk', submitted_at: ISO(NOW - 3 * H) },
+    ]
+    const f = slaFx(t9, { mail_sla: seeded, popups: popup })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mdSyncSla_', [], fixture)
+    const portRes = await portCall(() => mdSyncSla_())
+    expectSame(portRes, legacyRes, 'mdSyncSla_ replied resolves')
+    expectStoreSame('mail_sla', 'mail_sla', 'mail_sla replied')
+    expectTabSame('popups', 'Popups', 'popups resolved')
+    const row = (hubDb.tables.mail_sla || [])[0]
+    expect(row.status).toBe('replied')
+    expect(row.replied_by).toBe('noha@dabdoob.com')
+    const pop = (hubDb.tables.popups || [])[0]
+    expect(pop.resolved_at).toBe(ISO(NOW))
+  })
+})
+
+describe('mdOurs_ precedence (wave-2 extension)', () => {
+  const oursFx = (threads: typeof THREADS, over: DeskFx = {}): DeskFx =>
+    jobFx({ gmailThreads: threads, tables: { tlp_shifts: SHIFTS, mail_sla: [], mail_approvals: [], popups: [], mail_approval_log: [] }, ...over })
+
+  it('a reply by an admin_emails address counts as ours', async () => {
+    const t = [{ id: 'ta', messages: [
+      gmsg('ta', 'tam1', NOW - 3 * H, 'alerts@myfatoorah.com', 'Refund Status Update ORD-A'),
+      gmsg('ta', 'tam2', NOW - H, 'Admin <admin@dabdoob.com>', 'Re: Refund Status Update ORD-A'),
+    ]}]
+    const { port } = await deskSame('mdSyncSla_', [], oursFx(t), () => mdSyncSla_(), 'ours via admins')
+    const row = (hubDb.tables.mail_sla || [])[0]
+    expect(row.status).toBe('replied')
+    expect(row.replied_by).toBe('admin@dabdoob.com')
+  })
+
+  it('the effective-user "me" counts as ours in legacy only (pinned D-GOOGLE divergence)', async () => {
+    // mohamed.nabil@ is neither roster, admin_emails nor mail_sla_our_senders — but it IS
+    // Session.getEffectiveUser() here, and legacy mdOurs_ counts that mailbox as ours.
+    // The port has no mailbox identity (the Gmail send adapter owns it — D-GOOGLE), so the
+    // same reply stays 'open' there. Pinned so the seam difference is explicit.
+    const t = [{ id: 'tm', messages: [
+      gmsg('tm', 'tmm1', NOW - 3 * H, 'alerts@myfatoorah.com', 'Refund Status Update ORD-M'),
+      gmsg('tm', 'tmm2', NOW - H, 'Mohamed <mohamed.nabil@dabdoob.com>', 'Re: Refund Status Update ORD-M'),
+    ]}]
+    const f = oursFx(t, { effectiveUserEmail: 'mohamed.nabil@dabdoob.com' })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mdSyncSla_', [], fixture)
+    const portRes = await portCall(() => mdSyncSla_())
+    expect(legacyRes.ok).toBe('1 response-tracked messages from 1 threads.')
+    expect(portRes.ok).toBe(legacyRes.ok) // note text still matches
+    const legacyRow = deskStore('mail_sla')[0]
+    const portRow = (hubDb.tables.mail_sla || [])[0]
+    expect(legacyRow.status).toBe('replied')
+    expect(legacyRow.replied_by).toBe('mohamed.nabil@dabdoob.com')
+    expect(portRow.status).toBe('open')
+    expect(String(portRow.replied_by || '')).toBe('')
+  })
+})
+
+describe('jobMailDesk half-failure (wave-2 extension)', () => {
+  const halfFx = (marker: string): DeskFx =>
+    jobFx({ gmailThreads: THREADS, gmailThrowList: marker, tables: { tlp_shifts: SHIFTS, mail_sla: [], mail_approvals: [], popups: [], mail_approval_log: [] } })
+
+  it('a failed SLA half leaves the approvals half working -> warn heartbeat + joined note', async () => {
+    const f = halfFx('chargeback') // the sla query contains it; the approval query does not
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('jobMailDesk', [], fixture)
+    const portRes = await portCall(() => jobMailDesk())
+    expectSame(portRes, legacyRes, 'jobMailDesk sla-fail')
+    expect(legacyRes.ok).toEqual({ note: 'Response tracking failed: Gmail list failed (simulated) 2 approval threads.' })
+    expectStoreSame('mail_approvals', 'mail_approvals', 'approvals still synced')
+    // warn heartbeat: the later implicit ok beat must not downgrade it; the note is the joined line.
+    const legacyHealth = deskTable('Health').filter((r) => r.job === 'mail_desk')
+    expect(legacyHealth.length).toBe(1)
+    expect(legacyHealth[0].last_status).toBe('warn')
+    const portHealth = (hubDb.tables.health || []).filter((r) => r.job === 'mail_desk')
+    expect(portHealth.length).toBe(1)
+    expect(portHealth[0].last_status).toBe('warn')
+    expect(portHealth[0].last_note).toBe(legacyHealth[0].last_note)
+    expect(deskProps().DQ_LAST_mail_desk).toBe(ISO(NOW))
+  })
+
+  it('a failed approvals half leaves the SLA half working -> warn heartbeat + joined note', async () => {
+    const f = halfFx('refund approval') // only the approvals query carries it
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('jobMailDesk', [], fixture)
+    const portRes = await portCall(() => jobMailDesk())
+    expectSame(portRes, legacyRes, 'jobMailDesk approvals-fail')
+    expect(legacyRes.ok).toEqual({ note: '6 response-tracked messages from 7 threads. Approvals failed: Gmail list failed (simulated)' })
+    expectStoreSame('mail_sla', 'mail_sla', 'sla still synced')
+    const portHealth = (hubDb.tables.health || []).filter((r) => r.job === 'mail_desk')
+    expect(portHealth[0].last_status).toBe('warn')
+    expect(deskTable('Health').filter((r) => r.job === 'mail_desk')[0].last_status).toBe('warn')
+  })
+})
+
+describe('mailDeskRefresh (wave-2 extension)', () => {
+  const refreshFx = (over: DeskFx = {}): DeskFx =>
+    fx({ gmailThreads: THREADS, tables: { tlp_shifts: SHIFTS, mail_sla: [], mail_approvals: [], popups: [], mail_approval_log: [] }, ...over })
+
+  it('a non-approver TL is refused with the exact message', async () => {
+    await deskSame('mailDeskRefresh', [], refreshFx({ userEmail: 'menna@dabdoob.com' }), () => mailDeskRefresh(), 'refresh non-approver')
+  })
+  it('a non-admin approver passes the refresh gate but requireJobCaller refuses the hand-run', async () => {
+    const f = refreshFx({ userEmail: 'noha@dabdoob.com', settings: { mail_approver_emails: ['admin@dabdoob.com', 'k.elnaggar@dabdoob.com', 'noha@dabdoob.com'] } })
+    await deskSame('mailDeskRefresh', [], f, () => mailDeskRefresh(), 'refresh approver non-admin')
+  })
+  it('a roster admin outside admin_emails cannot hand-run the job (requireJobCaller_ gate)', async () => {
+    // k.elnaggar passes the refresh gate (roster admin + approver) but
+    // requireJobCaller_ checks admin_emails only — refused identically.
+    await deskSame('mailDeskRefresh', [], refreshFx({ userEmail: 'k.elnaggar@dabdoob.com' }), () => mailDeskRefresh(), 'refresh roster-admin non-admin_emails')
+  })
+  it('an admin_emails caller runs the job then re-reads the page', async () => {
+    const f = refreshFx() // admin@dabdoob.com: in admin_emails AND mail_approver_emails
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mailDeskRefresh', [], fixture)
+    const portRes = await portCall(() => mailDeskRefresh())
+    expectSame(portRes, legacyRes, 'mailDeskRefresh admin approver')
+    expectStoreSame('mail_sla', 'mail_sla', 'mail_sla after admin refresh')
+    expectStoreSame('mail_approvals', 'mail_approvals', 'mail_approvals after admin refresh')
+  })
+})
+
+describe('installDeskTriggers (wave-2 extension)', () => {
+  it('admin: the cadence note differs on purpose (D-SCHED pg_cron vs 10-min trigger)', async () => {
+    const f = fx()
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('installDeskTriggers', [], fixture)
+    const portRes = await portCall(() => installDeskTriggers())
+    expect(legacyRes.ok).toBe('Installed: jobMailDesk every 10 minutes.')
+    // The port cannot install a GAS trigger; the pg_cron schedule note documents the cadence (WP-15).
+    expect(portRes.ok).toBe('Installed: jobMailDesk every 15 minutes (pg_cron per D-SCHED; not installable from the app).')
+  })
+  it('a non-admin is refused identically', async () => {
+    await deskSame('installDeskTriggers', [], fx({ userEmail: 'noha@dabdoob.com' }), () => installDeskTriggers(), 'install non-admin')
+    await deskSame('installDeskTriggers', [], fx({ userEmail: 'agent@dabdoob.com' }), () => installDeskTriggers(), 'install agent')
+  })
+  it('view-as refuses identically (newTrigger_ guard == assertWritable)', async () => {
+    const f = fx({
+      tables: {
+        view_as: [{ owner_email: 'admin@dabdoob.com', action: 'start', target_email: 'k.elnaggar@dabdoob.com', app: 'desk', submitted_by: 'admin@dabdoob.com', submitted_at: ISO(NOW - H) }],
+      },
+    })
+    await deskSame('installDeskTriggers', [], f, () => installDeskTriggers(), 'install view-as')
+  })
+})
+
+describe('mailDeskPage dryRun + approvals ordering (wave-2 extension)', () => {
+  const pageFx = (over: DeskFx = {}): DeskFx =>
+    fx({
+      props: { DQ_LAST_mail_desk: '2026-10-08T08:00:00.000Z' },
+      tables: {
+        mail_sla: [],
+        mail_approvals: [
+          approvalRow(),
+          approvalRow({ thread_id: 't6', status: 'approved', decided_by: 'k.elnaggar@dabdoob.com', decided_at: ISO(NOW - 2 * H), sent_status: 'dry_run', updated_at: ISO(NOW - 2 * H) }),
+          approvalRow({ thread_id: 't-stuck', status: 'sending', client_token: 'tok-old', updated_at: ISO(NOW - 10 * 60000) }),
+        ],
+      },
+      ...over,
+    })
+
+  it("dryRun is false for the string 'false', boolean false, and true when unset", async () => {
+    const f1 = pageFx({ settings: { mail_approval_dry_run: 'false' } })
+    const { port: p1 } = await deskSame('mailDeskPage', [], f1, () => mailDeskPage(), 'dryRun string false')
+    expect((p1.ok as Row).dryRun).toBe(false)
+    const f2 = pageFx({ settings: { mail_approval_dry_run: false } })
+    const { port: p2 } = await deskSame('mailDeskPage', [], f2, () => mailDeskPage(), 'dryRun boolean false')
+    expect((p2.ok as Row).dryRun).toBe(false)
+    const f3 = pageFx({ settings: { mail_approval_dry_run: undefined } })
+    delete (f3.settings as Record<string, unknown>).mail_approval_dry_run
+    const { port: p3 } = await deskSame('mailDeskPage', [], f3, () => mailDeskPage(), 'dryRun default true')
+    expect((p3.ok as Row).dryRun).toBe(true)
+  })
+  it('approvals sort pending-first then receivedAt desc', async () => {
+    const { port, legacy } = await deskSame('mailDeskPage', [], pageFx(), () => mailDeskPage(), 'approvals ordering')
+    const order = (r: { ok?: unknown }) => ((r.ok as Row).approvals as Row[]).map((a) => a.threadId + ':' + a.status)
+    expect(order(port)).toEqual(order(legacy))
+    expect((order(port) as string[])[0]).toBe('t7:pending') // pending outranks sending/decided
+  })
+})
+
+describe('mailApprovalReset 5-minute boundary (wave-2 extension)', () => {
+  it('updated_at exactly now-5min still refuses (<=); now-5min-1ms resets', async () => {
+    const edge = approvalRow({ status: 'sending', client_token: 'tok-x', decided_by: 'admin@dabdoob.com', updated_at: ISO(NOW - 5 * 60000) })
+    await deskSame('mailApprovalReset', ['t7'], fx({ tables: { mail_approvals: [edge], mail_approval_log: [] } }), () => mailApprovalReset('t7'), 'reset exact boundary')
+    const past = approvalRow({ status: 'sending', client_token: 'tok-x', decided_by: 'admin@dabdoob.com', updated_at: ISO(NOW - 5 * 60000 - 1) })
+    const f = fx({ tables: { mail_approvals: [past], mail_approval_log: [] } })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mailApprovalReset', ['t7'], fixture)
+    const portRes = await portCall(() => mailApprovalReset('t7'))
+    expectSame(portRes, legacyRes, 'reset past boundary')
+    expect((legacyRes.ok as Row).status).toBe('pending')
+    expectStoreSame('mail_approvals', 'mail_approvals', 'approvals after boundary reset')
+  })
+})
+
+describe('mailApprovalDecide real-send path (wave-2 extension)', () => {
+  const decideFx = (rows: Row[] = [approvalRow()], over: DeskFx = {}): DeskFx =>
+    fx({ tables: { mail_approvals: rows, mail_approval_log: [] }, ...over })
+  const sendFailStub = () =>
+    deskOracle().eval(`Gmail.Users.Messages.send = function () { throw new Error('Gmail send is not configured (GMAIL_SEND_ENABLED + GMAIL_API_URL/GMAIL_API_KEY).'); };`)
+  const sendOkStub = () =>
+    deskOracle().eval(`Gmail.Users.Messages.send = function (res, u) { (__FIXTURES__.gmailSent = __FIXTURES__.gmailSent || []).push(res); return { id: 'sent-1' }; };`)
+  const gmailSent = () => JSON.parse(deskOracle().eval('JSON.stringify(__FIXTURES__.gmailSent || [])')) as { raw: string; threadId: string }[]
+
+  it('unconfigured send: send_failed + pending restore + failed mail_log row (both sides)', async () => {
+    sendFailStub() // legacy's Gmail.Users.Messages.send throws what the port's closed adapter would say
+    vi.stubEnv('GMAIL_SEND_ENABLED', '')
+    vi.stubEnv('GMAIL_API_URL', '')
+    vi.stubEnv('GMAIL_API_KEY', '')
+    try {
+      const f = decideFx([approvalRow()], { settings: { mail_approval_dry_run: false } })
+      const fixture = deskInstall(f)
+      const legacyRes = deskCall('mailApprovalDecide', ['t7', 'approved', 'ok', 'tok-1'], fixture)
+      const portRes = await portCall(() => mailApprovalDecide('t7', 'approved', 'ok', 'tok-1'))
+      expectSame(portRes, legacyRes, 'unconfigured send')
+      expect(portRes.err).toBe('The reply was not sent (Gmail send is not configured (GMAIL_SEND_ENABLED + GMAIL_API_URL/GMAIL_API_KEY).). The mail is still pending.')
+      // The claim rolls back to pending identically.
+      expectStoreSame('mail_approvals', 'mail_approvals', 'approvals after send_failed')
+      const restored = (hubDb.tables.mail_approvals || [])[0]
+      expect(restored.status).toBe('pending')
+      expect(restored.client_token).toBe('')
+      // mail_approval_log gets the send_failed row with the same error text.
+      expectStoreSame('mail_approval_log', 'mail_approval_log', 'log after send_failed')
+      const log = (hubDb.tables.mail_approval_log || [])[0]
+      expect(log.action).toBe('send_failed')
+      expect(log.sent_status).toBe('failed')
+      // MailLog records the failed attempt on both sides (sendGmailReply_ always logs;
+      // the port logs the same 'failed' row in its closed-adapter branch).
+      expectTabSame('mail_log', 'MailLog', 'mail_log after send_failed')
+      const ml = (hubDb.tables.mail_log || [])[0]
+      expect(ml.status).toBe('failed')
+      expect(ml.error).toBe(log.error)
+    } finally {
+      vi.unstubAllEnvs()
+      sendOkStub() // restore the recording stub for later tests
+    }
+  })
+
+  it('configured send: sent + sent_message_id + MailLog + identical RFC 2822 bytes', async () => {
+    sendOkStub()
+    const f = decideFx([approvalRow()], { settings: { mail_approval_dry_run: false } })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mailApprovalDecide', ['t7', 'approved', 'Proceed.', 'tok-1'], fixture)
+    const sentBodies: { raw?: string; threadId?: string }[] = []
+    vi.stubEnv('GMAIL_SEND_ENABLED', 'true')
+    vi.stubEnv('GMAIL_API_URL', 'https://gmail.test/send')
+    vi.stubEnv('GMAIL_API_KEY', 'key-1')
+    vi.stubGlobal('fetch', async (_url: unknown, opts: { body?: unknown }) => {
+      sentBodies.push(JSON.parse(String((opts as { body?: string }).body)))
+      return { ok: true, json: async () => ({ id: 'sent-1' }) }
+    })
+    try {
+      const portRes = await portCall(() => mailApprovalDecide('t7', 'approved', 'Proceed.', 'tok-1'))
+      expectSame(portRes, legacyRes, 'mailApprovalDecide real send')
+      const final = (legacyRes.ok as Row)
+      expect(final.status).toBe('approved')
+      expect(final.sentStatus).toBe('sent')
+      expectStoreSame('mail_approvals', 'mail_approvals', 'approvals after send')
+      expectStoreSame('mail_approval_log', 'mail_approval_log', 'log after send')
+      expectTabSame('mail_log', 'MailLog', 'mail_log after send')
+      const approval = (hubDb.tables.mail_approvals || [])[0]
+      expect(approval.sent_message_id).toBe('sent-1')
+      const mlog = (hubDb.tables.mail_log || [])[0]
+      expect(mlog.status).toBe('sent')
+      // The wire payload differs in shape (GAS wants base64url raw, the adapter POSTs raw
+      // text) but the RFC 2822 bytes are the same mdReplyMime_ output.
+      const legacySent = gmailSent()
+      expect(legacySent.length).toBe(1)
+      expect(legacySent[0].threadId).toBe('t7')
+      expect(sentBodies.length).toBe(1)
+      expect(sentBodies[0].threadId).toBe('t7')
+      const legacyMime = Buffer.from(String(legacySent[0].raw).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')
+      expect(legacyMime).toBe(sentBodies[0].raw)
+    } finally {
+      vi.unstubAllEnvs()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('the effective-user "me" is stripped from Cc in legacy only (pinned D-GOOGLE divergence)', async () => {
+    sendOkStub()
+    // finance@dabdoob.com sits in t7's Cc. Legacy me = Session.getEffectiveUser() strips it;
+    // the port has no mailbox identity (me = ''), so its reply Cc keeps it.
+    const f = decideFx([approvalRow()], { settings: { mail_approval_dry_run: false }, effectiveUserEmail: 'finance@dabdoob.com' })
+    const fixture = deskInstall(f)
+    const legacyRes = deskCall('mailApprovalDecide', ['t7', 'approved', 'ok', 'tok-1'], fixture)
+    vi.stubEnv('GMAIL_SEND_ENABLED', 'true')
+    vi.stubEnv('GMAIL_API_URL', 'https://gmail.test/send')
+    vi.stubEnv('GMAIL_API_KEY', 'key-1')
+    vi.stubGlobal('fetch', async () => ({ ok: true, json: async () => ({ id: 'sent-1' }) }))
+    try {
+      const portRes = await portCall(() => mailApprovalDecide('t7', 'approved', 'ok', 'tok-1'))
+      const legacyLog = deskStore('mail_approval_log')[0]
+      const portLog = (hubDb.tables.mail_approval_log || [])[0]
+      expect(legacyLog.cc).toBe('team@vendor.com')
+      expect(portLog.cc).toBe('team@vendor.com,finance@dabdoob.com')
+      const legacyMl = deskTable('MailLog')[0]
+      const portMl = (hubDb.tables.mail_log || [])[0]
+      expect(legacyMl.cc).toBe('team@vendor.com')
+      expect(portMl.cc).toBe('team@vendor.com,finance@dabdoob.com')
+      // Everything else in the envelope still matches.
+      expect((legacyRes.ok as Row).status).toBe('approved')
+      expect((portRes.ok as Row).status).toBe('approved')
+    } finally {
+      vi.unstubAllEnvs()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('view-as + invalid decision: legacy validates before its guarded write; so does the port', async () => {
+    // Ordering pin: mailApprovalDecide checks decision/text/token before the claim's
+    // guarded dqUpsertIn_ — the port's assertWritable sits at the same spot.
+    const f = decideFx([approvalRow()], {
+      tables: {
+        mail_approvals: [approvalRow()],
+        mail_approval_log: [],
+        view_as: [{ owner_email: 'admin@dabdoob.com', action: 'start', target_email: 'k.elnaggar@dabdoob.com', app: 'desk', submitted_by: 'admin@dabdoob.com', submitted_at: ISO(NOW - H) }],
+      },
+    })
+    await deskSame('mailApprovalDecide', ['t7', 'bogus', '', 'tok-1'], f, () => mailApprovalDecide('t7', 'bogus', '', 'tok-1'), 'view-as + invalid decision')
+    await deskSame('mailApprovalDecide', ['t7', 'approved', 'ok', 'tok-1'], f, () => mailApprovalDecide('t7', 'approved', 'ok', 'tok-1'), 'view-as + valid decide')
+  })
+})
+
+describe('tlPerformancePage partial failure (wave-2 extension)', () => {
+  it('a failed tlp_team read lands in notes; the section is null; the rest renders', async () => {
+    // tlp_team exists but its data read dies mid-scan (failTabs) on the legacy side —
+    // the same failure the port sees when the Postgres relation is missing (hubDb.missing).
+    // The thrown text is hub-fakes' own relation message, so the note strings match exactly.
+    const f = fx({
+      failTabs: ['tlp_team'],
+      tables: {
+        tlp_team: [{ tl_email: 'noha@dabdoob.com', quality: 90, fcr: 70, productivity: 80, agents: 3, month: '2026-10', updated_at: ISO(NOW - 86400000), kpi_score: 85, kpi_prod: 80, kpi_qual: 90, kpi_fcr: 70, kpi_behavior: 100, kpi_agents: 3, ol_agents: 0, ineligible_agents: 0, red_zone: 0, action_plan: 0, probation_agents: 0, partial_agents: 0 }],
+        tlp_resp_ratings: [],
+        tlp_area_metrics: [],
+        tlp_queue_daily: [],
+        tlp_kb: [],
+        tlp_otd: [],
+        mail_sla: [],
+        actions: [],
+        action_task_details: [],
+      },
+    })
+    const fixture = deskInstall(f)
+    hubDb.missing.add('tlp_team') // the same failure, port-side
+    const legacyRes = deskCall('tlPerformancePage', ['noha@dabdoob.com'], fixture)
+    const portRes = await portCall(() => tlPerformancePage('noha@dabdoob.com'))
+    // notes/kb normalization as in the earlier page tests: legacy materializes a kb key
+    // only when a Knowledge base area exists (none here), the port emits kb: null there too.
+    expectSame(portRes, legacyRes, 'tlPerformancePage partial failure')
+    const page = legacyRes.ok as Row
+    expect(page.team).toBeNull()
+    expect((page.notes as string[]).some((n) => n.indexOf('Team scores could not be read: relation "public.tlp_team" does not exist') !== -1)).toBe(true)
+    expect((page.areas as Row[]).length).toBeGreaterThan(0) // remaining sections still render
+  })
+})
+
+describe('tlpRateArea ordering under view-as (wave-2 extension)', () => {
+  const rateFx = (): DeskFx =>
+    fx({
+      tables: {
+        tlp_resp_ratings: [],
+        view_as: [{ owner_email: 'admin@dabdoob.com', action: 'start', target_email: 'k.elnaggar@dabdoob.com', app: 'desk', submitted_by: 'admin@dabdoob.com', submitted_at: ISO(NOW - H) }],
+      },
+    })
+  it("unknown area beats the read-only refusal — validation precedes the guarded write", async () => {
+    // Legacy checks areas before dqUpsertIn_'s viewAsGuard_; the port's assertWritable
+    // sits at the same spot now, so the message matches instead of VIEW_AS_READONLY.
+    await deskSame('tlpRateArea', ['noha@dabdoob.com', 'Nope', 80, 'long enough note'], rateFx(), () =>
+      tlpRateArea('noha@dabdoob.com', 'Nope', 80, 'long enough note'),
+    )
+  })
+  it('below-threshold note requirement precedes the guarded write too', async () => {
+    await deskSame('tlpRateArea', ['noha@dabdoob.com', 'Refunds', 50, 'short'], rateFx(), () =>
+      tlpRateArea('noha@dabdoob.com', 'Refunds', 50, 'short'),
+    )
+  })
+  it('a fully valid rating still refuses at the write boundary', async () => {
+    await deskSame('tlpRateArea', ['noha@dabdoob.com', 'Refunds', 80, 'long enough note'], rateFx(), () =>
+      tlpRateArea('noha@dabdoob.com', 'Refunds', 80, 'long enough note'),
+    )
+  })
+})
+
+describe('kpiLogRemove claim ordering (wave-2 extension)', () => {
+  const seededFx = (over: DeskFx = {}): DeskFx =>
+    fx({
+      tables: {
+        kpi_behaviour_log: [
+          { log_id: 'BH_keep', email: 'agent@dabdoob.com', date: '2026-10-01', note: 'Rude', logged_by: 'admin@dabdoob.com', logged_at: ISO(NOW - 7 * 86400000), removed_by: '', removed_at: '' },
+        ],
+        kpi_leave_log: [],
+        tlp_ticket_exclusions: [],
+      },
+      ...over,
+    })
+
+  it('a second remove after the first succeeds is refused identically', async () => {
+    const f = seededFx()
+    const fixture = deskInstall(f)
+    const legacy1 = deskCall('kpiLogRemove', ['behaviour', 'BH_keep'], fixture)
+    const port1 = await portCall(() => kpiLogRemove('behaviour', 'BH_keep'))
+    expectSame(port1, legacy1, 'first remove')
+    // __reset__ re-seeds __FIXTURES__ from the host fixture on every call — feed
+    // the oracle the store cells it stamped in call #1 so the second remove sees
+    // the removed row (the port reads its own updated hubDb either way).
+    fixture.spreadsheets = fixture.spreadsheets || {}
+    fixture.spreadsheets['live-store'] = { ...(fixture.spreadsheets['live-store'] || {}), kpi_behaviour_log: deskSheetCells('live-store', 'kpi_behaviour_log') }
+    const legacy2 = deskCall('kpiLogRemove', ['behaviour', 'BH_keep'], fixture)
+    const port2 = await portCall(() => kpiLogRemove('behaviour', 'BH_keep'))
+    expectSame(port2, legacy2, 'second remove')
+    expect(legacy2.err).toBe('That entry is no longer there.')
+    // The port's update is now conditional (removed_at still null): a row another caller
+    // removed between the read and the update yields the same refusal — the withLock_
+    // serialization the sheet version gets for free.
+    expectStoreSame('kpi_behaviour_log', 'kpi_behaviour_log', 'behaviour log after double remove')
+  })
+
+  it('view-as: row checks precede the guarded update on both sides', async () => {
+    // An already-removed row reports 'no longer there' (the read+check runs
+    // before the guarded write on both sides — same ordering as the legacy
+    // withLock_ body); a live row reaches the guard and refuses identically.
+    const f = seededFx({
+      tables: {
+        kpi_behaviour_log: [
+          { log_id: 'BH_keep', email: 'agent@dabdoob.com', date: '2026-10-01', note: 'Rude', logged_by: 'admin@dabdoob.com', logged_at: ISO(NOW - 7 * 86400000), removed_by: '', removed_at: '' },
+          { log_id: 'BH_gone', email: 'agent@dabdoob.com', date: '2026-10-02', note: 'Old', logged_by: 'noha@dabdoob.com', logged_at: ISO(NOW - 6 * 86400000), removed_by: 'admin@dabdoob.com', removed_at: ISO(NOW - 86400000) },
+        ],
+        view_as: [{ owner_email: 'admin@dabdoob.com', action: 'start', target_email: 'k.elnaggar@dabdoob.com', app: 'desk', submitted_by: 'admin@dabdoob.com', submitted_at: ISO(NOW - H) }],
+      },
+    })
+    await deskSame('kpiLogRemove', ['behaviour', 'BH_gone'], f, () => kpiLogRemove('behaviour', 'BH_gone'), 'view-as + removed row')
+    await deskSame('kpiLogRemove', ['behaviour', 'BH_keep'], f, () => kpiLogRemove('behaviour', 'BH_keep'), 'view-as + live row')
   })
 })

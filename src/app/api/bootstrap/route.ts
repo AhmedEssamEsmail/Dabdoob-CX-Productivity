@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   currentUser, currentEmail, viewAsState, pendingPopupsFor, allOptions, appUrls,
-  pwKwTime, pwKwDate, KUWAIT_TZ,
+  pwKwTime, pwKwDate, KUWAIT_TZ, assistantOwnerEmail,
 } from '@/features/shared/platform'
 import { qaBootFlags } from '@/features/cx-quality/lib/server'
 
@@ -43,7 +43,7 @@ export async function GET() {
       serverDate: pwKwDate(now),
       serverAt: new Date(now).toISOString(),
       timeZone: KUWAIT_TZ,
-      isOwner: st.owner,
+      isOwner: user.email === (await assistantOwnerEmail()),
       app: 'hub',
       appUrls: urls,
       quality,

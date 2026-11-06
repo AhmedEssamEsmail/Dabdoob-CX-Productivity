@@ -15,13 +15,13 @@
  * stuck-'sending' reset.
  */
 
-import { db, newId } from '@/features/shared/platform/repo'
+import { db, newId, appendRow } from '@/features/shared/platform/repo'
 import { readStore, dqLastRun } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'
 import { normEmail, pwDirectory, requireJobCaller, requireRole, type Directory } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { pwKwDate, pwKwTime, pwToday, dqAddDays } from '@/features/shared/platform/time'
-import { getGmailAdapter, getGmailReadAdapter, sendGmailReply } from '@/features/shared/platform/mail'
+import { getGmailAdapter, getGmailReadAdapter, sendGmailReply, MAIL_LOG_TABLE } from '@/features/shared/platform/mail'
 import { hbBeat, hbRun } from '@/features/shared/platform/health'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { dqMarkRun_ } from './jobshared'
@@ -375,7 +375,10 @@ export async function mdSyncSla_(): Promise<string> {
   })
   const old: Record<string, Row> = {}
   ;(await rowsOf('mail_sla')).forEach((r) => {
-    old[String(r.message_id)] = r
+    // Snapshot the row: the legacy `was` is a dqReadObjects_ object the sheet
+    // write cannot mutate, while Postgres upsert here would poison the live row
+    // the `was.status !== 'replied'` check below still needs.
+    old[String(r.message_id)] = { ...r }
   })
   const stamp = new Date().toISOString()
   const rows = fresh.map((r) => {
@@ -627,7 +630,6 @@ export async function mailApprovalDecide(threadId: string, decision: string, tex
   if ((await mdApprovers_()).indexOf(user.email) === -1) {
     throw new Error('Only the approvers (Admin: mail_approver_emails) can answer approval mails.')
   }
-  await assertWritable()
   decision = String(decision || '')
   if (['approved', 'rejected', 'reply'].indexOf(decision) === -1) throw new Error('Choose Approved, Rejected or write a reply.')
   text = String(text || '').trim().slice(0, 3000)
@@ -664,6 +666,7 @@ export async function mailApprovalDecide(threadId: string, decision: string, tex
     if (row.client_token && row.client_token === clientToken) return mdApprovalOut_(row, dir)
     throw new Error('Already ' + String(row.status).replace(/_/g, ' ') + (row.decided_by ? ' by ' + dir.name(String(row.decided_by)) : '') + '. Nothing was sent.')
   }
+  await assertWritable() // legacy's viewAsGuard_ fires at dqUpsertIn_ — after the read and status checks
   {
     const { error } = await db()
       .from('mail_approvals')
@@ -685,6 +688,27 @@ export async function mailApprovalDecide(threadId: string, decision: string, tex
     // sendGmailReply_ had no dry-run switch: an unconfigured send must fail, not record 'sent'.
     if (!getGmailAdapter()) {
       err = 'Gmail send is not configured (GMAIL_SEND_ENABLED + GMAIL_API_URL/GMAIL_API_KEY).'
+      // sendGmailReply_ logs every attempt to MailLog, failed or not — the
+      // fail-closed attempt logs 'failed' the same way (best-effort like the sheet's append).
+      try {
+        await appendRow(
+          MAIL_LOG_TABLE,
+          {
+            sent_at: new Date().toISOString(),
+            to: addr.to,
+            cc: addr.cc.join(','),
+            subject: String(claimed.subject),
+            kind: 'mail_approval',
+            ref: String(claimed.thread_id),
+            status: 'failed',
+            error: err,
+            quota_left: '',
+          },
+          user.email,
+        )
+      } catch (logErr) {
+        console.log('mail_log append failed: ' + ((logErr as Error)?.message || logErr))
+      }
     } else {
       try {
         const mime = mdReplyMime_({ to: addr.to, cc: addr.cc, subject: String(claimed.subject), inReplyTo: String(claimed.rfc_message_id), body })
@@ -744,12 +768,12 @@ export async function mailApprovalDecide(threadId: string, decision: string, tex
 export async function mailApprovalReset(threadId: string) {
   const user = await requireRole(['admin', 'tl', 'agent'])
   if ((await mdApprovers_()).indexOf(user.email) === -1) throw new Error('Only the approvers can reset an approval mail.')
-  await assertWritable()
   const dir = await pwDirectory()
   const row = (await rowsOf('mail_approvals')).filter((r) => String(r.thread_id) === String(threadId))[0]
   if (!row) throw new Error('That approval mail is no longer in the queue. Reload the page.')
   if (row.status !== 'sending') throw new Error('It is ' + String(row.status).replace(/_/g, ' ') + ', not stuck.')
   if (Date.now() - Date.parse(String(row.updated_at || '')) <= MD_STUCK_MS) throw new Error('It is still sending. Try again in a few minutes.')
+  await assertWritable() // legacy's viewAsGuard_ fires at dqUpsertIn_ — after the row checks
   const stamp = new Date().toISOString()
   const { error } = await db()
     .from('mail_approvals')

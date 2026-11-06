@@ -38,6 +38,7 @@ import {
   scSources_,
   scWorkbookFor_,
 } from '@/features/cx-people/lib/scorecard'
+import { pwTasksOut_ } from '@/features/cx-people/lib/work-core'
 import type { Cfg } from '@/features/shared/lib/adapters'
 
 const R = rng(0x77aa11)
@@ -194,6 +195,176 @@ describe('scorecard math', () => {
       const pMr = callPort(() => scMonthRows_(oracle().objects('sc_months', mfx) as never))
       expect(diffPath(lMr, pMr)).toBeNull()
     }
+  })
+
+  it('pwFit_ — exact fit boundaries (WP-23)', () => {
+    // est<=0 always fits; est>free does_not_fit; est>0.8*free tight; else fits
+    const cases: [unknown, unknown][] = [
+      [0, 10], [-1, 10], [-0.5, 10], [10, 10], [8, 10], [8.0001, 10], [7.9999, 10],
+      [10.0001, 10], [10, 0], [10, -1], [0, 0], [0, -5], ['x', 10], [10, 'x'],
+      ['5', '10'], [1e-9, 10],
+    ]
+    cases.forEach(([est, free], i) => same('pwFit_', [est, free], () => pwFit_(est as number, free as number), {}, `fit edge ${i}`))
+  })
+
+  it('scDerive_ — FCR/audit/target absence edges (WP-23)', () => {
+    const a = {
+      days: 3, inbTarget: 300, inbAchieved: 40, txtTarget: 100, txtAchieved: 10,
+      waTarget: 60, waAchieved: 9, audits: 4, scoreXaudits: 380,
+    }
+    // FCR: excluded-only -> fcr null (excluded never enters the denominator)
+    same('scDerive_', [a, { passed: 0, failed: 0, excluded: 9 }, { found: true, cases: 0, details: [] }, null], () =>
+      scDerive_(a as never, { passed: 0, failed: 0, excluded: 9 }, { found: true, cases: 0, details: [] }, null), {}, 'fcr excl only')
+    same('scDerive_', [a, { passed: 1, failed: 0, excluded: 4 }, { found: true, cases: 0, details: [] }, null], () =>
+      scDerive_(a as never, { passed: 1, failed: 0, excluded: 4 }, { found: true, cases: 0, details: [] }, null), {}, 'fcr 1/0')
+    same('scDerive_', [a, null, { found: true, cases: 0, details: [] }, null], () =>
+      scDerive_(a as never, null, { found: true, cases: 0, details: [] }, null), {}, 'fcr null')
+    same('scDerive_', [a, { passed: 0, failed: 3, excluded: 0 }, { found: true, cases: 0, details: [] }, null], () =>
+      scDerive_(a as never, { passed: 0, failed: 3, excluded: 0 }, { found: true, cases: 0, details: [] }, null), {}, 'fcr all fail')
+    // audits 0 -> qual null; totalTarget 0 -> prod null
+    same('scDerive_', [{ ...a, audits: 0, scoreXaudits: 0 }, null, { found: true, cases: 0, details: [] }, null], () =>
+      scDerive_({ ...a, audits: 0, scoreXaudits: 0 } as never, null, { found: true, cases: 0, details: [] }, null), {}, 'audits 0')
+    same('scDerive_', [
+      { days: 0, inbTarget: 0, inbAchieved: 0, txtTarget: 0, txtAchieved: 0, waTarget: 0, waAchieved: 0, audits: 0, scoreXaudits: 0 },
+      null, null, null,
+    ], () =>
+      scDerive_({ days: 0, inbTarget: 0, inbAchieved: 0, txtTarget: 0, txtAchieved: 0, waTarget: 0, waAchieved: 0, audits: 0, scoreXaudits: 0 } as never, null, null, null), {}, 'all zero')
+    // behaviour: unknown (found false) vs found with cases vs found clean
+    for (const b of [null, { found: false, cases: 7, details: [] }, { found: true, cases: 0, details: [] }, { found: true, cases: 1, details: [{ date: '2026-10-15', note: 'n' }] }]) {
+      same('scDerive_', [a, { passed: 9, failed: 1, excluded: 0 }, b, null], () =>
+        scDerive_(a as never, { passed: 9, failed: 1, excluded: 0 }, b as never, null), {}, `bhv ${JSON.stringify(b)}`)
+    }
+    // kctx: probation bands vs configured bands, OL halving, leave ineligibility
+    for (const k of [null, {}, { probationMonth: 1 }, { probationMonth: 2 }, { probationMonth: 3 }, { probationMonth: 4 }, { olCases: 1 }, { leaveIneligible: true }, { olCases: 2, leaveIneligible: true, probationMonth: 3 }]) {
+      same('scDerive_', [a, { passed: 15, failed: 5, excluded: 2 }, { found: true, cases: 1, details: [] }, k], () =>
+        scDerive_(a as never, { passed: 15, failed: 5, excluded: 2 }, { found: true, cases: 1, details: [] }, k as never), {}, `kctx ${JSON.stringify(k)}`)
+    }
+  })
+
+  it('scAggregate_ / scDayRows_ — kctx variants (WP-23)', () => {
+    // Fixture-driven kctx inside the shared oracle: reads __FIXTURES__.kctxMap.
+    oracle().eval(`globalThis.__fn_kctxMap__ = function (e) {
+      var m = (__FIXTURES__ && __FIXTURES__.kctxMap) || {};
+      // The real scKpiCtx_ never returns null: unmapped emails get the zero-context.
+      return m[String(e).trim().toLowerCase()] || { probationMonth: 0, olCases: 0, leaveIneligible: false };
+    }`)
+    const daily = [
+      { email: 'a@x.com', name: 'Agent A', date: '2026-10-27', matrix_day: 1, inb_target: 300, inb_achieved: 30, txt_target: 100, txt_achieved: 10, wa_target: 60, wa_achieved: 9, audits: 4, score_x_audits: 380, fcr_passed: 10, fcr_failed: 2, fcr_excluded: 1 },
+      { email: 'a@x.com', name: 'Agent A', date: '2026-10-28', matrix_day: 1, inb_target: 280, inb_achieved: 10, txt_target: 90, txt_achieved: 9, wa_target: 55, wa_achieved: 8, audits: 0, score_x_audits: 0, fcr_passed: 3, fcr_failed: 4, fcr_excluded: 0 },
+      { email: 'b@x.com', name: 'Agent B', date: '2026-10-28', matrix_day: 1, inb_target: 200, inb_achieved: 60, txt_target: 50, txt_achieved: 20, wa_target: 40, wa_achieved: 15, audits: 2, score_x_audits: 190, fcr_passed: 0, fcr_failed: 0, fcr_excluded: 6 },
+      { email: 'a@x.com', name: 'Agent A', date: '2026-10-28', matrix_day: 0, inb_target: 0, inb_achieved: 0, txt_target: 0, txt_achieved: 0, wa_target: 0, wa_achieved: 0, audits: 0, score_x_audits: 0, fcr_passed: 2, fcr_failed: 1, fcr_excluded: 0 },
+      { email: 'fcr@x.com', name: 'Fcr Only', date: '2026-10-28', matrix_day: 0, inb_target: 0, inb_achieved: 0, txt_target: 0, txt_achieved: 0, wa_target: 0, wa_achieved: 0, audits: 0, score_x_audits: 0, fcr_passed: 5, fcr_failed: 1, fcr_excluded: 0 },
+    ]
+    const cases = [
+      { email: 'a@x.com', date: '2026-10-27', note: 'late' },
+      { email: 'a@x.com', date: '', month: '2026-10', note: 'undated' },
+    ]
+    const who = { 'a@x.com': { name: 'Agent A', tlName: 'TL One', tlEmail: 'tl@x.com' } }
+    const maps: Record<string, Record<string, unknown> | null>[] = [
+      { 'a@x.com': { probationMonth: 1, olCases: 0, leaveIneligible: false }, 'b@x.com': { probationMonth: 4, olCases: 0, leaveIneligible: false } },
+      { 'a@x.com': { probationMonth: 2, olCases: 1, leaveIneligible: false }, 'b@x.com': { probationMonth: 3, olCases: 0, leaveIneligible: true } },
+      { 'a@x.com': { probationMonth: 0, olCases: 2, leaveIneligible: true } },
+      {},
+    ]
+    maps.forEach((kctxMap, i) => {
+      const fx = baseFixtures({ kctxMap } as never)
+      const kctxPort = (e: string) =>
+        (kctxMap as Record<string, never>)[String(e).trim().toLowerCase()] ||
+        ({ probationMonth: 0, olCases: 0, leaveIneligible: false } as never)
+      same('scAggregate_', [daily, cases, true, who, '@@fn:__fn_kctxMap__'], () =>
+        scAggregate_(daily as never, cases as never, true, who as never, kctxPort), fx, `agg kctx ${i}`)
+      same('scAggregate_', [daily, cases, false, who, '@@fn:__fn_kctxMap__'], () =>
+        scAggregate_(daily as never, cases as never, false, who as never, kctxPort), fx, `agg kctx ${i} bhvF`)
+      same('scDayRows_', [daily, cases, true, 'a@x.com', '@@fn:__fn_kctxMap__'], () =>
+        scDayRows_(daily as never, cases as never, true, 'a@x.com', kctxPort), fx, `dr kctx ${i}`)
+      // The empty-map iteration is the zero-context case (scKpiCtx_ never returns null).
+    })
+  })
+
+  it('pwTasksOut_ — task fit/risk end-to-end (WP-23)', () => {
+    const nowMs = Date.parse('2026-10-28T08:00:00Z') // Wed 11:00 Kuwait
+    const iso = (ms: number) => new Date(ms).toISOString()
+    const D = 86400000
+    const roster = [
+      ['email', 'name', 'tl_email', 'country', 'role', 'active', 'days_off', 'based_in_country'],
+      ['a@x.com', 'Agent A', 'tl@x.com', 'Kuwait', 'agent', 'true', '', 'Kuwait'],
+      ['b@x.com', 'Agent B', 'tl@x.com', 'Kuwait', 'agent', 'true', 'Fri,Sat', 'Kuwait'],
+    ]
+    const fx = baseFixtures({
+      settings: {
+        shift_break_hours: 1,
+        days_off_default: [],
+        days_off_by_country: {},
+        shift_defs: { AM: { start: '09:30', end: '18:30' }, PM: { start: '13:00', end: '22:00' } },
+      },
+      data: {
+        Roster: roster,
+        holidays: [['country', 'date', 'name', 'deleted_at'], ['Kuwait', '2026-10-29', 'National Day', '']],
+      },
+      nowMs,
+    })
+    const mk = (id: string, owner: string, over: Record<string, unknown> = {}) => ({
+      action_id: id, title: 'Task ' + id, owner_email: owner, assigned_by: 'tl@x.com', due_date: '2026-11-01',
+      source_type: 'task', source_id: '', series_id: '', topic: '', status: 'open', outcome_note: '', closed_at: '',
+      closed_by: '', visibility: 'shared', track_as_task: true, carry_count: 0, source_deleted_at: '',
+      submitted_at: iso(nowMs - 5 * D), ...over,
+    })
+    const det = (id: string, start: number, end: number, over: Record<string, unknown> = {}) => ({
+      action_id: id, priority: 'P1', start_at: iso(start), deadline_at: iso(end), est_hours: 4,
+      available_hours: '', fit_status: '', progress_state: '', blocked_reason: '', rag_self: '',
+      delivered_at: '', delivery_ref: '', actual_hours: '', source_label: 'plan', assigned_anyway: '',
+      expectation: '', outcome_rating: '', outcome_note: '', rated_by: '', rated_at: '', ...over,
+    })
+    const actions = [
+      mk('T1', 'a@x.com'),                                                     // overdue (deadline before now)
+      mk('T2', 'a@x.com'),                                                     // does_not_fit (est 40 > free)
+      mk('T3', 'a@x.com'),                                                     // off_track
+      mk('T4', 'a@x.com'),                                                     // no update >= 3 working days
+      mk('T5', 'a@x.com'),                                                     // healthy, in progress
+      mk('T6', 'a@x.com', { status: 'done', closed_at: iso(nowMs - D), closed_by: 'a@x.com', outcome_note: 'shipped' }),
+      mk('T7', 'b@x.com'),                                                     // Fri/Sat days-off calendar
+      mk('T8', 'a@x.com'),                                                     // excluded: no detail row
+      mk('T9', 'a@x.com'),                                                     // planned milestone passed
+      mk('TX', 'a@x.com', { track_as_task: 'x' }),                             // not a task: filtered out
+    ]
+    const details = [
+      det('T1', nowMs - 4 * D, nowMs - 2 * D, { est_hours: 3 }),
+      det('T2', nowMs - D, nowMs + 2 * D, { est_hours: 40 }),
+      det('T3', nowMs - D, nowMs + 2 * D, { rag_self: 'off_track', progress_state: 'in_progress' }),
+      det('T4', nowMs - 6 * D, nowMs + 2 * D),
+      det('T5', nowMs - 2 * D, nowMs + 2 * D),
+      det('T6', nowMs - 5 * D, nowMs - 3 * D, { actual_hours: '3.5' }),
+      det('T7', nowMs - 2 * D, nowMs + 3 * D, { est_hours: 6 }),
+      det('T9', nowMs - 6 * D, nowMs + 4 * D),
+    ]
+    const updates = [
+      { update_id: 'U1', action_id: 'T5', kind: 'status', note: 'half', percent_complete: 55, rag: 'on_track', next_step: 'n', drive_file_id: '', file_name: '', mime_type: '', planned_milestone_id: '', submitted_by: 'a@x.com', submitted_at: iso(nowMs - D) },
+      { update_id: 'U2', action_id: 'T4', kind: 'status', note: 'old', percent_complete: 10, rag: '', next_step: '', drive_file_id: '', file_name: '', mime_type: '', planned_milestone_id: '', submitted_by: 'a@x.com', submitted_at: iso(nowMs - 5 * D) },
+      { update_id: 'U3', action_id: 'T7', kind: 'file', note: 'spec', percent_complete: '', rag: '', next_step: '', drive_file_id: 'drv1', file_name: 'f.pdf', mime_type: 'application/pdf', planned_milestone_id: 'PM1', submitted_by: 'b@x.com', submitted_at: iso(nowMs - 2 * 3600000) },
+    ]
+    const planned = [
+      { milestone_id: 'PM1', action_id: 'T7', label: 'design', target_date: '2026-10-30', done_by_update_id: '', submitted_at: iso(nowMs - 3 * D) },
+      { milestone_id: 'PM2', action_id: 'T9', label: 'kickoff', target_date: '2026-10-26', done_by_update_id: '', submitted_at: iso(nowMs - 3 * D) },
+      { milestone_id: 'PM3', action_id: 'T9', label: 'sign-off', target_date: '2026-10-25', done_by_update_id: 'UX', submitted_at: iso(nowMs - 3 * D) },
+    ]
+    const dirArg = { name: '@@fn:__fn_dir_name__' } // 'Name '+e, built into the oracle prelude
+    const calFor = (owner: string, f: string, t: string) =>
+      (callLegacy('getWorkingCalendar_', [owner, f, t], fx).ok as never[]) || []
+    const workdaysBetween = (owner: string, f: string, t: string) =>
+      (callLegacy('pwWorkingDaysBetween_', [owner, f, t], fx).ok as number) || 0
+    const cfg = JSON.parse(JSON.stringify(fx.settings)) as Cfg
+    const portDir = {
+      by: {}, admins: ['admin@dabdoob.com'],
+      person: () => null, name: (e: string) => 'Name ' + e,
+      managerOf: () => null, agentsOf: () => [], tls: () => [],
+    }
+    const l = callLegacy('pwTasksOut_', [{ dir: dirArg, actions, details, updates, planned, now: nowMs }], fx)
+    const p = callPort(() => pwTasksOut_({
+      dir: portDir as never, actions: JSON.parse(JSON.stringify(actions)), details: JSON.parse(JSON.stringify(details)),
+      updates: JSON.parse(JSON.stringify(updates)), planned: JSON.parse(JSON.stringify(planned)), now: nowMs,
+      cfg, calFor, workdaysBetween,
+    }))
+    expect(diffPath(l, p)).toBeNull()
   })
 
   it('scDerive_ — 200 vectors incl. missing KPIs and behaviour unknown', () => {

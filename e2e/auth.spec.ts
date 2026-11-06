@@ -1,57 +1,52 @@
 import { test, expect } from '@playwright/test'
+import { E2E_USERS, fillSticky, login } from './users'
 
 test.describe('Authentication Flow', () => {
   test('user can log in with valid credentials', async ({ page }) => {
-    await page.goto('/auth/login')
-    
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button[type="submit"]')
-    
+    await login(page, E2E_USERS.admin)
+
     await expect(page).toHaveURL('/')
   })
 
   test('user cannot log in with invalid credentials', async ({ page }) => {
     await page.goto('/auth/login')
-    
-    await page.fill('input[type="email"]', 'wrong@example.com')
-    await page.fill('input[type="password"]', 'wrongpassword')
+
+    await fillSticky(page, 'input[type="email"]', 'wrong@example.com')
+    await fillSticky(page, 'input[type="password"]', 'wrongpassword')
     await page.click('button[type="submit"]')
-    
-    await expect(page.locator('.error')).toBeVisible()
+
+    // Login page renders field errors as <p class="field-error" role="alert">
+    await expect(page.getByRole('alert')).toBeVisible()
   })
 
   test('user is redirected to login when accessing protected route', async ({ page }) => {
     await page.goto('/status-validation')
-    
+
     await expect(page).toHaveURL('/auth/login')
   })
 
   test('user can log out', async ({ page }) => {
     // Login first
-    await page.goto('/auth/login')
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button[type="submit"]')
-    
-    // Then logout
+    await login(page, E2E_USERS.admin)
+    await expect(page).toHaveURL('/')
+
+    // Then logout — /auth/logout redirects through /api/auth/logout, which
+    // signs the session out and lands back on the login form
     await page.goto('/auth/logout')
-    await page.click('button[type="submit"]')
-    
+
     await expect(page).toHaveURL('/auth/login')
   })
 
   test('session persists across page reloads', async ({ page }) => {
-    // Login
-    await page.goto('/auth/login')
-    await page.fill('input[type="email"]', 'test@example.com')
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button[type="submit"]')
-    
+    // Desktop viewport: the rail nav is display:none <=820px (behind Menu)
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await login(page, E2E_USERS.admin)
+    await expect(page).toHaveURL('/')
+
     // Reload page
     await page.reload()
-    
-    // Should still be logged in
-    await expect(page.locator('nav')).toBeVisible()
+
+    // Should still be logged in (#nav — the dev error overlay also renders nav)
+    await expect(page.locator('#nav')).toBeVisible()
   })
 })

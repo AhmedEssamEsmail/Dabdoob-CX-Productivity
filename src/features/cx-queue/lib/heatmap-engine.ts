@@ -41,21 +41,21 @@ export function hmSlots_(t: any): number[] {
 }
 
 /** sl: Erlang B — blocking probability for t trunks and n erlangs. */
-function hmErlangB_(t: number, n: number): number {
+export function hmErlangB_(t: number, n: number): number {
   let s = 1
   for (let a = 1; a <= t; a++) s = 1 + (s * a) / n
   return 1 / s
 }
 
 /** al: Erlang C — probability a call waits. */
-function hmErlangC_(t: number, n: number): number {
+export function hmErlangC_(t: number, n: number): number {
   if (t <= n) return 1
   const s = hmErlangB_(t, n)
   return s / (1 - (n / t) * (1 - s))
 }
 
 /** ws: one call interval — service level, ASA, occupancy. */
-function hmCallStats_(t: number, n: number, s: number, a: number) {
+export function hmCallStats_(t: number, n: number, s: number, a: number) {
   const l = (t * n) / 3600
   if (t <= 0) return { A: 0, pWait: 0, sl: 1, asa: 0, occ: 0, stable: true }
   if (s <= 0 || s <= l)
@@ -72,7 +72,7 @@ function hmCallStats_(t: number, n: number, s: number, a: number) {
 }
 
 /** ll: fewest agents to hit service level s within a seconds. */
-function hmCallStaff_(t: number, n: number, s: number, a: number, l = 500): number {
+export function hmCallStaff_(t: number, n: number, s: number, a: number, l = 500): number {
   if (t <= 0) return 0
   const r = (t * n) / 3600
   let i = Math.floor(r) + 1
@@ -114,7 +114,7 @@ export function hmDay_(t: unknown): number {
 }
 
 /** rl: the cells spread over channel|day|minute buckets at the wanted granularity. */
-function hmSpread_(t: any, n: any, s?: string) {
+export function hmSpread_(t: any, n: any, s?: string) {
   const a = n.intervalMinutes
   const l = t.intervalMinutes || a
   if (l % a !== 0 && a % l !== 0) throw new Error(`Upload interval ${l} min is incompatible with ${a} min`)
@@ -235,7 +235,7 @@ export function hmRequirement_(t: any, n: any, s?: string) {
           x += te.workSec / 3600 / l / (n.chats.ahtBasis === 'effort' ? 1 : re)
         else {
           x += te.workSec / 3600 / l
-          P += (te.volume / l) * (hmChatSlotMin_(n, u[B]) / 60) / re
+          P += ((te.volume / l) * hmChatSlotMin_(n, u[B])) / 60 / re
         }
       }
       const V = x / n.occupancyCap
@@ -302,7 +302,7 @@ export function hmRequirement_(t: any, n: any, s?: string) {
 }
 
 /** cl: dedicated pooling — one requirement per country, summed. */
-function hmDedicated_(t: any, n: any) {
+export function hmDedicated_(t: any, n: any) {
   const s = n.countries && n.countries.length ? n.countries : hmCountriesOf_(t)
   const a = s.map((i: string) => hmRequirement_(t, n, i))
   const l = a[0]
@@ -340,7 +340,7 @@ function hmDedicated_(t: any, n: any) {
 }
 
 /** dl: shift allocation — the fewest bodies whose shifts still cover every interval. */
-function hmAllocateShifts_(t: number[], n: number[], s: number, a: any[], l: any = {}) {
+export function hmAllocateShifts_(t: number[], n: number[], s: number, a: any[], l: any = {}) {
   const r = s / 60
   const i = a.map((m) => n.map((b) => m.startMin <= b && b + s <= m.endMin))
   const h = i.map((m) => m.filter(Boolean).length * r)
@@ -416,12 +416,12 @@ export function hmRoster_(t: any, n: any) {
 }
 
 /** Lt: JSON deep copy (undefined passes through). */
-function hmDeepCopy_(t: any): any {
+export function hmDeepCopy_(t: any): any {
   return t === undefined ? t : JSON.parse(JSON.stringify(t))
 }
 
 /** Rn: a plain object (not an array). */
-function hmIsObj_(t: any): boolean {
+export function hmIsObj_(t: any): boolean {
   return t && typeof t === 'object' && !Array.isArray(t)
 }
 

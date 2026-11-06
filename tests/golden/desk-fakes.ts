@@ -70,16 +70,57 @@ export function deskOracle() {
       return out;
     };
     Utilities.Charset = { UTF_8: 'UTF-8' };
-    // Gmail.Users.Threads (the mdThreads_ seam): fixtures.gmailThreads drives it.
+    Utilities.base64EncodeWebSafe = function (s) {
+      return Utilities.base64Encode(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+    };
+    // Gmail.Users.Threads (the mdThreads_ seam): fixtures.gmailThreads drives it;
+    // gmailThrowList throws when the marker is a substring of the query,
+    // gmailThrowGet throws on that thread id — both sides fail the same way.
     Gmail.Users.Threads = {
       list: function (u, o) {
         var ts = (__FIXTURES__.gmailThreads || []);
-        return { threads: ts.map(function (t) { return { id: t.id }; }) };
+        if (__FIXTURES__.gmailThrowList && String((o && o.q) || '').indexOf(String(__FIXTURES__.gmailThrowList)) !== -1) {
+          throw new Error('Gmail list failed (simulated)');
+        }
+        var max = (o && o.maxResults) || ts.length;
+        return { threads: ts.slice(0, max).map(function (t) { return { id: t.id }; }) };
       },
       get: function (u, id) {
+        if (__FIXTURES__.gmailThrowGet && String(__FIXTURES__.gmailThrowGet) === String(id)) {
+          throw new Error('Gmail get failed (simulated)');
+        }
         var t = (__FIXTURES__.gmailThreads || []).filter(function (x) { return String(x.id) === String(id); })[0];
         return { messages: (t && t.messages) || [] };
       }
+    };
+    // Gmail.Users.Messages.send (sendGmailReply_): records the raw payload so a
+    // test can compare the RFC 2822 bytes with the port's adapter call.
+    Gmail.Users.Messages.send = function (res, u) {
+      (__FIXTURES__.gmailSent = __FIXTURES__.gmailSent || []).push(res);
+      return { id: 'sent-1' };
+    };
+    // fixtures.failTabs: tab names whose data-range read fails mid-scan
+    // (dqSheet_ opens fine — missingOk tabs are auto-created — then getLastRow
+    // throws, so dqReadObjects_ propagates the way a dropped Postgres relation
+    // does through the port's .from()). The thrown message mirrors hub-fakes'.
+    var __origOpenById = SpreadsheetApp.openById;
+    SpreadsheetApp.openById = function (id) {
+      var ss = __origOpenById(id);
+      var realGet = ss.getSheetByName;
+      ss.getSheetByName = function (n) {
+        var sh = realGet(n);
+        if (sh && (__FIXTURES__.failTabs || []).indexOf(String(n)) !== -1) {
+          var realLastRow = sh.getLastRow;
+          sh.getLastRow = function () {
+            if ((__FIXTURES__.failTabs || []).indexOf(String(n)) !== -1) {
+              throw new Error('relation "public.' + n + '" does not exist');
+            }
+            return realLastRow();
+          };
+        }
+        return sh;
+      };
+      return ss;
     };
     // '@@fn:__fn_isOurs__' arg seam: reads fixtures.oursEmails (a list of lower-cased addresses).
     globalThis.__fn_isOurs__ = function (e) {
@@ -148,6 +189,12 @@ export interface DeskFx {
   gmailThreads?: { id: string; messages: Record<string, unknown>[] }[]
   /** Address list for the '@@fn:__fn_isOurs__' pure ctx seam. */
   oursEmails?: string[]
+  /** When the query contains this marker, Threads.list / listMessages throws 'Gmail list failed (simulated)'. */
+  gmailThrowList?: string
+  /** Threads.get / getMessage throws 'Gmail get failed (simulated)' on this id. */
+  gmailThrowGet?: string
+  /** Live-store tab names whose post-open row scan throws 'relation "public.<name>" does not exist' (mirrors hubDb.missing). */
+  failTabs?: string[]
   [key: string]: unknown
 }
 
@@ -217,17 +264,24 @@ export function deskInstall(fx: DeskFx): GoldenFixture {
   const spreadsheets: Record<string, Record<string, unknown[][]>> = { ...(fx.spreadsheets || {}) }
   spreadsheets[LIVE_STORE] = { ...(spreadsheets[LIVE_STORE] || {}), ...live }
 
-  // The port-side Gmail read adapter, fed by the same fixture object.
+  // The port-side Gmail read adapter, fed by the same fixture object. The same
+  // gmailThrowList / gmailThrowGet markers drive matching failures on this side.
   const threads = fx.gmailThreads || []
   setGmailReadAdapter(
     threads.length
       ? {
-          async listMessages(_q: string, maxResults: number) {
+          async listMessages(q: string, maxResults: number) {
+            if (fx.gmailThrowList && String(q).indexOf(String(fx.gmailThrowList)) !== -1) {
+              throw new Error('Gmail list failed (simulated)')
+            }
             const stubs: { id: string }[] = []
             threads.forEach((t) => t.messages.forEach((m) => stubs.push({ id: String(m.id) })))
             return stubs.slice(0, maxResults)
           },
           async getMessage(id: string) {
+            if (fx.gmailThrowGet && String(fx.gmailThrowGet) === String(id)) {
+              throw new Error('Gmail get failed (simulated)')
+            }
             for (const t of threads) {
               const m = t.messages.filter((x) => String(x.id) === String(id))[0]
               if (m) return m as never
@@ -252,6 +306,9 @@ export function deskInstall(fx: DeskFx): GoldenFixture {
     scriptTz: fx.scriptTz,
     gmailThreads: fx.gmailThreads,
     oursEmails: fx.oursEmails,
+    gmailThrowList: fx.gmailThrowList,
+    gmailThrowGet: fx.gmailThrowGet,
+    failTabs: fx.failTabs,
   }
 }
 

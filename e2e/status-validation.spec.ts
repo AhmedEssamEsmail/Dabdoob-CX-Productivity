@@ -1,20 +1,21 @@
 import { test, expect } from '@playwright/test'
+import { E2E_USERS, login } from './users'
 
 test.describe('Status Validation Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/auth/login')
-    await page.fill('input[type="email"]', 'tl@example.com')
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button[type="submit"]')
+    await login(page, E2E_USERS.tl)
     await page.waitForURL('/')
   })
 
   test('TL sees the GAS-style status validation shell', async ({ page }) => {
+    // Desktop viewport: the rail nav is display:none <=820px (behind Menu)
+    await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/status-validation')
 
     await expect(page.getByRole('heading', { name: 'Status validation' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Main' }).getByText('Productivity', { exact: true })).toBeVisible()
-    await expect(page.locator('.legacy-section__head h2').first()).toContainText(/\d+ to review|Nothing to review/)
+    // Ported Section header: .cx-section__head > h2.cx-section__title
+    await expect(page.locator('.cx-section__head h2').first()).toContainText(/\d+ to review|Nothing to review/)
     await expect(page.locator('body > header')).toHaveCount(0)
   })
 
@@ -25,9 +26,10 @@ test.describe('Status Validation Page', () => {
     if (await firstFlag.count()) {
       await expect(firstFlag.locator('.pv-item__who')).toBeVisible()
       await expect(firstFlag.locator('.pv-item__what')).toContainText('suggested')
-      await expect(firstFlag.locator('.legacy-chip')).toBeVisible()
+      await expect(firstFlag.locator('.cx-chip')).toBeVisible()
     } else {
-      await expect(page.locator('.legacy-panel--empty')).toBeVisible()
+      // No pending flags: the list renders empty under "Nothing to review"
+      await expect(page.locator('.pv-item')).toHaveCount(0)
     }
   })
 
@@ -63,10 +65,11 @@ test.describe('Status Validation Page', () => {
     await page.locator('.pv-form').waitFor()
 
     await page.getByRole('button', { name: /^Accept as / }).click()
-    await expect(page.locator('.pv-toast')).toContainText(/^Accepted as /)
+    // ee() toasts render as .toast inside the .toasts live region
+    await expect(page.locator('.toast')).toContainText(/^Accepted as /)
 
     // The flag leaves the queue and lands in the decided table.
     await expect(page.locator('.pv-detail')).toHaveCount(0)
-    await expect(page.locator('.pv-table')).toBeVisible()
+    await expect(page.locator('.cx-table')).toBeVisible()
   })
 })

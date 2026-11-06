@@ -150,7 +150,8 @@ export async function dqIsOffDay(
 ): Promise<boolean> {
   const p = dateKey.split('-')
   const dow = DQ_WEEKDAYS[new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()]
-  return (await dqDaysOffFor(person)).indexOf(dow) !== -1 || dqIsHoliday(person && person.based_in_country, dateKey, holidayIndex)
+  const idx = holidayIndex || (await dqHolidayIndex())
+  return (await dqDaysOffFor(person)).indexOf(dow) !== -1 || dqIsHoliday(person && person.based_in_country, dateKey, idx)
 }
 
 export function wcIsHoliday(row: Record<string, unknown> | null | undefined, date: string, st: WcState): boolean {
