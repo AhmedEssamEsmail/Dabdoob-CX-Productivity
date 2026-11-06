@@ -58,7 +58,9 @@ Remote-only operations recorded in `supabase/migrations/011_remote_reconcile.sql
 | G7 | Drive attachments (`pwSaveTaskFile_`, `action_updates.drive_file_id`) | Drive read scope or export archive |
 | G8 | V1 task import (`MigrateV1Tasks.js` V1 spreadsheet) + scorecard workbook refresh (`scRefreshMonth_` `fetchWorkbookTabs`) | Same SA share as G6 |
 
-**Status:** pending — scheduled as the final phase; every seam already degrades gracefully (skipped runs / `{configured:false}` / honest refusals).
+**PROBE 2026-11-06** (`specs/megaplan/audits/sheet-access.md`, SA `migration-reader@cx-kpis-513312.iam.gserviceaccount.com`): 19/22 sheets verified shared. Owner then shared the final 3 (CC2 Tickets `107vS_XyJRpelFPJOFditebZVca6TzUuYHq9rm0ermuk`, CC2 Live `1u_EU-LxMYzDmulIWz1cgseDaOkd8C4wXc17BFXVfNF4`, CC2 Data 2026 `1BVJFMtQMSF2-zS89A-4oxoSuw0LunqAp_YQVwl0fR-I`). **WP-34 re-probe 2026-11-06: 22/22 readable, 0 failures** — G6 share-gate fully resolved. Residual scope items (WP-34 §3): Drive API enabled but legacy attachment files still need sharing (G7); **Gmail + Calendar APIs are disabled in GCP project `cx-kpis-513312`** — G2/G3/G4 need API enablement + mailbox/calendar share or domain-wide delegation.
+
+**Status:** resolved for sheets (22/22) — G1/G5/G6/G8 unblocked; G2/G3/G4/G7 residual scope items above remain owner-side.
 
 ---
 
@@ -66,11 +68,13 @@ Remote-only operations recorded in `supabase/migrations/011_remote_reconcile.sql
 
 **Issue (revised after env audit):** `FRESHCHAT_API_KEY`, `FRESHDESK_API_KEY`/`FRESHDESK_DOMAIN`, `MAQSAM_*` are **absent from `.env.local`** — only referenced in code. `freshdesk.ts` records a skipped run when the key is missing; `qeFdFillMissingDetail_` and mail/maqsam seams are the same.
 
-**Impact:** Queue sync jobs (`freshdesk_sync`, `inflow`, `fc_messages`), TL queue metrics, `qeFdFillMissingDetail_`, mail-desk send/read — all degrade honestly but produce no data.
+**WP-34 finding (2026-11-06, `specs/megaplan/audits/credentials.md`):** `.env.production`/`.env.pulled` mark every vendor var **Vercel-Sensitive — pulls write the name but redact the value to `[SENSITIVE]`**; real values exist only in the live Vercel env, not the repo. Probes: Freshdesk tickets GET → 401, Maqsam `api.mq.maqsam.com` → 401, Freshchat → 401 (all hosts up, keys unverifiable).
 
-**Fix:** provide the live keys (`.env.local` + Vercel env). Non-destructive `GET` probes can run once present.
+**Impact:** Queue sync jobs (`freshdesk_sync`, `inflow`, `fc_messages`), TL queue metrics, `qeFdFillMissingDetail_`, mail-desk send/read — all degrade honestly but produce no data **locally** (production runs unaffected — real values are set in Vercel).
 
-**Status:** pending — keys don't exist locally at all.
+**Fix:** paste the live values into `.env.local` (or temporarily un-flag Sensitive in Vercel → re-pull): `FRESHDESK_API_KEY`, `FRESHCHAT_API_KEY`+`FRESHCHAT_DOMAIN`, `MAQSAM_API_KEY`+`MAQSAM_API_SECRET`+`MAQSAM_DOMAIN`. Same for `MIGRATION_SECRET_KEY` (only needed for the HTTP `/api/admin/migrate` route; CLI `migration/*` is unaffected).
+
+**Status:** pending — local values still absent; production vendor jobs already live.
 
 ---
 

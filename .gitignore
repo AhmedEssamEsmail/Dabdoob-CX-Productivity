@@ -51,3 +51,8 @@ migration/
 # devin work artifacts (legacy extract, harness)
 .devin/
 supabase/.temp/
+
+# Google service account keys — secrets, never commit
+cx-kpis-*.json
+*.iam.gserviceaccount.com.json
+service-account*.json
