@@ -1,6 +1,6 @@
 /**
  * Cron: jobTlQueueMetrics (TlQueue.js) — daily TL queue metrics rebuild for
- * yesterday (Kuwait). Auth matches the other cron routes: Bearer CRON_SECRET,
+ * [yesterday, today] (Kuwait). Auth matches the other cron routes: Bearer CRON_SECRET,
  * no session, or an admin.
  */
 import { NextResponse, type NextRequest } from 'next/server'
