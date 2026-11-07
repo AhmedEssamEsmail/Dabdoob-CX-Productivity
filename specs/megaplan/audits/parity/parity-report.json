@@ -1,0 +1,120 @@
+{
+  "generated": "2026-11-07T21:14:16.515Z",
+  "pages": [
+    {
+      "page": "qa-forms",
+      "verdict": "MATCH",
+      "quiesced": {
+        "legacy": true,
+        "port": true
+      },
+      "passes": {
+        "legacy": 3,
+        "port": 3
+      },
+      "diff": {
+        "classesOnlyLegacy": 0,
+        "classesOnlyPort": 0,
+        "copyOnlyLegacy": 0,
+        "copyOnlyPort": 0,
+        "structure": 0,
+        "attrs": 0,
+        "texts": 0,
+        "errors": 0
+      },
+      "error": null
+    },
+    {
+      "page": "audit-queue",
+      "verdict": "MATCH",
+      "quiesced": {
+        "legacy": true,
+        "port": true
+      },
+      "passes": {
+        "legacy": 3,
+        "port": 3
+      },
+      "diff": {
+        "classesOnlyLegacy": 0,
+        "classesOnlyPort": 0,
+        "copyOnlyLegacy": 0,
+        "copyOnlyPort": 0,
+        "structure": 0,
+        "attrs": 0,
+        "texts": 0,
+        "errors": 0
+      },
+      "error": null
+    },
+    {
+      "page": "scheduler",
+      "verdict": "MATCH",
+      "quiesced": {
+        "legacy": true,
+        "port": true
+      },
+      "passes": {
+        "legacy": 2,
+        "port": 2
+      },
+      "diff": {
+        "classesOnlyLegacy": 0,
+        "classesOnlyPort": 0,
+        "copyOnlyLegacy": 0,
+        "copyOnlyPort": 0,
+        "structure": 0,
+        "attrs": 0,
+        "texts": 0,
+        "errors": 0
+      },
+      "error": null
+    },
+    {
+      "page": "tl-performance",
+      "verdict": "MATCH",
+      "quiesced": {
+        "legacy": true,
+        "port": true
+      },
+      "passes": {
+        "legacy": 3,
+        "port": 3
+      },
+      "diff": {
+        "classesOnlyLegacy": 0,
+        "classesOnlyPort": 0,
+        "copyOnlyLegacy": 0,
+        "copyOnlyPort": 0,
+        "structure": 0,
+        "attrs": 0,
+        "texts": 0,
+        "errors": 0
+      },
+      "error": null
+    },
+    {
+      "page": "meetings",
+      "verdict": "MATCH",
+      "quiesced": {
+        "legacy": true,
+        "port": true
+      },
+      "passes": {
+        "legacy": 4,
+        "port": 4
+      },
+      "diff": {
+        "classesOnlyLegacy": 0,
+        "classesOnlyPort": 0,
+        "copyOnlyLegacy": 0,
+        "copyOnlyPort": 0,
+        "structure": 0,
+        "attrs": 0,
+        "texts": 0,
+        "errors": 0
+      },
+      "error": null
+    }
+  ]
+}
