@@ -32,6 +32,7 @@ export default function Home() {
   if (fallback.path === 'my-day') return <MyDayPage route={{ title: fallback.title }} />
   if (fallback.path === 'people-holidays')
     return <PeopleHolidaysPage route={{ title: fallback.title }} />
-  if (fallback.path === 'admin') return <AdminPage route={{ title: fallback.title }} />
+  if (fallback.path === 'admin')
+    return <AdminPage route={{ title: fallback.title, purpose: fallback.purpose }} />
   return <OverviewPage route={{ title: fallback.title }} />
 }

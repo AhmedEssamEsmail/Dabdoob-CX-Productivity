@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { migrateAll, MODULE_MAPPINGS } from '@/features/shared/migration/engine'
 import { MAPPINGS as ROUTE_MAPPINGS } from '@/features/shared/migration/mappings/route-core'
+import { assertWritable } from '@/features/shared/platform/viewas'
 
 export const maxDuration = 300
 
@@ -19,6 +20,13 @@ async function checkAdminAuth(request: Request): Promise<boolean> {
 export async function POST(request: Request) {
   if (!(await checkAdminAuth(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  // WP-42: a keyed request that also carries a session refuses while the owner
+  // is in View as (the same convention /admin/backfill + /admin/mirrors keep).
+  try {
+    await assertWritable()
+  } catch (e) {
+    return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 403 })
   }
 
   const body = await request.json().catch(() => ({})) as { tables?: string[] }

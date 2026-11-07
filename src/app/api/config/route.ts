@@ -2,6 +2,7 @@ import { supabase } from '@/features/shared/lib/supabase'
 import { apiError, dbErr } from '@/features/shared/lib/api-error'
 import { requireRole } from '@/features/shared/platform/identity'
 import { viewAsGuard } from '@/features/shared/platform/viewas'
+import { saveConfigValue } from '@/features/shared/platform/settings'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -39,21 +40,14 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    await requireRole(['admin'])
+    const user = await requireRole(['admin'])
     await viewAsGuard()
     const body = await req.json()
-    const { key, ...updateData } = body
-
-    const { data, error } = await supabase
-      .from('config')
-      .update(updateData)
-      .eq('key', key)
-      .select()
-      .single()
-
-    if (error) return dbErr('config', error)
-
-    return NextResponse.json(data)
+    /* Route through saveConfigValue (Code.js saveConfigSetting semantics):
+       typed validation + updated_by/updated_at stamps — the raw update let an
+       admin write unvalidated values with no stamps (incl. admin_emails). */
+    const clean = await saveConfigValue(String(body.key || ''), body.value, user.email)
+    return NextResponse.json({ key: String(body.key || ''), value: clean })
   } catch (e) {
     return apiError(e)
   }

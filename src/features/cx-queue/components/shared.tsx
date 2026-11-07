@@ -8,6 +8,7 @@
  */
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
+import { pageParams } from '@/features/shared/shell/gates'
 
 export const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 export const kwDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: 'numeric', month: 'short' })
@@ -116,11 +117,10 @@ export function useSe<T = any>(name: string, load: () => Promise<T>, deps: unkno
 }
 
 export function useHashParams(): URLSearchParams {
-  return useMemo(() => {
-    if (typeof location === 'undefined') return new URLSearchParams()
-    const i = location.hash.indexOf('?')
-    return new URLSearchParams(i === -1 ? '' : location.hash.slice(i + 1))
-  }, [])
+  /* The legacy read the params off '#/path?…'; the shim moves them to
+     location.search and pageParams reads both. Memoized once — the params
+     seed initial state, same as the legacy mount read. */
+  return useMemo(() => pageParams(), [])
 }
 
 // ---------------------------------------------------------------------------

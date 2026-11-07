@@ -9,6 +9,7 @@
  */
 import { useRef, useState } from 'react'
 import { Chip, useTip } from '@/features/shared/components/shell/ui'
+import { pageParams } from '@/features/shared/shell/gates'
 import {
   BasisSeg,
   DrillSection,
@@ -370,10 +371,11 @@ function BreakdownTable({
   )
 }
 
-/* --- Ua/wl/ql — the #/quality-scores?… hash params --------------------------- */
+/* --- Ua/wl/ql — the ?params on the page URL ('#/quality-scores?…' in the
+ * legacy; the shim moves them to location.search, which is also the form
+ * writeHash keeps so a reload re-applies the same filters) ----------------- */
 function readHash(): URLSearchParams {
-  const t = location.hash.indexOf('?')
-  return new URLSearchParams(t === -1 ? '' : location.hash.slice(t + 1))
+  return pageParams()
 }
 
 function writeHash(t: any) {
@@ -381,7 +383,7 @@ function writeHash(t: any) {
   if (t.tl) n.set('tl', t.tl)
   if (t.agent) n.set('agent', t.agent)
   if (t.basis === 'audit') n.set('basis', 'audit')
-  history.replaceState(null, '', `#/quality-scores?${n}`)
+  history.replaceState(null, '', `${location.pathname || '/quality-scores'}?${n}`)
 }
 
 function initialState() {

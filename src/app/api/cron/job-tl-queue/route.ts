@@ -5,6 +5,7 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { apiError } from '@/features/shared/lib/api-error'
+import { requireJobCaller } from '@/features/shared/platform/identity'
 import { jobTlQueueMetrics, rebuildTlQueueMetricsEntry } from '@/features/cx-queue/lib/tlqueue'
 
 function cronOk(req: NextRequest): boolean {
@@ -16,6 +17,9 @@ function cronOk(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   try {
     if (!cronOk(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // WP-42: the ?dates= rebuild path (rebuildTlQueueMetricsEntry) has no
+    // internal requireJobCaller — gate it here like the sibling cron routes.
+    await requireJobCaller()
     const dates = req.nextUrl.searchParams.get('dates')
     return NextResponse.json(dates ? await rebuildTlQueueMetricsEntry(dates.split(',')) : await jobTlQueueMetrics())
   } catch (e) {

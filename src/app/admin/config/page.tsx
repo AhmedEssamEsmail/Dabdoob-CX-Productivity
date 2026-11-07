@@ -20,7 +20,8 @@ export default function AdminConfigPage() {
     fetch('/api/config')
       .then(res => res.json())
       .then(data => {
-        setConfig(data.config || [])
+        // GET /api/config returns the config rows array verbatim (no envelope).
+        setConfig(Array.isArray(data) ? data : data.config || [])
         setLoading(false)
       })
       .catch(err => {

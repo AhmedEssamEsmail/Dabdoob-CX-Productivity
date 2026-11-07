@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { configAll } from '@/features/shared/platform/settings'
+import { requireJobCaller } from '@/features/shared/platform/identity'
 import { syncAllMirrors } from '@/features/shared/jobs/mirrors'
 import { apiError } from '@/features/shared/lib/api-error'
 
@@ -16,6 +17,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
+    // WP-42: sessioned callers are gated too (admin / not-in-View-as) — the same
+    // requireJobCaller convention the /api/cron/* routes carry.
+    await requireJobCaller()
     const body = (await req.json().catch(() => ({}))) as { full?: boolean }
     const cfg = await configAll()
     const results = await syncAllMirrors(cfg, { tables: ['freshchat'], full: !!body.full })

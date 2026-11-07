@@ -20,6 +20,7 @@ import { fetchJson } from './shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
 import { PAGES, APPS } from '@/features/shared/components/shell/registry'
+import { pageParams } from '@/features/shared/shell/gates'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 import { useEnterAnim } from '@/features/shared/components/shell/ui'
 
@@ -173,11 +174,10 @@ export const taskDraft: { title?: string; description?: string } = {}
 
 /* --------------------------------------------- wt() — hash ?param */
 
-/** wt(name) — the ?param inside the #/path?… hash. */
+/** wt(name) — the ?param on the page URL ('#/path?…' in the legacy; the shim
+ * moves it to location.search — pageParams reads both). */
 export function hashParam(t: string): string {
-  if (typeof location === 'undefined') return ''
-  const n = location.hash.split('?')[1] ?? ''
-  return new URLSearchParams(n).get(t) ?? ''
+  return pageParams().get(t) ?? ''
 }
 
 /* --------------------------------- the tiny options store — Wn/Ms/ln */

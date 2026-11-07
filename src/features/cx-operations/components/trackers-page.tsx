@@ -19,6 +19,7 @@ import {
 
 } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { pageParams } from '@/features/shared/shell/gates'
 
 // ---------------------------------------------------------------- API surface
 // (ee in the closure: getTrackersPage / getTrackerRecords / addTrackerRecord /
@@ -750,7 +751,9 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
   const [f, o] = useState<FieldOut | 'new' | null>(null)
   const [_, l] = useState('')
   useEffect(() => {
-    const p = new URLSearchParams(location.hash.split('?')[1] ?? '').get('t') ?? ''
+    /* ?t=<tracker> picks the initial tracker — '#/trackers?t=' in the legacy,
+       '/trackers?t=' after the shim; pageParams reads both. */
+    const p = pageParams().get('t') ?? ''
     ee.page(p).then(
       (w) => {
         de(w.current)

@@ -1,10 +1,11 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import AppShell from '@/features/shared/components/shell/AppShell'
 import HashShim from '@/features/shared/components/shell/HashShim'
+import { applyAppearance, readAppearance } from '@/features/shared/shell/i18n'
 
 /**
  * The page chrome: the ported legacy application shell (rail, nav, footer,
@@ -27,6 +28,13 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 function SiteChromeBody({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const isAuthPage = pathname.startsWith('/auth/')
+
+  /* Auth screens bypass AppShell — apply the stored cx.appearance here so
+     theme/accent/transparency still take effect (legacy ia(ca()) ran on every
+     page load; AppShell does the same for app pages). */
+  useEffect(() => {
+    if (isAuthPage) applyAppearance(readAppearance())
+  }, [isAuthPage])
 
   if (isAuthPage) {
     return (

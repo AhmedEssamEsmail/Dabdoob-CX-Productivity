@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server'
 import { requireRole, readRows } from '@/features/shared/platform'
 
 
-/** The MailLog tab for Admin: latest 200 attempts, newest first. Admin only. */
+/**
+ * MailLog read for the Admin page: latest 200 attempts, newest first. Admin
+ * only. The legacy `Nm` admin page never built its email-log block (the route
+ * stays dormant until a view exists — nothing fetches it today).
+ */
 export async function GET() {
   try {
     await requireRole(['admin'])

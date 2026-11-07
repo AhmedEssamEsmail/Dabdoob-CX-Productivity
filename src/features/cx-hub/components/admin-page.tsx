@@ -1,13 +1,13 @@
 'use client'
 
-/* verbatim port of the legacy Nm admin page: the Pf pending shell with the
- * built blocks — Dropdown choices (oo x2), Connected apps (Im), Appearance
+/* port of the legacy Nm admin page: the Pf pending shell with the
+ * built blocks — Dropdown choices (oo x2), Connected apps (Im — read-only
+ * per decision D1, the only deviation from verbatim), Appearance
  * (Tm + the ap-* localStorage theme controls) and Settings (Dm + Pm editor,
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useEffect, useState } from 'react'
 import {
-  _f,
   applyAppearance,
   D,
   Ft,
@@ -211,35 +211,21 @@ const APPS: Record<string, { title: string }> = {
 }
 const Lm = Object.keys(APPS)
 
+/* Im — Connected apps, read-only per decision D1: one deployment serves every
+ * app, so the per-app /exec URLs are retired. Same legacy block/field
+ * vocabulary (block-title, block-text, form-grid, field, field-label, input,
+ * field-hint incl. the not-connected line and the "(this app)" marker on hub);
+ * the edit affordances (onInput, per-app errors, "Save link") are the only
+ * things dropped. setAppUrl stays verbatim on the API surface. */
 function Im() {
   const n = Pr()
-  const [e, t] = useState<Record<string, string>>(() => ({ ...(n?.appUrls ?? {}) }))
-  const [i, s] = useState<Record<string, string>>(() => ({ ...(n?.appUrls ?? {}) }))
-  const [r, a] = useState('')
-  const [o, c] = useState<Record<string, string>>({})
-  const l = async (h: string) => {
-    a(h)
-    c((u) => ({ ...u, [h]: '' }))
-    try {
-      const u = await Ln.setAppUrl(h, i[h] ?? '')
-      t(u)
-      s(u)
-      const d = Pr()
-      if (d) _f({ ...d, appUrls: u })
-      Ti(`${APPS[h].title} link saved`)
-    } catch (u) {
-      c((d) => ({ ...d, [h]: (u as Error).message }))
-    } finally {
-      a('')
-    }
-  }
+  const e = n?.appUrls ?? {}
   return (
     <div className="block">
       <h2 className="block-title">Connected apps</h2>
       <p className="block-text">
-        Each system with its own app opens from the menu and the ecosystem diagram at this address.
-        Copy it from that app&apos;s Deploy, Manage deployments (the web app URL ending in /exec).
-        Changes reach other people when they next open CX Helm.
+        Each system opens inside this one app now, so there are no web app URLs to connect.
+        The retired Apps Script addresses stay on record here, read-only.
       </p>
       <div className="form-grid">
         {Lm.map((h) => {
@@ -255,24 +241,13 @@ function Im() {
                 className="input"
                 type="url"
                 inputMode="url"
-                placeholder="https://script.google.com/a/macros/dabdoob.com/s/…/exec"
-                value={i[h] ?? ''}
-                aria-invalid={o[h] ? !0 : void 0}
-                aria-describedby={o[h] ? `${u}-err` : void 0}
-                onInput={(d) => s((p) => ({ ...p, [h]: (d.target as HTMLInputElement).value }))}
+                value={e[h] ?? ''}
+                readOnly
+                aria-label={APPS[h].title}
               />
-              {o[h] ? (
-                <p className="field-error" id={`${u}-err`} role="alert">
-                  {o[h]}
-                </p>
-              ) : e[h] ? null : (
+              {e[h] ? null : (
                 <p className="field-hint">Not connected yet: links to this app are switched off.</p>
               )}
-              <div>
-                <button type="button" className="btn btn-primary btn-small" disabled={r === h} onClick={() => void l(h)}>
-                  {r === h ? 'Saving…' : 'Save link'}
-                </button>
-              </div>
             </div>
           )
         })}

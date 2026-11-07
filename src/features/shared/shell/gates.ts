@@ -141,3 +141,21 @@ export function groupEntryLink(
 
 /** jt() — internal href for a page path. */
 export const pageHref = (path: string): string => `/${path}`
+
+/**
+ * The ?params on the current URL. The HashShim rewrites '#/path?params' and
+ * '?page=path&params' to '/path?params', so page params live in
+ * location.search in the port (the legacy read them out of location.hash).
+ * A '#/path?…' hash tail — when present — takes precedence: it is the newer,
+ * pre-shim form of the link and the shim always consumes it (the tail only
+ * coexists with stale search params during the hashchange window).
+ */
+export function pageParams(): URLSearchParams {
+  if (typeof location === 'undefined') return new URLSearchParams()
+  const i = location.hash.indexOf('?')
+  const merged = new URLSearchParams(i === -1 ? '' : location.hash.slice(i + 1))
+  new URLSearchParams(location.search).forEach((value, key) => {
+    if (!merged.has(key)) merged.set(key, value)
+  })
+  return merged
+}

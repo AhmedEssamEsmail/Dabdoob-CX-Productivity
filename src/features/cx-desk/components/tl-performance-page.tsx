@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { pageParams } from '@/features/shared/shell/gates'
 
 /* ------------------------------------------------------------------ *
  * TL performance — port of the legacy Desk page (TlPerformance.js):
@@ -88,7 +89,9 @@ const dash = (v: number | null | undefined) => (v === null || v === undefined ? 
 const mins = (v: number | null) => (v === null ? '–' : v >= 90 ? `${Math.round(v / 6) / 10} h` : `${v} min`)
 const PART: Record<string, string> = { team: 'team KPI', responsibilities: 'responsibilities' }
 const zone = (v: number, z: Zones) => (v >= z.exceeds ? 'exceeds' : v >= z.meets ? 'meets' : 'below')
-const hashTl = () => (typeof location === 'undefined' ? '' : new URLSearchParams(location.hash.split('?')[1] ?? '').get('tl') ?? '')
+/* The ?tl=<email> param — '#/tl-performance?tl=' in the legacy, '/tl-performance?tl='
+ * after the shim; pageParams reads both. */
+const hashTl = () => pageParams().get('tl') ?? ''
 
 const AR_NUM = '٠١٢٣٤٥٦٧٨٩'
 function arDigits(s: string) {

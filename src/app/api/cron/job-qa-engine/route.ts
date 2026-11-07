@@ -8,17 +8,21 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { apiError } from '@/features/shared/lib/api-error'
+import { requireJobCaller } from '@/features/shared/platform/identity'
 import { qaQueueStep_, qaCtlReminders, qaHistoryStep_ } from '@/features/cx-quality/lib/server'
 
 function cronOk(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return true // dev/no-secret mode: the server layer still role-gates
+  if (!secret) return true // dev/no-secret mode: requireJobCaller still gates the caller
   return req.headers.get('authorization') === 'Bearer ' + secret
 }
 
 export async function GET(req: NextRequest) {
   try {
     if (!cronOk(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // WP-42: qaQueueStep_/qaHistoryStep_ carry no internal gate — the legacy
+    // jobQualityDaily's requireJobCaller_ sits here, ahead of every step.
+    await requireJobCaller()
     const out: Record<string, unknown> = {}
     out.import = await qaQueueStep_('cron:qa-engine')
     try {

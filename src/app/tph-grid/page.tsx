@@ -20,6 +20,7 @@ import {
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { fetchJson, useSe } from '@/features/cx-productivity/components/pv-shared'
+import { pageParams } from '@/features/shared/shell/gates'
 
 /**
  * TPH — verbatim port of the legacy `za` page and its parts
@@ -303,7 +304,8 @@ function useSs() {
   return m
 }
 
-/* --- te/Yt — the hash-driven tab list ------------------------------------- */
+/* --- te/Yt — the ?tab=-driven tab list ('#/tph?tab=' in the legacy; the shim
+ * moves it to location.search — pageParams reads both) --------------------- */
 
 const te: [string, string][] = [
   ['overview', 'Overview'],
@@ -314,7 +316,7 @@ const te: [string, string][] = [
   ['channels', 'Channels'],
 ]
 const Yt = () => {
-  const t = new URLSearchParams(location.hash.split('?')[1] ?? '').get('tab')
+  const t = pageParams().get('tab')
   return te.find(([k]) => k === t)?.[0] ?? 'overview'
 }
 
@@ -1908,7 +1910,7 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
   }, [tab, d, trend?.forD, trend?.days])
   const select = (m: string, focus?: boolean) => {
     setTab(m)
-    history.replaceState(null, '', `${location.hash.split('?')[0] || '#/tph'}?tab=${m}`)
+    history.replaceState(null, '', `${location.pathname || '/tph'}?tab=${m}`)
     if (focus) requestAnimationFrame(() => document.getElementById(`tph-panel-${m}`)?.focus())
   }
   const sum = useMemo(() => Va(d.table, Ka), [d])

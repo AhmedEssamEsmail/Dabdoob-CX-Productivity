@@ -1,6 +1,6 @@
 {
-  "generated_by": "final-sweep leftover audit (shard 70)",
-  "source": "specs/legacy-parity/data/legacy-route-registry.json (40 registry paths, extracted verbatim from the bundled legacy app registry)",
+  "generated_by": "WP-43 routing/compat sweep (megaplan w4-platform), regenerated 2026-11-06",
+  "source": "specs/legacy-parity/data/legacy-route-registry.json (40 registry paths, extracted verbatim from the bundled legacy app registry — the quality bundle carries all 40; the other 7 bundles in .devin/work/extract/*/registry.json carry a 39-path variant lacking quality-scores, so the 40-entry list is authoritative). PAGES in src/features/shared/components/shell/registry.ts matches the 40-entry list exactly.",
   "status_legend": {
     "page": "a real Next.js page exists at src/app/<path>/page.tsx",
     "placeholder": "confirmed unbuilt legacy route — served by the catch-all UnbuiltPage ('Not built yet.') at src/app/[...slug]/page.tsx",
@@ -25,7 +25,7 @@
     "status-validation": { "status": "page", "file": "src/app/status-validation/page.tsx" },
     "my-status": { "status": "page", "file": "src/app/my-status/page.tsx" },
     "productivity-analytics": { "status": "page", "file": "src/app/productivity-analytics/page.tsx" },
-    "tph": { "status": "page", "file": "src/app/tph/page.tsx" },
+    "tph": { "status": "page", "file": "src/app/tph/page.tsx", "note": "thin re-export of src/app/tph-grid/page.tsx (the implementation lives at /tph-grid; both URLs serve it)" },
     "queue": { "status": "page", "file": "src/app/queue/page.tsx" },
     "aging": { "status": "page", "file": "src/app/aging/page.tsx" },
     "checkins": { "status": "page", "file": "src/app/checkins/page.tsx" },
@@ -50,20 +50,27 @@
     "fcr": { "status": "placeholder", "served_by": "src/app/[...slug]/page.tsx -> UnbuiltPage" }
   },
   "hidden_routes": {
-    "ecosystem": "src/app/ecosystem/page.tsx — hidden URL-only page in every legacy bundle; renders bare (no rail/banner/popups) like the legacy n1 early return. Not in the rail."
+    "ecosystem": "src/app/ecosystem/page.tsx — hidden URL-only page in every legacy bundle; renders bare (no rail/banner/popups) like the legacy n1 early return (AppShell.tsx:287). Not in the rail."
   },
   "extra_routes_not_in_registry": {
     "admin/roster": "src/app/admin/roster/page.tsx — roster editor (backs /api/roster)",
     "admin/config": "src/app/admin/config/page.tsx — config table editor (backs /api/config)",
-    "tph-grid": "src/app/tph-grid/page.tsx — extra TPH grid view, no registry entry and no legacy equivalent found",
+    "tph-grid": "src/app/tph-grid/page.tsx — the TPH implementation route; registry path /tph re-exports it, so both URLs serve the same page",
     "auth/login": "src/app/auth/login/page.tsx",
     "auth/logout": "src/app/auth/logout/page.tsx",
     "": "src/app/page.tsx — renders the app fallback page in place at '/', matching the legacy empty-hash root branch"
   },
   "compatibility": {
-    "hash_shim": "src/features/shared/components/shell/HashShim.tsx — '#/path?q' -> '/path?q' and '?page=path' -> '/path'; drops page/mock/role; validates /^[a-z0-9-]+$/",
-    "resolve_link": "src/features/shared/shell/gates.ts — '#/path' -> '/<path>' internal; cross-app entries resolve to their group default page",
+    "hash_shim": "src/features/shared/components/shell/HashShim.tsx — '#/path?q' -> '/path?q' and '?page=path' -> '/path' (only when the hash is empty, matching legacy sa()); drops page/mock/role, forwards every other param; validates /^[a-z0-9-]+$/ on both branches; mounted globally for every non-/auth/ route via SiteChrome.tsx:41",
+    "page_params": "src/features/shared/shell/gates.ts pageParams() — the ported consumer helper: a '#/path?…' hash tail wins when present (newer, pre-shim form; the shim always consumes it), location.search fills the rest (canonical post-shim form). Fixes applied in WP-43: all six verbatim location.hash param readers now route through it (queue useHashParams [aging ticket/mine/unassigned/flagged, checkins slot], people hashParam [one-on-ones schedule/log], quality-scores readHash+writeHash [p/from/to/by/tl/agent/basis], tl-performance hashTl [tl], trackers ?t=, tph Yt+select [tab]); writers now write pathname+?params so the URLs stay canonical across reloads",
+    "resolve_link": "src/features/shared/shell/gates.ts — '#/path' -> '/<path>' internal (query forwarded); cross-app entries resolve to their group default page",
     "catch_all": "src/app/[...slug]/page.tsx — known registry path without a page -> UnbuiltPage; anything else -> redirect('/')",
+    "state_screens": "all four full-area .state-screen states live in AppShell (wrapped around every non-/auth/ route by SiteChrome): '{app} could not start' on boot failure (AppShell.tsx:241), 'You are not set up yet' for an unrostered user (AppShell.tsx:275), '{name} has no access' for a view-as target with no role (AppShell.tsx:264), 'Nothing in {app} for you yet' when no page is visible (AppShell.tsx:325); a denied-but-rostered page request redirects to the fallback with the legacy cx-note (AppShell.tsx:337-340, 512-520); ecosystem renders bare except for the three pre-shell states (AppShell.tsx:287)",
+    "built_routes": "BUILT_ROUTES was dropped in bcd4089 as dead code — in the port the filesystem is the build registry (registry.ts 'Xt' comment): 36 registry paths have a real page, 4 (hard-cases, kpi-close, escalation-matrix, fcr) intentionally fall through to UnbuiltPage, plus the hidden ecosystem page",
     "redirects": "none required — legacy doGet() serves the HTML shell (no redirect), no AppRedirect helper exists, ScriptApp.getService().getUrl() is used only for generated email links whose '#/...' targets are all registered paths"
+  },
+  "known_verbatim_behaviours": {
+    "cross_app_links": "features keep the legacy _e()/appLink cross-app resolver (e.g. '# /tl-performance?tl=' from one-on-ones resolves via boot.appUrls + ?page= shim; shows the 'not connected' muted note when the app URL is unconfigured) — parity with the multi-deployment legacy; the shell rail already resolves every group internally via resolveLink",
+    "dead_params": "'band=top' on '#/aging' links is produced by aggregates.ts but ignored by both the legacy page and the port (verbatim dead param)"
   }
 }

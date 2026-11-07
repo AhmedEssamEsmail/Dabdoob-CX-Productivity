@@ -39,7 +39,8 @@ export default function AdminRosterPage() {
     fetch('/api/roster')
       .then(res => res.json())
       .then(data => {
-        setRoster(data.roster || [])
+        // GET /api/roster returns the roster array verbatim (no envelope).
+        setRoster(Array.isArray(data) ? data : data.roster || [])
         setLoading(false)
       })
       .catch(err => {
