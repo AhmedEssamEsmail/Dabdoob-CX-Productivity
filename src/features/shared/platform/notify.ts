@@ -229,7 +229,11 @@ export interface OoAlert {
 
 /** The poll (oneOnOneAlerts): in-app 1:1 alerts due now for the signed-in person only. */
 export async function oneOnOneAlerts(): Promise<{ now: string; alerts: OoAlert[] }> {
-  const email = await currentEmail()
+  return oneOnOneAlertsFor(await currentEmail())
+}
+
+/** oneOnOneAlertsFor: the same due-alerts computation for a known email (merged /api/popups poll). */
+export async function oneOnOneAlertsFor(email: string): Promise<{ now: string; alerts: OoAlert[] }> {
   const now = Date.now()
   if (!(await remindersOn())) return { now: new Date(now).toISOString(), alerts: [] }
   const soonOn = await pwOoOn('one_on_one_inapp_15min')

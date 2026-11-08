@@ -38,11 +38,12 @@ export async function POST(req: Request) {
   try {
     const user = await requireRole(['admin', 'tl'])
     await viewAsGuard()
-    const store = await tphLoadStore_()
+    const body = await req.json()
+    const store = await tphLoadStore_(body?.date)
     const out = await saveTphCases(
       store,
       { role: String(user.role), email: String(user.email || '').toLowerCase() },
-      await req.json()
+      body
     )
     return NextResponse.json(out)
   } catch (e) {

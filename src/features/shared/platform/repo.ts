@@ -18,11 +18,11 @@
 
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from '@/features/shared/lib/supabase'
+import { createClient } from '@/features/shared/lib/supabase'
 
-/** The shared anon-key client every API route in this project already uses. */
+/** The shared service-role client every API route in this project already uses. */
 export function db(): SupabaseClient {
-  return supabase
+  return createClient()
 }
 
 // ---------------------------------------------------------------- small cache (CacheService)
@@ -195,6 +195,60 @@ export interface UpdateOptions {
  * updated_by / updated_at are stamped when stampUpdates is on.
  */
 export async function updateRows(
+  table: string,
+  keyField: string,
+  updates: UpdateSpec[],
+  opts: UpdateOptions
+): Promise<(Record<string, unknown> | null)[]> {
+  if (updates.length <= 1) return updateRowsOneByOne(table, keyField, updates, opts)
+  const actor = opts.actor
+  const now = new Date().toISOString()
+  const stampUpdates = opts.stampUpdates !== false
+  const keys = [...new Set(updates.map((u) => u.key))]
+  const { data: currentRows, error: selErr } = await db()
+    .from(table)
+    .select('*')
+    .in(keyField, keys as never[])
+  if (selErr) throw new Error(selErr.message)
+  const byKey = new Map<unknown, Record<string, unknown>>()
+  ;(currentRows || []).forEach((r) => {
+    const row = r as Record<string, unknown>
+    byKey.set(row[keyField], row)
+  })
+  const out: (Record<string, unknown> | null)[] = []
+  const mergedByKey = new Map<unknown, Record<string, unknown>>()
+  for (const u of updates) {
+    const data = sanitizeInput(u.patch)
+    delete data[keyField]
+    const current = mergedByKey.get(u.key) ?? byKey.get(u.key)
+    if (!current) {
+      out.push(null)
+      continue
+    }
+    if (opts.guard) opts.guard(current, data)
+    if (stampUpdates) {
+      data.updated_by = actor
+      data.updated_at = now
+    }
+    const merged = { ...current, ...data }
+    mergedByKey.set(u.key, merged)
+    out.push(merged)
+  }
+  if (!mergedByKey.size) return out
+  const { error } = await db()
+    .from(table)
+    .upsert([...mergedByKey.values()], { onConflict: keyField })
+  if (error) {
+    if (/constraint|conflict|42P10/i.test(error.message)) {
+      return updateRowsOneByOne(table, keyField, updates, opts)
+    }
+    throw new Error(error.message)
+  }
+  return out
+}
+
+/** Original per-row findRow + update path; also the fallback when the table has no usable conflict key. */
+async function updateRowsOneByOne(
   table: string,
   keyField: string,
   updates: UpdateSpec[],

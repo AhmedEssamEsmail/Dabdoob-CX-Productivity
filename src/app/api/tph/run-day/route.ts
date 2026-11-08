@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const user = await requireRole(['admin', 'tl'])
     await viewAsGuard()
     const body = await req.json()
-    const store = await tphLoadStore_()
+    const store = await tphLoadStore_(body.date)
     if (!prodReady_(store.cfg)) throw new Error('Run setupProductivity first.')
     const d = tphPastDay_(store, body.date)
     const t0 = Date.now()

@@ -101,6 +101,15 @@ export async function runBackfill(opts: BackfillOpts): Promise<BackfillResult> {
     opts.env ??
     (await buildJobEnv({
       // backfill needs intervals/flags/days back to `from`, not the -45d window
+      tables: [
+        'prod_tph_touches',
+        'prod_tph_calls',
+        'prod_tph_cases',
+        'prod_tph_days',
+        'prod_daily_layers',
+        'prod_flags',
+        'prod_intervals',
+      ],
       intervalSince: from,
       now: opts.now,
     }))

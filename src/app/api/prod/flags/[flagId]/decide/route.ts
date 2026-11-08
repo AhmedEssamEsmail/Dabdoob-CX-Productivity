@@ -1,4 +1,5 @@
-import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { flagInScope } from '@/features/cx-productivity/lib/prod-access'
 import { viewAsGuard } from '@/features/shared/platform/viewas'
 import { apiError, dbErr } from '@/features/shared/lib/api-error'
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     return NextResponse.json({ error: 'Open the flag before deciding it.' }, { status: 400 })
   }
 
-  const supabase = await createAuthClient()
+  const supabase = db()
 
   const { data, error } = await supabase
     .from('prod_flags')

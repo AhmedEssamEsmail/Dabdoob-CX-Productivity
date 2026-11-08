@@ -4,9 +4,13 @@
  * (ProdIo / TphStepIo), so the engines stay storage-free.
  *
  * Mapping to the legacy Apps Script world it replaces:
- *   prodRows(name)       prodRows_ / dqReadObjects_(missingOk) — one read per
- *                        table per run, writes update the memo like the
- *                        DQ_WRITE_GEN_ invalidation did; copies returned.
+ *   prodRows(name)       prodRows_ / dqReadObjects_(missingOk) — reads are LAZY:
+ *                        a table enters the run memo only via opts.tables or
+ *                        env.prefetchTables(); a prodRows() on a table that was
+ *                        never fetched returns [] and records
+ *                        tableErrors[name] = 'not prefetched'. Writes update
+ *                        the memo like the DQ_WRITE_GEN_ invalidation did;
+ *                        copies returned.
  *   upsert/upsertIn      dqUpsert_ / dqUpsertIn_ — key-column upsert; queued
  *                        and applied by flushWrites() at each step's end.
  *   append               dqAppend_ — plain insert.
@@ -226,26 +230,16 @@ export interface JobEnv {
   hbFlush(): Promise<number>
 }
 
-const PROD_TABLES = [
-  'prod_intervals',
-  'prod_flags',
-  'prod_flag_log',
-  'prod_daily_layers',
-  'prod_window_hist',
-  'prod_flag_analytics',
-  'prod_quarterly_reports',
-  'prod_tph_days',
-  'prod_tph_tasks',
-  'prod_tph_cases',
-  'prod_tph_touches',
-  'prod_tph_calls',
-]
-
 export interface BuildJobEnvOptions {
-  /** Extra tables to preload into prodRows (e.g. 'tickets', 'agg_inflow_hourly', 'agg_queue_now'). */
+  /** Tables to preload into prodRows at build time (e.g. 'tickets',
+   *  'agg_inflow_hourly', 'agg_queue_now'). Every other table must be loaded
+   *  later via env.prefetchTables(). */
   tables?: string[]
-  /** Lower bound for the prod_intervals preload (business date); default today-45d. */
+  /** Lower bound for the prod_intervals prefetch (business date); default today-45d. */
   intervalSince?: string
+  /** Read the roster table into dir/roster/headcount (default true). When false
+   *  the env gets an empty directory, roster null and headcount []. */
+  roster?: boolean
   /** Gmail adapter override (defaults to getGmailReadAdapter()). */
   gmail?: GmailReadAdapter | null
   /** Freeze clocks (tests). */
@@ -258,24 +252,25 @@ export interface BuildJobEnvOptions {
 }
 
 /**
- * Loads the shared run context (config, roster/directory, prod tables) once —
+ * Loads the shared run context (config, roster/directory, opts.tables) once —
  * legacy's per-execution globals. Supabase reads are missingOk ([] on error),
- * matching dqReadObjects_(..., { missingOk: true }).
+ * matching dqReadObjects_(..., { missingOk: true }). Prod tables are NOT
+ * preloaded: job fns load them via env.prefetchTables() before reading.
  */
 export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv> {
   const cfg = ((await configAll().catch(() => ({}))) || {}) as Cfg
-  const rosterRows = await readRows('roster').catch(() => [] as Row[])
+  const wantRoster = opts.roster !== false
+  const rosterRows = wantRoster ? await readRows('roster').catch(() => [] as Row[]) : []
   const dir = pwDirectory_(rosterRows, cfg.admin_emails)
   // RosterPerson carries the fields the readers use (name/fdName/fdId/email).
-  const roster = dqRosterPeople_(rosterRows) as HeadcountRow[] | null
+  const roster = wantRoster ? (dqRosterPeople_(rosterRows) as HeadcountRow[] | null) : null
 
   const tables: Record<string, Row[]> = {}
   const tableErrors: Record<string, string> = {}
   const today = prodToday_(cfg, opts.now)
   let intervalBound = opts.intervalSince || dqAddDays_(today, -45)
-  const wanted = PROD_TABLES.concat(opts.tables || [])
   await Promise.all(
-    wanted.map(async (name) => {
+    (opts.tables || []).map(async (name) => {
       try {
         let q = db().from(name).select('*').limit(200000)
         if (name === 'prod_intervals') q = q.gte('date', intervalBound)
@@ -345,7 +340,11 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
 
     prodRows(name) {
       // prodRows_ also reads [] when the store is not set up (prodReady_ gate is
-      // the caller's job — the engines check it themselves).
+      // the caller's job — the engines check it themselves). A table that was
+      // never fetched is a bug in the job fn: [] plus 'not prefetched' once.
+      if (tables[name] === undefined && tableErrors[name] === undefined) {
+        tableErrors[name] = 'not prefetched'
+      }
       return (tables[name] || []).map((r) => ({ ...r }))
     },
 
@@ -461,6 +460,9 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
     },
 
     cachedLive(name) {
+      if (tables[name] === undefined && tableErrors[name] === undefined) {
+        tableErrors[name] = 'not prefetched'
+      }
       return (tables[name] || []).map((r) => ({ ...r }))
     },
     readTickets(_cols, pick) {
@@ -476,7 +478,9 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
         names.map(async (name) => {
           if (tables[name]) return
           try {
-            const { data, error } = await db().from(name).select('*').limit(200000)
+            let q = db().from(name).select('*').limit(200000)
+            if (name === 'prod_intervals') q = q.gte('date', intervalBound)
+            const { data, error } = await q
             if (error) tableErrors[name] = describeDbError(error, { table: name }).message
             tables[name] = error ? [] : ((data || []) as Row[])
           } catch (e) {

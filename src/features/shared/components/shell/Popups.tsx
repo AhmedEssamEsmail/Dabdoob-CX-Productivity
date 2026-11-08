@@ -1,7 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { alertsApi, type ShellPopup } from '@/features/shared/shell/context'
+import {
+  alertsApi,
+  type OneOnOneAlert,
+  type ShellPopup,
+} from '@/features/shared/shell/context'
 import { resolveLink } from '@/features/shared/shell/gates'
 import { timeAgo } from '@/features/shared/components/shell/ui'
 import OneOnOneAlerts, { chime } from '@/features/shared/components/shell/OneOnOneAlerts'
@@ -15,9 +19,18 @@ import { Toasts } from '@/features/shared/components/shell/Toasts'
 
 const POLL_MS = 6e4 // Bt
 
-export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
+export default function Popups({
+  popups: initial,
+  reopenTick = 0,
+  onPendingChange,
+}: {
+  popups: ShellPopup[]
+  reopenTick?: number
+  onPendingChange?: (n: number) => void
+}) {
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set())
   const [polled, setPolled] = useState<ShellPopup[] | null>(null)
+  const [alerts, setAlerts] = useState<OneOnOneAlert[]>([])
   const seen = useRef(new Set(initial.map((p) => p.id)))
   const popups = polled ?? initial
 
@@ -28,11 +41,12 @@ export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
       if (dead) return
       if (document.visibilityState === 'visible') {
         try {
-          const data = await alertsApi.popupsPoll()
+          const data = await alertsApi.pollTick()
           if (dead) return
           const fresh = data.popups.filter((p) => !seen.current.has(p.id))
           data.popups.forEach((p) => seen.current.add(p.id))
           setPolled(data.popups)
+          setAlerts(data.alerts)
           if (fresh.length && !chime()) {
             const original = document.title
             let tick = 0
@@ -50,7 +64,7 @@ export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
       }
       timer = window.setTimeout(poll, POLL_MS)
     }
-    timer = window.setTimeout(poll, POLL_MS)
+    timer = window.setTimeout(poll, 2500)
     return () => {
       dead = true
       window.clearTimeout(timer)
@@ -71,6 +85,18 @@ export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
 
   const later = () =>
     current && setDismissed((set) => new Set(set).add(current.id))
+
+  /* Topbar bell: re-open the reminder dialog by clearing dismissals
+     (adjust-during-render, same pattern as prevRoutePath). */
+  const [prevReopenTick, setPrevReopenTick] = useState(reopenTick)
+  if (prevReopenTick !== reopenTick) {
+    setPrevReopenTick(reopenTick)
+    setDismissed(new Set())
+  }
+
+  useEffect(() => {
+    onPendingChange?.(remaining)
+  }, [remaining, onPendingChange])
 
   return (
     <>
@@ -115,7 +141,7 @@ export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
           </div>
         ) : null}
       </dialog>
-      <OneOnOneAlerts />
+      <OneOnOneAlerts incoming={alerts} />
       <Toasts />
     </>
   )

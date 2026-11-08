@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { createAuthClient } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import {
@@ -86,7 +86,7 @@ async function tphEditDay_(
   email: string,
   edit: (logged: Record<string, string>, src: Record<string, string>) => void
 ): Promise<number> {
-  const supabase = await createAuthClient()
+  const supabase = db()
   const now = prodNowIso_()
   const { data: rows } = await supabase
     .from('prod_tph_days')
@@ -154,7 +154,7 @@ export async function saveTphTask(
 ) {
   const cfg = store.cfg
   const now = prodNowIso_()
-  const supabase = await createAuthClient()
+  const supabase = db()
   if (input.remove) {
     const t = store.tasks.filter((x) => x.task_id === String(input.taskId))[0]
     if (!t) throw new Error('That task does not exist.')
@@ -219,7 +219,7 @@ export async function saveTphCases(
   if (!clear && (!isFinite(n) || n < 0 || Math.floor(n) !== n))
     throw new Error('Cases are a whole number, 0 or more.')
   const now = prodNowIso_()
-  const supabase = await createAuthClient()
+  const supabase = db()
   const row = store.cases.filter((r) => r.date === date && r.source === 'tl')[0] || {}
   const m = tphJson_<Record<string, number>>(row.cases_json, {})
   if (clear) delete m[`${h}|${ch}`]

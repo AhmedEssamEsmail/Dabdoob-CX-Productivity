@@ -1,4 +1,5 @@
-import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { prodAnalyticsFor_, prodRuleView_, prodScope_ } from '@/features/cx-productivity/lib/prod/engine'
 import { prodAnalytics_, prodWeekStart_ } from '@/features/cx-productivity/lib/prod/analytics'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
     const m = e instanceof Error ? e.message : 'Unable to authorize request'
     return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : 403 })
   }
-  const supabase = await createAuthClient()
+  const supabase = db()
   const today = prodToday_({})
   const weekParam = new URL(req.url).searchParams.get('week') || ''
   const week = /^\d{4}-\d\d-\d\d$/.test(weekParam) ? prodWeekStart_(weekParam) : prodWeekStart_(today)

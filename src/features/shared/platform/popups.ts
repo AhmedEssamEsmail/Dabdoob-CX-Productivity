@@ -11,7 +11,7 @@
 
 import 'server-only'
 
-import { db, readRows, appendRow, updateRows, newId, cacheGet, cachePut, cacheRemove } from './repo'
+import { db, appendRow, newId, cacheGet, cachePut, cacheRemove } from './repo'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'
 import { remindersOn } from './settings'
@@ -35,22 +35,25 @@ export async function pendingPopupsFor(email: string): Promise<PendingPopup[]> {
   if (!(await remindersOn())) return []
   let rows: Record<string, unknown>[]
   try {
-    rows = await readRows(POPUPS_TABLE)
+    const { data, error } = await db()
+      .from(POPUPS_TABLE)
+      .select('popup_id,kind,title,body,link,created_at,submitted_at')
+      .eq('recipient', normEmail(email))
+      .is('resolved_at', null)
+      .neq('kind', 'queue_checkin_missed')
+    if (error) return []
+    rows = (data || []) as Record<string, unknown>[]
   } catch {
     return []
   }
-  return rows
-    .filter(
-      (r) => normEmail(r.recipient) === email && !r.resolved_at && r.kind !== 'queue_checkin_missed'
-    )
-    .map((r) => ({
-      id: String(r.popup_id),
-      kind: String(r.kind),
-      title: String(r.title),
-      body: String(r.body),
-      link: String(r.link || ''),
-      createdAt: String(r.created_at || r.submitted_at || ''),
-    }))
+  return rows.map((r) => ({
+    id: String(r.popup_id),
+    kind: String(r.kind),
+    title: String(r.title),
+    body: String(r.body),
+    link: String(r.link || ''),
+    createdAt: String(r.created_at || r.submitted_at || ''),
+  }))
 }
 
 export interface RaisePopupInput {
@@ -66,13 +69,16 @@ export interface RaisePopupInput {
 export async function raisePopup(p: RaisePopupInput, actor: string): Promise<Record<string, unknown>> {
   if (REMINDER_POPUP_KINDS.has(p.kind) && !(await remindersOn())) return { skipped: 'off' }
   await assertWritable()
-  const dupe = await readRows(POPUPS_TABLE, {
-    where: (r) =>
-      normEmail(r.recipient) === normEmail(p.recipient) &&
-      r.kind === p.kind &&
-      String(r.ref) === String(p.ref || '') &&
-      !r.resolved_at,
-  })
+  const { data, error } = await db()
+    .from(POPUPS_TABLE)
+    .select('popup_id,recipient,kind,title,body,link,ref,created_at,resolved_at,submitted_by,submitted_at')
+    .eq('recipient', normEmail(p.recipient))
+    .eq('kind', p.kind)
+    .eq('ref', p.ref || '')
+    .is('resolved_at', null)
+    .limit(1)
+  if (error) throw new Error(error.message)
+  const dupe = (data || []) as Record<string, unknown>[]
   if (dupe.length) return dupe[0]
   return appendRow(
     POPUPS_TABLE,
@@ -94,22 +100,18 @@ export async function raisePopup(p: RaisePopupInput, actor: string): Promise<Rec
 /** Closes every open pop-up matching kind + ref (resolvePopups_). Returns how many resolved. */
 export async function resolvePopups(kind: string, ref: string, actor: string): Promise<number> {
   await assertWritable()
-  let open: Record<string, unknown>[]
-  try {
-    open = await readRows(POPUPS_TABLE, {
-      where: (r) => r.kind === kind && String(r.ref) === String(ref) && !r.resolved_at,
-    })
-  } catch {
-    return 0
-  }
-  for (const r of open) {
-    await updateRows(POPUPS_TABLE, 'popup_id', [{ key: r.popup_id, patch: { resolved_at: new Date().toISOString() } }], {
-      actor,
-      stampUpdates: false,
-    })
-    cacheRemove(POPUPS_POLL_KEY + normEmail(r.recipient)) // the poll re-reads for them
-  }
-  return open.length
+  const now = new Date().toISOString()
+  const { data, error } = await db()
+    .from(POPUPS_TABLE)
+    .update({ resolved_at: now })
+    .eq('kind', kind)
+    .eq('ref', ref)
+    .is('resolved_at', null)
+    .select('popup_id,recipient')
+  if (error) return 0
+  const rows = (data || []) as Record<string, unknown>[]
+  rows.forEach((r) => cacheRemove(POPUPS_POLL_KEY + normEmail(r.recipient))) // the poll re-reads for them
+  return rows.length
 }
 
 /**
@@ -122,7 +124,7 @@ export async function popupsPoll(email: string): Promise<{ popups: PendingPopup[
   if (!(await remindersOn())) return { popups: [] }
   const { count, error } = await db()
     .from(POPUPS_TABLE)
-    .select('*', { count: 'exact', head: true })
+    .select('popup_id', { count: 'exact', head: true })
   if (error) return { popups: [] }
   const stamp = count ?? 0
   const key = POPUPS_POLL_KEY + email

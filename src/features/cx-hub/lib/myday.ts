@@ -15,9 +15,6 @@ import 'server-only'
 import {
   appendRow,
   assistantOwnerEmail,
-  cacheGet,
-  cachePut,
-  cacheRemove,
   configAll,
   escapeHtml,
   getConfig,
@@ -27,6 +24,7 @@ import {
   sendMail,
   setConfig,
 } from '@/features/shared/platform'
+import { dbCacheGet, dbCachePut, dbCacheRemove } from '@/features/shared/platform/shared-cache'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { getConfig_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { google, GOOGLE_NOT_CONFIGURED, type GoogleCalEvent } from './myday-google'
@@ -573,23 +571,23 @@ export async function markFollowUpDone(threadId: string, lastAtMs: number): Prom
   if (!/^[0-9a-f]{8,32}$/i.test(id)) throw new Error('Unknown thread.')
   const at = Number(lastAtMs) || Date.now()
   await appendRow(AS_FOLLOWUP_TABLE, { thread_id: id, last_at_ms: at, done_at: new Date().toISOString() }, owner)
-  asDropCachedFollowUp_(id, at)
+  await asDropCachedFollowUp_(id, at)
   return { id }
 }
 
-/** asDropCachedFollowUp_ verbatim (repo cache). */
-export function asDropCachedFollowUp_(id: string, atMs: number): void {
+/** asDropCachedFollowUp_ verbatim (shared cache). */
+export async function asDropCachedFollowUp_(id: string, atMs: number): Promise<void> {
   const key = AS_CACHE_PREFIX + 'followups'
-  const hit = cacheGet(key)
+  const hit = await dbCacheGet(key)
   if (!hit) return
   try {
     const d = JSON.parse(hit)
     const s = d.followups
     if (!s || !s.ok || !s.data) return
     s.data = s.data.filter((f: { id: unknown; lastAtMs: unknown }) => !(String(f.id) === id && Number(f.lastAtMs) <= atMs))
-    cachePut(key, JSON.stringify(d), AS_CACHE_SECONDS)
+    await dbCachePut(key, JSON.stringify(d), AS_CACHE_SECONDS)
   } catch {
-    cacheRemove(key)
+    await dbCacheRemove(key)
   }
 }
 
@@ -659,7 +657,7 @@ export async function collectMyDay_(owner: string): Promise<Record<string, unkno
 export async function asCachedPart_(part: string, owner: string, refresh: boolean): Promise<Record<string, unknown>> {
   const key = AS_CACHE_PREFIX + part
   if (!refresh) {
-    const hit = cacheGet(key)
+    const hit = await dbCacheGet(key)
     if (hit) {
       const d = JSON.parse(hit)
       if (part !== 'core' || d.today === asKuwaitDate_(Date.now())) {
@@ -670,15 +668,15 @@ export async function asCachedPart_(part: string, owner: string, refresh: boolea
   }
   const json = JSON.stringify(await asCollectPart_(part, owner, Date.now()))
   try {
-    cachePut(key, json, AS_CACHE_SECONDS)
+    await dbCachePut(key, json, AS_CACHE_SECONDS)
   } catch {
     /* too large to cache: served uncached */
   }
   return JSON.parse(json)
 }
 
-function asClearCache_(): void {
-  AS_PARTS.forEach((p) => cacheRemove(AS_CACHE_PREFIX + p))
+async function asClearCache_(): Promise<void> {
+  for (const p of AS_PARTS) await dbCacheRemove(AS_CACHE_PREFIX + p)
 }
 
 /** The GAS ScriptApp trigger becomes the assistant_digest_installed config flag. */
@@ -750,7 +748,7 @@ export async function createFocusBlock(startIso: string, endIso: string, title?:
   if (clash.length) throw new Error('That time is no longer free ("' + clash[0].title + '"). Refresh My day.')
   const name = String(title || 'Focus time').replace(/\s+/g, ' ').trim().slice(0, 100) || 'Focus time'
   const ev = await g.createEvent(name, new Date(start), new Date(end), { description: 'Blocked from Dabdoob CX, My day.' })
-  cacheRemove(AS_CACHE_PREFIX + 'core')
+  await dbCacheRemove(AS_CACHE_PREFIX + 'core')
   return { id: String(ev.id), title: name, start: new Date(start).toISOString(), end: new Date(end).toISOString() }
 }
 
@@ -769,7 +767,7 @@ export async function setAssistantSettings(patch: Record<string, unknown>): Prom
     }
     await setConfig(k, v, AS_SETTING_KEYS[k].desc, owner)
   }
-  asClearCache_()
+  await asClearCache_()
   return assistantSettings_()
 }
 

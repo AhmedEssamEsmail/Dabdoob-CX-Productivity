@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { createAuthClient } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { describeDbError } from '@/features/shared/lib/errors'
@@ -126,17 +126,25 @@ export interface TphStore {
   storeErrors: string[]
 }
 
-export async function tphLoadStore_(): Promise<TphStore> {
-  const supabase = await createAuthClient()
-  const [cfgRes, rosterRes, daysRes, casesRes, touchesRes, callsRes, tasksRes, logRes] =
+export async function tphLoadStore_(dateParam?: string | null): Promise<TphStore> {
+  const cfgRes = await db().from('config').select('key, value')
+  const cfg: Cfg = {}
+  ;(cfgRes.data || []).forEach((r: { key: string; value: unknown }) => {
+    cfg[r.key] = r.value
+  })
+  const today = prodToday_(cfg)
+  const dp = /^\d{4}-\d\d-\d\d$/.test(String(dateParam || '')) ? String(dateParam) : today
+  const back = Math.max(Number(prodSetting_(cfg, 'tph_eligible_days') || 28), TPH_TREND_MAX_DAYS)
+  const lo = dp < dqAddDays_(today, -back) ? dp : dqAddDays_(today, -back)
+  const supabase = db()
+  const [rosterRes, daysRes, casesRes, touchesRes, callsRes, tasksRes, logRes] =
     await Promise.all([
-      supabase.from('config').select('key, value'),
       supabase.from('roster').select('email, name, tl_email, role, active'),
-      supabase.from('prod_tph_days').select('*').limit(20000),
-      supabase.from('prod_tph_cases').select('*').limit(5000),
-      supabase.from('prod_tph_touches').select('*').limit(5000),
-      supabase.from('prod_tph_calls').select('*').limit(5000),
-      supabase.from('prod_tph_tasks').select('*').limit(10000),
+      supabase.from('prod_tph_days').select('*').gte('date', lo).limit(20000),
+      supabase.from('prod_tph_cases').select('*').gte('date', lo).limit(5000),
+      supabase.from('prod_tph_touches').select('*').gte('date', lo).limit(5000),
+      supabase.from('prod_tph_calls').select('*').gte('date', lo).limit(5000),
+      supabase.from('prod_tph_tasks').select('*').gte('date', lo).limit(10000),
       supabase.from('refresh_log').select('*').order('started_at', { ascending: false }).limit(300),
     ])
   const storeErrors: string[] = []
@@ -151,10 +159,6 @@ export async function tphLoadStore_(): Promise<TphStore> {
   mark('prod_tph_calls', callsRes)
   mark('prod_tph_tasks', tasksRes)
   mark('refresh_log', logRes)
-  const cfg: Cfg = {}
-  ;(cfgRes.data || []).forEach((r: { key: string; value: unknown }) => {
-    cfg[r.key] = r.value
-  })
   const by: TphStore['dir']['by'] = {}
   ;(rosterRes.data || []).forEach((r: { email: string; name: string; tl_email: string | null; role: string; active: boolean }) => {
     by[normEmail_(r.email)] = {

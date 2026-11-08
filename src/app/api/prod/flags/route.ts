@@ -1,4 +1,5 @@
-import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import {
   PROD_DEFAULTS,
   addDays,
@@ -51,7 +52,7 @@ export async function GET() {
     return authError(error)
   }
 
-  const supabase = await createAuthClient()
+  const supabase = db()
   const today = todayKey()
   const decidedFrom = addDays(today, -30)
   const seenFrom = addDays(today, -14)

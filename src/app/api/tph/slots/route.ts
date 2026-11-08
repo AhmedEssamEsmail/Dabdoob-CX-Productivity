@@ -10,8 +10,9 @@ export async function POST(req: Request) {
   try {
     const user = await requireRole(['admin', 'tl'])
     await viewAsGuard()
-    const store = await tphLoadStore_()
-    const out = await saveTphSlots(store, { role: String(user.role), email: String(user.email || '').toLowerCase() }, await req.json())
+    const body = await req.json()
+    const store = await tphLoadStore_(body?.date)
+    const out = await saveTphSlots(store, { role: String(user.role), email: String(user.email || '').toLowerCase() }, body)
     return NextResponse.json(out)
   } catch (e) {
     return apiError(e)

@@ -1,4 +1,5 @@
-import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { flagInScope } from '@/features/cx-productivity/lib/prod-access'
 import { flagView, type ProdFlagRow } from '@/features/cx-productivity/lib/prod-validation'
 import { dbErr } from '@/features/shared/lib/api-error'
@@ -21,7 +22,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext<'/api/prod/flags/
   }
 
   const { flagId } = await ctx.params
-  const supabase = await createAuthClient()
+  const supabase = db()
 
   const { data, error } = await supabase
     .from('prod_flags')
@@ -35,6 +36,21 @@ export async function GET(_req: NextRequest, ctx: RouteContext<'/api/prod/flags/
   if (!flag || !(await flagInScope(supabase, user, flag))) {
     return NextResponse.json({ error: 'That flag does not exist or is not in your team.' }, { status: 404 })
   }
+
+  // Score-effect proxy: the share of the agent's logged day this flag reclassifies.
+  const { data: intervalRows, error: intervalError } = await supabase
+    .from('prod_intervals')
+    .select('interval_min')
+    .eq('agent_email', flag.agent_email)
+    .eq('date', flag.date)
+  const dayMin = intervalError
+    ? 0
+    : (intervalRows || []).reduce(
+        (sum, row) => sum + (Number((row as { interval_min?: number | string }).interval_min) || 0),
+        0
+      )
+  const flaggedMin = Number(flag.flagged_min) || 0
+  const scoreEffect = dayMin > 0 ? Math.round((flaggedMin / dayMin) * 1000) / 10 : null
 
   const { data: agent } = await supabase
     .from('roster')
@@ -57,5 +73,9 @@ export async function GET(_req: NextRequest, ctx: RouteContext<'/api/prod/flags/
     return ''
   }
 
-  return NextResponse.json({ flag: flagView(flag, nameOf), openedAt: new Date().toISOString() })
+  return NextResponse.json({
+    flag: flagView(flag, nameOf),
+    openedAt: new Date().toISOString(),
+    scoreEffect,
+  })
 }

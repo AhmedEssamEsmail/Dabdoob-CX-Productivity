@@ -14,6 +14,7 @@
 
 import 'server-only'
 
+import { cache } from 'react'
 import { db, cacheGet, cachePut, cacheRemove, appendRow } from './repo'
 import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory } from './identity'
 import { getConfig, ccApp } from './settings'
@@ -62,7 +63,7 @@ export async function viewAsRead(owner: string, fresh?: boolean): Promise<string
  * as, '' when off. Only the owner (by his real signed-in address) can ever have a
  * target. `fresh` skips the memo and the cache (bootstrap, getViewAsState).
  */
-export async function viewAsState(fresh?: boolean): Promise<ViewAsState> {
+export const viewAsState = cache(async (fresh?: boolean): Promise<ViewAsState> => {
   const real = await realEmail()
   if (!real) return { real, owner: false, target: '' }
   if (!fresh) {
@@ -74,7 +75,7 @@ export async function viewAsState(fresh?: boolean): Promise<ViewAsState> {
   if (st.owner) st.target = await viewAsRead(real, fresh)
   VA_MEMO.set(real, { st, expiresAt: Date.now() + VIEW_AS_CACHE_SEC * 1000 })
   return st
-}
+})
 
 /** True while this request is the owner viewing as someone (viewAsBlocking_). */
 export async function viewAsBlocking(): Promise<boolean> {

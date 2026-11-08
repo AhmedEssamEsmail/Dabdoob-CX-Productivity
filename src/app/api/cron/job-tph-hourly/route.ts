@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
   try {
     await requireJobCaller()
-    const env = await buildJobEnv()
+    const env = await buildJobEnv({ roster: false })
     const out = await jobTphHourly(env)
     return NextResponse.json(out || {})
   } catch (error) {

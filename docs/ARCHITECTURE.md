@@ -31,23 +31,32 @@ or `MIGRATION_SECRET_KEY` for admin/migration endpoints).
 ## Cron jobs (`vercel.json`)
 
 Vercel invokes `src/app/api/cron/*` routes with a `CRON_SECRET` bearer token.
-7 unique paths are scheduled:
+12 unique paths are scheduled (`job-tph-hourly` has two entries per hour):
 
 | Path                                   | Schedule                          |
 |----------------------------------------|-----------------------------------|
+| `/api/cron/job-data-tick`              | `*/15 * * * *` (every 15 min)     |
+| `/api/cron/oo-reminders`               | `*/15 * * * *` (every 15 min)     |
+| `/api/cron/task-reminders`             | `0 7 * * *` (daily 07:00)         |
+| `/api/cron/meeting-reminders`          | `30 7 * * *` (daily 07:30)        |
+| `/api/cron/missed-1on1-check`          | `30 19 * * *` (daily 19:30)       |
+| `/api/cron/job-tph-hourly`             | `:05` and `:55` every hour         |
 | `/api/cron/job-productivity-daily`     | `30 6 * * *` (daily 06:30)         |
 | `/api/cron/job-tph-past-days`          | `0 5 * * *` (daily 05:00)          |
 | `/api/cron/job-quarterly-report`       | `0 6 1 * *` (1st of month 06:00)   |
 | `/api/cron/flag-detection`             | `30 6 * * *` (daily 06:30)         |
 | `/api/cron/daily-layers`               | `45 6 * * *` (daily 06:45)         |
 | `/api/cron/analytics-aggregation`      | `0 7 * * *` (daily 07:00)          |
-| `/api/cron/job-tph-hourly`             | `:05` and `:55` every hour         |
 
-`src/app/api/cron/` contains additional routes that are **not** scheduled in
-`vercel.json` — they exist for manual/on-demand invocation or legacy parity,
-e.g. `job-qa-engine`, `task-reminders`, `scorecard-nightly`, `job-data-tick`,
-`job-nightly-aggregates`, `job-tl-queue`, `meeting-reminders`,
-`missed-1on1-check`, `oo-reminders`.
+Schedules are UTC. `src/app/api/cron/` also contains routes that are **not**
+scheduled in `vercel.json` — they exist for manual/on-demand invocation or
+legacy parity, e.g. `job-qa-engine`, `scorecard-nightly`,
+`job-nightly-aggregates`, `job-tl-queue`.
+
+pg_cron (Supabase) is **installed but not scheduled** — Vercel owns
+scheduling; the pg_cron schedule draft in
+`supabase/migrations/012_pg_cron_schedule.sql` is blocked pending env setup
+and should not be applied.
 
 ## Integrations
 

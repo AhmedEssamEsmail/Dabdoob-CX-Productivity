@@ -4,6 +4,8 @@ import "./cx-kit.css";
 import "./refresh.css";
 import SiteChrome from "@/features/shared/components/layout/SiteChrome";
 import BootSplash from "@/features/shared/components/shell/BootSplash";
+import { getAppBootstrap } from "@/features/shared/platform/bootstrap";
+import { qaBootFlags } from "@/features/cx-quality/lib/server";
 
 export const metadata: Metadata = {
   title: "Dabdoob CX",
@@ -16,7 +18,14 @@ export const metadata: Metadata = {
  */
 const APPEARANCE_BOOT = `try{var a=JSON.parse(localStorage.getItem('cx.appearance')||'{}'),h=document.documentElement;if(a.still)h.setAttribute('data-reduce-motion','');if(a.lang==='ar'){h.lang='ar';h.dir='rtl'}}catch(e){}document.documentElement.dataset.entry='first'`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  /* Per-request bootstrap: __CC_BOOT__ wins over /api/bootstrap in
+     loadBootstrap(); null on any error keeps the fetch fallback identical. */
+  const payload = await getAppBootstrap(qaBootFlags).catch(() => null);
+  const boot =
+    payload === null
+      ? "null"
+      : JSON.stringify(payload).replace(/</g, "\\u003c");
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
@@ -42,6 +51,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT }} />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__CC_BOOT__=${boot};`,
+          }}
+        />
         <div id="app">
           <SiteChrome>{children}</SiteChrome>
         </div>

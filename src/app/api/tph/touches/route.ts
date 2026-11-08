@@ -1,4 +1,5 @@
-import { createAuthClient, requireRole } from '@/features/shared/lib/auth'
+import { requireRole } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { normEmail_ } from '@/features/shared/lib/adapters'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { prodNameToEmail_ } from '@/features/shared/lib/adapters'
@@ -18,12 +19,12 @@ export async function GET(req: Request) {
     const user = await requireRole(['admin', 'tl'])
     void user
     const { searchParams } = new URL(req.url)
-    const store = await tphLoadStore_()
+    const store = await tphLoadStore_(searchParams.get('date'))
     const d = String(searchParams.get('date') || '')
     if (!/^\d{4}-\d\d-\d\d$/.test(d) || d > prodToday_(store.cfg))
       return NextResponse.json({ error: 'Pick a day up to today (yyyy-MM-dd).' }, { status: 400 })
     const email = normEmail_(searchParams.get('email'))
-    const supabase = await createAuthClient()
+    const supabase = db()
     const from = tphHourMs_(d, 0, 'Asia/Kuwait') - 1 * 86400000
     const { data: rows, error } = await supabase
       .from('fd_activities')

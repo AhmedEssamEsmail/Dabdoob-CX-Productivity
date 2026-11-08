@@ -152,6 +152,11 @@ function mkQuery(table: string) {
       filters.push((r) => (v === null ? r[col] === null || r[col] === undefined || r[col] === '' : r[col] === v))
       return builder
     },
+    ilike(col: string, v: unknown) {
+      const needle = String(v).toLowerCase()
+      filters.push((r) => String(r[col] ?? '').toLowerCase().indexOf(needle) !== -1)
+      return builder
+    },
     in(col: string, vs: unknown[]) {
       const set = (vs || []).map(String)
       filters.push((r) => set.indexOf(String(r[col])) !== -1)
@@ -245,6 +250,12 @@ const fakeAuthClient = async () => ({
       data: { user: hubDb.userEmail ? { email: hubDb.userEmail } : null },
       error: null,
     }),
+    getClaims: async () => ({
+      data: {
+        claims: hubDb.userEmail ? { email: hubDb.userEmail, sub: 'u' } : null,
+      },
+      error: null,
+    }),
   },
 })
 
@@ -263,18 +274,16 @@ export function authModule() {
     createAuthClient: fakeAuthClient,
     getUser: async () => {
       const supabase = await fakeAuthClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      return user
+      const { data } = await supabase.auth.getClaims()
+      const email = data?.claims?.email
+      return email ? { email: String(email) } : null
     },
     requireAuth: async () => {
       const supabase = await fakeAuthClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Unauthorized')
-      return user
+      const { data } = await supabase.auth.getClaims()
+      const email = data?.claims?.email
+      if (!email) throw new Error('Unauthorized')
+      return { email: String(email) }
     },
     requireRole: async (roles: string[]) =>
       (await import('@/features/shared/platform/identity')).requireRole(roles),

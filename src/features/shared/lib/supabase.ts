@@ -1,14 +1,29 @@
 import 'server-only'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import {
+  createClient as createSupabaseClient,
+  type SupabaseClient,
+} from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
+let client: SupabaseClient | null = null
 
-export function createClient() {
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
+function getClient(): SupabaseClient {
+  if (!client) {
+    client = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey)
+  }
+  return client
 }
+
+export function createClient(): SupabaseClient {
+  return getClient()
+}
+
+/** Lazy view of the service-role singleton for legacy `supabase.from(...)` call sites. */
+export const supabase = new Proxy({} as SupabaseClient, {
+  get: (_target, prop) => Reflect.get(getClient(), prop),
+})
 
 export type Database = {
   public: {

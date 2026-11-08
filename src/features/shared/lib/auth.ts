@@ -25,8 +25,9 @@ export async function createAuthClient() {
 
 export async function getUser() {
   const supabase = await createAuthClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  const { data } = await supabase.auth.getClaims()
+  const email = data?.claims?.email
+  return email ? { email: String(email) } : null
 }
 
 export async function requireAuth() {

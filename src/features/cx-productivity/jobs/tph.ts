@@ -22,7 +22,7 @@ import { DAILY_REPORT_TABS, FD_ACTIVITY_TABS, PROD_MONTH_TABS } from '@/features
 export async function jobTphHourly(env: JobEnv): Promise<Row | null> {
   try {
     return await dqStep_(env, 'prod_tph_cases', async () => {
-      await env.prefetchTables(['agg_queue_now'])
+      await env.prefetchTables(['agg_queue_now', 'prod_tph_cases'])
       return tphCaptureCases_(env as never)
     })
   } finally {
@@ -36,10 +36,10 @@ export async function jobTphHourly(env: JobEnv): Promise<Row | null> {
  * time guard trips (270 s, stale = 6 h). Steps run through the env's
  * TphStepIo seams; each step's failure is logged and the day runner moves on.
  */
-export async function jobTphPastDays(env: JobEnv): Promise<Row | null> {
+export async function jobTphPastDays(env: JobEnv, opts?: { budgetMs?: number }): Promise<Row | null> {
   try {
     return await dqStep_(env, 'prod_tph_auto', async () => {
-      await env.prefetchTables(['tickets', 'agg_inflow_hourly'])
+      await env.prefetchTables(['tickets', 'agg_inflow_hourly', 'prod_tph_touches', 'prod_tph_calls', 'prod_tph_cases'])
       // 'calls' reads the month workbooks' Maqsam Calls; 'cases' reads the
       // daily-report Freshchat tab and the Activities tail; 'touches' reads
       // the Activities rows. Prefetch every source the sync builders open.
@@ -54,7 +54,7 @@ export async function jobTphPastDays(env: JobEnv): Promise<Row | null> {
       ])
       await env.activityRows() // fills the memo activityTail() filters
       await env.ensureHeadcount()
-      return tphBuildPastDays_(env as never)
+      return tphBuildPastDays_(env as never, opts)
     })
   } finally {
     await env.hbFlush()

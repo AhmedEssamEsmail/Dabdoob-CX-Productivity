@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { createAuthClient } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { prodNameToEmail_ } from '@/features/shared/lib/adapters'
@@ -42,7 +42,7 @@ export function tphPastDay_(store: TphStore, date: unknown, opts?: { allowBackfi
 
 /** tphActivityTail_: fd_activities rows in the window, as 10-col row arrays. */
 async function tphActivityTail_(store: TphStore, date: string, days: number): Promise<unknown[][]> {
-  const supabase = await createAuthClient()
+  const supabase = db()
   const from = tphHourMs_(date, 0, 'Asia/Kuwait') - days * 86400000
   const { data, error } = await supabase
     .from('fd_activities')
@@ -56,7 +56,7 @@ async function tphActivityTail_(store: TphStore, date: string, days: number): Pr
 
 async function dqLogRun_(job: string, t0: number, status: string, info: Record<string, unknown>) {
   try {
-    const supabase = await createAuthClient()
+    const supabase = db()
     await supabase.from('refresh_log').insert({
       log_id: 'rl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       type: job,
@@ -72,7 +72,7 @@ async function dqLogRun_(job: string, t0: number, status: string, info: Record<s
 
 /** Upsert helper: a failed write throws, it never looks like a computed empty. */
 async function upsertOrThrow(table: string, rows: Record<string, unknown>[], onConflict: string) {
-  const supabase = await createAuthClient()
+  const supabase = db()
   const { error } = await supabase.from(table).upsert(rows, { onConflict })
   if (error) throw described(error, { table })
 }
@@ -107,7 +107,7 @@ async function tphBuildCallMinutes_(store: TphStore, dates: string[]): Promise<{
   const by: Record<string, unknown> = {}
   const bizTz = 'Asia/Kuwait'
   const dataTz = 'Asia/Kuwait'
-  const supabase = await createAuthClient()
+  const supabase = db()
   let sourceRows = 0
   for (const m of Object.keys(months)) {
     const from = tphHourMs_(months[m].slice().sort()[0], 0, bizTz) - 86400000
@@ -165,7 +165,7 @@ async function tphBuildCases_(
   let chatErr = ''
   if (channels.some((c) => c.kind === 'chat')) {
     try {
-      const supabase = await createAuthClient()
+      const supabase = db()
       const histFrom = tphHourMs_(sorted[0], 0, bizTz) - TPH_HISTORY_DAYS * 86400000
       const { data, error } = await supabase.from('freshchat').select('cols').gte('ts_ms', histFrom).limit(50000)
       if (error) throw described(error, { table: 'freshchat' })
@@ -191,7 +191,7 @@ async function tphBuildCases_(
     Object.keys(actIdx.byId).forEach((id) => {
       if (actIdx.byId[id].some((h: { group: string }) => groups[h.group])) actIds[id] = true
     })
-    const supabase = await createAuthClient()
+    const supabase = db()
     const { data: tRows, error: tErr } = await supabase
       .from('tickets')
       .select('ticket_id, status, group_name, created_at, resolved_at, closed_at')
@@ -218,7 +218,7 @@ async function tphBuildCases_(
   let inflowErr = ''
   if (channels.some((c) => c.key === TPH_CALLS)) {
     calls = []
-    const supabase = await createAuthClient()
+    const supabase = db()
     const years = sorted.map((d) => d.slice(0, 4)).filter((y, i, a) => a.indexOf(y) === i)
     for (const y of years) {
       const { data, error } = await supabase.from('agg_inflow_hourly').select('*').eq('year', Number(y)).limit(50000)

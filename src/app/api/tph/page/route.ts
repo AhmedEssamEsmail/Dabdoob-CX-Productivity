@@ -12,6 +12,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : 403 })
   }
   const { searchParams } = new URL(req.url)
-  const store = await tphLoadStore_()
+  const store = await tphLoadStore_(searchParams.get('date'))
   return NextResponse.json(getTphPage(store, { role: String(user.role), email: String(user.email || '').toLowerCase() }, searchParams.get('date')))
 }

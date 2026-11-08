@@ -12,7 +12,7 @@ import { appendRow, updateRow, findRow, db, newId, cacheGet, cachePut, cacheRemo
 import { configAll, getConfig } from '@/features/shared/platform/settings'
 import { requireRole } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
+import { dqCachedLive, dqLastRun, readStore, readStoreFiltered } from '@/features/shared/platform/stores'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import { InputError } from '@/features/shared/lib/api-error'
@@ -114,8 +114,9 @@ export async function getCheckinsPage(slotArg?: string | null): Promise<Record<s
   const now = new Date()
   const tz = String(dqSetting_(cfg, 'business_tz'))
   const today = dqDateKey_(now, tz)
+  const yesterday = dqAddDays_(today, -1)
   const cps = dqCheckpoints_(today, cfg)
-  const subStore = await readStore(DQ_QUEUE_SUBMISSIONS_TABLE)
+  const subStore = await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { in: { slot_date: [today, yesterday] } })
   const subs = dqSubmissionsFor_(subStore.exists ? subStore.rows : null, [today])
   const bySlot: Record<string, Record<string, unknown>> = {}
   subs.forEach((s) => {
@@ -136,7 +137,7 @@ export async function getCheckinsPage(slotArg?: string | null): Promise<Record<s
   const picked = slotArg ? slots.filter((sl, k) => sl.slot === String(slotArg) && now >= cps[k].opensAt)[0] : null
   if (picked) current = picked
 
-  const snaps = (await dqCachedLive('agg_snapshots_today')).filter((r) => r.slot_date === today)
+  const snaps = (await readStoreFiltered('agg_snapshots_today', { eq: { slot_date: today } })).rows
   const snapFor = (slot: string) => snaps.filter((r) => r.slot === slot)
   const frozen = snapFor(current.slot)
   const live = await dqCachedLive('agg_queue_now')
@@ -174,7 +175,6 @@ export async function getCheckinsPage(slotArg?: string | null): Promise<Record<s
     }
   }).sort((a, b) => b.open - a.open)
 
-  const yesterday = dqAddDays_(today, -1)
   const lastYesterday = dqSubmissionsFor_(subStore.exists ? subStore.rows : null, [yesterday]).sort((a, b) => (String(a.slot) < String(b.slot) ? 1 : -1))[0]
   const earlierRows = subs.filter((s) => s.slot !== current.slot).sort((a, b) => (String(a.slot) < String(b.slot) ? -1 : 1))
   if (lastYesterday) earlierRows.unshift(lastYesterday)
@@ -202,10 +202,11 @@ export async function submitCheckin(payload: Record<string, unknown>): Promise<R
   const cfg = await cfg_()
   const now = new Date()
   const today = dqDateKey_(now, String(dqSetting_(cfg, 'business_tz')))
+  const yesterday = dqAddDays_(today, -1)
   const cp = dqCheckpoints_(today, cfg).filter((c) => c.slot === String((payload || {}).slot))[0]
   if (!cp) throw new InputError('Unknown check-in slot.')
   if (now < cp.opensAt) throw new InputError('The ' + cp.slot + ' check-in opens at ' + formatDate_(cp.opensAt, String(dqSetting_(cfg, 'business_tz')), 'HH:mm') + '.')
-  const snaps = (await dqCachedLive('agg_snapshots_today')).filter((r) => r.snapshot_key === cp.key)
+  const snaps = (await readStoreFiltered('agg_snapshots_today', { eq: { snapshot_key: cp.key } })).rows
   const auto: Record<string, number> = {}
   ;(snaps.length ? snaps : await dqCachedLive('agg_queue_now')).forEach((r) => {
     auto[String(r.queue)] = Number(r.open) || 0
@@ -216,7 +217,7 @@ export async function submitCheckin(payload: Record<string, unknown>): Promise<R
     queues_json: rec.queues, corrections_json: rec.corrections, correction_reason: rec.correctionReason,
     general_note: rec.generalNote, help_needed: rec.helpNeeded, help_note: rec.helpNote,
   }
-  const existing = dqSubmissionsFor_((await readStore(DQ_QUEUE_SUBMISSIONS_TABLE)).rows, [today]).filter((s) => s.slot === rec.slot)[0]
+  const existing = dqSubmissionsFor_((await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { in: { slot_date: [today, yesterday] } })).rows, [today]).filter((s) => s.slot === rec.slot)[0]
   let saved: Record<string, unknown> | null
   if (existing) {
     saved = await updateRow(DQ_QUEUE_SUBMISSIONS_TABLE, 'submission_id', existing.submission_id, row, { actor: user.email })

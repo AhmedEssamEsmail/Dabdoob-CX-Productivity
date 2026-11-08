@@ -91,6 +91,19 @@ async function qaRows_(name: string): Promise<Row[]> {
   }
 }
 
+/** qaRowBy_ verbatim: one row by a single-column equality; null when absent or on error (missingOk). */
+async function qaRowBy_(name: string, col: string, value: unknown, extra?: [string, unknown][]): Promise<Row | null> {
+  try {
+    let q = db().from(name).select('*').eq(col, String(value))
+    for (const [c, v] of extra || []) q = q.eq(c, String(v))
+    const { data, error } = await q.limit(1)
+    if (error) return null
+    return (data && data[0] ? data[0] : null) as Row | null
+  } catch {
+    return null
+  }
+}
+
 /** dqUpsertIn_ verbatim: update rows matching every key field, insert the rest. */
 async function qaUpsertIn_(name: string, keys: string[], rows: Row[]): Promise<number> {
   const clean = rows.map((r) => sanitizeInput(r)) as Row[]
@@ -678,7 +691,7 @@ export async function startQaAudit(queueId: string): Promise<Row> {
   if (!(await qaIsAuditor_(user, dir))) throw new Error('The Audit Desk is for quality auditors.')
   await assertWritable()
   return qaTx_(async () => {
-    const q = (await qaRows_('qa_queue')).filter((r) => r.queue_id === String(queueId))[0]
+    const q = await qaRowBy_('qa_queue', 'queue_id', String(queueId))
     if (!q) throw new Error('That queue item no longer exists. Reload the page.')
     if (qaTakenByOther_(q, user)) throw new Error('Another auditor is already auditing this ticket.')
     if (q.status === 'done') throw new Error('This ticket has been audited already.')
@@ -708,7 +721,7 @@ export async function submitQaAudit(input: Row): Promise<Row> {
   const markdown = qaNeedsCtl_(scored.form as never, scored.answers, scored.result.score)
   const onShift = markdown ? await qaOnShiftNow_() : []
   const out = await qaTx_(async () => {
-    const q = (await qaRows_('qa_queue')).filter((r) => r.queue_id === String(input.queueId))[0]
+    const q = await qaRowBy_('qa_queue', 'queue_id', String(input.queueId))
     if (!q) throw new Error('That queue item no longer exists. Reload the page.')
     if (qaTakenByOther_(q, user)) throw new Error('Another auditor is already auditing this ticket.')
     if (q.status === 'done') throw new Error('This ticket has been audited already.')
@@ -788,7 +801,8 @@ export async function resendQaAuditEmail(auditId: string, again: unknown): Promi
   await qaRequireRole_(['admin'])
   await assertWritable()
   const id = String(auditId || '')
-  const a = (await qaRows_('qa_audits')).filter((r) => r.audit_id === id && r.kind === 'audit')[0]
+  const found = await qaRowBy_('qa_audits', 'audit_id', id)
+  const a = found && found.kind === 'audit' ? found : undefined
   if (!a) throw new Error('That audit was not found.')
   const last = await qaLastAuditMail_(id)
   if (last && last.status === 'sent' && !again) return { needsConfirm: true, mail: '', reason: '', error: '', last }
@@ -812,7 +826,7 @@ export async function passQaQueueItem(queueId: string, reason: string): Promise<
   await assertWritable()
   const why = qaCleanPassReason_(reason)
   return qaTx_(async () => {
-    const q = (await qaRows_('qa_queue')).filter((r) => r.queue_id === String(queueId))[0]
+    const q = await qaRowBy_('qa_queue', 'queue_id', String(queueId))
     if (!q) throw new Error('That queue item no longer exists. Reload the page.')
     if (q.source === 'request') throw new Error('A requested audit cannot be passed. Only an admin or Noha can waive it.')
     if (q.status === 'done') throw new Error('This ticket has been audited already.')
@@ -934,7 +948,7 @@ export async function waiveQaAuditRequest(queueId: string, reason: string): Prom
   if (!qaCanWaive_(user, await qaWaiverList_())) throw new Error('Only an admin or the team lead named in qa_request_waiver_emails can waive an audit request.')
   const why = qaCleanReason_(reason, 'waiving this request')
   return qaTx_(async () => {
-    const q = (await qaRows_('qa_queue')).filter((r) => r.queue_id === String(queueId))[0]
+    const q = await qaRowBy_('qa_queue', 'queue_id', String(queueId))
     if (!q || q.source !== 'request') throw new Error('That audit request no longer exists. Reload the page.')
     if (q.status === 'done') throw new Error('This ticket has been audited already.')
     if (q.status === 'waived') throw new Error('This request was waived already.')
@@ -1019,7 +1033,7 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
   note = String(note || '').trim().slice(0, 1000)
   if (!happened && note.length < 5) throw new Error('Write your reason for denying, so Mohamed and the team leads can follow up.')
   const res = await qaTx_(async () => {
-    const row = (await qaRows_('qa_ctls')).filter((r) => r.ctl_id === String(ctlId))[0]
+    const row = await qaRowBy_('qa_ctls', 'ctl_id', String(ctlId))
     if (!row || normEmail(row.agent_email) !== user.email) throw new Error('That CTL was not found.')
     if (row.status !== 'submitted') throw new Error(row.status === 'open' ? 'Your team lead has not submitted this CTL yet.' : 'This CTL is already ' + String(row.status).replace('_', ' ') + '.')
     const now = qaNowIso_()
@@ -1039,7 +1053,7 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
       row.sla_met = ''
       if (row.outcome !== 'dispute') {
         row.outcome = ''
-        audit = (await qaRows_('qa_audits')).filter((r) => r.audit_id === row.audit_id)[0] || null
+        audit = await qaRowBy_('qa_audits', 'audit_id', row.audit_id)
         if (audit && audit.status === 'acknowledged' && audit.ack_by === 'ctl') {
           audit.status = 'submitted'
           audit.acknowledged_at = ''
@@ -1051,7 +1065,7 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
       }
     }
     await qaUpsertIn_('qa_ctls', ['ctl_id'], [row])
-    const a = audit || (await qaRows_('qa_audits')).filter((r) => r.audit_id === row.audit_id)[0] || ({} as Row)
+    const a = audit || (await qaRowBy_('qa_audits', 'audit_id', row.audit_id)) || ({} as Row)
     return { c: row, item: qaItemRef_(a) }
   })
   const c = res.c
@@ -1323,12 +1337,12 @@ export async function decideQaDispute(input: Row): Promise<Row> {
   }
   const today = qaToday_()
   const res = await qaTx_(async () => {
-    const d = (await qaRows_('qa_disputes')).filter((r) => r.dispute_id === String(input.disputeId))[0]
+    const d = await qaRowBy_('qa_disputes', 'dispute_id', String(input.disputeId))
     if (!d) throw new Error('That dispute was not found.')
     if (d.status !== 'open' && d.status !== 'escalated') throw new Error('This dispute was decided already.')
     if (d.status === 'escalated' && !acc.isOwner) throw new Error('This dispute was escalated: only ' + acc.owner + ' decides it.')
     if (decision === 'escalate' && d.status !== 'open') throw new Error('This dispute is escalated already.')
-    const a = (await qaRows_('qa_audits')).filter((r) => r.audit_id === d.audit_id)[0]
+    const a = await qaRowBy_('qa_audits', 'audit_id', d.audit_id)
     if (!a) throw new Error('The disputed audit is missing.')
     const now = qaNowIso_()
     if (decision === 'escalate') {
@@ -1351,7 +1365,7 @@ export async function decideQaDispute(input: Row): Promise<Row> {
     a.updated_at = now
     a.updated_by = user.email
     await qaUpsertIn_('qa_audits', ['audit_id'], [a])
-    const c = (await qaRows_('qa_ctls')).filter((r) => r.audit_id === a.audit_id && r.status === 'on_hold')[0]
+    const c = await qaRowBy_('qa_ctls', 'audit_id', a.audit_id, [['status', 'on_hold']])
     if (c) {
       if (decision === 'void') {
         c.status = 'cancelled'
@@ -1514,7 +1528,7 @@ export async function submitQaCalibrationAudit(input: Row): Promise<Row> {
   input = input || {}
   const forms = qaForms_(await qaRows_('qa_forms'))
   const res = await qaTx_(async () => {
-    const c = (await qaRows_('qa_calibrations')).filter((r) => r.calibration_id === String(input.calibrationId))[0]
+    const c = await qaRowBy_('qa_calibrations', 'calibration_id', String(input.calibrationId))
     if (!c) throw new Error('That calibration was not found.')
     const role = normEmail(c.auditor_email) === user.email ? 'auditor' : normEmail(c.tl_email) === user.email ? 'tl' : ''
     if (!role) throw new Error('This calibration is assigned to someone else.')
@@ -1534,7 +1548,7 @@ export async function submitQaCalibrationAudit(input: Row): Promise<Row> {
     if (role === 'auditor') c.auditor_audit_id = a.audit_id
     else c.tl_audit_id = a.audit_id
     if (c.auditor_audit_id && c.tl_audit_id) {
-      const other = (await qaRows_('qa_audits')).filter((r) => r.audit_id === (role === 'auditor' ? c.tl_audit_id : c.auditor_audit_id))[0]
+      const other = await qaRowBy_('qa_audits', 'audit_id', role === 'auditor' ? c.tl_audit_id : c.auditor_audit_id)
       const mine = scored.answers
       const theirs = qaParse_(other && other.answers_json, {}) as Record<string, string>
       c.alignment_pct = qaAlignment_(scored.form as never, role === 'auditor' ? mine : theirs, role === 'auditor' ? theirs : mine)
@@ -1589,7 +1603,7 @@ export async function addQaKbGap(input: Row): Promise<Row> {
   if (description.length < 10) throw new Error('Describe the gap: what was missing or wrong in the knowledge base.')
   const today = qaToday_()
   const g = await qaTx_(async () => {
-    const a = (await qaRows_('qa_audits')).filter((r) => r.audit_id === String(input.auditId))[0]
+    const a = await qaRowBy_('qa_audits', 'audit_id', String(input.auditId))
     if (!a || a.kind !== 'audit') throw new Error('Choose the audit this gap came from.')
     if (user.role !== 'admin' && normEmail(a.auditor_email) !== user.email) throw new Error('Link the gap to one of your own audits.')
     const row: Row = {
@@ -1622,7 +1636,7 @@ export async function markQaKbGapAdded(gapId: string): Promise<Row> {
   await assertWritable()
   if (!(await qaIsKbEditor_(user))) throw new Error('Only the people on the KB update list (qa_kb_notify_emails) mark gaps added.')
   return qaTx_(async () => {
-    const g = (await qaRows_('qa_kb_gaps')).filter((r) => r.gap_id === String(gapId))[0]
+    const g = await qaRowBy_('qa_kb_gaps', 'gap_id', String(gapId))
     if (!g) throw new Error('That KB gap was not found.')
     if (g.status === 'added') throw new Error('This gap is already marked added.')
     g.status = 'added'

@@ -18,6 +18,7 @@
 
 import 'server-only'
 
+import { cache } from 'react'
 import { createAuthClient } from '@/features/shared/lib/auth'
 import { db } from './repo'
 import { getConfig } from './settings'
@@ -29,17 +30,15 @@ export function normEmail(e: unknown): string {
 }
 
 /** The signed-in caller, whatever View as says. '' in a cron run (no session). */
-export async function realEmail(): Promise<string> {
+export const realEmail = cache(async (): Promise<string> => {
   try {
     const supabase = await createAuthClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    return normEmail(user?.email)
+    const { data } = await supabase.auth.getClaims()
+    return normEmail(data?.claims?.email)
   } catch {
     return ''
   }
-}
+})
 
 /**
  * Who to stamp on a write (actorEmail_). Interactive calls stamp the caller;
@@ -75,7 +74,7 @@ export interface PlatformUser {
  * currentUser_ verbatim (Auth.js:53-77): domain check, admin_emails, roster join,
  * the active flag, specialist -> agent-level.
  */
-export async function currentUser(): Promise<PlatformUser> {
+export const currentUser = cache(async (): Promise<PlatformUser> => {
   const email = await currentEmail()
   const domain = String((await getConfig('allowed_domain', 'dabdoob.com')) || '').toLowerCase()
   if (email.split('@')[1] !== domain) {
@@ -88,6 +87,7 @@ export async function currentUser(): Promise<PlatformUser> {
   const { data: rosterRows, error: rosterErr } = await db()
     .from('roster')
     .select('*')
+    .ilike('email', email)
   if (rosterErr) throw described(rosterErr, { table: 'roster' })
   const row = (rosterRows || []).find((r) => normEmail(r.email) === email)
   const active = !row || (row.active !== false && String(row.active).toLowerCase() !== 'false')
@@ -108,7 +108,7 @@ export async function currentUser(): Promise<PlatformUser> {
     }
   }
   return { email, name: row ? String(row.name || email) : email, role: 'unknown', tlEmail: null }
-}
+})
 
 /**
  * Throws unless the caller has one of the given roles (requireRole_,

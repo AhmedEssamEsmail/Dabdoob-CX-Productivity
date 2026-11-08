@@ -35,7 +35,7 @@ import {
 import { configAll } from '@/features/shared/platform/settings'
 import { requireRole } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
+import { dqCachedLive, dqLastRun, readStore, readStoreFiltered } from '@/features/shared/platform/stores'
 import { InputError } from '@/features/shared/lib/api-error'
 import { DATE_KEY_RE, inDateRange, monthRange } from '@/features/shared/lib/fragments'
 import {
@@ -73,7 +73,11 @@ export async function getQueueHealthPage(): Promise<Record<string, unknown>> {
   await requireRole(['admin', 'tl'])
   const now = new Date()
   const cfg = (await configAll()) as Cfg
-  const [snapStore, subStore] = await Promise.all([readStore('agg_snapshots_today'), readStore(DQ_QUEUE_SUBMISSIONS_TABLE)])
+  const today = dqDateKey_(now, String(dqSetting_(cfg, 'business_tz')))
+  const [snapStore, subStore] = await Promise.all([
+    readStoreFiltered('agg_snapshots_today', { eq: { slot_date: today } }),
+    readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { eq: { slot_date: today } }),
+  ])
   const snaps = dqTodaySnapshots_(now, cfg, snapStore.rows)
   const queues = dqSortQueues_(
     (await dqCachedLive('agg_queue_now')).map(
@@ -114,7 +118,10 @@ export type DqAgingFlagJoined = DqAgingFlagOut & { aging?: Record<string, unknow
  */
 export async function getOpenAgingFlags(): Promise<{ flags: DqAgingFlagJoined[]; aging: 'ok' | 'unavailable'; joined: boolean }> {
   await requireRole(['admin', 'tl'])
-  const [flagStore, agingStore] = await Promise.all([readStore(DQ_AGING_FLAGS_TABLE), readStore('aging_open_tickets')])
+  const [flagStore, agingStore] = await Promise.all([
+    readStoreFiltered(DQ_AGING_FLAGS_TABLE, { is: { resolved_at: null } }),
+    readStore('aging_open_tickets'),
+  ])
   if (!agingStore.exists) {
     // Aging board store absent: flags only, no board filter, no join.
     const flags = flagStore.rows.filter((f) => !f.resolved_at).map(dqAgingFlagOut_)

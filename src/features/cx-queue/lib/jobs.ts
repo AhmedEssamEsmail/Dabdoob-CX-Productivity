@@ -139,24 +139,29 @@ export async function buildInflowAggregates_(opts?: { hourly?: boolean }): Promi
   const today = dqDateKey_(now, bizTz)
   const fromKey = dqAddDays_(today, -Number(dqSetting_(cfg, 'inflow_lookback_days')))
   const people = await rosterPeople_()
+  const since = dqAddDays_(fromKey, -1)
+  const sinceMs = Date.parse(since)
   let chats: unknown[][] = []
   let calls: unknown[][] = []
   try {
-    chats = (await readStore('freshchat')).rows.map((r) => (Array.isArray(r.cols) ? r.cols : []) as unknown[])
+    const { data: chatRows, error: chatErr } = await db().from('freshchat').select('cols')
+    if (!chatErr) chats = ((chatRows || []) as Record<string, unknown>[]).map((r) => (Array.isArray(r.cols) ? r.cols : []) as unknown[])
   } catch (e) {
     hbBeat('daily_report', 'error', 'Freshchat read failed: ' + (e instanceof Error ? e.message : String(e)))
   }
   try {
-    calls = (await readStore('maqsam_calls')).rows.map((r) => {
-      const c = (Array.isArray(r.cols) ? r.cols : []) as unknown[]
-      // Mirror cols are D..K; the legacy Maqsam read maps them back to [id, start, state, direction, country].
-      return [r.dedupe_key || c[0] || '', c[0], c[2], c[3], c[7]]
-    })
+    const { data: callRows, error: callErr } = await db().from('maqsam_calls').select('cols,dedupe_key,ts_ms').gte('ts_ms', sinceMs)
+    if (!callErr) {
+      calls = ((callRows || []) as Record<string, unknown>[]).map((r) => {
+        const c = (Array.isArray(r.cols) ? r.cols : []) as unknown[]
+        // Mirror cols are D..K; the legacy Maqsam read maps them back to [id, start, state, direction, country].
+        return [r.dedupe_key || c[0] || '', c[0], c[2], c[3], c[7]]
+      })
+    }
   } catch (e) {
     hbBeat('daily_report', 'error', 'Maqsam read failed: ' + (e instanceof Error ? e.message : String(e)))
   }
   const escChannel = String(dqSetting_(cfg, 'inflow_escalation_channel'))
-  const since = dqAddDays_(fromKey, -1)
   const { data: tickets } = await db()
     .from('tickets')
     .select('ticket_id,channel,group_name,requester_id,status,created_at,country')
@@ -174,7 +179,8 @@ export async function buildInflowAggregates_(opts?: { hourly?: boolean }): Promi
   )
   // Upsert the window; stale keys inside a covered source range go to 0.
   const stamp = now.toISOString()
-  const { data: existing } = await db().from('agg_inflow_daily').select('*')
+  const rangeFrom = Object.keys(counts.ranges).reduce((m, k) => (counts.ranges[k].from < m ? counts.ranges[k].from : m), fromKey)
+  const { data: existing } = await db().from('agg_inflow_daily').select('*').gte('date', rangeFrom)
   const rows: Record<string, Record<string, unknown>> = {}
   ;(existing || []).forEach((r0) => {
     const r = r0 as Record<string, unknown>
@@ -251,8 +257,9 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
   const owners = (dqSetting_(cfg, 'checkin_owner_emails') || {}) as Record<string, string[]>
   const due = cps.filter((cp) => now > cp.dueAt && now.getTime() - cp.dueAt.getTime() < 12 * 3600000)
   if (!due.length) return
-  const subStore = await readStore(DQ_QUEUE_SUBMISSIONS_TABLE)
-  const subs = dqSubmissionsFor_(subStore.exists ? subStore.rows : null, due.map((c) => c.date))
+  const dueDates = due.map((c) => c.date)
+  const { data: subRows, error: subErr } = await db().from(DQ_QUEUE_SUBMISSIONS_TABLE).select('*').in('slot_date', dueDates)
+  const subs = dqSubmissionsFor_(subErr ? null : ((subRows || []) as Record<string, unknown>[]), dueDates)
   const done: Record<string, boolean> = {}
   subs.forEach((s) => {
     done[String(s.slot_date) + '|' + s.slot] = true
@@ -261,7 +268,7 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
   if (!missed.length) return
   let tls: string[] | null = null
   const sent: Record<string, boolean> = {}
-  const { data: popups } = await db().from('popups').select('*').eq('kind', 'queue_checkin_missed')
+  const { data: popups } = await db().from('popups').select('ref,recipient').eq('kind', 'queue_checkin_missed')
   ;(popups || []).forEach((r) => {
     const p = r as Record<string, unknown>
     sent[String(p.ref) + '|' + normEmail_(p.recipient)] = true

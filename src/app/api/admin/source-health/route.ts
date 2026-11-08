@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAuthClient } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
 import { apiError } from '@/features/shared/lib/api-error'
 import { describeDbError } from '@/features/shared/lib/errors'
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
   }
 
   const checks: Check[] = []
-  const supabase = await createAuthClient()
+  const supabase = db()
 
   /* ---- tables ---------------------------------------------------------
    * head:true count reads return {error:null, count:null} on a MISSING table —

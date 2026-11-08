@@ -108,10 +108,18 @@ export const shellApi = {
 
 /** st — alerts/popups polling endpoints. Errors are swallowed by callers. */
 export const alertsApi = {
-  oneOnOneAlerts: () => getJson<{ alerts: OneOnOneAlert[] }>('/api/alerts/one-on-one'),
   oneOnOneAlertsSeen: (keys: string[]) =>
     sendJson('/api/alerts/one-on-one', { keys }),
-  popupsPoll: () => getJson<{ popups: ShellPopup[] }>('/api/popups'),
+  pollTick: async (): Promise<{
+    popups: ShellPopup[]
+    alerts: OneOnOneAlert[]
+    now: string
+  }> => {
+    const data = await getJson<{ popups: ShellPopup[]; alerts: OneOnOneAlert[] }>(
+      '/api/popups'
+    )
+    return { ...data, now: new Date().toISOString() }
+  },
 }
 
 /**

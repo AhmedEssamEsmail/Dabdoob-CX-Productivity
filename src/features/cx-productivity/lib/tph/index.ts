@@ -1928,8 +1928,10 @@ export function tphRunStep_(
 
 /** tphBuildPastDays_ verbatim, steps via tphRunStep_/io: rebuild the last TPH_PAST_DAYS stale days. */
 export function tphBuildPastDays_(
-  io: TphStepIo & { today?: number | Date }
+  io: TphStepIo & { today?: number | Date },
+  opts?: { budgetMs?: number }
 ): Record<string, unknown> {
+  const budget = opts && opts.budgetMs !== undefined ? opts.budgetMs : TPH_TIME_GUARD_MS
   if (!prodReady_(io.cfg)) return { skipped: 'CC2 Productivity is not set up' }
   const t0 = io.nowMs === undefined ? Date.now() : io.nowMs
   const today = prodToday_(io.cfg, io.today)
@@ -1953,7 +1955,7 @@ export function tphBuildPastDays_(
       TPH_STALE_MS
     )
     steps.forEach((step) => {
-      if ((io.nowMs === undefined ? Date.now() : io.nowMs) - t0 > TPH_TIME_GUARD_MS) {
+      if ((io.nowMs === undefined ? Date.now() : io.nowMs) - t0 > budget) {
         left.push(d + ' ' + step)
         return
       }

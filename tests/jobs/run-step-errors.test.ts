@@ -12,7 +12,9 @@ const h = vi.hoisted(() => ({
 
 vi.mock('@/features/shared/lib/auth', () => ({
   requireRole: async () => ({ email: 'admin@dabdoob.com', role: 'admin' }),
-  createAuthClient: async () => ({
+}))
+vi.mock('@/features/shared/platform/repo', () => ({
+  db: () => ({
     from: (table: string) => {
       const r = h.tableResults[table] || { data: [], error: null }
       const chain: Record<string, unknown> = {}

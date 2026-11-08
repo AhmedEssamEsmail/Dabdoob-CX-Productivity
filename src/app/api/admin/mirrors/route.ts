@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
 import { apiError } from '@/features/shared/lib/api-error'
-import { createAuthClient } from '@/features/shared/lib/auth'
+import { db } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
 import { dqSetting_ } from '@/features/shared/lib/adapters'
 import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
   try {
     await requireAdminCaller(req)
     const cfg = await configAll()
-    const supabase = await createAuthClient()
+    const supabase = db()
     const state: Record<string, unknown> = {}
     for (const t of MIRROR_TABLES) {
       const { count, error } = await supabase.from(t).select('*', { count: 'exact', head: true })

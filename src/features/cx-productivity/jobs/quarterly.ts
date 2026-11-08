@@ -156,6 +156,7 @@ export async function jobQuarterlyReport(env: JobEnv): Promise<{ skipped?: strin
   if (!recipients.length) return { skipped: 'No recipients configured' }
 
   try {
+    await env.prefetchTables(['prod_flag_analytics'])
     const result = await prodSendQuarterlyReport_(env, quarter, reportYear, recipients)
     env.logRun('quarterly_report', Date.now(), 'ok', { quarter, year: reportYear, sent: result.sent })
     await env.flushWrites()

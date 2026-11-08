@@ -22,7 +22,15 @@ const h = vi.hoisted(() => {
 })
 
 vi.mock('@/features/shared/lib/auth', () => ({
-  createAuthClient: async () => ({ auth: { getUser: async () => ({ data: { user: h.user } }) } }),
+  createAuthClient: async () => ({
+    auth: {
+      getUser: async () => ({ data: { user: h.user } }),
+      getClaims: async () => ({
+        data: { claims: h.user ? { email: h.user.email, sub: 'u' } : null },
+        error: null,
+      }),
+    },
+  }),
 }))
 
 vi.mock('@/features/shared/platform/repo', () => ({
@@ -31,7 +39,7 @@ vi.mock('@/features/shared/platform/repo', () => ({
       const r = { data: h.tables[table] || [], error: null }
       const chain: Record<string, unknown> = {}
       const thenable = { then: (resolve: (v: unknown) => void) => resolve(r) }
-      for (const m of ['select', 'eq', 'order', 'neq', 'in', 'gte', 'lte', 'limit']) {
+      for (const m of ['select', 'eq', 'ilike', 'order', 'neq', 'in', 'gte', 'lte', 'limit']) {
         chain[m] = () => Object.assign({}, chain, thenable)
       }
       return Object.assign(chain, thenable)

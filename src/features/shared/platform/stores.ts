@@ -34,6 +34,41 @@ export async function readStore(name: string): Promise<StoreRead> {
   }
 }
 
+/** PostgREST filters for readStoreFiltered: eq / in / is on real columns. */
+export interface StoreFilter {
+  eq?: Record<string, unknown>
+  in?: Record<string, unknown[]>
+  is?: Record<string, null>
+}
+
+/**
+ * Filtered sibling of readStore: same {rows, exists} contract (missingOk ->
+ * exists:false), but the caller supplies eq/in/is filters so Postgres does the
+ * narrowing instead of the whole table crossing the wire.
+ */
+export async function readStoreFiltered(name: string, filter: StoreFilter = {}): Promise<StoreRead> {
+  try {
+    let q = db().from(name).select('*')
+    const eq = filter.eq || {}
+    Object.keys(eq).forEach((k) => {
+      q = q.eq(k, eq[k])
+    })
+    const inF = filter.in || {}
+    Object.keys(inF).forEach((k) => {
+      q = q.in(k, inF[k])
+    })
+    const isF = filter.is || {}
+    Object.keys(isF).forEach((k) => {
+      q = q.is(k, null)
+    })
+    const { data, error } = await q
+    if (error) return { rows: [], exists: false }
+    return { rows: (data || []) as Record<string, unknown>[], exists: true }
+  } catch {
+    return { rows: [], exists: false }
+  }
+}
+
 /** dqCachedLive_: a Live aggregate table as objects; [] when the store is absent. */
 export async function dqCachedLive(name: string): Promise<Record<string, unknown>[]> {
   return (await readStore(name)).rows

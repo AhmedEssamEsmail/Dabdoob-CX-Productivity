@@ -244,6 +244,7 @@ export function prodAggregateFlags_(env: JobEnv, date: string): { rowsOut?: numb
  *  manual mode, refresh_log the counts. Also used by the flag-detection route. */
 export async function prodFlagsStep_(env: JobEnv, dates: string[]): Promise<{ flagged: number; added: number; voided: number; cases?: number; intervals?: number }> {
   const t = Date.now()
+  await env.prefetchTables(['prod_intervals', 'prod_flags'])
   await env.ensureIntervals(dates)
   await env.ensureHeadcount()
   const det = prodDetectDates_(dates, await env.activityRows(), env as never)
@@ -269,6 +270,7 @@ export async function prodFlagsStep_(env: JobEnv, dates: string[]): Promise<{ fl
 /** The 'prod_flag_analytics' step body. Also used by the analytics-aggregation route. */
 export async function prodFlagAnalyticsStep_(env: JobEnv, dates: string[]): Promise<number> {
   const t = Date.now()
+  await env.prefetchTables(['prod_flags', 'prod_flag_analytics'])
   let totalRows = 0
   for (const d of dates) totalRows += prodAggregateFlags_(env, d).rowsOut as number
   env.logRun('prod_flag_analytics', t, 'ok', { rowsOut: totalRows, note: dates.join(', ') })
@@ -279,6 +281,7 @@ export async function prodFlagAnalyticsStep_(env: JobEnv, dates: string[]): Prom
  *  Also used by the daily-layers route. */
 export async function prodComputeStep_(env: JobEnv, dates: string[]): Promise<number> {
   const t = Date.now()
+  await env.prefetchTables(['prod_intervals', 'prod_flags', 'prod_daily_layers', 'prod_window_hist'])
   await env.prefetchMonthBooks(dates)
   const n = prodComputeDates_(dates, await env.activityRows(), env as never)
   env.logRun('productivity', t, 'ok', { rowsOut: n, note: dates.join(', ') })

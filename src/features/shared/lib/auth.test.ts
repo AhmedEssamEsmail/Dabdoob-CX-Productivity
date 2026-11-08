@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({
   createServerClient: vi.fn(),
-  getUser: vi.fn(),
+  getClaims: vi.fn(),
   eq: vi.fn(),
   cookieStore: {
     getAll: vi.fn((): Array<{ name: string; value: string }> => []),
@@ -24,7 +24,7 @@ vi.mock('next/headers', () => ({
 vi.mock('@supabase/ssr', () => ({
   createServerClient: (...args: unknown[]) => {
     h.createServerClient(...args)
-    return { auth: { getUser: h.getUser } }
+    return { auth: { getClaims: h.getClaims } }
   },
 }))
 
@@ -93,14 +93,13 @@ describe('createAuthClient', () => {
 describe('getUser', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('returns the user from supabase.auth.getUser', async () => {
-    const user = { id: '1', email: 'agent@dabdoob.com' }
-    h.getUser.mockResolvedValue({ data: { user } })
-    await expect(getUser()).resolves.toEqual(user)
+  it('returns the email claims when signed in', async () => {
+    h.getClaims.mockResolvedValue({ data: { claims: { email: 'agent@dabdoob.com' } } })
+    await expect(getUser()).resolves.toEqual({ email: 'agent@dabdoob.com' })
   })
 
   it('returns null when there is no session', async () => {
-    h.getUser.mockResolvedValue({ data: { user: null } })
+    h.getClaims.mockResolvedValue({ data: null })
     await expect(getUser()).resolves.toBeNull()
   })
 })
@@ -108,14 +107,13 @@ describe('getUser', () => {
 describe('requireAuth', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('returns the user when authenticated', async () => {
-    const user = { id: '2', email: 'tl@dabdoob.com' }
-    h.getUser.mockResolvedValue({ data: { user } })
-    await expect(requireAuth()).resolves.toEqual(user)
+  it('returns the claims email when authenticated', async () => {
+    h.getClaims.mockResolvedValue({ data: { claims: { email: 'tl@dabdoob.com' } } })
+    await expect(requireAuth()).resolves.toEqual({ email: 'tl@dabdoob.com' })
   })
 
   it("throws 'Unauthorized' when no user is signed in", async () => {
-    h.getUser.mockResolvedValue({ data: { user: null } })
+    h.getClaims.mockResolvedValue({ data: null })
     await expect(requireAuth()).rejects.toThrow('Unauthorized')
   })
 })

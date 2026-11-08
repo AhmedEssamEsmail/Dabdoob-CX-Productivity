@@ -1,8 +1,85 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+// Controllable supabase stub: each test installs a `from` impl whose awaited
+// builders shift canned { data, error } responses off a queue, while recording
+// every chained method call for assertions.
+type QueryResult = { data: unknown; error: { message: string } | null }
+
+interface FakeBuilder extends PromiseLike<QueryResult> {
+  [key: string]: unknown
+}
+
+function thenable(result: QueryResult): FakeBuilder {
+  const b = new Proxy(function () {}, {
+    get(_t, prop) {
+      if (prop === 'then') {
+        return (
+          f?: ((v: QueryResult) => unknown) | null,
+          rj?: ((e: unknown) => unknown) | null
+        ) => Promise.resolve(result).then(f, rj)
+      }
+      if (prop === Symbol.toPrimitive) return () => ''
+      return () => b
+    },
+  })
+  return b as unknown as FakeBuilder
+}
+
+const supa = vi.hoisted(() => ({
+  from: (table: string): FakeBuilder => {
+    void table
+    return thenable({ data: null, error: null })
+  },
+}))
+vi.mock('@/features/shared/lib/supabase', () => ({
+  supabase: { from: (t: string) => supa.from(t) },
+  createClient: () => ({ from: (t: string) => supa.from(t) }),
+}))
 import {
   sanitizeInput, newId, normHeader, isTrue, toClientValue, toCellValue,
   cacheGet, cachePut, cacheRemove, cacheClear, STAMP_FIELDS,
+  updateRows, updateRow,
 } from '@/features/shared/platform/repo'
+
+interface QRes {
+  data?: unknown
+  error?: { message: string } | null
+}
+
+function fakeDb(queue: QRes[]) {
+  const calls: { table: string; m: string; args: unknown[] }[] = []
+  let awaited = 0
+  const from = (table: string): FakeBuilder => {
+    let pending: QRes | undefined
+    const b = new Proxy(function () {}, {
+      get(_t, prop) {
+        if (prop === 'then') {
+          return (
+            f?: ((v: QueryResult) => unknown) | null,
+            rj?: ((e: unknown) => unknown) | null
+          ) => {
+            if (pending === undefined) {
+              pending = queue.shift() ?? { data: null, error: null }
+              awaited += 1
+            }
+            const result: QueryResult = {
+              data: (pending as QRes).data ?? null,
+              error: (pending as QRes).error ?? null,
+            }
+            return Promise.resolve(result).then(f, rj)
+          }
+        }
+        if (prop === Symbol.toPrimitive) return () => ''
+        return (...args: unknown[]) => {
+          calls.push({ table, m: String(prop), args })
+          return b
+        }
+      },
+    })
+    return b as unknown as FakeBuilder
+  }
+  return { from, calls, awaited: () => awaited }
+}
 
 describe('sanitizeInput / stamping (Repo.js)', () => {
   it('drops client-supplied stamps and internal keys', () => {
@@ -83,5 +160,90 @@ describe('in-memory TTL cache (CacheService)', () => {
     expect(cacheGet('k')).toBeNull()
     cachePut('gone', 'x', -1) // already expired
     expect(cacheGet('gone')).toBeNull()
+  })
+})
+
+describe('updateRows (batched upsert)', () => {
+  const opts = { actor: 'agent@x.com' }
+  const rows = [
+    { id: 'a', name: 'A', submitted_by: 'orig@x.com', submitted_at: 't0' },
+    { id: 'b', name: 'B', submitted_by: 'orig@x.com', submitted_at: 't0' },
+  ]
+
+  beforeEach(() => {
+    supa.from = () => thenable({ data: null, error: null })
+  })
+
+  it('batches N updates into one .in() select + one upsert, preserving per-entry results', async () => {
+    const db = fakeDb([{ data: rows }, { data: null, error: null }])
+    supa.from = db.from
+    const out = await updateRows(
+      'things', 'id',
+      [
+        { key: 'a', patch: { name: 'A2', submitted_by: 'evil@x.com' } },
+        { key: 'b', patch: { name: 'B2' } },
+        { key: 'c', patch: { name: 'C2' } },
+      ],
+      opts
+    )
+    expect(out).toHaveLength(3)
+    expect(out[0]).toMatchObject({ id: 'a', name: 'A2', submitted_by: 'orig@x.com', updated_by: 'agent@x.com' })
+    expect(out[1]).toMatchObject({ id: 'b', name: 'B2', updated_by: 'agent@x.com' })
+    expect(out[2]).toBeNull()
+    expect(db.awaited()).toBe(2)
+    const inCall = db.calls.find((c) => c.m === 'in')
+    expect(inCall?.args[0]).toBe('id')
+    expect(inCall?.args[1]).toEqual(['a', 'b', 'c'])
+    const up = db.calls.find((c) => c.m === 'upsert')
+    expect(up?.args[1]).toEqual({ onConflict: 'id' })
+    expect(up?.args[0]).toHaveLength(2)
+  })
+
+  it('a guard throw aborts before any upsert', async () => {
+    const db = fakeDb([{ data: rows }])
+    supa.from = db.from
+    await expect(
+      updateRows('things', 'id',
+        [{ key: 'a', patch: { name: 'X' } }, { key: 'b', patch: { name: 'Y' } }],
+        {
+          ...opts,
+          guard: () => { throw new Error('refused') },
+        }
+      )
+    ).rejects.toThrow('refused')
+    expect(db.calls.some((c) => c.m === 'upsert')).toBe(false)
+  })
+
+  it('falls back to per-row updates when the upsert lacks a conflict target', async () => {
+    const db = fakeDb([
+      { data: rows },
+      { data: null, error: { message: '42P10: no unique constraint matching' } },
+      { data: rows[0] },
+      { data: { ...rows[0], name: 'A2', updated_by: 'agent@x.com' } },
+      { data: null },
+    ])
+    supa.from = db.from
+    const out = await updateRows(
+      'things', 'id',
+      [
+        { key: 'a', patch: { name: 'A2' } },
+        { key: 'b', patch: { name: 'B2' } },
+      ],
+      opts
+    )
+    expect(out[0]).toMatchObject({ id: 'a', name: 'A2' })
+    expect(out[1]).toBeNull()
+    expect(db.calls.filter((c) => c.m === 'update')).toHaveLength(1)
+  })
+
+  it('single updates keep the direct per-row path', async () => {
+    const db = fakeDb([
+      { data: rows[0] },
+      { data: { ...rows[0], name: 'Solo', updated_by: 'me@x.com' } },
+    ])
+    supa.from = db.from
+    const out = await updateRow('things', 'id', 'a', { name: 'Solo' }, { actor: 'me@x.com' })
+    expect(out).toMatchObject({ id: 'a', name: 'Solo', updated_by: 'me@x.com' })
+    expect(db.calls.some((c) => c.m === 'upsert' || c.m === 'in')).toBe(false)
   })
 })

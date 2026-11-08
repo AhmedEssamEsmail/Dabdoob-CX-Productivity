@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   try {
     await requireJobCaller()
     const env = await buildJobEnv()
-    const out = await jobTphPastDays(env)
+    const out = await jobTphPastDays(env, { budgetMs: 55_000 })
     return NextResponse.json(out || {})
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

@@ -6,12 +6,12 @@ import { resolveLink } from '@/features/shared/shell/gates'
 import { kuwaitTime } from '@/features/shared/components/shell/ui'
 
 /**
- * ga — the 1:1 reminder stack: polls /api/alerts/one-on-one, schedules
- * 'soon' alerts to promote to 'start', chimes (1318.5 → 987.8 Hz) once the
- * user has interacted, and flashes the title '1:1 now' while blocked.
+ * ga — the 1:1 reminder stack: merges `incoming` alerts (fed by Popups' one
+ * merged poll), schedules 'soon' alerts to promote to 'start', chimes
+ * (1318.5 → 987.8 Hz) once the user has interacted, and flashes the title
+ * '1:1 now' while blocked.
  */
 
-const POLL_MS = 6e4 // pa
 const SEEN_KEY = 'cx.oo-alerts-seen' // vn
 
 function readSeen(): Record<string, number> {
@@ -76,7 +76,7 @@ export function chime(): boolean {
 /** fa() — a 'soon' alert's key becomes its 'start' twin's key. */
 const startKey = (key: string) => key.replace(/^oosoon\|/, 'oostart|')
 
-export default function OneOnOneAlerts() {
+export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[] }) {
   const [alerts, setAlerts] = useState<OneOnOneAlert[]>([])
   const [sound, setSound] = useState<'blocked' | 'on'>('blocked')
   const [flash, setFlash] = useState(false)
@@ -119,38 +119,15 @@ export default function OneOnOneAlerts() {
     }
   }, [])
 
-  /* Poll: first hit at 2.5 s, then every 60 s while the tab is visible. */
-  useEffect(() => {
-    let dead = false
-    let timer = 0
-    const scheduled = timers.current
-    const poll = async () => {
-      if (dead) return
-      if (document.visibilityState === 'visible') {
-        try {
-          const data = await alertsApi.oneOnOneAlerts()
-          if (!dead) merge.current(data.alerts)
-        } catch {
-          /* endpoint may not exist yet */
-        }
-      }
-      timer = window.setTimeout(poll, POLL_MS)
-    }
-    timer = window.setTimeout(poll, 2500)
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') {
-        window.clearTimeout(timer)
-        void poll()
-      }
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      dead = true
-      window.clearTimeout(timer)
-      document.removeEventListener('visibilitychange', onVisible)
-      scheduled.forEach((id) => window.clearTimeout(id))
-    }
-  }, [])
+  /* Merge each incoming poll payload; clear scheduled promotions on unmount. */
+  useEffect(() => merge.current(incoming), [incoming])
+  useEffect(
+    () => () => {
+      timers.current.forEach((id) => window.clearTimeout(id))
+      timers.current.clear()
+    },
+    []
+  )
 
   /* Unlock audio on first interaction so the chime can play. */
   useEffect(() => {
