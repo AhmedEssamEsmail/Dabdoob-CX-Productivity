@@ -22,6 +22,8 @@
  * the script lock is n/a on Postgres (per-job upsert keeps cross-writer safety).
  */
 
+import 'server-only'
+
 import { db, readRows, cacheGet, cachePut, cacheRemove } from './repo'
 
 const HEALTH_TABLE = 'health'

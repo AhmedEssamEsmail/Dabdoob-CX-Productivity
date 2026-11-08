@@ -5,7 +5,7 @@
  * overlap wins, Kuwait-local slot indices.
  */
 import { describe, expect, it } from 'vitest'
-import { gridStatusChannel_, tphGridFromIntervals_, type IntervalRow } from '@/features/shared/jobs/grid-slots'
+import { gridStatusChannel_, tphGridFromIntervals_, type IntervalRow } from '@/features/cx-productivity/lib/tph/grid-slots'
 import type { Cfg } from '@/features/shared/lib/adapters'
 
 const CFG = {

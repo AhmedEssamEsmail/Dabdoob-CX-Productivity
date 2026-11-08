@@ -3,6 +3,9 @@
  * that may hold commas, quotes escaped as "" and line breaks. Rows whose cells
  * are all blank are dropped (prodCsvRows_).
  */
+
+import 'server-only'
+
 export function parseCsv(text: string): string[][] {
   const rows: string[][] = []
   let row: string[] = []

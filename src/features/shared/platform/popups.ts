@@ -9,6 +9,8 @@
  *        submitted_by, submitted_at) + popup_id.
  */
 
+import 'server-only'
+
 import { db, readRows, appendRow, updateRows, newId, cacheGet, cachePut, cacheRemove } from './repo'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'

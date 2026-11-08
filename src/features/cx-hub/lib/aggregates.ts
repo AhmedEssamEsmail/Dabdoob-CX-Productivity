@@ -8,6 +8,8 @@
  * `cfg` map dqSetting_ reads). Missing stores behave like missing sheets: [].
  */
 
+import 'server-only'
+
 import {
   configAll,
   dqLastRun,

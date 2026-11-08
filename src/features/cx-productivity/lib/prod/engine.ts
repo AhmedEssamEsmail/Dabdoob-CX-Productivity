@@ -8,6 +8,8 @@
  * reads io.prodRows and writes through io.upsertIn/io.upsert/io.append (prod_flag_log).
  */
 
+import 'server-only'
+
 import {
   dqAddDays_,
   dqDateKey_,

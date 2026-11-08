@@ -18,7 +18,7 @@ import {
   type FormEvent,
 
 } from 'react'
-import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { fetchJson } from '@/features/shared/lib/fetch-json'
 import { pageParams } from '@/features/shared/shell/gates'
 import { Button, Input, Select } from '@/features/shared/components/ui'
 

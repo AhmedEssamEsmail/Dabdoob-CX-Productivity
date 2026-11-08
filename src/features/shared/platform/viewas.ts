@@ -12,6 +12,8 @@
  * and no View as state can ever attach — VA_SYSTEM_ has no equivalent needed.
  */
 
+import 'server-only'
+
 import { db, cacheGet, cachePut, cacheRemove, appendRow } from './repo'
 import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory } from './identity'
 import { getConfig, ccApp } from './settings'

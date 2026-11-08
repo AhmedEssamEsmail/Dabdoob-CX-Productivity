@@ -16,6 +16,8 @@
  *   stores.ts    Stores.js — table reads (missingOk / dqCachedLive_), dqLastRun_
  */
 
+import 'server-only'
+
 export * from './repo'
 export * from './time'
 export * from './settings'

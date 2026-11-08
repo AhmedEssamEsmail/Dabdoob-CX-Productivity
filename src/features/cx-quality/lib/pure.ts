@@ -5,6 +5,7 @@
  * settings come from a Cfg map.
  */
 
+import 'server-only'
 import type { Cfg } from '@/features/shared/lib/adapters'
 import {
   normEmail_,

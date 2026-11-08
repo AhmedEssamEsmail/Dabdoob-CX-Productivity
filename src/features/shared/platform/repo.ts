@@ -16,6 +16,7 @@
  * best-effort, may-be-cold semantics the script cache had.
  */
 
+import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabase } from '@/features/shared/lib/supabase'
 

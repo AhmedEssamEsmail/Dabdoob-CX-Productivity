@@ -15,6 +15,8 @@
  * only that property.
  */
 
+import 'server-only'
+
 import { pwKwDate_, pwKwTime_ } from '@/features/shared/lib/adapters'
 import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { pwDirectory, requireJobCaller } from '@/features/shared/platform/identity'

@@ -1,5 +1,6 @@
 /** The pre-wave-3 route mappings (prod/quality/view_as) — moved out of
  * route.ts so the migration engine + CLI share one source of truth. */
+import 'server-only'
 import type { TableMapping } from '../engine'
 
 export const MAPPINGS: TableMapping[] = [

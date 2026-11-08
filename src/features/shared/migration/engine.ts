@@ -8,6 +8,7 @@
  * NULL_AS_EMPTY, SUGGESTED_*_COLS, TRACKER_RECORD_BACKFILLS (+ postBackfill
  * storage_mode flip, WP-F6).
  */
+import 'server-only'
 import { google } from 'googleapis'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { MAPPINGS as QQ_MAPPINGS, ROW_TRANSFORMS as QQ_TRANSFORMS, SUGGESTED_INT_COLS as QQ_INT, SUGGESTED_NUM_COLS as QQ_NUM, SUGGESTED_JSON_COLS as QQ_JSON, DECISIONS as QQ_DECISIONS } from './mappings/queue-quality'

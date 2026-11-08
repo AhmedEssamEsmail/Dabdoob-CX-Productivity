@@ -4,6 +4,7 @@
  * failures, the analytics payload, drill-down, team scores over a range,
  * and coverage). Names keep the legacy trailing underscore for the oracle.
  */
+import 'server-only'
 
 import {
   normEmail_,

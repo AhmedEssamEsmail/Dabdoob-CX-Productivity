@@ -10,6 +10,8 @@
  * config flag that /api/cron/job-assistant-digest honors.
  */
 
+import 'server-only'
+
 import {
   appendRow,
   assistantOwnerEmail,

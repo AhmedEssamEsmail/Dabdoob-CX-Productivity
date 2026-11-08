@@ -8,6 +8,8 @@
  * (deleted_at), like 1:1 records, so a slip can be put back.
  */
 
+import 'server-only'
+
 import { normEmail_ } from '@/features/shared/lib/adapters'
 import { newId, appendRow, updateRow } from '@/features/shared/platform/repo'
 import { readRows } from '@/features/shared/platform/repo'

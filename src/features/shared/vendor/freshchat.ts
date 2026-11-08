@@ -4,6 +4,8 @@
  * 'dabdoob.freshchat.com', or a full URL; /v2 is appended if missing).
  */
 
+import 'server-only'
+
 import { vendorJson } from './http'
 
 export interface FreshchatCreds {

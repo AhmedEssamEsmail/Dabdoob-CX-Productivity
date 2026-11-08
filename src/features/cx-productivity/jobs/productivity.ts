@@ -5,6 +5,8 @@
  * legacy name and skip / throw semantics.
  */
 
+import 'server-only'
+
 import {
   dqAddDays_,
   dqDateKey_,

@@ -12,6 +12,11 @@ injected (`__FIXTURES__`/`__WRITES__`), then the tests assert the TS ports
 produce identical results. Legacy source dirs resolve via `LEGACY_DIR`
 (or sibling `*_deprecated` dirs).
 
+Vitest aliases `server-only` to `tests/stubs/server-only.ts`, so unit tests
+can import marked server modules. Standalone `tsx` scripts need the same
+shim: run them with `npx tsx --tsconfig scripts/tsconfig.json <script>` —
+`scripts/tsconfig.json` maps `server-only` to the stub.
+
 Golden coverage includes: desk, hub (admin, my-day, overview, people/holidays),
 kpi, operations, people (+jobs), productivity, prod-validation, quality,
 queue (aggregates, check-in, heatmap, scheduler, TL queue), scorecard, tph,

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
+import { fetchJson } from '@/features/shared/lib/fetch-json'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { Button, Textarea } from '@/features/shared/components/ui'
 

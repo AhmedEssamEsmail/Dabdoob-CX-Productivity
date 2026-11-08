@@ -5,6 +5,8 @@
  * arrive as injected rows/cfg; names keep the trailing underscore.
  */
 
+import 'server-only'
+
 import {
   dqAddDays_,
   dqDateKey_,

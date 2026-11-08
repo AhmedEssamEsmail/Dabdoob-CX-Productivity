@@ -5,6 +5,7 @@
  * filtered to their own team (tl_email on the perf row), verbatim column map.
  */
 
+import 'server-only'
 import { dqNum_ } from '@/features/shared/lib/adapters'
 import { requireRole } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun } from '@/features/shared/platform/stores'

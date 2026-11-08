@@ -24,6 +24,7 @@
  *    at these sizes).
  */
 
+import 'server-only'
 import { db, isTrue, newId, normHeader } from '@/features/shared/platform/repo'
 import { readStore } from '@/features/shared/platform/stores'
 import {

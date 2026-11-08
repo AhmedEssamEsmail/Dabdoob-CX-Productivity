@@ -8,6 +8,8 @@
  * skip them (kpiLogRows_). dqUpsertIn_ -> Postgres upsert on the same keys.
  */
 
+import 'server-only'
+
 import { db, newId } from '@/features/shared/platform/repo'
 import { readStore } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'

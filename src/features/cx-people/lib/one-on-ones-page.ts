@@ -12,6 +12,7 @@
  * workbook/aggregate reads go through the seams in scorecard-server.ts and
  * stores.ts. Everything else is verbatim.
  */
+import 'server-only'
 
 import {
   dqAddDays_,

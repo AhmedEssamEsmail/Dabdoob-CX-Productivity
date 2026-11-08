@@ -6,6 +6,8 @@
  * legacy admin edit did.
  */
 
+import 'server-only'
+
 import { db } from './repo'
 import { wcReset } from './calendar'
 import { assertWritable } from './viewas'

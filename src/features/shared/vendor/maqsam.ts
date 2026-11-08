@@ -5,6 +5,7 @@
  * Maqsam Account Settings > API Credentials — with or without the api. prefix).
  */
 
+import 'server-only'
 import { described } from '@/features/shared/lib/errors'
 import { vendorJson } from './http'
 

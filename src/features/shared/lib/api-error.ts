@@ -8,6 +8,7 @@
  * envelope; everything else is a 500.
  */
 
+import 'server-only'
 import { NextResponse } from 'next/server'
 import { VIEW_AS_READONLY } from '@/features/shared/platform/viewas'
 import { DescribedError, describeDbError } from './errors'

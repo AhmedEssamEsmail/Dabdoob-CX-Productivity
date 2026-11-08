@@ -8,6 +8,7 @@
  * 5 minutes in the process cache (CacheService -> in-memory Map), dropped on write.
  */
 
+import 'server-only'
 import { db, cacheGet, cachePut, cacheRemove, readRows, updateRow, isTrue } from './repo'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'

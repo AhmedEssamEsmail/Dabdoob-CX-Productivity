@@ -8,6 +8,8 @@
  * return the legacy shapes; writes go through assertWritable() like every write.
  */
 
+import 'server-only'
+
 import { appendRow, db, findRow, newId } from '@/features/shared/platform/repo'
 
 import { assistantOwnerEmail, pwDirectory, requireRole, type Directory } from '@/features/shared/platform/identity'

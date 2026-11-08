@@ -11,6 +11,8 @@
  * 'Maqsam Calls', 'FD_AUX', 'AUXes Exceptions', 'Quality' and 'Headcount'.
  */
 
+import 'server-only'
+
 import type { SheetBookLike, SheetRangeLike, SheetTabLike } from '@/features/shared/lib/adapters'
 import { describeDbError, described } from '@/features/shared/lib/errors'
 

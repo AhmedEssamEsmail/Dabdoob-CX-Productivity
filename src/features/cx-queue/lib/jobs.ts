@@ -7,6 +7,8 @@
  * keep the legacy per-year layout via a `year` column.
  */
 
+import 'server-only'
+
 import { appendRow, db, cachePut } from '@/features/shared/platform/repo'
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { requireJobCaller } from '@/features/shared/platform/identity'

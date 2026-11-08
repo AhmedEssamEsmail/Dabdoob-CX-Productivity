@@ -15,6 +15,8 @@
  * stuck-'sending' reset.
  */
 
+import 'server-only'
+
 import { db, newId, appendRow } from '@/features/shared/platform/repo'
 import { readStore, dqLastRun } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'

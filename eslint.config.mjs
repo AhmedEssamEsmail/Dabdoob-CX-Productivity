@@ -19,6 +19,30 @@ const eslintConfig = defineConfig([
     "specs/**/*.js",
     "verify-db.js",
   ]),
+  {
+    files: ["src/features/shared/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/features/cx-*"],
+              message:
+                "features/shared must not import feature modules (composition exceptions: jobs/env.ts, jobs/mirrors.ts)",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/features/shared/jobs/env.ts",
+      "src/features/shared/jobs/mirrors.ts",
+    ],
+    rules: { "no-restricted-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

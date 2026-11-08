@@ -13,6 +13,7 @@
  * legacy sheet lock guard; assertWritable() (View as) precedes every write.
  */
 
+import 'server-only'
 import { normEmail_, pwMs_, pwDateOnly_, pwToday_, pwIsManagerOf_ } from '@/features/shared/lib/adapters'
 import { newId, findRow, appendRows, updateRows, updateRow } from '@/features/shared/platform/repo'
 import { readRows } from '@/features/shared/platform/repo'

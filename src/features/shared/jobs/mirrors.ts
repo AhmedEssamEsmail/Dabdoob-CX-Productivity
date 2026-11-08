@@ -15,7 +15,13 @@
  * Incremental runs re-read the whole tab (the Sheets API has to) but only
  * upsert rows newer than last_ts_ms minus a 24 h overlap; dedupe_key makes
  * re-writes idempotent.
+ *
+ * Composition layer: intentionally imports pure cx-productivity engines
+ * (prodToday_, tphClock_) to sync mirror tables — sanctioned shared -> feature
+ * edge alongside jobs/env.ts (docs/ARCHITECTURE.md).
  */
+
+import 'server-only'
 
 import { createHash } from 'node:crypto'
 import { dqSetting_, prodFileFor_, dqAddDays_, type Cfg } from '@/features/shared/lib/adapters'

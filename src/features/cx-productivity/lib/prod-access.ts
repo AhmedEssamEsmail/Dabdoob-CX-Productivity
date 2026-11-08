@@ -1,3 +1,4 @@
+import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { described } from '@/features/shared/lib/errors'
 

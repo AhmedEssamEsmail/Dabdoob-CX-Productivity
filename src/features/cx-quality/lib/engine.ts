@@ -5,6 +5,8 @@
  * underscore so the golden oracle maps 1:1.
  */
 
+import 'server-only'
+
 export const QE_SOURCE_SS_ID = '1VtBT8kIIhK7PxKYJJQlnhxNtmz17ewhkWtpUt8jiB4s'
 export const QE_OLD_DATA_SS_ID = '1ArWBreAPYAmFX4qnWd1jw3OQ2s8MLvJpqp5024gWjYY'
 export const QE_TZ = 'Asia/Riyadh'

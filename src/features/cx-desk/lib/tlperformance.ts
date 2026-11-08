@@ -13,6 +13,8 @@
  * columns store the plain value.
  */
 
+import 'server-only'
+
 import { db, newId, readRows } from '@/features/shared/platform/repo'
 import { readStore } from '@/features/shared/platform/stores'
 import { getConfig, setConfig, configAll } from '@/features/shared/platform/settings'

@@ -5,6 +5,7 @@
  * scDerive_'s passed/(passed+failed)).
  */
 
+import 'server-only'
 import { InputError } from '@/features/shared/lib/api-error'
 import { DATE_KEY_RE } from '@/features/shared/lib/fragments'
 import { normEmail_ } from '@/features/shared/lib/adapters'

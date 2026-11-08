@@ -5,6 +5,8 @@
  * -> platform sendMail (a 'failed' result throws, like MailApp did).
  */
 
+import 'server-only'
+
 import { dqSetting_, formatDate_ } from '@/features/shared/lib/adapters'
 import type { JobEnv, Row } from '@/features/shared/jobs/env'
 

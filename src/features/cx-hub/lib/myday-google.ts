@@ -10,6 +10,8 @@
  * section error envelope; no Google data is ever fabricated.
  */
 
+import 'server-only'
+
 export interface GoogleThreadMessage {
   internalDate?: string
   labelIds?: string[]

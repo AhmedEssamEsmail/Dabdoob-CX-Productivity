@@ -17,6 +17,7 @@
  * instant (tzOffsetMin, memoised per hour) — hmOffsetMs_ verbatim.
  */
 
+import 'server-only'
 import { inflateRawSync } from 'node:zlib'
 import { appendRow, db, findRow, newId } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'

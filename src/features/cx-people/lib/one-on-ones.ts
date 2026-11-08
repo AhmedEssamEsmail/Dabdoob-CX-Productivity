@@ -14,6 +14,7 @@
  * Live statuses: scheduled | missed | held | held_late; rescheduled /
  * cancelled / excused / deleted rows don't block.
  */
+import 'server-only'
 
 import {
   normEmail_, pwMs_, pwIso_, pwKwDate_, pwKwTime_, pwAt_, pwAddDays_, pwToday_, pwIsManagerOf_,

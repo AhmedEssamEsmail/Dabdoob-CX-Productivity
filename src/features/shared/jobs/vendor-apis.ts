@@ -6,6 +6,7 @@
  * in the same row), ISO instants cannot misparse.
  */
 
+import 'server-only'
 import { DescribedError } from '@/features/shared/lib/errors'
 import { epochMs, isoMs } from '@/features/shared/vendor/http'
 import { listMaqsamCalls, maqsamCredsFromEnv } from '@/features/shared/vendor/maqsam'

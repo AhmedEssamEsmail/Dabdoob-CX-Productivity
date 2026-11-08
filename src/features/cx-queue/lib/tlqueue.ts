@@ -31,6 +31,8 @@
  * numbers.
  */
 
+import 'server-only'
+
 import { db, appendRow } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
 import { requireJobCaller, requireRole } from '@/features/shared/platform/identity'

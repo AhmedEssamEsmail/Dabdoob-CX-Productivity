@@ -5,6 +5,8 @@
  * their io seams need and keeps the legacy job wrap (dqStep_ + hbFlush_).
  */
 
+import 'server-only'
+
 import { dqAddDays_, dqSetting_, prodFileFor_ } from '@/features/shared/lib/adapters'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { tphBuildPastDays_, tphCaptureCases_ } from '@/features/cx-productivity/lib/tph'

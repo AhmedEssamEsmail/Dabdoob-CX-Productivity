@@ -1,0 +1,184 @@
+▲ Next.js 16.4.3 (Turbopack)
+- Environments: .env.local, .env.production
+✓ Running next.config.ts took 49ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.3s
+  Running TypeScript ...
+  Finished TypeScript in 10.8s ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/154) ...
+  Generating static pages using 19 workers (38/154) 
+  Generating static pages using 19 workers (76/154) 
+  Generating static pages using 19 workers (115/154) 
+✓ Generating static pages using 19 workers (154/154) in 1255ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├   /[...slug]
+│ └ ◐ /[...slug]
+├ ○ /admin
+├ ○ /admin/config
+├ ○ /admin/roster
+├ ○ /agents
+├ ○ /aging
+├ ○ /analytics
+├ ƒ /api/admin/backfill
+├ ƒ /api/admin/list-sheets
+├ ƒ /api/admin/migrate
+├ ƒ /api/admin/mirrors
+├ ƒ /api/admin/source-health
+├ ƒ /api/alerts/one-on-one
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/bootstrap
+├ ƒ /api/calendar
+├ ƒ /api/config
+├ ƒ /api/cron/analytics-aggregation
+├ ƒ /api/cron/daily-layers
+├ ƒ /api/cron/flag-detection
+├ ƒ /api/cron/job-data-tick
+├ ƒ /api/cron/job-nightly-aggregates
+├ ƒ /api/cron/job-productivity-daily
+├ ƒ /api/cron/job-qa-engine
+├ ƒ /api/cron/job-quarterly-report
+├ ƒ /api/cron/job-tl-queue
+├ ƒ /api/cron/job-tph-hourly
+├ ƒ /api/cron/job-tph-past-days
+├ ƒ /api/cron/meeting-reminders
+├ ƒ /api/cron/missed-1on1-check
+├ ƒ /api/cron/oo-reminders
+├ ƒ /api/cron/scorecard-nightly
+├ ƒ /api/cron/task-reminders
+├ ƒ /api/desk/job/mail
+├ ƒ /api/desk/setup
+├ ƒ /api/fcr/daily
+├ ƒ /api/health
+├ ƒ /api/holidays
+├ ƒ /api/hub/admin
+├ ƒ /api/hub/ecosystem
+├ ƒ /api/hub/home
+├ ƒ /api/hub/my-day
+├ ƒ /api/hub/roster
+├ ƒ /api/integrations/freshchat
+├ ƒ /api/integrations/freshdesk
+├ ƒ /api/integrations/gmail
+├ ƒ /api/integrations/maqsam
+├ ƒ /api/kpi/behaviour
+├ ƒ /api/kpi/leave
+├ ƒ /api/kpi/logs
+├ ƒ /api/kpi/ol-cases
+├ ƒ /api/kpi/payout
+├ ƒ /api/mail-desk
+├ ƒ /api/mail-log
+├ ƒ /api/options
+├ ƒ /api/options/[listKey]
+├ ƒ /api/people/actions
+├ ƒ /api/people/actions/status
+├ ƒ /api/people/actions/updates
+├ ƒ /api/people/agents
+├ ƒ /api/people/coaching
+├ ƒ /api/people/meetings
+├ ƒ /api/people/notes
+├ ƒ /api/people/one-on-ones
+├ ƒ /api/people/one-on-ones/delete
+├ ƒ /api/people/one-on-ones/log
+├ ƒ /api/people/one-on-ones/productivity
+├ ƒ /api/people/one-on-ones/restore
+├ ƒ /api/people/one-on-ones/schedule
+├ ƒ /api/people/one-on-ones/start
+├ ƒ /api/people/scorecard
+├ ƒ /api/people/tasks
+├ ƒ /api/people/tasks/deadline
+├ ƒ /api/people/tasks/details
+├ ƒ /api/people/tasks/milestone
+├ ƒ /api/people/tasks/preview
+├ ƒ /api/people/tasks/status
+├ ƒ /api/popups
+├ ƒ /api/prod/analytics
+├ ƒ /api/prod/daily-layers
+├ ƒ /api/prod/flags
+├ ƒ /api/prod/flags/[flagId]
+├ ƒ /api/prod/flags/[flagId]/decide
+├ ƒ /api/prod/intervals
+├ ƒ /api/prod/my-page
+├ ƒ /api/qa/[action]
+├ ƒ /api/quality/audits
+├ ƒ /api/queue/aging
+├ ƒ /api/queue/aging-flags
+├ ƒ /api/queue/analytics
+├ ƒ /api/queue/checkins
+├ ƒ /api/queue/checkins-page
+├ ƒ /api/queue/health
+├ ƒ /api/queue/heatmap
+├ ƒ /api/queue/refresh
+├ ƒ /api/queue/scheduler
+├ ƒ /api/roster
+├ ƒ /api/tl/kb
+├ ƒ /api/tl/otd
+├ ƒ /api/tl/page
+├ ƒ /api/tl/performance
+├ ƒ /api/tl/rate
+├ ƒ /api/tph/cases
+├ ƒ /api/tph/days
+├ ƒ /api/tph/page
+├ ƒ /api/tph/run-day
+├ ƒ /api/tph/run-step
+├ ƒ /api/tph/slots
+├ ƒ /api/tph/tasks
+├ ƒ /api/tph/touches
+├ ƒ /api/tph/trend
+├ ƒ /api/trackers
+├ ƒ /api/trackers/fields
+├ ƒ /api/trackers/records
+├ ƒ /api/trackers/setup
+├ ƒ /api/view-as
+├ ƒ /api/view-as/people
+├ ○ /audit-queue
+├ ○ /auth/login
+├ ○ /auth/logout
+├ ○ /calibration
+├ ○ /checkins
+├ ○ /coaching
+├ ○ /ctls
+├ ○ /disputes
+├ ○ /ecosystem
+├ ○ /heatmap
+├ ○ /kb-gaps
+├ ○ /kb-tracker
+├ ○ /kpi-logs
+├ ○ /mail-desk
+├ ○ /meetings
+├ ○ /my-actions
+├ ○ /my-auditor-kpis
+├ ○ /my-audits
+├ ○ /my-day
+├ ○ /my-status
+├ ○ /notes
+├ ○ /one-on-ones
+├ ○ /overview
+├ ○ /people-holidays
+├ ○ /productivity-analytics
+├ ○ /qa-forms
+├ ○ /quality-analytics
+├ ○ /quality-scores
+├ ○ /queue
+├ ○ /scheduler
+├ ○ /status-validation
+├ ○ /tl-performance
+├ ○ /tl-tasks
+├ ○ /tph
+├ ○ /tph-grid
+└ ○ /trackers
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+

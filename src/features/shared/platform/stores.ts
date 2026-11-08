@@ -13,6 +13,7 @@
  *                              the shared health row's last_ok_at (dqLastOkElsewhere_).
  */
 
+import 'server-only'
 import { db, readRows, cacheGet, cachePut } from './repo'
 import { configAll } from './settings'
 

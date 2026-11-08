@@ -2,6 +2,7 @@
  * cx-quality barrel. Pure rules keep their trailing-underscore legacy names for
  * the golden oracle; the server entry points keep their google.script.run names.
  */
+import 'server-only'
 export * from './core'
 export * from './engine'
 export * from './analytics'

@@ -14,6 +14,8 @@
  * never fabricated — migration 04 or TL logging owns them.
  */
 
+import 'server-only'
+
 import { dqAddDays_, dqSetting_ } from '@/features/shared/lib/adapters'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { tphRunStep_, type TphStep } from '@/features/cx-productivity/lib/tph'
@@ -21,7 +23,7 @@ import { described } from '@/features/shared/lib/errors'
 import { buildJobEnv, type JobEnv } from '@/features/shared/jobs/env'
 import { prodComputeStep_, prodFlagsStep_ } from './productivity'
 import { syncAllMirrors } from '@/features/shared/jobs/mirrors'
-import { tphGridFromIntervals_, type IntervalRow } from '@/features/shared/jobs/grid-slots'
+import { tphGridFromIntervals_, type IntervalRow } from '@/features/cx-productivity/lib/tph/grid-slots'
 import { prodNowIso_ } from '@/features/cx-productivity/lib/prod/engine'
 import { DAILY_REPORT_TABS } from '@/features/shared/jobs/sheets'
 

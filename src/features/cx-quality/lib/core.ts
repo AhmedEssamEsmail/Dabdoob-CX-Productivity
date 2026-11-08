@@ -5,6 +5,7 @@
  * the caller-supplied config map (Cfg). Names keep the legacy trailing
  * underscore so the golden oracle maps 1:1.
  */
+import 'server-only'
 
 import type { Cfg } from '@/features/shared/lib/adapters'
 import {

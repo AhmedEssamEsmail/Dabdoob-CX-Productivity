@@ -4,6 +4,7 @@
  * All data arrives as arguments (intervals, flags, layers, hist rows, people, offsetMs).
  */
 
+import 'server-only'
 import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import {
   prodIn_,

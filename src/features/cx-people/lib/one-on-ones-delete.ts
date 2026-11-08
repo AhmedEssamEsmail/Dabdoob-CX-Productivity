@@ -19,6 +19,8 @@
  * in reverse.
  */
 
+import 'server-only'
+
 import {
   pwIso_,
   pwKwDate_,

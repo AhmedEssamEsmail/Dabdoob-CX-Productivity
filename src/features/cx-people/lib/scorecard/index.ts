@@ -6,6 +6,7 @@
  * Config) arrive as arguments; names keep the trailing underscore.
  */
 
+import 'server-only'
 import { dqAddDays_, dqKeyPart_, dqNormCell_, dqSetting_, getConfig_, normEmail_, pwAt_, pwAddDays_, pwDateOnly_, pwIso_, pwKwDate_, pwMs_, pwToday_, PW_DAY_MS, type Cfg } from '@/features/shared/lib/adapters'
 import { kpiPayout_ } from '../kpi'
 

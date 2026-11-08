@@ -11,6 +11,8 @@
  * fabricates ticket rows.
  */
 
+import 'server-only'
+
 import { db, appendRow, cacheGet, cachePut } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described } from '@/features/shared/lib/errors'

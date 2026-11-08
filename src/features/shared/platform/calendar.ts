@@ -21,6 +21,8 @@
  * Days are Kuwait dates (yyyy-MM-dd). State is cached ~60 s in-memory.
  */
 
+import 'server-only'
+
 import { db, cacheGet, cachePut, cacheRemove } from './repo'
 import { getConfig, dqSetting } from './settings'
 import { normEmail } from './identity'

@@ -7,6 +7,7 @@
  * 'Forbidden'-style errors for apiError() to map.
  */
 
+import 'server-only'
 import { requireRole } from '@/features/shared/lib/auth'
 
 export async function requireAdminCaller(req: Request): Promise<{ email: string; role: string }> {

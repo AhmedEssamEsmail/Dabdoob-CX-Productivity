@@ -4,7 +4,10 @@ import path from 'node:path'
 export default defineConfig({
   resolve: {
     // Mirror tsconfig paths so '@/...' imports resolve in unit tests.
-    alias: { '@': path.resolve(import.meta.dirname, 'src') },
+    alias: {
+      '@': path.resolve(import.meta.dirname, 'src'),
+      'server-only': path.resolve(import.meta.dirname, 'tests/stubs/server-only.ts'),
+    },
   },
   test: {
     environment: 'node',

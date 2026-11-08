@@ -12,6 +12,8 @@
  * so reminders can be audited. mail_dry_run defaults to true.
  */
 
+import 'server-only'
+
 import { appendRow } from './repo'
 import { getConfig } from './settings'
 import { normEmail } from './identity'

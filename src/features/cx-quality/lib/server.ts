@@ -12,6 +12,7 @@
  * dqAddDays_ produce the same keys; qeFmt_ is the engine's formatter.
  */
 
+import 'server-only'
 import { appendRow, cacheGet, cachePut, db, newId, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'

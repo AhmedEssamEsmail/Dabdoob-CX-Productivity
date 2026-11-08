@@ -37,6 +37,8 @@
  * a re-run duplicates rows unless the runner truncates first (see DECISIONS).
  */
 
+import 'server-only'
+
 export const SPREADSHEETS = {
   core: process.env.GOOGLE_SHEET_ID!,
   tickets: '107vS_XyJRpelFPJOFditebZVca6TzUuYHq9rm0ermuk', // ss_tickets_id — CC2 Tickets

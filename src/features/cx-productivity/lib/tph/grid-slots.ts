@@ -19,6 +19,8 @@
  * DB-derived slots from TL-entered ones.
  */
 
+import 'server-only'
+
 import { prodSetting_ } from '@/features/cx-productivity/lib/prod/engine'
 import { tphHours_ } from '@/features/cx-productivity/lib/tph/page'
 import type { Cfg } from '@/features/shared/lib/adapters'

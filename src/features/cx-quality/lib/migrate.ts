@@ -15,6 +15,7 @@
  * History import is admin-only (the server layer requires it) AND gated by the
  * `qa_history_secret` config when set — POST /api/qa/importHistory {secret}.
  */
+import 'server-only'
 import { db, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { normEmail, pwDirectory } from '@/features/shared/platform/identity'

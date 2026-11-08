@@ -9,6 +9,8 @@
  * bootstrap comes from /api/bootstrap. Only the Hub-specific calls live here.
  */
 
+import 'server-only'
+
 import {
   appUrls,
   CC_APP_URL_RE,

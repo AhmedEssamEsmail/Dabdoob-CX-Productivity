@@ -11,6 +11,8 @@
  * source is connected — Google Sheets cannot be read from here).
  */
 
+import 'server-only'
+
 import {
   appendRow,
   appendRows,

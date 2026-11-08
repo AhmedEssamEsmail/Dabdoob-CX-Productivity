@@ -4,6 +4,8 @@
  * Maqsam Calls, Activities, Freshchat, agg_inflow_hourly, Config) are injected.
  */
 
+import 'server-only'
+
 import {
   dqAddDays_,
   dqSetting_,

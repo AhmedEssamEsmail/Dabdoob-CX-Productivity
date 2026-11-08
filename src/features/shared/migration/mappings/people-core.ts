@@ -76,6 +76,8 @@
  *   ensureTable_ writer and is not in WP-31 scope — not mapped here.
  */
 
+import 'server-only'
+
 interface TableMapping {
   spreadsheet: string                // keyof typeof SPREADSHEETS in route.ts (after merge adds 'live' + 'data_2026')
   sheet: string

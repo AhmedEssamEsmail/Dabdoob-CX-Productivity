@@ -3,6 +3,9 @@
  * failure. A step that throws returns null — the caller chain keeps going,
  * exactly like the legacy trigger.
  */
+
+import 'server-only'
+
 import type { JobEnv } from './env'
 
 export async function dqStep_<T>(env: JobEnv, job: string, fn: () => T | Promise<T>): Promise<T | null> {

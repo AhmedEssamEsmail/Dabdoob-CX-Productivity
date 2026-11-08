@@ -65,6 +65,41 @@ e.g. `job-qa-engine`, `task-reminders`, `scorecard-nightly`, `job-data-tick`,
 - Anything used by two or more feature modules goes in `src/features/shared/` (`platform/`, `jobs/`, `lib/`, `vendor/`, `components/`).
 - New cron behaviour: add the handler in the feature module's `jobs/`, expose a thin route in `src/app/api/cron/<name>/route.ts`, and schedule it in `vercel.json` only if it should run automatically.
 
+## Module boundaries
+
+### Dependency directions
+
+```
+app  →  features (cx-*/<module>)  →  shared
+```
+
+- `src/app` routes may import feature `lib/`/`jobs/` functions and shared modules.
+- Features may import `shared/` and other features only via a documented public seam — prefer `shared/` for anything reused.
+- `src/features/shared/` must **not** import `@/features/cx-*`. This is enforced
+  by ESLint `no-restricted-imports` in `eslint.config.mjs`.
+- Exception: `shared/jobs/env.ts` and `shared/jobs/mirrors.ts` are the
+  composition layer — they intentionally wire pure cx-productivity engines to
+  storage/mail. The rule is disabled for these two files; see their headers.
+
+### Ownership
+
+- `grid-slots.ts` lives in `cx-productivity/lib/tph/` — it has a single
+  production consumer and is not shared.
+- `shared/lib/fetch-json.ts` is the one cross-feature `fetchJson`. The local
+  variants in `hub-shared`, `cx-queue/shared`, and `qa-shared` are intentional
+  (client-component seams) — do not unify them.
+- `import 'server-only'` marks server-only modules: `shared/{platform,jobs,
+  vendor,migration}`, server modules in `shared/lib/`, and feature `lib`/`jobs`
+  that touch secrets or Supabase service roles. Next fails the build if a
+  client component reaches one. Two client-reachable exceptions stay unmarked:
+  `cx-productivity/lib/prod-validation.ts` and `cx-queue/lib/heatmap-engine.ts`.
+
+### Page structure
+
+Routes stay thin: pages/components in `src/app` delegate to `<X>Page`
+components under `src/features/<module>/components/`, which fetch via
+feature `lib/` functions and render. No business logic in `app/`.
+
 ## Known debt (documented for later phases — do not fix here)
 
 - ~345 raw `<button>` usages across the app — there is no shared `Button` component yet.

@@ -15,6 +15,8 @@
  * update row still records the file's metadata.
  */
 
+import 'server-only'
+
 import {
   normEmail_,
   pwMs_,

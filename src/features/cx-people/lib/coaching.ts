@@ -7,6 +7,7 @@
  * covered the topic).
  */
 
+import 'server-only'
 import { normEmail_, pwMs_, pwKwDate_, pwToday_ } from '@/features/shared/lib/adapters'
 import { newId, appendRows } from '@/features/shared/platform/repo'
 import { readRows } from '@/features/shared/platform/repo'

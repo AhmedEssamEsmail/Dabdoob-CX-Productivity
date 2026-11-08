@@ -15,6 +15,7 @@
  * did, so refresh reports the failure instead of wiping a month.
  */
 
+import 'server-only'
 import {
   dqAddDays_,
   dqDateKey_,

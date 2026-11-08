@@ -20,6 +20,7 @@
  * never mails twice. The cron routes call these with Date.now() (they take
  * `nowMs` so tests can pin the clock).
  */
+import 'server-only'
 
 import {
   normEmail_, pwKwDate_, pwKwTime_, pwMs_, pwToday_, pwDateOnly_,

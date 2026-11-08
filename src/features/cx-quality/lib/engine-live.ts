@@ -15,6 +15,7 @@
  * Pure pieces (qeMakeRng_, qeSelectForAgent_, qePartitionLog_ order rules...) are
  * transcribed verbatim from QaEngine.js so the same day rebuilds the same queue.
  */
+import 'server-only'
 import { db, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described } from '@/features/shared/lib/errors'

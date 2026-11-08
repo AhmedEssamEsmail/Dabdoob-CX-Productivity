@@ -4,6 +4,8 @@
  * hbEvidence_ health reader checks the same way, case-insensitive).
  */
 
+import 'server-only'
+
 import { setConfig } from '@/features/shared/platform/settings'
 
 /** dqMarkRun_: stamp the job's last-run time. */

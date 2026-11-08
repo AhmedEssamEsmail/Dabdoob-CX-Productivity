@@ -4,6 +4,7 @@
  * are injected row lists; the scoring functions are pure.
  */
 
+import 'server-only'
 import { normEmail_ } from '@/features/shared/lib/adapters'
 
 export const KPI_LOG_HEADERS: Record<string, string[]> = {

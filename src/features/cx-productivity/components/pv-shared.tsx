@@ -55,15 +55,6 @@ export const CHANNEL_LABELS: Record<string, string> = {
   wa: 'waiting address',
 }
 
-/* --- fetchJson — the ce.google-run seam -------------------------------- */
-
-export async function fetchJson(url: string, init?: RequestInit) {
-  const res = await fetch(url, { cache: 'no-store', ...init })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error((data as { error?: string }).error || 'Request failed')
-  return data
-}
-
 /** Se — data fetch with error + reload. */
 export function useSe<T>(fn: () => Promise<T>) {
   const [data, setData] = useState<T | null>(null)

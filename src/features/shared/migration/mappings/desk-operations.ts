@@ -63,6 +63,8 @@
  *   Core" and Heatmap under CC2 Live — both wrong; the code + probe win.
  */
 
+import 'server-only'
+
 /** Exact shape of src/app/api/admin/migrate/route.ts TableMapping —
  * `spreadsheet` widened to string (sibling convention): 'live' is not a key of
  * route.ts's SPREADSHEETS until the merge adds it. */

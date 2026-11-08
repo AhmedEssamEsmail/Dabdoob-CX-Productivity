@@ -6,6 +6,8 @@
  * migration-003 tables (dq_aging_flags, queue_submissions).
  */
 
+import 'server-only'
+
 import { appendRow, updateRow, findRow, db, newId, cacheGet, cachePut, cacheRemove } from '@/features/shared/platform/repo'
 import { configAll, getConfig } from '@/features/shared/platform/settings'
 import { requireRole } from '@/features/shared/platform/identity'

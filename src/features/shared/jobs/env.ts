@@ -24,7 +24,13 @@
  * The legacy script lock (LockService/withLock_) has no direct equivalent on
  * Postgres; upsert+delete ops apply serially at step end and Vercel cron does
  * not overlap schedules, keeping the same single-writer discipline.
+ *
+ * Composition layer: this file intentionally imports pure cx-productivity
+ * engines (prod engine/validation, tph) and wires them to storage/mail —
+ * the only sanctioned shared -> feature edge (docs/ARCHITECTURE.md).
  */
+
+import 'server-only'
 
 import {
   dqAddDays_,

@@ -21,6 +21,7 @@
  * error, leave type is checked against KPI_LEAVE_TYPES, dates are yyyy-MM-dd.
  */
 
+import 'server-only'
 import { db, updateRow, findRow, newId } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { readStore } from '@/features/shared/platform/stores'

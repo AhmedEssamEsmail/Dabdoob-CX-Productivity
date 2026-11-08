@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { createAuthClient } from '@/features/shared/lib/auth'
 import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'

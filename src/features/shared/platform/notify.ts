@@ -9,6 +9,8 @@
  * it: failures are logged and reported, not thrown.
  */
 
+import 'server-only'
+
 import { db, cacheGet, cachePut } from './repo'
 import { pwMs } from './time'
 import { sendMail, escapeHtml } from './mail'

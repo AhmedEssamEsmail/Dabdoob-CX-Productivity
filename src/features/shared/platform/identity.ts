@@ -16,6 +16,8 @@
  * is viewing as; realEmail() always answers the signed-in caller.
  */
 
+import 'server-only'
+
 import { createAuthClient } from '@/features/shared/lib/auth'
 import { db } from './repo'
 import { getConfig } from './settings'

@@ -12,6 +12,8 @@
  * scorecard/pwWorkingHours_ runs verbatim).
  */
 
+import 'server-only'
+
 import {
   d0num_,
   pwActionOut_,

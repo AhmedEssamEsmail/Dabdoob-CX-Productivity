@@ -7,6 +7,8 @@
  * 3. QueueCore.js group-name helpers (dqGroupKey_ / dqInList_ / dqNameHasText_).
  */
 
+import 'server-only'
+
 // ---------------------------------------------------------------- time (Asia/Kuwait)
 
 export const PW_KW_OFFSET_MS = 3 * 3600 * 1000

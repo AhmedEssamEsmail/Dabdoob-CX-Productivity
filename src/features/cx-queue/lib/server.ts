@@ -22,6 +22,8 @@
  * `queue_status_submissions` -> queue_submissions.
  */
 
+import 'server-only'
+
 import {
   appendRow,
   updateRow,
