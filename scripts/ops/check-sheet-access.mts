@@ -7,7 +7,7 @@
  * spreadsheets.get proves the service account can see it (i.e. it is shared);
  * a 403/404 means it is not shared with GOOGLE_SERVICE_ACCOUNT_EMAIL.
  *
- * Run:  npx tsx scripts/check-sheet-access.mts
+ * Run:  npx tsx scripts/ops/check-sheet-access.mts
  * Auth: service-account JSON key via GOOGLE_APPLICATION_CREDENTIALS or
  *       scripts/../cx-kpis-*.json next to package.json; falls back to
  *       GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY env vars.

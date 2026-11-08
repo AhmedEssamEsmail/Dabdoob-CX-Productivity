@@ -26,8 +26,8 @@ const generate = _generate.default || _generate
 const traverse = _traverse.default || _traverse
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const ROOT = path.resolve(HERE, '..') // CX-Hub/  (this script lives in scripts/)
-const WORKSPACE = path.resolve(ROOT, '..') // KPIs/
+const ROOT = path.resolve(HERE, '..', '..') // CX-Hub/  (this script lives in scripts/legacy/)
+const LEGACY_WORKSPACE = path.resolve(ROOT, '..', '_archive', 'legacy-apps') // KPIs/_archive/legacy-apps
 const OUT = path.join(ROOT, '.devin/work/extract')
 
 const APPS = {
@@ -152,7 +152,7 @@ const cssDiff = (a, b) => (a === b ? 'identical' : `${Math.abs(a.length - b.leng
 
 const summary = []
 for (const [app, dir] of Object.entries(APPS)) {
-  const src = path.join(WORKSPACE, dir, 'index.html')
+  const src = path.join(LEGACY_WORKSPACE, dir, 'index.html')
   if (!fs.existsSync(src)) {
     summary.push(`${app}: MISSING ${dir}/index.html`)
     continue

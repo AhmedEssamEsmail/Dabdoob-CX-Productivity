@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { LEGACY_FILES, baseFixtures, diffPath, json } from './helpers-oracle'
 import {
   pwIsMissed_, pwDayLabel_, pwWeekOf_, pwPair_, pwCanReadLog_, pwJson_, pwScheduleOut_,

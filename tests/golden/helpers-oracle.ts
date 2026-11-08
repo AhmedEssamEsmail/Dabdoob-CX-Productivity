@@ -1,9 +1,9 @@
 /**
  * Golden-oracle test helpers: run the legacy Apps Script function in node:vm
- * (scripts/oracle.mjs) and the ported TypeScript function on the same inputs, then prove
+ * (scripts/parity/oracle.mjs) and the ported TypeScript function on the same inputs, then prove
  * the outputs are identical — same value, same field order, same error.
  */
-import { createOracle, baseFixtures as _baseFixtures } from '../../scripts/oracle.mjs'
+import { createOracle, baseFixtures as _baseFixtures } from '../../scripts/parity/oracle.mjs'
 
 /** The full legacy surface the ported engines can touch (helpers live across files). */
 export const LEGACY_FILES = [

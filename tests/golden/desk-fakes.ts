@@ -1,6 +1,6 @@
 /**
  * Desk golden-test oracle: runs Desk_deprecated verbatim in node:vm
- * (scripts/oracle.mjs) while the cx-desk ports run against the hub-fakes
+ * (scripts/parity/oracle.mjs) while the cx-desk ports run against the hub-fakes
  * supabase/auth doubles. deskInstall() feeds BOTH sides the same rows:
  *
  *   - Core tabs (roster, view_as, options, popups, health, mail_log, actions,
@@ -17,7 +17,7 @@
  *     (await import('./hub-fakes')).authModule())
  */
 import { vi } from 'vitest'
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { hubDbReset, hubSetTables, hubSetUser } from './hub-fakes'
 import { cacheClear } from '@/features/shared/platform/repo'
 import { viewAsResetCaches } from '@/features/shared/platform/viewas'

@@ -1,6 +1,6 @@
 /**
  * Operations golden-test oracle: runs Operations_deprecated/Trackers.js verbatim
- * in node:vm (scripts/oracle.mjs) while the cx-operations port runs against the
+ * in node:vm (scripts/parity/oracle.mjs) while the cx-operations port runs against the
  * hub-fakes supabase/auth doubles. opsInstall() feeds BOTH sides the same rows:
  *
  *   - Registry + shared tables (trackers, tracker_fields, options, roster,
@@ -21,7 +21,7 @@
  *   vi.mock('@/features/shared/lib/auth', async () =>
  *     (await import('./hub-fakes')).authModule())
  */
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { hubDb, hubDbReset, hubSetTables, hubSetUser } from './hub-fakes'
 import { cacheClear, toCellValue } from '@/features/shared/platform/repo'
 import { viewAsResetCaches } from '@/features/shared/platform/viewas'

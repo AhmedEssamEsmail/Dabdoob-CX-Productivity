@@ -1,13 +1,13 @@
 /**
  * Golden-oracle tests for the Quality port: the legacy Quality_deprecated/
- * Quality.js + QaEngine.js run verbatim inside scripts/oracle.mjs against the
+ * Quality.js + QaEngine.js run verbatim inside scripts/parity/oracle.mjs against the
  * ported pure helpers in src/features/cx-quality/lib/{core,pure,analytics,engine}.ts.
  *
  * Picks scoring math, window/period choice, coverage partitioning and the
  * parse helpers — the rules the five ported pages are built on.
  */
 import { describe, expect, it } from 'vitest'
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { diffPath, json } from './helpers-oracle'
 import * as core from '../../src/features/cx-quality/lib/core'
 import * as pure from '../../src/features/cx-quality/lib/pure'

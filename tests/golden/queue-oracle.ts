@@ -5,7 +5,7 @@
  * oracle.mjs LEGACY_DIRS; shared files are byte-identical across the three projects
  * (verified), so the Productivity copies stand in for the queue ones.
  */
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { LEGACY_FILES, json } from './helpers-oracle'
 
 export const QUEUE_ORACLE_FILES = [

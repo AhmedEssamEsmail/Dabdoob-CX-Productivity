@@ -4,7 +4,7 @@
  * Migration runner script
  * Calls the Vercel API endpoint to run the migration
  * 
- * Usage: npx tsx scripts/run-migration.ts
+ * Usage: npx tsx scripts/migration/run-migration.ts
  */
 
 const MIGRATION_KEY = 'prod-migrate-2024-secure-key'

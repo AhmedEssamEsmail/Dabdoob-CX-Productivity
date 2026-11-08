@@ -1,0 +1,71 @@
+# Architecture
+
+## Request flow
+
+```
+browser request
+  → src/proxy.ts          session gate (Supabase SSR cookies; redirects
+                          sessionless non-/auth requests to /auth/login)
+  → src/app/**            Next.js routes/pages (thin: parse, auth, call lib)
+  → src/features/cx-*/     feature modules: {components, lib, jobs}
+  → Supabase (Postgres/Auth) and Google Sheets (google-spreadsheet / googleapis)
+```
+
+`src/proxy.ts` is the edge proxy matcher for all non-API paths; API routes
+under `src/app/api/` authenticate themselves (session, `CRON_SECRET` bearer,
+or `MIGRATION_SECRET_KEY` for admin/migration endpoints).
+
+## Feature modules (`src/features/`)
+
+| Module            | Purpose                                                        |
+|-------------------|----------------------------------------------------------------|
+| `cx-hub`          | Home dashboard, My Day, ecosystem/overview pages               |
+| `cx-quality`      | Quality metrics, QA engine, scorecards                          |
+| `cx-queue`        | Ticket queue, TL queue, check-ins, heatmaps                     |
+| `cx-people`       | Roster, one-on-ones, people management                          |
+| `cx-operations`   | Operations views and jobs                                       |
+| `cx-desk`         | Desk/mail-desk workflows, mail jobs                             |
+| `cx-productivity` | Productivity engine (TPH, flags, quarterly reports, backfill)   |
+| `shared`          | Cross-feature code: `platform/` (identity, mail), `jobs/`, `lib/`, `migration/`, `shell/`, `vendor/` (Freshdesk/Freshchat/Maqsam), `components/` |
+
+## Cron jobs (`vercel.json`)
+
+Vercel invokes `src/app/api/cron/*` routes with a `CRON_SECRET` bearer token.
+7 unique paths are scheduled:
+
+| Path                                   | Schedule                          |
+|----------------------------------------|-----------------------------------|
+| `/api/cron/job-productivity-daily`     | `30 6 * * *` (daily 06:30)         |
+| `/api/cron/job-tph-past-days`          | `0 5 * * *` (daily 05:00)          |
+| `/api/cron/job-quarterly-report`       | `0 6 1 * *` (1st of month 06:00)   |
+| `/api/cron/flag-detection`             | `30 6 * * *` (daily 06:30)         |
+| `/api/cron/daily-layers`               | `45 6 * * *` (daily 06:45)         |
+| `/api/cron/analytics-aggregation`      | `0 7 * * *` (daily 07:00)          |
+| `/api/cron/job-tph-hourly`             | `:05` and `:55` every hour         |
+
+`src/app/api/cron/` contains additional routes that are **not** scheduled in
+`vercel.json` — they exist for manual/on-demand invocation or legacy parity,
+e.g. `job-qa-engine`, `task-reminders`, `scorecard-nightly`, `job-data-tick`,
+`job-nightly-aggregates`, `job-tl-queue`, `meeting-reminders`,
+`missed-1on1-check`, `oo-reminders`.
+
+## Integrations
+
+- `src/app/api/integrations/freshchat` — Freshchat API (`FRESHCHAT_API_KEY`, `FRESHCHAT_DOMAIN`)
+- `src/app/api/integrations/freshdesk` — Freshdesk API (`FRESHDESK_API_KEY`)
+- `src/app/api/integrations/gmail`      — Gmail send/ingest (`GMAIL_API_*`, `GMAIL_READ_API_*`, `GMAIL_SEND_ENABLED`, `MAIL_API_*`)
+- `src/app/api/integrations/maqsam`     — Maqsam API (`MAQSAM_API_KEY`, `MAQSAM_API_SECRET`, `MAQSAM_DOMAIN`)
+- Google Sheets — service-account auth (`GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEET_ID`) via `google-spreadsheet` / `googleapis` in `src/features/shared/jobs/sheets.ts`, `src/features/shared/migration/engine.ts`, `src/features/cx-quality/lib/migrate.ts`, `src/features/cx-hub/lib/myday-google.ts` (calendar delegation via `GOOGLE_DELEGATED_USER` / `ASSISTANT_OWNER_EMAIL`)
+- Supabase — `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_ANON_KEY` (client/proxy), `SUPABASE_SERVICE_ROLE_KEY` (server jobs/migration)
+
+## Where code goes
+
+- Routes/pages under `src/app` stay **thin**: auth check, input parsing, call into a feature `lib/` function, return JSON/JSX.
+- Business logic, data access, and job implementations live in `src/features/<module>/{lib,jobs}/`.
+- Anything used by two or more feature modules goes in `src/features/shared/` (`platform/`, `jobs/`, `lib/`, `vendor/`, `components/`).
+- New cron behaviour: add the handler in the feature module's `jobs/`, expose a thin route in `src/app/api/cron/<name>/route.ts`, and schedule it in `vercel.json` only if it should run automatically.
+
+## Known debt (documented for later phases — do not fix here)
+
+- ~345 raw `<button>` usages across the app — there is no shared `Button` component yet.
+- Largest files: `src/features/cx-people/components/one-on-ones-page.tsx` (2735 lines), `src/features/cx-hub/components/ecosystem-page.tsx` (2660 lines), `src/features/cx-quality/lib/server.ts` (2297 lines).

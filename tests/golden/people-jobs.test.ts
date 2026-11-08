@@ -14,7 +14,7 @@ vi.mock('@/features/shared/lib/auth', async () =>
 
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { LEGACY_FILES, diffPath, json, expectSame } from './helpers-oracle'
 import { deskInstall, portCall, type DeskFx } from './desk-fakes'
 import { hubDb } from './hub-fakes'

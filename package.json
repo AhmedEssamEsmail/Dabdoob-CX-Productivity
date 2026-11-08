@@ -15,7 +15,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:performance": "vitest run tests/performance",
     "test:security": "vitest run tests/security",
-    "migrate": "tsx scripts/run-migration.ts",
+    "migrate": "tsx scripts/migration/run-migration.ts",
     "migrate:local": "tsx migration/migrate.ts",
     "migrate:validate": "tsx migration/validate.ts",
     "migrate:dry-run": "tsx migration/migrate-dry-run.ts"

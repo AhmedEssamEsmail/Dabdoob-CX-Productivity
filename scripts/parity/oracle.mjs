@@ -17,12 +17,13 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
+const LEGACY_ROOT = path.resolve(HERE, '..', '..', '..', '_archive', 'legacy-apps')
 export const LEGACY_DIR =
   process.env.LEGACY_DIR ||
   ['original_deprecated', 'Productivity_Depricated']
-    .map((d) => path.resolve(HERE, '..', '..', d))
+    .map((d) => path.join(LEGACY_ROOT, d))
     .find((d) => fs.existsSync(path.join(d, 'Config.js'))) ||
-  path.resolve(HERE, '..', '..', 'original_deprecated')
+  path.join(LEGACY_ROOT, 'original_deprecated')
 
 /**
  * All legacy app dirs a bare filename can resolve against (the oracle loads

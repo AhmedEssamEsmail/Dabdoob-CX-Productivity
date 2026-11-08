@@ -5,7 +5,7 @@
  *
  *   const r = same2('getHomePage', [], hubFx, () => getHomePage())
  */
-import { createOracle } from '../../scripts/oracle.mjs'
+import { createOracle } from '../../scripts/parity/oracle.mjs'
 import { hubSetTables, hubSetUser, hubDbReset } from './hub-fakes'
 import { cacheClear } from '@/features/shared/platform/repo'
 import { callLegacy, callPort, expectSame, json } from './helpers-oracle'

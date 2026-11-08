@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Standalone Node CJS scripts (not part of the app bundle) and agent scratch:
     ".devin/**",
+    "migration/**",
     "scripts/**/*.js",
     "specs/**/*.js",
     "verify-db.js",
