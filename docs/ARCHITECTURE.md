@@ -35,8 +35,8 @@ Vercel invokes `src/app/api/cron/*` routes with a `CRON_SECRET` bearer token.
 
 | Path                                   | Schedule                          |
 |----------------------------------------|-----------------------------------|
-| `/api/cron/job-data-tick`              | `*/15 * * * *` (every 15 min)     |
-| `/api/cron/oo-reminders`               | `*/15 * * * *` (every 15 min)     |
+| `/api/cron/job-data-tick`              | `0 5 * * *` (daily 05:00; Hobby plan caps at daily — intended */15 needs Pro) |
+| `/api/cron/oo-reminders`               | `15 7 * * *` (daily 07:15; Hobby plan caps at daily — intended */15 needs Pro) |
 | `/api/cron/task-reminders`             | `0 7 * * *` (daily 07:00)         |
 | `/api/cron/meeting-reminders`          | `30 7 * * *` (daily 07:30)        |
 | `/api/cron/missed-1on1-check`          | `30 19 * * *` (daily 19:30)       |

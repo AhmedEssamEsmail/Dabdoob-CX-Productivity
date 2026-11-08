@@ -219,11 +219,11 @@
     },
     {
       "path": "/api/cron/job-data-tick",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/oo-reminders",
-      "schedule": "*/15 * * * *"
+      "schedule": "15 7 * * *"
     },
     {
       "path": "/api/cron/task-reminders",
