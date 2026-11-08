@@ -140,6 +140,14 @@
   --cx-accent-text: var(--cx-accent-hover);
   --cx-accent-ink: #ffffff;
   --cx-accent-soft: color-mix(in oklab, var(--pine-2) 12%, var(--surface));
+  --cx-accent-pine: #1b4c45;
+  --cx-accent-blue: #2b5797;
+  --cx-accent-plum: #6b3a72;
+  --cx-accent-rust: #9a4a1f;
+  --cx-swatch-light-bg: #f6f8f7;
+  --cx-swatch-light-fg: #1b4c45;
+  --cx-swatch-dark-bg: #131b1d;
+  --cx-swatch-dark-fg: #0c2623;
   --cx-focus: var(--focus);
   --cx-shadow-pop: 0 12px 32px rgb(15 23 34 / .14);
   --cx-focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--focus);
@@ -218,6 +226,10 @@ html[data-theme="dark"] {
   --cx-accent-hover: #59b795;
   --cx-accent-ink: #08130f;
   --cx-accent-soft: color-mix(in oklab, var(--pine-2) 18%, var(--surface));
+  --cx-accent-pine: #3d8f76;
+  --cx-accent-blue: #7aa8f5;
+  --cx-accent-plum: #b78ad0;
+  --cx-accent-rust: #e0955c;
   --cx-shadow-pop: 0 12px 32px rgb(0 0 0 / .5);
 
   --cx-status-neutral-fg: #a9b7cc;
@@ -281,6 +293,10 @@ html[data-theme="dark"] {
     --cx-accent-hover: #59b795;
     --cx-accent-ink: #08130f;
     --cx-accent-soft: color-mix(in oklab, var(--pine-2) 18%, var(--surface));
+    --cx-accent-pine: #3d8f76;
+    --cx-accent-blue: #7aa8f5;
+    --cx-accent-plum: #b78ad0;
+    --cx-accent-rust: #e0955c;
     --cx-shadow-pop: 0 12px 32px rgb(0 0 0 / .5);
 
     --cx-status-neutral-fg: #a9b7cc;

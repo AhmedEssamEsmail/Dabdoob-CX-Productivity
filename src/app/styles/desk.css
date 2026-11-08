@@ -24,7 +24,7 @@
 [data-app="desk"] .dk-badge[data-tone=bad] { background:color-mix(in srgb,var(--cx-status-bad-edge) 12%,transparent);border-color:var(--cx-status-bad-edge);color:var(--cx-ink) }
 [data-app="desk"] .dk-badge[data-tone=ok] { border-color:var(--cx-status-ok-edge);color:var(--cx-ink) }
 [data-app="desk"] .dk-overall { display:flex;align-items:flex-end;gap:var(--cx-space-4);margin-bottom:var(--cx-space-3);max-width:72ch }
-[data-app="desk"] .dk-overall b { font-size:2.5rem;line-height:1;font-weight:var(--cx-weight-strong);color:var(--band, var(--cx-ink));font-variant-numeric:tabular-nums }
+[data-app="desk"] .dk-overall b { font-size:var(--cx-text-3xl);line-height:1;font-weight:var(--cx-weight-strong);color:var(--band, var(--cx-ink));font-variant-numeric:tabular-nums }
 [data-app="desk"] .dk-overall span { color:var(--cx-ink-2) }
 [data-app="desk"] .dk-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--cx-space-2);margin-bottom:var(--cx-space-2) }
 [data-app="desk"] .dk-stats>div { padding:var(--cx-space-2) var(--cx-space-3);border-radius:var(--cx-radius-bar);background:color-mix(in srgb,var(--band, var(--cx-ink-2)) 8%,transparent);color:var(--cx-ink-2);font-size:var(--cx-text-xs) }

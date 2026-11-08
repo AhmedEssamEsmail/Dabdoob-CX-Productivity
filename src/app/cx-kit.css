@@ -424,6 +424,24 @@
 }
 :root[dir="rtl"] .cx-switch:has(input:checked) .cx-switch__track::after { transform: translateX(-1rem); }
 
+/* Shared native checkbox/radio restyle — kept-raw controls only;
+   .cx-toggle/.cx-switch hide their inputs (opacity:0), so this is
+   visually inert on them. */
+:root input[type="checkbox"],
+:root input[type="radio"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--cx-accent);
+  cursor: pointer;
+  flex: none;
+  margin: 0;
+}
+:root input[type="checkbox"]:disabled,
+:root input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 :root .cx-tabs {
   display: flex;
   gap: var(--cx-space-1);

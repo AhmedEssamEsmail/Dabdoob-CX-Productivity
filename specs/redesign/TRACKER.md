@@ -31,6 +31,10 @@ The broader performance program and migration portability are not claimed done.
 | S12 | dev | S03,S05–S11 | done | src/app/layout.tsx, src/app/admin/{config,roster}/page.tsx, src/features/cx-people/components/meetings-page.tsx, src/features/shared/components/shell/BootSplash.tsx, src/app/cx-kit.css, src/app/styles/{queue,hub}.css | `npx tsc --noEmit` 0 errors; `npx eslint` touched files 0 errors; `npx vitest run` 1140 pass; `npx next build` exit 0 (154 pages); `npm run test:security` 22 pass; audits clean (raw controls 0 unwaived, hex only eco3 GLSL + waived BootSplash, fontSize/font-size 0); selector audit 0 missing emitted classes | layout.tsx now imports only theme.css+cx-kit.css; codemodded missed admin controls to ui/ (roster checkbox kept raw w/ waiver); meetings fontSize→var(--cx-text-lg); BootSplash hexes waiver-commented; recovered globals.css stragglers into authored css: 12 keyframes + cc-*/oo-alert*/.page/.dq-page/view-transitions→cx-kit.css, dq-*→queue.css ([data-app=queue]), setting-*/upnext-*/ap-*→hub.css ([data-app=hub]). e2e: 72/85 pass — all 5+11 failures are Supabase "Request rate limit reached" on /api/auth/login (env flake; auth.spec re-run 22 pass/3 webkit rate-limit fails proves login works); re-run `npm run test:e2e` after rate-limit reset for a fully green board |
 | S13 | dev | S12 | done | `.devin/work/shoot-new.mjs`, `specs/redesign/reports/contract-violations.md` | `node .devin/work/shoot-new.mjs` exit 0 → 101 shots, `_index.json` 101 results all `errors:[]`; `grep -c '"name"' _index.json` = 101; `contract-report.json` regenerated (target 36 desktop / 44 mobile-coarse verified after adding hasTouch/isMobile to mobile ctxs) | rowH>36px violation on 21 routes (45–50.5px, likely header-row probe) + ecosystem eco3-tag btnMinH=0 recorded in contract-violations.md — source fixes out of scope; RTL dir=rtl/lang=ar verified, no pine/legacy rail leftovers |
 | S14 | dev | S04,S13 | done | docs/UI-SYSTEM.md | `grep -c "^### " docs/UI-SYSTEM.md` = 24 (18 component sections + 6 token groups); token tables verified against theme.css names/values | docs-only; no typecheck/lint applicable |
+| fix-ux-5-controls-native | dev | none | done | src/app/cx-kit.css | `grep accent-color cx-kit.css` → 1 hit (l.434); no appearance/pseudo-elements; +18 lines | mini; 1f/1a/~10l/5m; preflight PASS; :root input[type=checkbox|radio] block at .cx-switch/.cx-tabs boundary |
+| fix-ux-5-swatches | dev | none | done | src/app/theme.css, src/app/styles/hub.css | `grep -E '#[0-9a-f]{3,8}' hub.css` → only 9 --eco3-*/--c hexes (l.114-135); 8 :root tokens + 4 dark redeclares in both dark blocks | mini; 2f/2a/~40l/10m; preflight PASS; publishes --cx-accent-pine/blue/plum/rust + --cx-swatch-* for eco3-h1 |
+| fix-ux-5-eco3-h1 | dev | fix-ux-5-swatches | done | src/app/styles/hub.css | `.eco3-head h1` → `font-size:var(--cx-text-lg)` (l.167); `grep font-size:<num>` hub.css → 0 hits | mini; 1f/1a/1l/3m; preflight PASS; hub.css serial after swatches; 1rem→1.0625rem tightening noted |
+| fix-ux-5-fonts | dev | none | done | src/app/styles/{people,queue,desk}.css | `grep font-size:<num>` on 3 files → 0 hits; .6em/.7em untouched; +20 changed lines | mini; 3f/3a/~22l/10m; preflight PASS; 17-rule people.css remap = one atomic codemod; .9375→md/1.125→lg tightenings noted |
 
 ## Gate log
 | Round | Gate | Command | Result |
@@ -92,7 +96,28 @@ The broader performance program and migration portability are not claimed done.
 | ux-15 .pw-seg unstyled inside hub scope | reports/ux-1.md | — | deferred | LOW; latent (no caller passes priority) |
 | ux-16 .cx-toggle checked text --cx-accent on soft 3.27:1 dark pine | reports/ux-2.md | dev (fix-ux-2-toggle-color) | done | cx-kit.css:365 → var(--cx-accent-hover); ratios: light pine 11.36, blue 8.25, plum 9.16, rust 7.16; dark pine 5.29, blue 6.17, plum 5.74, rust 5.91 — all ≥4.5:1; tsc 0 err, eslint 0 err |
 | ux-17 dark-pine link/breadcrumb text | reports/ux-3.md | main | verified | Seven foreground rules now use --cx-accent-text. Reproduced original 4.085:1 failure; fixed card ratio 6.543:1, worst accent-text ratio 5.293:1. Persistent unit guard and 90 browser cases pass. See reports/ux-4.md. |
+| ux-5 batch: raw checkbox/radio unstyled, swatch hex literals, eco3-h1 + people/queue/desk font-size literals off-scale | ux reports (resharded leaves) | dev (fix-ux-5-{controls-native,swatches,eco3-h1,fonts}) | done | 4 mini leaves, 6 CSS files, +104/-34 lines; all leaf Verify greps PASS; TL5B gates: tsc/eslint/unit/security/build PASS | see reports/tl-5.md |
 | Final accent sweep and QA delta | reports/accent-sweep.md | main | verified | tsc PASS; eslint 0 errors/370 existing warnings; 1141 unit tests; 22 security tests; production build; 90 isolated Chromium/Firefox/WebKit cases; UX-4 and QA-3 PASS within scoped local delta. |
+
+## Re-sharding
+| Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |
+|---|---|---|---|
+| spec/fix-ux-5-controls.md | Structural preflight FAIL: legacy format, no `Kind: mini`/ID/Parent/Owner/Depends/Criteria/Skills/Budget fields and no Goal/Files/Context/Contract/Actions/Done-when/Verify/Handoff sections (missing metadata = FAIL, not grandfathered). Semantic: 4 numbered `Do` actions > 3-action cap; two outcomes in one leaf (native checkbox/radio restyle vs accent-swatch token migration + eco3 h1 font-size). Files/lines/minutes within caps. | spec/fix-ux-5-controls-native.md (cx-kit.css `[type]` rules, 1f/1a) + spec/fix-ux-5-swatches.md (theme.css tokens + hub.css hex→var, 2f/2a) + spec/fix-ux-5-eco3-h1.md (hub.css l.167, 1f/1a; Depends swatches, same file). Draft marked SUPERSEDED. | split |
+| spec/fix-ux-5-fonts.md | Structural preflight FAIL: same missing metadata as above. Semantic: Files grant lists 4 paths > 3-file cap (people.css, queue.css, desk.css edited; quality.css verify-only). ~17-rule remap in people.css is one atomic codemod. Lines/minutes within caps. | spec/fix-ux-5-fonts.md re-issued in place as `Kind: mini` (3 files / 3 actions; quality.css moved to Context as verify-only; scope unchanged). | split |
+
+## Gate log (tl-5 preflight)
+| Round | Gate | Command | Result |
+|---|---|---|---|
+| TL5 | shard-preflight | `python check_shards.py spec/fix-ux-5-controls.md spec/fix-ux-5-fonts.md` | FAIL both — "not a Kind: mini leaf; packages, indexes and legacy shards cannot be dispatched" |
+| TL5 | baseline | `git status --short` | Initial dirty tree: only untracked `specs/maint-src-boundaries/` + the two new spec leaves; source tree clean |
+| TL5B | shard-preflight | `python check_shards.py spec/fix-ux-5-controls-native.md spec/fix-ux-5-swatches.md spec/fix-ux-5-eco3-h1.md spec/fix-ux-5-fonts.md` | PASS ×4 (structure); semantic vs LIMITS OK (≤3f/≤3a/≤200l/≤15m; people.css 17-rule remap = 1 atomic codemod) |
+| TL5B | typecheck | `npx tsc --noEmit` | PASS (0 errors) |
+| TL5B | lint | `npx eslint .` | PASS (0 errors, 370 pre-existing warnings) |
+| TL5B | unit | `npx vitest run` | PASS (47 files, 1141 tests) |
+| TL5B | security | `npm run test:security` | PASS (22 tests) |
+| TL5B | build | `npx next build` | PASS (exit 0) |
+| TL5B | scope | `git status --short` | PASS — only the 6 declared CSS files changed in src/ |
+| TL5B | e2e / shots | `npm run test:e2e` / `node .devin/work/shoot-new.mjs` | DEFERRED — need live/approved target (harness resets users, upserts remote roster); CSS-only value-identical token swaps |
 
 ## Blocked / needs user
 - None for the local sweep. Before release, obtain specific approval for the

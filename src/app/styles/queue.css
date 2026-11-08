@@ -234,7 +234,7 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
    lived in the retired sheet; ported verbatim and scoped to the queue app.
    ========================================================================== */
 [data-app="queue"] .dq-refresh{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--cx-space-2)}
-[data-app="queue"] .dq-statusline{display:block;font-weight:400;font-size:.8125rem;color:var(--cx-text-muted)}
+[data-app="queue"] .dq-statusline{display:block;font-weight:400;font-size:var(--cx-text-sm);color:var(--cx-text-muted)}
 [data-app="queue"] .dq-needs{display:grid;gap:var(--cx-space-2)}
 [data-app="queue"] .dq-clear{display:flex;flex-wrap:wrap;gap:var(--cx-space-2) var(--cx-space-5);font-size:var(--cx-text-sm);color:var(--cx-ink-2)}
 [data-app="queue"] .dq-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1px;margin:0;background:var(--cx-line);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object);overflow:hidden}
@@ -266,7 +266,7 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
 [data-app="queue"] .dq-chartwrap{overflow-x:auto;padding-block-end:var(--cx-space-2)}
 [data-app="queue"] .dq-chart{display:block}
 [data-app="queue"] .dq-chart__grid{stroke:var(--cx-line)}
-[data-app="queue"] .dq-chart__axis{fill:var(--cx-ink-2);font-size:12px;font-variant-numeric:tabular-nums}
+[data-app="queue"] .dq-chart__axis{fill:var(--cx-ink-2);font-size:var(--cx-text-xs);font-variant-numeric:tabular-nums}
 [data-app="queue"] .dq-ch--call{fill:var(--cx-status-info-edge);background:var(--cx-status-info-edge)}
 [data-app="queue"] .dq-ch--chat{fill:var(--cx-accent);background:var(--cx-accent)}
 [data-app="queue"] .dq-ch--escalation{fill:var(--cx-status-warn-edge);background:var(--cx-status-warn-edge)}

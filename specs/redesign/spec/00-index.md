@@ -27,4 +27,12 @@ Cross-cutting rules every shard must obey:
 - `styles/*.css`/`theme.css`/`cx-kit.css` may contain hex/px values; **component `.tsx` code may not** (criterion #6 — tokens only).
 - Next 16 CSS rules: `node_modules/next/dist/docs/01-app/01-getting-started/11-css.md` (global-CSS import order = cascade order).
 
+Re-sharded ux-5 FIX leaves (supersede drafts `fix-ux-5-controls.md`, `fix-ux-5-fonts.md`; see TRACKER "Re-sharding"):
+| Leaf | File | Kind | Owner | Depends | Criteria | Files touched | Skills |
+|---|---|---|---|---|---|---|---|
+| fix-ux-5-controls-native | fix-ux-5-controls-native.md | mini | dev | none | ux-5 native controls | `src/app/cx-kit.css` | none |
+| fix-ux-5-swatches | fix-ux-5-swatches.md | mini | dev | none | ux-5 swatch tokens | `src/app/theme.css`, `src/app/styles/hub.css` | none |
+| fix-ux-5-eco3-h1 | fix-ux-5-eco3-h1.md | mini | dev | fix-ux-5-swatches | ux-5 font-scale | `src/app/styles/hub.css` | none |
+| fix-ux-5-fonts | fix-ux-5-fonts.md | mini | dev | none | ux-5 font-scale | `styles/people.css`, `styles/queue.css`, `styles/desk.css` | none |
+
 NEEDS_USER: none.
