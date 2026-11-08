@@ -5,7 +5,7 @@
  * count-up nn/gs and skeleton xe live in ./shared). */
 import { Fragment, useRef, useState } from 'react'
 import {
-  AgeChip, AsOfHint, Count, CxFilters, Head, LoadError, RefreshNow, StatusChip, Xe,
+  AgeChip, AsOfHint, Count, Head, LoadError, RefreshNow, StatusChip, Xe,
   ageRank, bandTop, dayAt, deltaFmt, edgeRank, fetchJson, fmt, hm,
   statusLine, sweepStyle, useSe, useSweep,
 } from './shared'
@@ -85,6 +85,27 @@ function headStats(t: any): HeadStat[] {
   ]
 }
 
+/** Downloads the filtered queue rows as CSV — queue, open, one column per age band, over_top, oldest_h. */
+function exportCsv(rows: any[], labels: string[], date: string) {
+  const cell = (v: unknown) => {
+    const s = v === null || v === undefined ? '' : String(v)
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  }
+  const header = ['queue', 'open', ...labels, 'over_top', 'oldest_h']
+  const lines = [header.join(',')]
+  for (const m of rows)
+    lines.push([m.queue, m.open, ...(m.bands ?? []), m.overTop ?? 0, m.oldestH ?? ''].map(cell).join(','))
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `queue-health-${date}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
 /** ja — the per-row dq-agebar: band slivers sized by share of the open count. */
 function AgeBar({ q, labels, i }: { q: any; labels: string[]; i: number }) {
   const a = q.open || 1
@@ -117,11 +138,33 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
   const [ageBand, setAgeBand] = useState<number | null>(null)
   const h = useRef<HTMLDivElement | null>(null)
   useSweep(h)
+  const o = r.trim().toLowerCase()
+  const f = t
+    ? t.queues.filter(
+        (m: any) => (!o || m.queue.toLowerCase().includes(o)) && (ageBand === null || (m.bands?.[ageBand] ?? 0) > 0),
+      )
+    : []
   const head = (
     <Head
       title={route.title}
       sub={route.purpose ?? 'Every queue now: open work, its age, and how it moved since the last check-in.'}
-      aside={<RefreshNow onDone={s} />}
+      aside={
+        <>
+          <input
+            className="input"
+            type="search"
+            aria-label="Filter queues"
+            placeholder="Search queue names"
+            value={r}
+            onChange={(e) => i(e.target.value)}
+            style={{ width: '11rem' }}
+          />
+          <button type="button" className="btn btn-quiet" disabled={!t} onClick={() => exportCsv(f, t?.bands?.labels ?? [], new Date().toISOString().slice(0, 10))}>
+            Export
+          </button>
+          <RefreshNow onDone={s} />
+        </>
+      }
     />
   )
   if (n)
@@ -141,10 +184,6 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
     )
   const p = t.queues.reduce((m: number, b: any) => m + b.open, 0)
   const d = t.queues.reduce((m: number[], b: any) => b.bands.map((v: number, y: number) => (m[y] || 0) + v), [] as number[])
-  const o = r.trim().toLowerCase()
-  const f = t.queues.filter(
-    (m: any) => (!o || m.queue.toLowerCase().includes(o)) && (ageBand === null || (m.bands?.[ageBand] ?? 0) > 0),
-  )
   const helpCount = t.queues.filter((m: any) => (m.overTop ?? 0) > 0).length
   const bandColor = (idx: number) => `var(--cx-age-${ageRank(idx, d.length)})`
   const pickBand = (idx: number) => setAgeBand((cur) => (cur === idx ? null : idx))
@@ -232,7 +271,6 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
             ) : null}
           </div>
         </div>
-        <CxFilters label="Filter queues" search={{ value: r, onChange: i, placeholder: 'Search queue names' }} />
         <div className="cc-chart" ref={h}>
           <table className="tbl">
             <thead>

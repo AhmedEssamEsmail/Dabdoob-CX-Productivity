@@ -2,14 +2,14 @@
  * Golden: Hub home (getHomePage + dqEarliestAt_) — the whole /overview payload against
  * the V2 oracle fed the same fixture the ported reads see (hub-fakes).
  */
-import { describe, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('@/features/shared/lib/supabase', async () => (await import('./hub-fakes')).supabaseModule())
 vi.mock('@/features/shared/lib/auth', async () => (await import('./hub-fakes')).authModule())
 
 import { getHomePage, dqEarliestAt_ } from '@/features/cx-hub/lib/aggregates'
 import { hubInstall, hubCall, portCall, type HubFx } from './helpers-hub'
-import { expectSame } from './helpers-oracle'
+import { expectSame, json } from './helpers-oracle'
 import { cacheClear } from '@/features/shared/platform/repo'
 
 const NOW = Date.parse('2026-05-06T10:00:00Z') // Wednesday, 13:00 Kuwait
@@ -111,6 +111,16 @@ function fx(over: HubFx = {}): HubFx {
   }
 }
 
+// D-PULSE (documented divergence): additive `ok.pulse` is required by mock 02
+// Team-pulse (PX-06); the frozen _archive Aggregates.js oracle has no pulse
+// emitter and can never produce the key. Strip it from the PORT envelope only —
+// same seam as D-BRAND (desk-fakes.ts:336).
+const dropPulse_ = <T extends { ok?: unknown; err?: string }>(r: T): T => {
+  const c = json(r)
+  if (c.ok && typeof c.ok === 'object') delete (c.ok as Record<string, unknown>).pulse
+  return c
+}
+
 describe('hub getHomePage (Aggregates.js:568-681)', () => {
   beforeEach(() => {
     cacheClear()
@@ -126,7 +136,7 @@ describe('hub getHomePage (Aggregates.js:568-681)', () => {
       const f = fx({ userEmail: email })
       const lf = hubInstall(f)
       expectSame(
-        await portCall(() => getHomePage()),
+        dropPulse_(await portCall(() => getHomePage())),
         hubCall('getHomePage', [], lf),
         'getHomePage ' + email
       )
@@ -147,19 +157,31 @@ describe('hub getHomePage (Aggregates.js:568-681)', () => {
       popups: [],
     }
     const lf = hubInstall(f)
-    expectSame(await portCall(() => getHomePage()), hubCall('getHomePage', [], lf), 'getHomePage minimal')
+    expectSame(dropPulse_(await portCall(() => getHomePage())), hubCall('getHomePage', [], lf), 'getHomePage minimal')
   })
 
   it('rejects non-roster users identically', async () => {
     const f = fx({ userEmail: 'stranger@dabdoob.com' })
     const lf = hubInstall(f)
-    expectSame(await portCall(() => getHomePage()), hubCall('getHomePage', [], lf), 'getHomePage stranger')
+    expectSame(dropPulse_(await portCall(() => getHomePage())), hubCall('getHomePage', [], lf), 'getHomePage stranger')
   })
 
   it('rejects a signed-out caller identically', async () => {
     const f = fx({ userEmail: '' })
     const lf = hubInstall(f)
-    expectSame(await portCall(() => getHomePage()), hubCall('getHomePage', [], lf), 'getHomePage signed out')
+    expectSame(dropPulse_(await portCall(() => getHomePage())), hubCall('getHomePage', [], lf), 'getHomePage signed out')
+  })
+
+  it('emits a pulse object whose four metrics are each number|null', async () => {
+    hubInstall(fx())
+    const res = (await portCall(() => getHomePage())) as { ok?: { pulse?: unknown } }
+    const pulse = res.ok?.pulse
+    expect(pulse).not.toBeNull()
+    expect(typeof pulse).toBe('object')
+    const p = pulse as Record<string, unknown>
+    for (const k of ['quality', 'productivity', 'fcr', 'adherence'] as const) {
+      expect(p[k] === null || typeof p[k] === 'number').toBe(true)
+    }
   })
 })
 

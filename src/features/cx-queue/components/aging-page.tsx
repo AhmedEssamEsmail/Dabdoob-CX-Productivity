@@ -3,7 +3,7 @@
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
 import { Button, Field, Input, Select, Toggle } from '@/features/shared/components/ui'
-import { AgeChip, AgeLadder, AsOfHint, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
+import { AgeChip, AsOfHint, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 
 const PAGE = 50
@@ -209,15 +209,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
               </div>
             </div>
           </section>
-          <section className="cx-section" aria-labelledby="ladder-h">
-            <div className="cx-section__head">
-              <h2 className="cx-section__title" id="ladder-h">How long open tickets have waited</h2>
-              <span className="cx-section__hint">{fmt(n.total)} open. Select a band or a cell to list its tickets.</span>
-            </div>
-            <div className="cx-panel cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-4)' }}>
-              <AgeLadder counts={counts as number[]} bands={n.bands} pressed={queue ? null : band} onPick={(x) => pick(x)} />
-            </div>
-            {grid.length > 1 ? (
+          {grid.length > 1 ? (
               <div className="card">
                 <div className="card-head">
                   <div>
@@ -284,7 +276,6 @@ export function AgingPage({ route }: { route: { title: string } }) {
               Age counts from the time the ticket was created, to now. Colour goes from grey to deep red as the wait grows, and the stripe on each row gets thicker. {n.excludedGroups.join(', ')} are left out (documentation and notification-only groups). Chats are not on this board (they come from the daily report), so this total is lower than &quot;Open now&quot; on Queue health. A blue status is CX&apos;s to work; a grey one is waiting on another team or the customer.
               {n.capped ? ` Showing the oldest ${fmt(n.tickets.length)} of ${fmt(n.total)}.` : ''}
             </p>
-          </section>
           <section className="cx-section" aria-labelledby="list-h">
             <div className="cx-section__head">
               <h2 className="cx-section__title" id="list-h">{title}</h2>

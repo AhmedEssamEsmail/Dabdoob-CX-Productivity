@@ -394,6 +394,33 @@ export function scDayRows_(
     .sort((a, b) => (String(a.date) < String(b.date) ? 1 : String(a.date) > String(b.date) ? -1 : 0))
 }
 
+/** scTrend_: an agent's mean daily overall score in 8 equal time buckets, oldest first. */
+export function scTrend_(
+  daily: Record<string, any>[],
+  cases: { email?: unknown; date?: unknown; note?: unknown }[],
+  bhvFound: boolean,
+  email: string,
+  kctx?: (email: string) => { olCases?: number; leaveIneligible?: boolean; probationMonth?: number } | null,
+  from?: string,
+  to?: string
+): (number | null)[] {
+  const fromMs = pwMs_(from)
+  const toMs = pwMs_(to)
+  const spanDays = (toMs - fromMs) / 864e5 + 1
+  const buckets = Array.from({ length: 8 }, () => ({ sum: 0, count: 0 }))
+  if (!isFinite(fromMs) || !isFinite(toMs) || spanDays <= 0) return buckets.map(() => null)
+  scDayRows_(daily, cases, bhvFound, email, kctx).forEach((row) => {
+    const ms = pwMs_(row.date)
+    if (!isFinite(ms) || ms < fromMs || ms > toMs) return
+    const i = Math.min(7, Math.floor(((ms - fromMs) / (spanDays * 864e5)) * 8))
+    if (typeof row.overall === 'number' && isFinite(row.overall)) {
+      buckets[i].sum += row.overall
+      buckets[i].count++
+    }
+  })
+  return buckets.map((b) => (b.count ? scRound1_(b.sum / b.count) : null))
+}
+
 /**
  * scAggregate_ verbatim: period ranking — daily numeric rows + behaviour cases + who map.
  * kctx: email -> { olCases, leaveIneligible, probationMonth } or null.

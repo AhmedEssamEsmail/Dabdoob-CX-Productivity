@@ -18,6 +18,7 @@ import {
   type Bootstrap,
 } from '@/features/shared/shell/context'
 import {
+  APPEARANCE_KEY,
   applyAppearance,
   D,
   prefersReducedMotion,
@@ -29,7 +30,6 @@ import {
   appTitle,
   displayRole,
   groupEntryAllowed,
-  groupEntryLink,
   inApp,
   pageAllowed,
   pageHref,
@@ -37,7 +37,6 @@ import {
   WHO_ROLE_LABELS,
 } from '@/features/shared/shell/gates'
 import {
-  GROUP_DEFAULT_PAGE,
   GROUP_LABELS,
   GROUP_ORDER,
   GROUP_TONE,
@@ -49,6 +48,7 @@ import { Button } from '@/features/shared/components/ui'
 import { ViewAsBanner, ViewAsPicker } from '@/features/shared/components/shell/ViewAs'
 import Popups from '@/features/shared/components/shell/Popups'
 import CommandPalette from '@/features/shared/components/shell/CommandPalette'
+import Topbar from '@/features/shared/components/shell/Topbar'
 
 /**
  * ys — the application shell: brand + rail nav (with the sliding .nav-ind
@@ -58,6 +58,7 @@ import CommandPalette from '@/features/shared/components/shell/CommandPalette'
  */
 
 const RAIL_OFF_KEY = 'cx.rail-off' // On
+const NAV_GROUPS_KEY = 'cx.nav-groups' // Open nav group set (sessionStorage)
 
 /** _s() */
 function readRailOff(): boolean {
@@ -77,6 +78,27 @@ function writeRailOff(off: boolean): void {
   }
 }
 
+/** _s() — session-persisted open nav groups (JSON string array). */
+function readNavGroups(): Set<string> {
+  try {
+    const raw = sessionStorage.getItem(NAV_GROUPS_KEY)
+    if (!raw) return new Set()
+    const parsed: unknown = JSON.parse(raw)
+    return new Set(Array.isArray(parsed) ? parsed.filter((g): g is string => typeof g === 'string') : [])
+  } catch {
+    return new Set()
+  }
+}
+
+/** vs() */
+function writeNavGroups(groups: Set<string>): void {
+  try {
+    sessionStorage.setItem(NAV_GROUPS_KEY, JSON.stringify([...groups]))
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 type ViewTransitionDoc = Document & {
   startViewTransition?: (update: () => void) => unknown
 }
@@ -91,7 +113,12 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   const [bootError, setBootError] = useState('')
   const [navOpen, setNavOpen] = useState(false)
   const [railOff, setRailOff] = useState(readRailOff)
+  const [openGroups, setOpenGroups] = useState<Set<string>>(readNavGroups)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [modKbd, setModKbd] = useState('⌘K')
+  const [reopenTick, setReopenTick] = useState(0)
+  const [pendingN, setPendingN] = useState(0)
+  const [theme, setTheme] = useState('auto')
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -184,6 +211,22 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [])
 
+  /* ux-12 — the kbd hint is platform-aware; the navigator read lives in an
+     effect so SSR and the first client render emit the same '⌘K'. */
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe swap after first paint
+    if (!/Mac|iPhone|iPad/.test(navigator.platform)) setModKbd('Ctrl K')
+  }, [])
+
+  /* ux-14 — every palette close path (Esc/backdrop/Enter, ⌘K toggle,
+     route change) restores focus to .rail-search on the true->false edge. */
+  const prevPaletteOpen = useRef(paletteOpen)
+  useEffect(() => {
+    const wasOpen = prevPaletteOpen.current
+    prevPaletteOpen.current = paletteOpen
+    if (wasOpen && !paletteOpen) railSearchRef.current?.focus()
+  }, [paletteOpen])
+
   /* Legacy k/A/V: a requested page that cannot render in this app (external
      or not permitted) redirects to the fallback page, carrying ?from=<path>
      so the cx-note can render above it. */
@@ -213,7 +256,25 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   /* ia(ca()) — stored appearance holds from the first app paint. */
   useEffect(() => {
     applyAppearance(readAppearance())
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe theme label after first paint
+    setTheme(readAppearance().theme)
   }, [])
+
+  /* Topbar appearance button: cycle auto -> light -> dark, persist like the
+     admin page (applyAppearance + cx.appearance). */
+  const cycleTheme = () => {
+    const order = ['auto', 'light', 'dark'] as const
+    const cur = readAppearance()
+    const next = order[(order.indexOf(cur.theme as (typeof order)[number]) + 1) % order.length]
+    const updated = { ...cur, theme: next }
+    applyAppearance(updated)
+    try {
+      localStorage.setItem(APPEARANCE_KEY, JSON.stringify(updated))
+    } catch {
+      /* storage unavailable */
+    }
+    setTheme(next)
+  }
 
   /* Bootstrap: __CC_BOOT__ or /api/bootstrap (fallback inside loadBootstrap). */
   useEffect(() => {
@@ -285,6 +346,15 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     (whoParts.length > 1 ? whoParts[whoParts.length - 1][0] : '')
   ).toUpperCase()
 
+  /* Topbar avatar initials: first letters of the first two words of the
+     viewed (or signed-in) user; falls back to the email's first letter. */
+  const topName = viewAsTarget?.name ?? user.name
+  const topParts = topName.trim().split(/\s+/).filter(Boolean)
+  const topInitials =
+    ((topParts[0]?.[0] ?? '') + (topParts[1]?.[0] ?? '')).toUpperCase() ||
+    user.email[0]?.toUpperCase() ||
+    ''
+
   if (user.role === 'unknown') {
     if (viewingAs) {
       return (
@@ -331,6 +401,30 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     visible.find((page) => page.path === 'overview') ??
     visible[0]
   const current = path && visible.includes(route) ? route : fallback
+  /* Unified nav: every group renders its role-gated pages — no inApp filter. */
+  const navVisible = PAGES.filter((page) => pageAllowed(page, boot))
+
+  /* The current route's group is always expanded after nav (adjust-during-
+     render, same pattern as prevRoutePath); manual collapses of other groups
+     persist for the session via sessionStorage. */
+  const currentGroup = current?.group ?? route.group
+  if (!openGroups.has(currentGroup)) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      next.add(currentGroup)
+      writeNavGroups(next)
+      return next
+    })
+  }
+
+  const toggleGroup = (group: string) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(group)) next.delete(group)
+      else next.add(group)
+      writeNavGroups(next)
+      return next
+    })
 
   /* The cx-note's route: the requested page mid-redirect, else the ?from=
      carried on the fallback URL after it. */
@@ -348,7 +442,6 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       : undefined
 
   const hubLink = resolveLink('#/overview', PAGES, false)
-  const isAdmin = user.role === 'admin'
 
   const body = !current ? (
     <div className="state-screen">
@@ -359,7 +452,11 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         })}
       </p>
       {hubLink.missing ? null : (
-        <a className="btn btn-primary" href={hubLink.href} target="_top">
+        <a
+          className="btn btn-primary"
+          href={hubLink.href}
+          onClick={(event) => navigate(event, hubLink.href)}
+        >
           {D('Open the Hub')}
         </a>
       )}
@@ -388,7 +485,9 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             <a
               className="brand"
               href={hubLink.missing ? pageHref('overview') : hubLink.href}
-              target={hubLink.missing ? undefined : '_top'}
+              onClick={(event) =>
+                navigate(event, hubLink.missing ? pageHref('overview') : hubLink.href)
+              }
             >
               <span className="brand-mark" aria-hidden="true">
                 <svg
@@ -441,77 +540,41 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-3.5-3.5" />
             </svg>
-            {D('Search or jump to…')}
-            <kbd>⌘K</kbd>
+            <span className="rail-search-label">{D('Search or jump to…')}</span>
+            <kbd>{modKbd}</kbd>
           </button>
           <nav id="nav" className="nav" aria-label={D('Main')} ref={navRef}>
             <span className="nav-ind" ref={indRef} aria-hidden="true" hidden />
             {GROUP_ORDER.map((group) => {
-              /* Other apps: a single entry labelled with the group name that
-                 opens that group's first visible page (internal here). */
-              if (appForGroup(group) !== ctxApp) {
-                const link = groupEntryLink(group, PAGES, (page) =>
-                  groupEntryAllowed(page, boot)
-                )
-                if (!link) return null
-                const label = D(GROUP_LABELS[group])
-                return (
-                  <div
-                    className="nav-group nav-group--app"
-                    data-tone={GROUP_TONE[group]}
-                    key={group}
-                  >
-                    <ul>
-                      <li>
-                        {link.missing ? (
-                          <span
-                            className="nav-link nav-link--off"
-                            title={D(
-                              isAdmin
-                                ? '{app} is not connected yet. Add its web app URL in Admin, Connected apps.'
-                                : '{app} is not connected yet. Ask the CX admin.',
-                              { app: appTitle(group) }
-                            )}
-                          >
-                            <NavIcon path={GROUP_DEFAULT_PAGE[group]} />
-                            <span className="nav-text">{label}</span>
-                            <span className="nav-ext-note">{D('not connected')}</span>
-                          </span>
-                        ) : (
-                          <a
-                            className="nav-link"
-                            href={link.href}
-                            target="_top"
-                            title={D('Opens {name} in {app}', {
-                              name: label,
-                              app: appTitle(group),
-                            })}
-                          >
-                            <NavIcon path={GROUP_DEFAULT_PAGE[group]} />
-                            <span className="nav-text">{label}</span>
-                            <svg
-                              className="nav-ext"
-                              viewBox="0 0 24 24"
-                              aria-hidden="true"
-                              focusable="false"
-                            >
-                              <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                            </svg>
-                            <span className="sr-only">
-                              {D(' (opens in {app})', { app: appTitle(group) })}
-                            </span>
-                          </a>
-                        )}
-                      </li>
-                    </ul>
-                  </div>
-                )
-              }
-              const items = visible.filter((page) => page.group === group)
-              return items.length ? (
+              const items = navVisible.filter((page) => page.group === group)
+              if (!items.length) return null
+              const open = openGroups.has(group)
+              return (
                 <div className="nav-group" data-tone={GROUP_TONE[group]} key={group}>
-                  <p className="nav-group-label">{D(GROUP_LABELS[group])}</p>
-                  <ul>
+                  <button
+                    type="button"
+                    id={'nav-label-' + group}
+                    className="nav-group-label"
+                    aria-expanded={open}
+                    aria-controls={'nav-items-' + group}
+                    aria-label={D(GROUP_LABELS[group])}
+                    onClick={() => toggleGroup(group)}
+                  >
+                    <span className="nav-label-text">{D(GROUP_LABELS[group])}</span>
+                    <svg
+                      className="nav-chevron"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <ul
+                    id={'nav-items-' + group}
+                    hidden={!open}
+                    aria-labelledby={'nav-label-' + group}
+                  >
                     {items.map((page) => (
                       <li key={page.path}>
                         <a
@@ -527,7 +590,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                     ))}
                   </ul>
                 </div>
-              ) : null
+              )
             })}
           </nav>
           {boot.viewAs?.canUse && !viewingAs ? (
@@ -567,13 +630,29 @@ export default function AppShell({ children }: { children?: ReactNode }) {
           </div>
         </aside>
         <main id="main" className="main" tabIndex={-1}>
+          <Topbar
+            crumbGroup={
+              current && current.path !== 'overview'
+                ? D(GROUP_LABELS[current.group] ?? current.group)
+                : null
+            }
+            crumbTitle={current ? D(current.title) : ''}
+            initials={topInitials}
+            pending={pendingN}
+            onBell={() => setReopenTick((tick) => tick + 1)}
+            onAppearance={cycleTheme}
+            theme={theme}
+          />
           {viewingAs ? <ViewAsBanner user={user} /> : null}
           {note?.kind === 'external' ? (
             <p className="cx-note" data-status="neutral" role="status">
               <span>
                 {note.route.title} is in {appTitle(note.route.group)}.{' '}
                 {note.link && !note.link.missing ? (
-                  <a href={note.link.href} target="_top">
+                  <a
+                    href={note.link.href}
+                    onClick={(event) => navigate(event, note.link.href)}
+                  >
                     Open {note.route.title}
                   </a>
                 ) : (
@@ -595,15 +674,16 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             {body}
           </ErrorBoundary>
         </main>
-        <Popups popups={boot.popups} />
+        <Popups
+          popups={boot.popups}
+          reopenTick={reopenTick}
+          onPendingChange={setPendingN}
+        />
         {paletteOpen ? (
           <CommandPalette
             boot={boot}
             ctxApp={ctxApp}
-            onClose={() => {
-              setPaletteOpen(false)
-              railSearchRef.current?.focus()
-            }}
+            onClose={() => setPaletteOpen(false)}
           />
         ) : null}
       </div>

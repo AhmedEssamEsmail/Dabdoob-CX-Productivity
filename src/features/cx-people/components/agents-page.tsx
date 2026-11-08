@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Agent performance (scorecard) page
  * (agents.closure.js symbols hl/cl/ft/ml/ue/ol/pl). */
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { AsOfHint, LoadError, fetchJson, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
-import { Button, Input, Seg, Select } from '@/features/shared/components/ui'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 import { useBoot } from '@/features/shared/shell/context'
 
 /* me — the scorecard facade (Scorecard.js). */
@@ -27,6 +27,13 @@ const KPI_LABELS: Record<string, string> = { prod: 'Productivity', qual: 'Qualit
 const KPI_WEIGHTS: Record<string, number> = { prod: 35, qual: 35, fcr: 15, behavior: 15 }
 const payLine = (kpi: any, key: string) =>
   kpi.pay[key] === null ? 'no data: 0 pts' : `${kpi.pay[key]}% pay, ${kpi.points[key]} pts`
+
+/* initials — avatar text from an agent's name tokens. */
+const initials = (name: string) => {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '?'
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase()
+}
 
 /* vn / mt / dl */
 const addDays = (d: string, n: number) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10)
@@ -68,15 +75,38 @@ function Val({ v, sub }: { v: number | null; sub?: string }) {
   )
 }
 
+/* TrendCell — the "Trend · 8w" spark column fed by a.trend (8 buckets, oldest first). */
+function TrendCell({ trend }: { trend: any }) {
+  if (!Array.isArray(trend)) return <td>–</td>
+  const series = trend.slice(0, 8)
+  const label = series.every((v) => v === null)
+    ? 'Trend: no data'
+    : `Trend: ${series.map((v) => (v === null ? '–' : v)).join(', ')}`
+  return (
+    <td>
+      <div className="spark" role="img" aria-label={label}>
+        {series.map((v: any, i: number) =>
+          typeof v === 'number' && isFinite(v) ? (
+            <i key={i} style={{ height: `${Math.min(100, Math.max(4, v))}%` }} />
+          ) : (
+            <i key={i} style={{ height: '6%', background: 'var(--cx-line-2)' }} />
+          )
+        )}
+      </div>
+    </td>
+  )
+}
+
 /* ft — one scorecard row's eight KPI cells. */
-function ScoreCells({ t }: { t: any }) {
+function ScoreCells({ t, trendTd }: { t: any; trendTd?: any }) {
   const scored = t.fcrPassed + t.fcrFailed
-  const behaviorSub =
-    t.behavior === null
-      ? 'no log'
-      : t.behaviorCases
-        ? `${t.behaviorCases === 1 ? '1 case' : `${t.behaviorCases} cases`}${t.behaviorDetails[0]?.note ? ` · ${t.behaviorDetails[0].note}` : ''}`
-        : 'clear'
+  const behaviorPill = t.kpi?.olDeduction
+    ? { cls: 'bad', text: 'op-loss' }
+    : t.behaviorCases > 0
+      ? { cls: 'warn', text: t.behaviorCases === 1 ? '1 case' : `${t.behaviorCases} cases` }
+      : t.behavior === null
+        ? { cls: '', text: 'no log' }
+        : { cls: 'ok', text: 'clean' }
   return (
     <>
       <td className="num">
@@ -101,9 +131,10 @@ function ScoreCells({ t }: { t: any }) {
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'fcr')}</span>
       </td>
       <td className="num">
-        <Val v={t.behavior} sub={behaviorSub} />
+        <span className={behaviorPill.cls ? `pill ${behaviorPill.cls}` : 'pill'}>{behaviorPill.text}</span>
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'behavior')}</span>
       </td>
+      {trendTd}
       <td className="num">
         <strong>
           <Val v={t.overall} sub={kpiSub(t.kpi)} />
@@ -536,6 +567,12 @@ export function AgentsPage({ route }: { route: { title: string } }) {
     if (k.incomplete) return { cls: 'warn', text: 'Incomplete' }
     return { cls: 'ok', text: 'Full pay' }
   }
+  const viewTabs = [
+    { value: 'rank', label: 'Stack ranking' },
+    { value: 'detail', label: 'Agent detail' },
+    ...(boot?.user.role === 'admin' ? [{ value: 'workbook', label: 'Workbook imports' }] : []),
+    { value: 'scoring', label: 'How scoring works' },
+  ]
 
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!data && !error}>
@@ -558,6 +595,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               id="sc-from"
               type="date"
               aria-label={D('From')}
+              style={{ width: '9.5rem' }}
               value={from}
               onInput={(e) => setFrom(e.currentTarget.value)}
             />
@@ -566,6 +604,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               id="sc-to"
               type="date"
               aria-label={D('To')}
+              style={{ width: '9.5rem' }}
               value={to}
               onInput={(e) => setTo(e.currentTarget.value)}
             />
@@ -593,7 +632,21 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 <div className="stat">
                   <span className="stat-l">{D('Team KPI score')}</span>
                   <span className="stat-v num">{teamScore}</span>
-                  <span className="stat-d">{D('{n} agents scored', { n: String(scoredAgents.length) })}</span>
+                  <span className="stat-d">
+                    {typeof data.prevTeam === 'number' && teamScore !== null ? (
+                      <>
+                        {(() => {
+                          const d = Math.round((teamScore - data.prevTeam) * 10) / 10
+                          const cls = d > 0 ? 'delta up good' : d < 0 ? 'delta up' : 'delta flat'
+                          const txt = d > 0 ? `▲ ${d}` : d < 0 ? `▼ ${Math.abs(d)}` : '='
+                          return <span className={cls}>{txt}</span>
+                        })()}{' '}
+                        {D('vs prior period')}
+                      </>
+                    ) : (
+                      D('{n} agents scored', { n: String(scoredAgents.length) })
+                    )}
+                  </span>
                 </div>
               ) : null}
               <div className="stat" data-tone="ok">
@@ -624,15 +677,6 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 {data.from} to {data.to}
               </span>
             </div>
-            <p className="cx-hint">
-              KPI score: each KPI&apos;s raw % falls in a payout band (productivity 80 / 86 / 95 pay 50 / 75 / 100%;
-              quality 90 / 93 / 97; FCR 80 / 85 / 90; a value between bands takes the lower one), and points = payout ×
-              weight (35 / 35 / 15 / 15) ÷ 100. The score is the sum of the points. A KPI with no data scores 0 points and
-              the score is marked incomplete; it is not re-weighted. Behaviour is 0 with one case in the workbook&apos;s
-              log or the KPI logs. An operational-loss case halves the score; 3 unplanned leaves inside 2 months make it
-              0. On probation (first 3 months from the hiring date) each KPI is pass or fail. Raw figures sum the whole
-              period first and divide once; they are read from each month&apos;s workbook overnight and on Refresh now.
-            </p>
             {warnNotes.map((n) => (
               <div key={n} className="cx-note" data-status="warn" role="status">
                 <div>{n}</div>
@@ -640,27 +684,36 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             ))}
           </section>
           {teamView ? (
-            <div className="cx-filters">
-              <Seg
-                name="sc-view"
-                value={view}
-                onChange={(v) => setView(v)}
-                aria-label="View"
-                options={[
-                  { value: 'rank', label: 'Stack Ranking' },
-                  { value: 'detail', label: 'Agent Detail' },
-                ]}
-              />
+            <>
+              <div className="tabs" role="tablist" aria-label="Scorecard view">
+                {viewTabs.map((t) => (
+                  <a
+                    key={t.value}
+                    href="#"
+                    role="tab"
+                    aria-selected={view === t.value}
+                    className={view === t.value ? 'on' : undefined}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setView(t.value)
+                    }}
+                  >
+                    {t.label}
+                  </a>
+                ))}
+              </div>
               {data.scope === 'tl' && view === 'rank' ? (
-                <label className="cx-switch">
-                  <span>My team only</span>
-                  <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.currentTarget.checked)} />
-                  <span className="cx-switch__track" aria-hidden="true" />
-                </label>
+                <div className="cx-filters">
+                  <label className="cx-switch">
+                    <span>My team only</span>
+                    <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.currentTarget.checked)} />
+                    <span className="cx-switch__track" aria-hidden="true" />
+                  </label>
+                </div>
               ) : null}
-            </div>
+            </>
           ) : null}
-          {view === 'rank' || !teamView ? (
+          {!teamView || view === 'rank' ? (
             <section className="card" aria-labelledby="sc-rank">
               <div className="card-head">
                 <h2 className="card-title" id="sc-rank">
@@ -683,9 +736,10 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                         Days
                       </th>
                       {COLUMNS.map((c) => (
-                        <th key={c} scope="col">
-                          {c}
-                        </th>
+                        <Fragment key={c}>
+                          <th scope="col">{c}</th>
+                          {c === 'Behaviour' ? <th scope="col">Trend · 8w</th> : null}
+                        </Fragment>
                       ))}
                       <th scope="col" className="num">
                         {D('vs team')}
@@ -699,24 +753,29 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                         <td className="num">{a.rank ?? '–'}</td>
                         <th scope="row">
                           <span className="lead">
-                            {teamView ? (
-                              <Button
-                                variant="quiet"
-                                onClick={() => {
-                                  setAgent(a.email)
-                                  setView('detail')
-                                }}
-                              >
-                                {a.name}
-                              </Button>
-                            ) : (
-                              a.name
-                            )}
+                            <span className="flex">
+                              <span className="avatar" style={{ width: '1.7rem', height: '1.7rem', fontSize: '.65rem' }}>
+                                {initials(a.name)}
+                              </span>
+                              {teamView ? (
+                                <Button
+                                  variant="quiet"
+                                  onClick={() => {
+                                    setAgent(a.email)
+                                    setView('detail')
+                                  }}
+                                >
+                                  {a.name}
+                                </Button>
+                              ) : (
+                                a.name
+                              )}
+                            </span>
                           </span>
                         </th>
                         <td className="sub">{a.tlName || '–'}</td>
                         <td className="num">{a.days}</td>
-                        <ScoreCells t={a} />
+                        <ScoreCells t={a} trendTd={<TrendCell trend={a.trend} />} />
                         <td className="num">
                           {(() => {
                             const d = vsTeamDelta(a)
@@ -738,7 +797,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                     ))}
                     {agents.length ? null : (
                       <tr>
-                        <td colSpan={14}>No data in this period.</td>
+                        <td colSpan={15}>No data in this period.</td>
                       </tr>
                     )}
                   </tbody>
@@ -751,7 +810,8 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 </p>
               ) : null}
             </section>
-          ) : (
+          ) : null}
+          {teamView && view === 'detail' ? (
             <section className="cx-section" aria-labelledby="sc-detail">
               <div className="cx-section__head">
                 <h2 className="cx-section__title" id="sc-detail">
@@ -844,12 +904,31 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 <p className="cx-hint">Pick an agent to see their day-by-day breakdown.</p>
               )}
             </section>
-          )}
+          ) : null}
+          {teamView && view === 'workbook' && boot?.user.role === 'admin' ? <ScorecardAdmin /> : null}
+          {teamView && view === 'scoring' ? (
+            <section className="cx-section" aria-labelledby="sc-scoring">
+              <div className="cx-section__head">
+                <h2 className="cx-section__title" id="sc-scoring">
+                  How scoring works
+                </h2>
+              </div>
+              <p className="cx-hint">
+                KPI score: each KPI&apos;s raw % falls in a payout band (productivity 80 / 86 / 95 pay 50 / 75 / 100%;
+                quality 90 / 93 / 97; FCR 80 / 85 / 90; a value between bands takes the lower one), and points = payout ×
+                weight (35 / 35 / 15 / 15) ÷ 100. The score is the sum of the points. A KPI with no data scores 0 points
+                and the score is marked incomplete; it is not re-weighted. Behaviour is 0 with one case in the
+                workbook&apos;s log or the KPI logs. An operational-loss case halves the score; 3 unplanned leaves inside
+                2 months make it 0. On probation (first 3 months from the hiring date) each KPI is pass or fail. Raw
+                figures sum the whole period first and divide once; they are read from each month&apos;s workbook
+                overnight and on Refresh now.
+              </p>
+            </section>
+          ) : null}
         </>
       ) : (
         <LinesSkeleton lines={10} />
       )}
-      {boot?.user.role === 'admin' ? <ScorecardAdmin /> : null}
     </section>
   )
 }

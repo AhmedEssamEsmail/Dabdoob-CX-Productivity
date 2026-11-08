@@ -36,6 +36,7 @@ import {
   scRank_,
   scRound1_,
   scSources_,
+  scTrend_,
   scWorkbookFor_,
 } from '@/features/cx-people/lib/scorecard'
 import { pwTasksOut_ } from '@/features/cx-people/lib/work-core'
@@ -406,6 +407,50 @@ describe('scorecard math', () => {
       same('scDayRows_', [daily, cases, true, 'a@x.com', kctx], () =>
         scDayRows_(daily as never, cases, true, 'a@x.com', kctxPort), {}, `dr ${i}`)
     }
+  })
+
+  it('scTrend_ — 8 equal buckets over the range', () => {
+    const row = (date: string, prodAchieved: number) => ({
+      email: 'a@x.com', name: 'Agent A', date, matrix_day: 1,
+      inb_target: 100, inb_achieved: prodAchieved,
+      txt_target: 0, txt_achieved: 0,
+      wa_target: 0, wa_achieved: 0,
+      audits: 1, score_x_audits: 100,
+      fcr_passed: 100, fcr_failed: 0, fcr_excluded: 0,
+    })
+    const daily = [
+      row('2026-10-01', 100), row('2026-10-02', 0),
+      row('2026-10-03', 90),
+      row('2026-10-07', 0), row('2026-10-08', 82),
+      row('2026-10-09', 82),
+      row('2026-10-13', 82), row('2026-10-14', 90),
+      row('2026-10-15', 100), row('2026-10-16', 90),
+    ]
+    expect(scTrend_(daily as never, [], true, 'a@x.com', undefined, '2026-10-01', '2026-10-16')).toEqual([
+      82.5, 91.3, null, 73.8, 82.5, null, 86.9, 95.6,
+    ])
+  })
+
+  it('scTrend_ — skips days without an overall score', () => {
+    const scored = {
+      email: 'a@x.com', name: 'Agent A', date: '2026-10-01', matrix_day: 1,
+      inb_target: 100, inb_achieved: 100,
+      txt_target: 100, txt_achieved: 100,
+      wa_target: 100, wa_achieved: 100,
+      audits: 1, score_x_audits: 100,
+      fcr_passed: 100, fcr_failed: 0, fcr_excluded: 0,
+    }
+    const unscored = {
+      ...scored,
+      inb_target: 0, inb_achieved: 0,
+      txt_target: 0, txt_achieved: 0,
+      wa_target: 0, wa_achieved: 0,
+      audits: 0, score_x_audits: 0,
+      fcr_passed: 0,
+    }
+    expect(scTrend_([unscored, scored] as never, [], false, 'a@x.com', undefined, '2026-10-01', '2026-10-15')).toEqual([
+      85, null, null, null, null, null, null, null,
+    ])
   })
 
   it('scLoad_ / scNotes_ / scSources_ / scWorkbookFor_ — store seams', () => {

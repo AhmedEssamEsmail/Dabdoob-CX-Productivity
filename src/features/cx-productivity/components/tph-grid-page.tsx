@@ -392,6 +392,7 @@ function Ja({ d, go }: { d: TphData; go: (date: string) => void }) {
       <Input
         id="tph-date"
         type="date"
+        style={{ width: '9.5rem' }}
         value={d.date}
         max={d.today}
         onChange={(e) => e.currentTarget.value && go(e.currentTarget.value)}
@@ -1907,7 +1908,7 @@ function Ds({ d }: { d: TphData }) {
 
 /* --- Ga — the tab router ---------------------------------------------------------- */
 
-function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: string) => void }) {
+function Ga({ d, reload, go, summary }: { d: TphData; reload: () => void; go: (date: string) => void; summary?: ReactNode }) {
   const [tab, setTab] = useState(Yt)
   const runner = useNs(d, reload)
   const [trend, setTrend] = useState<{ forD: TphData; days: TrendDay[] | null; err: string } | null>(null)
@@ -1969,6 +1970,7 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
         </p>
       )}
       <Ya tab={tab} select={select} badges={badges} />
+      {summary}
       {tab === 'overview' ? panel('overview', <Xa d={d} sum={sum} runner={runner} trend={trend} select={select} go={go} />) : null}
       <div
         role="tabpanel"
@@ -2151,6 +2153,69 @@ export function TphGridPage() {
   }
   const sum = useMemo(() => (d ? Va(d.table, Ka) : null), [d])
   const touchesPending = !!d && !d.touchesReady
+  const summary =
+    d && sum ? (
+      <>
+        {touchesPending ? (
+          <div className="note warn mb-3" role="status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            <span>
+              <b>{D("Touches aren't in yet.")}</b>{' '}
+              {d.date < d.today
+                ? D('Touches for {date} have not been computed.', { date: d.date })
+                : D("Today's counts arrive tomorrow ~08:30 — percentages below are capped at estimate.")}
+            </span>
+          </div>
+        ) : null}
+        <div className="grid grid-5 mb-3">
+          <div className="stat">
+            <span className="stat-l">{D('Team TPH excl. calls')}</span>
+            <span className="stat-v num">{P(sum.tphExCalls)}</span>
+            <span className="stat-d muted">{touchesPending ? D('tomorrow 08:30') : D('excl. Inbound calls')}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">{D('Cases coverage')}</span>
+            <span className="stat-v num">
+              {sum.covered}
+              <span className="faint" style={{ fontSize: '1rem' }}>
+                {' '}
+                / {sum.covered + sum.missing}
+              </span>
+            </span>
+            <span className="stat-d muted">{D('on-grid slots with cases')}</span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">{D('Agents on grid')}</span>
+            <span className="stat-v num">{sum.agents}</span>
+            <span className="stat-d">{D('{n} channels', { n: String(d.channels.length) })}</span>
+          </div>
+          <div className="stat" data-tone="warn">
+            <span className="stat-l">{D('Over cap')}</span>
+            <span className="stat-v num">{d.touchesReady ? U(sum.over, 'hour-channel') : '–'}</span>
+            <span className="stat-d muted">
+              {d.touchesReady
+                ? sum.over
+                  ? D('{a} · {t} touches above cap', { a: U(sum.overAgents, 'agent'), t: P(sum.overTouches) })
+                  : D('nobody went over a cap')
+                : D('computed with touches')}
+            </span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">{D('Call time')}</span>
+            <span className="stat-v">{d.callsBasis === 'actual' ? D('Actual') : D('Estimate')}</span>
+            <span className="stat-d">
+              {d.callsBasis === 'actual'
+                ? D('Maqsam minutes, {at}', { at: $e(d.callsAsOf) })
+                : D('marked slots × {pct}%', { pct: String(Math.round(d.callsFactor * 100)) })}
+            </span>
+          </div>
+        </div>
+        <Qs d={d} sum={sum} />
+      </>
+    ) : null
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!d && !error}>
       <header className="page-head">
@@ -2173,69 +2238,7 @@ export function TphGridPage() {
       </header>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!d && !error ? <LinesSkeleton lines={6} /> : null}
-      {d && sum ? (
-        <Fragment>
-          {touchesPending ? (
-            <div className="note warn mb-3" role="status">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 8v4M12 16h.01" />
-              </svg>
-              <span>
-                <b>{D("Touches aren't in yet.")}</b>{' '}
-                {d.date < d.today
-                  ? D('Touches for {date} have not been computed.', { date: d.date })
-                  : D("Today's counts arrive tomorrow ~08:30 — percentages below are capped at estimate.")}
-              </span>
-            </div>
-          ) : null}
-          <div className="grid grid-5 mb-3">
-            <div className="stat">
-              <span className="stat-l">{D('Team TPH excl. calls')}</span>
-              <span className="stat-v num">{P(sum.tphExCalls)}</span>
-              <span className="stat-d muted">{touchesPending ? D('tomorrow 08:30') : D('excl. Inbound calls')}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-l">{D('Cases coverage')}</span>
-              <span className="stat-v num">
-                {sum.covered}
-                <span className="faint" style={{ fontSize: '1rem' }}>
-                  {' '}
-                  / {sum.covered + sum.missing}
-                </span>
-              </span>
-              <span className="stat-d muted">{D('on-grid slots with cases')}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-l">{D('Agents on grid')}</span>
-              <span className="stat-v num">{sum.agents}</span>
-              <span className="stat-d">{D('{n} channels', { n: String(d.channels.length) })}</span>
-            </div>
-            <div className="stat" data-tone="warn">
-              <span className="stat-l">{D('Over cap')}</span>
-              <span className="stat-v num">{d.touchesReady ? U(sum.over, 'hour-channel') : '–'}</span>
-              <span className="stat-d muted">
-                {d.touchesReady
-                  ? sum.over
-                    ? D('{a} · {t} touches above cap', { a: U(sum.overAgents, 'agent'), t: P(sum.overTouches) })
-                    : D('nobody went over a cap')
-                  : D('computed with touches')}
-              </span>
-            </div>
-            <div className="stat">
-              <span className="stat-l">{D('Call time')}</span>
-              <span className="stat-v">{d.callsBasis === 'actual' ? D('Actual') : D('Estimate')}</span>
-              <span className="stat-d">
-                {d.callsBasis === 'actual'
-                  ? D('Maqsam minutes, {at}', { at: $e(d.callsAsOf) })
-                  : D('marked slots × {pct}%', { pct: String(Math.round(d.callsFactor * 100)) })}
-              </span>
-            </div>
-          </div>
-          <Qs d={d} sum={sum} />
-        </Fragment>
-      ) : null}
-      {d ? <Ga d={d} reload={reload} go={go} /> : null}
+      {d ? <Ga d={d} reload={reload} go={go} summary={summary} /> : null}
     </section>
   )
 }

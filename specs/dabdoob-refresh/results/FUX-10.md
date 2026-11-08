@@ -1,0 +1,5 @@
+# FUX-10 — DONE
+Files: src/app/refresh.css (+81: `:root` `.dq-*` + `.trk-table` block under "shared legacy families"), src/app/styles/queue.css (-79: dq rules removed, hm/sch kept), src/app/styles/operations.css (-8/+1: `.trk-table` selectors moved, `.input/.cx-input.trk-num` kept scoped, combined rule split per contract).
+Checks: `grep -c '.dq-' queue.css` -> 0; `grep -n ':root .dq-stats\|:root .trk-table\b' refresh.css` -> hits L555,612,616-622; no `[data-app]`-scoped `.trk-table` remains in operations.css; `npx tsc --noEmit` EXIT:0; git diff = moved declarations only (prefix `[data-app="…"] ` -> `:root `, declarations byte-identical).
+Sweep (token-boundary grep over cx-hub/cx-people/cx-quality/heatmap): dq-* in all three apps (now global); trk-table only on heatmap-page.tsx (now global); pw-seg x3 in cx-hub (global cx-kit rule, expected). Other hits are same-app families: md-/ap-/upnext-/setting- in cx-hub, pw-/oo-/nt- in cx-people, qa-/qs- in cx-quality — left scoped per contract, nothing unexpected to report.
+Handoff: `.dq-*`/`.trk-table` now resolve on every app shell; TL gates + reshoot vs mockups/pages/02-home.html.

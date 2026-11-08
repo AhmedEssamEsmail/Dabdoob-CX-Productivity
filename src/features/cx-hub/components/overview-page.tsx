@@ -8,7 +8,7 @@
 import { Fragment, useRef, useState } from 'react'
 import { Button } from '@/features/shared/components/ui'
 import {
-  Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, gu, Hf, Hi, If, jl, Kf, km, lo, Nf,
+  Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, Hf, Hi, If, jl, Kf, km, lo, Nf,
   Of, pg, Ql, rg, sh, To, useTh, Vi, Wf, Yn, _g,
 } from './hub-shared'
 
@@ -417,15 +417,18 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
   const needsRows = ((e?.needs ?? []) as Q[]).filter((i) => (i.count ?? 0) > 0)
   const ovQueues = ((e?.queues ?? []) as Q[]).slice(0, 6)
   const qMax = Math.max(1, ...ovQueues.map((q) => Number(q.open) || 0))
-  const bandLabels = (e?.bands?.labels ?? []) as string[]
-  const bandTotal = Math.max(
-    1,
-    Number(e?.openTotal) ||
-      ((e?.ladder ?? []) as number[]).reduce((a: number, c) => a + (Number(c) || 0), 0)
-  )
-  const pulseRows = bandLabels
-    .map((label, i) => ({ label, count: Number(e?.ladder?.[i]) || 0, i }))
-    .filter((r) => r.count > 0)
+  const pulse = (e?.pulse ?? {}) as {
+    quality?: number | null
+    productivity?: number | null
+    fcr?: number | null
+    adherence?: number | null
+  }
+  const pulseRows = [
+    { label: 'Quality', v: pulse.quality ?? null, cls: '' },
+    { label: 'Productivity', v: pulse.productivity ?? null, cls: ' warn' },
+    { label: 'FCR', v: pulse.fcr ?? null, cls: '' },
+    { label: 'Schedule adherence', v: pulse.adherence ?? null, cls: ' blue' },
+  ]
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!e && !t}>
       <header className="page-head">
@@ -495,22 +498,6 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
       )}
       {t ? sh({ message: t, onRetry: i }) : null}
       {r ? <Nf item={r} /> : null}
-      {e && e.role !== 'agent' && !e.specialist && e.ecosystem ? (
-        <section className="cx-section" aria-label="CX ecosystem">
-          {gu() ? (
-            <p className="cx-ecosystem-link">
-              <a className="btn" href={gu()} target="_blank" rel="noopener">
-                Ecosystem
-              </a>{' '}
-              <span className="cx-section__hint">Every system&apos;s health as a 3D map, in a new tab.</span>
-            </p>
-          ) : (
-            <p className="cx-section__hint">
-              The ecosystem map opens once the Hub&apos;s web-app URL is set in Admin, Connected apps.
-            </p>
-          )}
-        </section>
-      ) : null}
       {e ? (
         <div className="ov-main">
           <style dangerouslySetInnerHTML={{ __html: OV_CSS }} />
@@ -601,26 +588,22 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                   <h2 id="ovp-h" className="card-title" style={{ margin: 0 }}>
                     Team pulse
                   </h2>
-                  <div className="card-hint">Open tickets by age band</div>
+                  <div className="card-hint">
+                    {e.role === 'admin' ? 'Team, last 7 days' : 'Your scope, last 7 days'}
+                  </div>
                 </div>
               </div>
-              {pulseRows.length ? (
-                <div className="card-pad">
-                  {pulseRows.map((r) => (
-                    <div className="hbar-row" key={r.label}>
-                      <span className="small">{r.label}</span>
-                      <div className={`bar${r.i === bandLabels.length - 1 ? ' bad' : r.i === bandLabels.length - 2 ? ' warn' : ''}`}>
-                        <i style={{ width: `${Math.round((100 * r.count) / bandTotal)}%` }} />
-                      </div>
-                      <b className="num small">{Hi(r.count)}</b>
+              <div className="card-pad">
+                {pulseRows.map((r) => (
+                  <div className="hbar-row" key={r.label}>
+                    <span className="small">{r.label}</span>
+                    <div className={`bar${r.cls}`}>
+                      <i style={{ width: `${r.v == null ? 0 : r.v}%` }} />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty">
-                  <div className="s">No open tickets in view.</div>
-                </div>
-              )}
+                    <b className="num small">{r.v == null ? '–' : `${r.v}%`}</b>
+                  </div>
+                ))}
+              </div>
             </section>
           </div>
         </div>

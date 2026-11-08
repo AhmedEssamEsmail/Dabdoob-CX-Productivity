@@ -36,6 +36,7 @@ import type { JobEnv } from '@/features/shared/jobs/env'
 import { described } from '@/features/shared/lib/errors'
 import {
   scAggregate_,
+  scCasesInRange_,
   scDayRows_,
   scEmail_,
   scLoad_,
@@ -44,7 +45,9 @@ import {
   scMonthView_,
   scNotes_,
   scNum_,
+  scRound1_,
   scSources_,
+  scTrend_,
   scWorkbookFor_,
 } from './scorecard/index'
 import {
@@ -307,13 +310,29 @@ export async function getScorecardPage(params?: Record<string, unknown>) {
   const d = scLoad_(io, range)
   const dir = await pwDirectory()
   const kctx = await scKpiCtx_(range)
-  const rows = scVisible_(scAggregate_(d.daily, d.cases, d.bhvFound, scWho_(dir), kctx), user)
+  const who = scWho_(dir)
+  const rows = scVisible_(scAggregate_(d.daily, d.cases, d.bhvFound, who, kctx), user)
+  rows.forEach((r) => {
+    r.trend = scTrend_(d.daily, d.cases, d.bhvFound, r.email, kctx, range.from, range.to)
+  })
+  const spanDays = Math.round((Date.parse(range.to + 'T00:00:00Z') - Date.parse(range.from + 'T00:00:00Z')) / 86400000) + 1
+  const pt = dqAddDays_(range.from, -1)
+  const pf = dqAddDays_(range.from, -spanDays)
+  const prev = scAggregate_(
+    io.readRange('sc_daily', pf, pt),
+    scCasesInRange_(io.readRange('sc_behaviour', pf, pt), pf, pt),
+    d.bhvFound,
+    who,
+    kctx
+  )
+  const prevScores = prev.map((r) => r.overall).filter((v): v is number => typeof v === 'number' && isFinite(v))
+  const prevTeam = prevScores.length ? scRound1_(prevScores.reduce((sum, v) => sum + v, 0) / prevScores.length) : null
   const stamps = d.views.map((v) => v.refreshedAt).filter(String).sort()
   return {
     today: range.today, from: range.from, to: range.to, scope: user.role, you: user.email, weights: KPI_WEIGHTS, bands: KPI_BANDS,
     dataAsOf: stamps.length ? stamps[stamps.length - 1] : '', canRefresh: user.role !== 'agent',
     months: d.views.map((v) => ({ month: v.month, status: v.status, refreshedAt: v.refreshedAt, lastDate: v.lastDate })),
-    notes: scNotes_(d.months, d.views), agents: rows,
+    notes: scNotes_(d.months, d.views), agents: rows, prevTeam,
   }
 }
 

@@ -121,7 +121,7 @@ function FlagDetail({
   ticketUrl: string
   onDone: () => void
 }) {
-  const { data: r, error, reload } = useSe<{ flag: FlagView; openedAt: string }>(() => ce.flag(flagId))
+  const { data: r, error, reload } = useSe<{ flag: FlagView; openedAt: string; scoreEffect: number | null }>(() => ce.flag(flagId))
   const [picked, setPicked] = useState('')
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
@@ -168,7 +168,32 @@ function FlagDetail({
         <DecisionChip d={f.decision} />
       </div>
       <div className="card-pad">
+        <div className="grid grid-3" style={{ marginBlock: '0 1rem' }}>
+          <div className="stat">
+            <span className="stat-l">Suggested status</span>
+            <span className="stat-v">{f.suggestedStatus}</span>
+            <span className="stat-d">
+              {G(f.flaggedMin)} of {G(f.intervalMin)}
+            </span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">Cases inside window</span>
+            <span className="stat-v">{f.distinctCases}</span>
+            <span className="stat-d">
+              {f.caseCount !== f.distinctCases ? `${f.caseCount} touches logged` : `${f.cases.length} cases logged`}
+            </span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">Score effect</span>
+            <span className="stat-v">{r.scoreEffect != null ? `${r.scoreEffect}%` : '–'}</span>
+            <span className="stat-d">of the day&apos;s logged minutes</span>
+          </div>
+        </div>
         <FlagStrip f={f} />
+        {/* PARITY: H7b divergence — the mock's per-case TOUCHES/DUR./EVIDENCE
+            columns are not persisted (prod_flags.case_ids_json stores only
+            [id, channel] pairs; prod_tph_cases holds hour-level counts, not
+            per-case touches), so the 2-column table keeps only what exists. */}
         <div className="card" style={{ boxShadow: 'none', marginBlockEnd: '1rem' }}>
           <div className="card-head">
             <div className="card-title">Inside the window</div>
@@ -397,10 +422,27 @@ const WI_ROW: CSSProperties = {
   textAlign: 'start',
 }
 
+type PvView = 'open' | 'reviewed' | 'disputed'
+
+const pvInitials = (f: FlagView) => {
+  const words = f.agentName.trim().split(/\s+/).filter(Boolean)
+  const letters = words
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+  return letters || (f.agentEmail[0] ?? '').toUpperCase()
+}
+
 export function StatusValidationPage() {
   const { data: n, error, reload } = useSe<ReviewPage>(ce.reviewPage)
   const [selected, setSelected] = useState('')
   const [agentFilter, setAgentFilter] = useState('')
+  const [view, setView] = useState<PvView>('open')
+  const changeView = (v: PvView) => {
+    setView(v)
+    setSelected('')
+  }
   const done = () => {
     setSelected('')
     reload()
@@ -416,9 +458,33 @@ export function StatusValidationPage() {
           ? `IDLE time with ${n.rule.x} or more distinct cases inside ${n.rule.windowMin} minutes (intervals of ${n.rule.minIntervalMin} minutes or more). Until you review a flag, its suggested status counts; on day ${n.rule.reviewDays} it is accepted automatically.`
           : ''
       }
+      aside={
+        n ? (
+          <div className="seg" role="group" aria-label="Flag views">
+            {(
+              [
+                ['open', 'Open', n.pending.length],
+                ['reviewed', 'Reviewed', n.decided.length],
+                ['disputed', 'Disputed', n.disputes.length],
+              ] as const
+            ).map(([v, label, count]) => (
+              <button
+                key={v}
+                type="button"
+                className={view === v ? 'on' : undefined}
+                aria-pressed={view === v}
+                onClick={() => changeView(v)}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
+        ) : undefined
+      }
     >
       {n ? (
         <>
+          {view === 'open' ? (
           <Section
             id="pv-q"
             title={n.pending.length ? `${n.pending.length} to review` : 'Nothing to review'}
@@ -463,6 +529,9 @@ export function StatusValidationPage() {
                           }
                           onClick={() => setSelected(f.flagId)}
                         >
+                          <span className="avatar" aria-hidden="true">
+                            {pvInitials(f)}
+                          </span>
                           <span className="wi-main">
                             <span className="wi-t pv-item__who">
                               <strong>{f.agentName}</strong>{' '}
@@ -499,11 +568,17 @@ export function StatusValidationPage() {
               ) : null}
             </div>
           </Section>
-          {n.disputes.length ? (
+          ) : null}
+          {view === 'disputed' ? (
             <Section
               id="pv-d"
-              title={`${n.disputes.length} ${n.disputes.length === 1 ? 'dispute' : 'disputes'} to decide`}
+              title={
+                n.disputes.length
+                  ? `${n.disputes.length} ${n.disputes.length === 1 ? 'dispute' : 'disputes'} to decide`
+                  : 'No disputes'
+              }
             >
+              {n.disputes.length ? (
               <div className="pv-cards">
                 {n.disputes.map((f) => (
                   <article key={f.flagId} className="cx-panel cx-panel--pad">
@@ -520,10 +595,14 @@ export function StatusValidationPage() {
                   </article>
                 ))}
               </div>
+              ) : (
+                <p className="cx-muted">No disputes to decide.</p>
+              )}
             </Section>
           ) : null}
-          {n.decided.length ? (
+          {view === 'reviewed' ? (
             <Section id="pv-h" title="Decided, last 30 days">
+              {n.decided.length ? (
               <div className="card cx-tablewrap">
                 <table className="cx-table">
                   <thead>
@@ -561,6 +640,9 @@ export function StatusValidationPage() {
                   </tbody>
                 </table>
               </div>
+              ) : (
+                <p className="cx-muted">Nothing reviewed yet.</p>
+              )}
             </Section>
           ) : null}
           <DataSource d={n} />

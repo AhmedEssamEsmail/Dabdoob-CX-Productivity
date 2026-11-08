@@ -17,6 +17,7 @@ import {
   ecosystemHealth,
   readStore,
   requireRole,
+  type StoreRead,
 } from '@/features/shared/platform'
 import {
   dqBandCounts_,
@@ -31,7 +32,15 @@ import {
   dqTodaySnapshots_,
   dqWithCurrentTl_,
 } from '@/features/cx-queue/lib'
-import { dqDateKey_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import { dqAddDays_, dqDateKey_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import { inDateRange, pick } from '@/features/shared/lib/fragments'
+import {
+  scAdd_,
+  scBucket_,
+  scNum_,
+  scNumRow_,
+  scRound1_,
+} from '@/features/cx-people/lib/scorecard'
 import {
   peopleHomeCards_,
   planHomeCards_,
@@ -58,6 +67,87 @@ function perf_(name: string): { lap(mark: string): void; end(): void } {
 /** DQ_HOME_PROVIDERS — same order: people / work / plan. */
 const DQ_HOME_PROVIDERS = [peopleHomeCards_, workHomeCards_, planHomeCards_]
 
+/**
+ * Team pulse — quality/productivity/fcr over a window for a scope of emails
+ * (null = every row, admin). Same cascade as kpiPayoutFor: sc_daily matrix_day
+ * rows win, else prod_daily_layers ('effective' layer, else 'raw'), fcr from
+ * fcr_daily when sc_daily was not used. Schedule adherence has no data source
+ * -> always null. A missing store yields null for its metrics; never throws.
+ */
+function pulseFor_(
+  scDaily: StoreRead,
+  prodLayers: StoreRead,
+  fcrDaily: StoreRead,
+  emails: Set<string> | null,
+  from: string,
+  to: string
+): { quality: number | null; productivity: number | null; fcr: number | null; adherence: null } {
+  const inScope = (e: unknown) => emails === null || emails.has(normEmail_(e))
+  let quality: number | null = null
+  let productivity: number | null = null
+  let fcr: number | null = null
+  let usedSc = false
+  const fcrSums = { passed: 0, failed: 0, excluded: 0 }
+
+  const scRows = scDaily.rows
+    .map((r) => scNumRow_(r))
+    .filter((r) => inScope(r.email) && inDateRange(r.date, from, to))
+  if (scDaily.exists && scRows.length) {
+    usedSc = true
+    const a = scBucket_()
+    scRows.forEach((r) => {
+      fcrSums.passed += Number(r.fcr_passed) || 0
+      fcrSums.failed += Number(r.fcr_failed) || 0
+      fcrSums.excluded += Number(r.fcr_excluded) || 0
+      if (!r.matrix_day) return
+      scAdd_(a, r as Record<string, number>)
+    })
+    const totalTarget = a.inbTarget + a.txtTarget + a.waTarget
+    const totalAchieved = a.inbAchieved + a.txtAchieved + a.waAchieved
+    productivity = totalTarget > 0 ? scRound1_((totalAchieved / totalTarget) * 100) : null
+    quality = a.audits > 0 ? scRound1_(a.scoreXaudits / a.audits) : null
+  } else {
+    const layers = prodLayers.rows.filter(
+      (r) => inScope(r.email) && inDateRange(r.date, from, to)
+    )
+    const eff = layers.filter((r) => String(r.layer) === 'effective')
+    const use = eff.length ? eff : layers.filter((r) => String(r.layer || 'raw') === 'raw')
+    if (prodLayers.exists && use.length) {
+      let tgt = 0
+      let ach = 0
+      let audits = 0
+      let scoreX = 0
+      use.forEach((r) => {
+        tgt +=
+          scNum_(pick(r, 'inboundTarget')) +
+          scNum_(pick(r, 'textingTarget')) +
+          scNum_(pick(r, 'waTarget'))
+        ach +=
+          scNum_(pick(r, 'inboundAchieved')) +
+          scNum_(pick(r, 'textingAchieved')) +
+          scNum_(pick(r, 'waAchieved'))
+        audits += scNum_(pick(r, 'totalAudits'))
+        scoreX += scNum_(pick(r, 'avgScore')) * scNum_(pick(r, 'totalAudits'))
+      })
+      productivity = tgt > 0 ? scRound1_((ach / tgt) * 100) : null
+      quality = audits > 0 ? scRound1_(scoreX / audits) : null
+    }
+  }
+
+  if (usedSc) {
+    const den = fcrSums.passed + fcrSums.failed
+    fcr = den > 0 ? scRound1_((fcrSums.passed / den) * 100) : null
+  } else if (fcrDaily.exists) {
+    const rows = fcrDaily.rows.filter(
+      (r) => inScope(pick(r, 'agent_email', 'email')) && inDateRange(pick(r, 'date'), from, to)
+    )
+    const p = rows.reduce((s, r) => s + scNum_(pick(r, 'passed', 'fcr_passed')), 0)
+    const f = rows.reduce((s, r) => s + scNum_(pick(r, 'failed', 'fcr_failed')), 0)
+    fcr = p + f > 0 ? scRound1_((p / (p + f)) * 100) : null
+  }
+  return { quality, productivity, fcr, adherence: null }
+}
+
 const DQ_FLAGS_TABLE = 'dq_aging_flags'
 const DQ_SUBMISSIONS_TABLE = 'queue_submissions'
 
@@ -69,12 +159,16 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   if (!cfg) cfg = await configAll()
   const bands = dqBandInfo_(cfg)
   const top = (bands.edges as unknown[]).length
-  const [agingRows, rosterRows, submissionRows, flagRows] = await Promise.all([
-    readStore('aging_open_tickets'),
-    readStore('roster'),
-    readStore(DQ_SUBMISSIONS_TABLE),
-    readStore(DQ_FLAGS_TABLE),
-  ])
+  const [agingRows, rosterRows, submissionRows, flagRows, scDaily, prodLayers, fcrDaily] =
+    await Promise.all([
+      readStore('aging_open_tickets'),
+      readStore('roster'),
+      readStore(DQ_SUBMISSIONS_TABLE),
+      readStore(DQ_FLAGS_TABLE),
+      readStore('sc_daily'),
+      readStore('prod_daily_layers'),
+      readStore('fcr_daily'),
+    ])
   const roster = rosterRows.exists ? rosterRows.rows : null
   const submissions = submissionRows.exists ? submissionRows.rows : null
   const flags = flagRows.exists ? flagRows.rows : null
@@ -246,6 +340,18 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   oldest.forEach((r) => {
     ladder[dqNum_(r.band)]++
   })
+  const pulseTo = dqDateKey_(now, cfg)
+  const pulseFrom = dqAddDays_(pulseTo, -6)
+  let pulseEmails: Set<string> | null = null
+  if (user.role !== 'admin') {
+    pulseEmails = new Set([normEmail_(user.email)])
+    if (user.role === 'tl') {
+      ;(roster || []).forEach((r) => {
+        if (normEmail_(r.tl_email) === user.email) pulseEmails?.add(normEmail_(r.email))
+      })
+    }
+  }
+  const pulse = pulseFor_(scDaily, prodLayers, fcrDaily, pulseEmails, pulseFrom, pulseTo)
   const out: Record<string, unknown> = {
     now: now.toISOString(),
     role: user.role,
@@ -259,6 +365,7 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
     ladder,
     oldest: oldest.slice(0, 10).map(toTicket),
     openTotal: oldest.length,
+    pulse,
     queues: [] as unknown[],
   }
   if (user.role === 'admin') {

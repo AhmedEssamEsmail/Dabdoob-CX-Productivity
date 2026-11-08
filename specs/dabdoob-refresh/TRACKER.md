@@ -80,6 +80,35 @@ Baseline dirty tree at BUILD start: `?? mockups/`, `?? specs/dabdoob-refresh/`
 | FUX-07 | mini/FIX-UX1 | dev | none | 1/2/6/4 | PASS | done | results/FUX-07.md; segment `color: var(--cx-age-ink-${ageRank})` like aging-page |
 | FUX-08 | mini/FIX-UX1 | dev | FUX-01, FUX-02 | 2/2/6/4 | PASS | done | results/FUX-08.md; `.kicker` + forgot span -> `var(--cx-accent-text)` |
 | FUX-09 | mini/FIX-UX2 | dev | none | 1/3/10/5 | PASS | done | results/FUX-09.md; fills -> `--cx-accent`/`--cx-status-bad-fg`/`--cx-line-2`, flat ink `--cx-ink`; tsc+eslint clean |
+| FUX-10 | mini/FIX-UF | dev | none | 3/4/170/8 | PASS (fix3 preflight) | done | results/FUX-10.md; `.dq-*`+`.trk-table` -> refresh.css `:root` verbatim; sweep confirms no other cross-app family |
+| FUX-11 | mini/FIX-UF | dev | none | 3/4/140/9 | PASS (fix3 preflight) | done | results/FUX-11.md; `scTrend_` + `agents[i].trend`/`prevTeam`; scorecard.test 13/13, tsc clean |
+| FUX-12 | mini/FIX-UF | dev | FUX-11 | 1/5/120/9 | PASS (fix3 preflight) | done | results/FUX-12.md; spark col w/ stub+aria, avatar, behaviour pill, delta chip; colSpan 15 |
+| FUX-13 | mini/FIX-UF | dev | FUX-12 | 1/5/110/9 | PASS (fix3 preflight) | done | results/FUX-13.md; `.tabs` 4-tab role=tab chrome; admin-gated workbook pane; agent scope unchanged |
+| FUX-14 | mini/FIX-UF | dev | FUX-10 | 1/3/35/6 | PASS (fix3 preflight) | done | results/FUX-14.md; ux-9/10/11 CSS fixed; `.rail-search-label`+rail-off rules shipped |
+| FUX-15 | mini/FIX-UF | dev | none | 2/5/45/8 | PASS (fix3 preflight) | done | results/FUX-15.md; label span, Ctrl K platform hint, falling-edge focus restore, 4 AR keys |
+| NAV | package/- | - | - | n/a | not dispatchable | done | all children done; checkpoint-fix4 gates pass |
+| NAV-01 | mini/NAV | dev | none | 1/7/180/10 | PASS (fix4 preflight) | done | results/NAV-01.md; ~185 lines AppShell.tsx; tsc+eslint clean, 0 banned patterns |
+| NAV-02 | mini/NAV | dev | NAV-01 | 1/5/70/6 | PASS (fix4 preflight) | done | results/NAV-02.md; 7 `:root` rules refresh.css tail |
+| NAV-03 | mini/NAV | test-engineer | NAV-01 | 1/5/120/10 | PASS (fix4 preflight) | done | results/NAV-03.md; e2e/nav-collapse.spec.ts 4 tests, 20/20 all projects |
+| PARITY | package/- | - | - | n/a | not dispatchable | done | all children done; checkpoint-fix5 gates pass |
+| PX-01 | mini/PARITY | dev | none | 3/7/230/10 | PASS (fix5 preflight) | done | results/PX-01.md; Topbar.tsx + AppShell + Popups; live probe: .topbar first child of #main on 7 routes |
+| PX-02 | mini/PARITY | dev | none | 1/5/90/8 | PASS (fix5 preflight) | done | results/PX-02.md; head search + Export CSV + CxFilters row removed |
+| PX-03 | mini/PARITY | dev | none | 1/6/130/8 | PASS (fix5 preflight) | done | results/PX-03.md; Open/Reviewed/Disputed seg + .pv-item avatar chips |
+| PX-04 | mini/PARITY | dev | PX-03 | 2/4/110/9 | PASS (fix5 preflight) | done | results/PX-04.md; 3-stat grid + scoreEffect via prod_intervals; H7b PARITY divergence comment |
+| PX-05 | mini/PARITY | dev | none | 1/4/80/8 | PASS (fix5 preflight) | done | results/PX-05.md; Ga summary slot after Ya tabs; head→tabs→note→stats→panels |
+| PX-06 | mini/PARITY | dev | none | 2/5/200/10 | PASS (fix5 preflight) | done | results/PX-06.md; pulse via sc_daily→prod_daily_layers→fcr_daily cascade; Ecosystem row removed; adherence=null (no source) |
+| PX-07 | mini/PARITY | dev | none | 1/7/150/9 | PASS (fix5 preflight) | done | results/PX-07.md; today|week seg (2-day API window, documented) + Book focus block CTA |
+| PX-08 | mini/PARITY | dev | none | 1/4/45/5 | PASS (fix5 preflight) | done | results/PX-08.md; AgeLadder cx-section dropped; matrix card kept |
+| PX-09 | mini/PARITY | dev | none | 1/3/8/4 | PASS (fix5 preflight) | done | results/PX-09.md; sc-from/sc-to style width 9.5rem |
+| PX-10 | mini/PARITY | test-engineer | PX-06 | 1/4/40/6 | PASS (fix5 preflight) | done | results/PX-10.md; D-PULSE dropPulse_ seam in hub-overview.test.ts; 10/10 green |
+| P2-01 | mini/FIX-PARITY2 | dev | none | 1/3/10/5 | PASS (fix6 preflight) | done | results/P2-01.md; `<Qs>` inside `summary` after grid-5 (L2215), 1 mount, tsc+eslint clean |
+| P2-02 | mini/FIX-PARITY2 | dev | P2-01 (same file serial) | 1/2/4/3 | PASS (fix6 preflight) | done | results/P2-02.md; `style width 9.5rem` on `tph-date` Input (L395), tsc+eslint clean |
+
+Serialization: refresh.css FUX-10->FUX-14->NAV-02; AppShell.tsx FUX-15->NAV-01;
+agents-page.tsx FUX-12->FUX-13. NAV-02 || NAV-03 after NAV-01.
+Fix5: status-validation-page.tsx PX-03 -> PX-04 (declared dep); all other
+leaves touch disjoint files. Waves: W1 = PX-01/02/03/05; W2 = PX-04/06/07/08;
+W3 = PX-09.
 
 Serialization: layout.tsx S01-01->S02-02; refresh.css S02-02->03->04;
 cx-kit.css S02-05->06; AppShell.tsx S03-02->03; admin-page.tsx S01-02->S05-01;
@@ -116,6 +145,26 @@ each S04 page file serial across its leaves.
 | checkpoint-fix2 | typecheck | `npx tsc --noEmit` | PASS (clean) |
 | checkpoint-fix2 | lint | `npx eslint . --quiet` | PASS (0 errors) |
 | checkpoint-fix2 | unit | `npx vitest run` | 1117/1117 PASS |
+| preflight-fix3 | check_shards.py FUX-10..15 | spec/FIX/uf-*.md | 6/6 PASS (structural; FUX-10 needed "stragglers" reword) + semantic vs LIMITS |
+| checkpoint-fix3 | typecheck | `npx tsc --noEmit` | PASS (clean) |
+| checkpoint-fix3 | lint | `npx eslint . --quiet` | PASS (EXIT:0, 0 errors) |
+| checkpoint-fix3 | unit | `npx vitest run` | 1119/1119 PASS (+2 new `scTrend_` tests) |
+| preflight-fix4 | check_shards.py NAV-01..03 | spec/NAV/nav-0*.md | 3/3 PASS (structural) + semantic vs LIMITS |
+| checkpoint-fix4 | typecheck | `npx tsc --noEmit` | PASS (clean) |
+| checkpoint-fix4 | lint | `npx eslint . --quiet` | PASS (EXIT:0, 0 errors) |
+| checkpoint-fix4 | unit | `npx vitest run` | 1119/1119 PASS |
+| checkpoint-fix4 | e2e | `npm run test:e2e` + `--last-failed` retry | 84p/12f first pass — ALL 12 = remote-auth login flakes under parallel load (pre-existing specs too); retry: 11p/1s/0f — net PASS |
+| preflight-fix5 | check_shards.py PX-01..09 | spec/FIX/parity-0*.md | 9/9 PASS after Files-single-line + budget/context normalization; semantic vs LIMITS ok |
+| preflight-fix5b | check_shards.py PX-10 | spec/FIX/parity-10-pulse-oracle.md | 1/1 PASS (structural) + semantic vs LIMITS |
+| checkpoint-fix5 | typecheck | `npx tsc --noEmit` | PASS (EXIT:0, clean) |
+| checkpoint-fix5 | lint | `npx eslint . --quiet` | PASS (EXIT:0, 0 errors) |
+| checkpoint-fix5 | unit | `npx vitest run` | 1117/1117 PASS after PX-10 D-PULSE seam (was 6 oracle fails on additive `pulse` key) |
+| checkpoint-fix5 | e2e | `npm run test:e2e` | 95 pass / 10 skip / 0 fail — clean (no login flakes this run) |
+| checkpoint-fix5 | live probe | `.devin/work/probe-topbar.mjs` | `.topbar` first child of #main on /overview /queue /status-validation /aging /tph /my-day /agents; crumbs + 3 right controls verified |
+| preflight-fix6 | check_shards.py P2-01..02 | spec/FIX/parity2-0*.md | 2/2 PASS (structural) + semantic vs LIMITS |
+| checkpoint-fix6 | typecheck | `npx tsc --noEmit` | PASS (EXIT:0, clean) |
+| checkpoint-fix6 | lint | `npx eslint . --quiet` | PASS (EXIT:0, 0 errors) |
+| checkpoint-fix6 | unit | `npx vitest run` | PASS 1124/1124 (54 files) |
 
 ## Review findings (FIX mode)
 | Finding | Source report | Assigned | Status | Evidence |
@@ -135,6 +184,26 @@ each S04 page file serial across its leaves.
 | ux-13 (LOW) 3 shell strings missing from AR dict | ux-1.md | deferred | deferred | LOW per FIX convention |
 | ux-15 (MED) tph mixbar/legend `var(--accent)`/`var(--bad)` undefined; `--line-2` ink 1.39:1 light / ~2.1:1 dark | ux-2.md | FUX-09 / dev | done | results/FUX-09.md; tph-grid-page.tsx ~L2066-2090 remapped, 0 undefined vars left |
 | ux-14 (LOW) palette close via ⌘K/route-change skips focus restore | ux-2.md | deferred | deferred | LOW per FIX convention (same as ux-9..13) |
+| UF-1 (HIGH) `.dq-*` unstyled on /overview — `[data-app="queue"]`-scoped family used cross-app | user-fix-round.md | FUX-10 / dev | done | sweep done in preflight: real cross-app hits = `.dq-*` (hub/people/quality pages) + `.trk-table` (queue heatmap); `pw-seg`/`oo-alert*`/`cc-*`/`ag-*` already global in cx-kit/refresh; `md-*` sets are per-app; `md-aside`/`md-table`/`md-mail*` are dead classes/ids, never styled |
+| UF-2 (HIGH) agents page mockup parity incl. TREND-8W spark from real data | user-fix-round.md | FUX-11 + FUX-12 + FUX-13 / dev | done | payload has no series -> `a.trend` derived from already-loaded sc_daily via scDayRows_ (0 new queries); `prevTeam` = prior-window scAggregate_ mean |
+| UF-3 (MED) all deferred LOWs ux-9..ux-14 | user-fix-round.md | FUX-14 + FUX-15 / dev | done | ux-9/10/11 -> refresh.css; ux-11 span + ux-12 + ux-14 -> AppShell.tsx; ux-13 (+ 'vs prior period') -> legacy-i18n-ar.json |
+| NAV-1..4 (user round 2) unified collapsible nav, kill _top/BootSplash-on-nav | spec/NAV/user-nav-round.md | NAV-01 + NAV-02 + NAV-03 | done | all groups inline+collapsible, sessionStorage open-set, 0 `_top`/`.nav-ext`, SPA nav e2e-proven |
+| B1 (BLOCKER) `.topbar` row missing on all shell pages (crumbs + bell + appearance + avatar); CSS exists refresh.css:9-15 | ux-parity.md | PX-01 / dev | done | results/PX-01.md; live probe 7/7 routes |
+| H4 /queue: page-level Export button absent (+ L: queue search into page-head) | ux-parity.md | PX-02 / dev | done | results/PX-02.md |
+| H7a /status-validation: Open/Reviewed/Disputed seg absent (+ L: flag-list avatar chips) | ux-parity.md | PX-03 / dev | done | results/PX-03.md |
+| H7b /status-validation: TOUCHES/DUR./EVIDENCE cols dropped in "Inside the window" | ux-parity.md | PX-04 / dev | done — documented divergence | results/PX-04.md; case_ids_json stores [id,channel] pairs only; no per-case touches/dur store — PARITY comment in code |
+| H9 /tph: `.tph-tabs` below summary block; mock order head→tabs→note→stats→cards | ux-parity.md | PX-05 / dev | done | results/PX-05.md |
+| M3 /my-day: no Week view in seg; no page-level Book-focus-block CTA | ux-parity.md | PX-07 / dev | done — divergence noted | results/PX-07.md; Week = API 2-day window (today+tomorrow); wider range needs API change |
+| M5 /aging: duplicated band-ladder section | ux-parity.md | PX-08 / dev | done | results/PX-08.md |
+| M7 /status-validation: "Score effect" stat dropped (if derivable) | ux-parity.md | PX-04 / dev | done | results/PX-04.md; scoreEffect = flagged_min/dayMin share via prod_intervals (null-safe) |
+| M8 /agents: `.cx-input` width stacks date range 3 rows | ux-parity.md | PX-09 / dev | done | results/PX-09.md |
+| M2 /overview: Team pulse renders age-band bars, not mock's 4 KPI bars (+ L: extra Ecosystem row) | ux-parity.md | PX-06 / dev | done — divergence noted | results/PX-06.md; adherence has no source → null/`–` |
+| L insight chip bottom-left orange vs mock toast bottom-right dark | ux-parity.md | none needed | done — documented divergence | probe-portal.json: element = `<nextjs-portal>` `.nextjs-toast` "0 1 Issue" (Next dev-overlay error badge, shadow DOM, dev-only — NOT app UI). App `.toasts` already bottom-right (`inset-inline-end` + rail margin) dark (`--cx-ink`) = mock `.toast` anatomy; no code change |
+| L agents-list avatar chip | ux-parity.md | already done (FUX-12) / PX-03 covers flag-list chips | done | agents-page.tsx:755 `.avatar` initials chip already in rank table |
+| ux-p2-1 (MED) /tph `Qs` cap-chart + needs-attention pair above `.tph-tabs` (H9 residual) | ux-parity-2.md | P2-01 / dev | done | results/P2-01.md; `<Qs>` inside `summary` after `.grid-5` stats (L2215), rendered once |
+| ux-p2-2 (LOW, blocking per task) /tph `#tph-date` width:100% stacks 3 rows | ux-parity-2.md | P2-02 / dev | done | results/P2-02.md; `style={{width:'9.5rem'}}` on `tph-date` Input (L395) |
+
+Serialization (fix6): both leaves edit tph-grid-page.tsx → serial: P2-01 then P2-02.
 
 ## Re-sharding (round 2 returns)
 || Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |

@@ -613,36 +613,43 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
   )
 }
 
-function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' | 'tomorrow'; nowMs: number }) {
+function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' | 'tomorrow' | 'week'; nowMs: number }) {
   const rows: { key: string; sort: number; time: string; title: string; sub: string; now: boolean }[] = []
+  // 'week' spans the API's two-day window (today + tomorrow).
+  const keys = dayKey === 'week' ? (['today', 'tomorrow'] as const) : ([dayKey] as const)
+  const tag = (date: string) =>
+    dayKey !== 'week' ? '' : date === String(day?.today || '') ? 'Today · ' : date === String(day?.tomorrow || '') ? 'Tomorrow · ' : ''
   if (day) {
-    const section = day.events?.[dayKey]
-    if (section?.ok)
-      section.data
-        .filter((ev: Q) => !ev.allDay)
-        .forEach((ev: Q) => {
-          const s = Date.parse(ev.start)
-          const e2 = Date.parse(ev.end)
-          rows.push({
-            key: 'ev-' + String(ev.id ?? ev.start),
-            sort: s,
-            time: Wn(ev.start),
-            title: String(ev.title || ''),
-            sub: [
-              ev.meeting?.kind === 'one_on_one'
-                ? `1:1 with ${ev.meeting.person || 'your report'}`
-                : ev.location,
-              ev.guests ? `${ev.guests} guest${ev.guests === 1 ? '' : 's'}` : '',
-            ]
-              .filter(Boolean)
-              .join(' · '),
-            now: isFinite(s) && s <= nowMs && nowMs < e2,
+    for (const k of keys) {
+      const section = day.events?.[k]
+      if (section?.ok)
+        section.data
+          .filter((ev: Q) => !ev.allDay)
+          .forEach((ev: Q) => {
+            const s = Date.parse(ev.start)
+            const e2 = Date.parse(ev.end)
+            rows.push({
+              key: 'ev-' + String(ev.id ?? ev.start),
+              sort: s,
+              time: Wn(ev.start),
+              title: String(ev.title || ''),
+              sub:
+                tag(String(day[k] || '')) +
+                [
+                  ev.meeting?.kind === 'one_on_one'
+                    ? `1:1 with ${ev.meeting.person || 'your report'}`
+                    : ev.location,
+                  ev.guests ? `${ev.guests} guest${ev.guests === 1 ? '' : 's'}` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · '),
+              now: isFinite(s) && s <= nowMs && nowMs < e2,
+            })
           })
-        })
-    const date = String(day[dayKey] || '')
+    }
     if (day.focus?.ok)
       day.focus.data
-        .filter((g: Q) => Gm(g.start) === date)
+        .filter((g: Q) => (dayKey === 'week' ? !0 : Gm(g.start) === String(day[dayKey] || '')))
         .forEach((g: Q) => {
           const s = Date.parse(g.start)
           const e2 = Date.parse(g.end)
@@ -651,20 +658,20 @@ function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' |
             sort: s,
             time: Wn(g.start),
             title: 'Focus window',
-            sub: `Free for ${g.minutes} minutes — book as focus time`,
+            sub: `${tag(Gm(g.start))}Free for ${g.minutes} minutes — book as focus time`,
             now: isFinite(s) && s <= nowMs && nowMs < e2,
           })
         })
     if (day.deadlines?.ok)
       day.deadlines.data
-        .filter((d: Q) => String(d.due || '').slice(0, 10) === date)
+        .filter((d: Q) => (dayKey === 'week' ? !0 : String(d.due || '').slice(0, 10) === String(day[dayKey] || '')))
         .forEach((d: Q) => {
           rows.push({
             key: 'dl-' + String(d.id),
             sort: Number.MAX_SAFE_INTEGER,
             time: 'Due',
             title: String(d.title || ''),
-            sub: `Deadline · ${d.mine ? 'assigned to you' : `assigned to ${String(d.owner || '').split('@')[0]}`}`,
+            sub: `${tag(String(d.due || '').slice(0, 10))}Deadline · ${d.mine ? 'assigned to you' : `assigned to ${String(d.owner || '').split('@')[0]}`}`,
             now: false,
           })
         })
@@ -804,15 +811,19 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
 
 function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
   day: Q | null
-  dayKey: 'today' | 'tomorrow'
+  dayKey: 'today' | 'tomorrow' | 'week'
   nowMs: number
   onBooked: () => void
 }) {
   const [busy, setBusy] = useState('')
   const [err, setErr] = useState('')
   const [done, setDone] = useState<Record<string, boolean>>({})
-  const date = String(day?.[dayKey] || '')
-  const raw: Q[] = day?.focus?.ok ? day.focus.data.filter((g: Q) => Gm(g.start) === date) : []
+  const date = String(day?.[dayKey === 'week' ? 'today' : dayKey] || '')
+  const raw: Q[] = day?.focus?.ok
+    ? dayKey === 'week'
+      ? day.focus.data
+      : day.focus.data.filter((g: Q) => Gm(g.start) === date)
+    : []
   const gaps = raw
     .map((g) => ({ g, s: Date.parse(g.start), e: Date.parse(g.end) }))
     .sort((a, b) => a.s - b.s)
@@ -893,7 +904,8 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
 
 /* ------------------------------------------------------------------- Zm */
 export function MyDayPage({ route: n }: { route: { title: string } }) {
-  const [pd, setPd] = useState<'today' | 'tomorrow'>('today')
+  const [pd, setPd] = useState<'today' | 'week'>('today')
+  const [bb, setBb] = useState(!1)
   const [e, t] = useState<Q | null>(null)
   const [i, s] = useState<Section>(void 0)
   const [r, a] = useState<Section>(void 0)
@@ -966,6 +978,27 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
   const _ = Date.now()
   const T = w ? Ym(w, _) : null
   const R = (D: string) => (w?.focus.ok ? w.focus.data.filter((L: Q) => Gm(L.start) === D) : [])
+  // 'week' scope is the API's two-day window: compose both days' gaps.
+  const openGaps = w?.focus?.ok
+    ? R(w.today)
+        .concat(R(w.tomorrow))
+        .filter((g: Q) => !g.booked)
+        .sort((a: Q, b: Q) => Date.parse(a.start) - Date.parse(b.start))
+    : []
+  async function bookFirst() {
+    const g = openGaps[0]
+    if (!g) return
+    setBb(!0)
+    d('')
+    try {
+      await Fs.createFocusBlock(g.start, g.end, 'Focus time')
+      void C('core', !0)
+    } catch (l) {
+      d((l as Error).message || 'Focus block could not be booked.')
+    } finally {
+      setBb(!1)
+    }
+  }
   return (
     <section className="page md-page" aria-labelledby="page-title">
       <header className="page-head md-head">
@@ -977,6 +1010,14 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           {w ? <p className="page-sub">{$m(w, _)}</p> : null}
         </div>
         <div className="page-actions md-head-actions">
+          <Button
+            type="button"
+            className="btn btn-primary"
+            disabled={!w || !openGaps.length || bb}
+            onClick={() => void bookFirst()}
+          >
+            {bb ? D('Booking…') : D('Book focus block')}
+          </Button>
           <div className="seg" role="group" aria-label={D('Agenda range')}>
             <button
               type="button"
@@ -988,11 +1029,11 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
             </button>
             <button
               type="button"
-              className={pd === 'tomorrow' ? 'on' : ''}
-              aria-pressed={pd === 'tomorrow'}
-              onClick={() => setPd('tomorrow')}
+              className={pd === 'week' ? 'on' : ''}
+              aria-pressed={pd === 'week'}
+              onClick={() => setPd('week')}
             >
-              {D('Tomorrow')}
+              {D('Week')}
             </button>
           </div>
           {w?.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
