@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/styles/productivity.css'
 import { useState, type FormEvent } from 'react'
 import {
   Chip,
@@ -9,6 +10,7 @@ import {
   Section,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Seg, Select, Textarea } from '@/features/shared/components/ui'
 import {
   CasesLine,
   DecisionChip,
@@ -171,29 +173,27 @@ function FlagDetail({
         >
           <fieldset className="pv-fieldset">
             <legend className="cx-label">The flagged {G(f.flaggedMin)} count as</legend>
-            <div className="cx-seg pv-seg" role="radiogroup">
-              {statuses.map((s) => (
-                <label key={s}>
-                  <input
-                    type="radio"
-                    name={`st-${flagId}`}
-                    checked={v === s}
-                    onChange={() => setPicked(s)}
-                  />
-                  <span>
+            <Seg
+              name={`st-${flagId}`}
+              className="pv-seg"
+              value={v}
+              onChange={setPicked}
+              options={statuses.map((s) => ({
+                value: s,
+                label: (
+                  <>
                     {s}
                     {s === f.suggestedStatus ? ' (suggested)' : ''}
-                  </span>
-                </label>
-              ))}
-            </div>
+                  </>
+                ),
+              }))}
+            />
           </fieldset>
           <div className="cx-field">
             <label className="cx-label" htmlFor={`rs-${flagId}`}>
               Reason {y ? `(needed for ${v} and for revert)` : '(needed to revert)'}
             </label>
-            <textarea
-              className="cx-textarea"
+            <Textarea
               id={`rs-${flagId}`}
               value={reason}
               onInput={(e) => setReason(e.currentTarget.value)}
@@ -205,12 +205,12 @@ function FlagDetail({
             </p>
           ) : null}
           <div className="pv-actions">
-            <button type="submit" className="cx-btn cx-btn--primary" disabled={saving}>
+            <Button type="submit" variant="primary" disabled={saving}>
               {saving ? 'Saving…' : `Accept as ${v}`}
-            </button>
-            <button type="button" className="cx-btn" disabled={saving} onClick={() => decide('revert')}>
+            </Button>
+            <Button disabled={saving} onClick={() => decide('revert')}>
               Revert to {f.rawStatus}
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -257,33 +257,22 @@ function DisputeForm({ f, statuses, onDone }: { f: FlagView; statuses: string[];
         <strong>{f.agentName}</strong>{' '}
         <span className="cx-faint">({g.raisedAt.slice(0, 10)})</span>: {g.reason}
       </p>
-      <div className="cx-seg" role="radiogroup" aria-label="Outcome">
-        <label>
-          <input
-            type="radio"
-            name={`o-${g.disputeId}`}
-            checked={outcome === 'upheld'}
-            onChange={() => setOutcome('upheld')}
-          />
-          <span>Uphold</span>
-        </label>
-        <label>
-          <input
-            type="radio"
-            name={`o-${g.disputeId}`}
-            checked={outcome === 'rejected'}
-            onChange={() => setOutcome('rejected')}
-          />
-          <span>Do not uphold</span>
-        </label>
-      </div>
+      <Seg
+        name={`o-${g.disputeId}`}
+        value={outcome}
+        onChange={setOutcome}
+        aria-label="Outcome"
+        options={[
+          { value: 'upheld', label: 'Uphold' },
+          { value: 'rejected', label: 'Do not uphold' },
+        ]}
+      />
       {outcome === 'upheld' ? (
         <div className="cx-field">
           <label className="cx-label" htmlFor={`ds-${g.disputeId}`}>
             The flagged time counts as
           </label>
-          <select
-            className="cx-select"
+          <Select
             id={`ds-${g.disputeId}`}
             value={status}
             onChange={(e) => setStatus(e.currentTarget.value)}
@@ -294,15 +283,14 @@ function DisputeForm({ f, statuses, onDone }: { f: FlagView; statuses: string[];
                 {s}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       ) : null}
       <div className="cx-field">
         <label className="cx-label" htmlFor={`dn-${g.disputeId}`}>
           Note to the agent
         </label>
-        <textarea
-          className="cx-textarea"
+        <Textarea
           id={`dn-${g.disputeId}`}
           value={note}
           onInput={(e) => setNote(e.currentTarget.value)}
@@ -313,9 +301,9 @@ function DisputeForm({ f, statuses, onDone }: { f: FlagView; statuses: string[];
           {formError}
         </p>
       ) : null}
-      <button type="submit" className="cx-btn cx-btn--primary" disabled={saving}>
+      <Button type="submit" variant="primary" disabled={saving}>
         {saving ? 'Saving…' : 'Record the decision'}
-      </button>
+      </Button>
     </form>
   )
 }
@@ -391,8 +379,7 @@ export default function StatusValidationPage() {
                   const h = Ea(f.dueDate, n.today)
                   return (
                     <li key={f.flagId}>
-                      <button
-                        type="button"
+                      <Button
                         className="pv-item"
                         aria-pressed={selected === f.flagId}
                         onClick={() => setSelected(f.flagId)}
@@ -410,7 +397,7 @@ export default function StatusValidationPage() {
                         <Chip status={h <= 1 ? 'bad' : h <= 3 ? 'warn' : 'neutral'}>
                           {h <= 0 ? 'auto-accepts today' : `${h} ${h === 1 ? 'day' : 'days'} left`}
                         </Chip>
-                      </button>
+                      </Button>
                     </li>
                   )
                 })}

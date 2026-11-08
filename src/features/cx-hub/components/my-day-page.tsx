@@ -7,6 +7,7 @@
  * files, the meetings-done ring and the settings/digest card. */
 
 import { useEffect, useRef, useState } from 'react'
+import { Button, Input } from '@/features/shared/components/ui'
 import { Df, Ft, Fs, If, Nf, useTh } from './hub-shared'
 
 type Q = Record<string, any>
@@ -231,9 +232,9 @@ function Qm({ gap: n, onBooked: e }: { gap: Q; onBooked: () => void }) {
         {a ? (
           <span className="md-booked">Booked as focus time</span>
         ) : (
-          <button type="button" className="btn btn-quiet md-book" onClick={() => void c()} disabled={t}>
+          <Button className="btn btn-quiet md-book" onClick={() => void c()} disabled={t}>
             {t ? 'Booking…' : 'Book as focus time'}
-          </button>
+          </Button>
         )}
         {s ? <span className="field-error">{s}</span> : null}
       </div>
@@ -315,16 +316,16 @@ function Tg() {
         }}
         role="search"
       >
-        <input
+        <Input
           type="search"
           value={n}
           onInput={(r) => e((r.target as HTMLInputElement).value)}
           placeholder="Search mail, e.g. from:aramex"
           aria-label="Search mail"
         />
-        <button type="submit" disabled={t?.busy}>
+        <Button type="submit" disabled={t?.busy}>
           Search
-        </button>
+        </Button>
       </form>
       {t?.busy ? <p className="md-sub">Searching…</p> : null}
       {t?.error ? <p className="md-err">{t.error}</p> : null}
@@ -365,6 +366,7 @@ function ih({ id: n, label: e, count: t, open: i, onToggle: s }: {
 }) {
   return (
     <h2 id={n} className="md-h2">
+      {/* eslint-disable-next-line -- kept raw: md-cardtoggle uses all:unset disclosure styling */}
       <button type="button" className="md-cardtoggle" aria-expanded={i} aria-controls={`${n}-body`} onClick={s}>
         {e}
         {!i && t ? <span className="md-mailcount">{t}</span> : null}
@@ -497,6 +499,7 @@ function FollowUpsCard({ section: n }: { section: Section }) {
                   </a>
                   <span className="md-owner">
                     {u.from}, {u.hoursWaiting} h without a reply{' '}
+                    {/* eslint-disable-next-line -- kept raw: md-link is an inline link-styled action */}
                     <button type="button" className="md-link" onClick={() => l(u)}>
                       Done
                     </button>
@@ -549,18 +552,18 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
         <label className="field-label" htmlFor="md-h">
           Mail counts as waiting after (hours)
         </label>
-        <input id="md-h" className="input" type="number" min={1} max={720} value={t} onInput={(g) => i((g.currentTarget as HTMLInputElement).value)} />
+        <Input id="md-h" className="input" type="number" min={1} max={720} value={t} onInput={(g) => i((g.currentTarget as HTMLInputElement).value)} />
         <label className="field-label" htmlFor="md-w">
           Working hours, Kuwait time
         </label>
-        <input id="md-w" className="input" pattern="\d{1,2}:\d{2}-\d{1,2}:\d{2}" value={s} onInput={(g) => r((g.currentTarget as HTMLInputElement).value)} />
+        <Input id="md-w" className="input" pattern="\d{1,2}:\d{2}-\d{1,2}:\d{2}" value={s} onInput={(g) => r((g.currentTarget as HTMLInputElement).value)} />
         <label className="field-label" htmlFor="md-m">
           Shortest focus block (minutes)
         </label>
-        <input id="md-m" className="input" type="number" min={15} max={240} value={a} onInput={(g) => o((g.currentTarget as HTMLInputElement).value)} />
-        <button type="submit" className="btn btn-primary">
+        <Input id="md-m" className="input" type="number" min={15} max={240} value={a} onInput={(g) => o((g.currentTarget as HTMLInputElement).value)} />
+        <Button type="submit" className="btn btn-primary">
           Save settings
-        </button>
+        </Button>
       </form>
       <p className="md-sub">
         {n.digestInstalled
@@ -568,9 +571,9 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
           : 'A summary of this page can be emailed to you at about 07:30 Kuwait time. It follows the email test-mode setting in Admin.'}
       </p>
       {n.digestInstalled ? null : (
-        <button type="button" className="btn btn-quiet" onClick={() => void p()}>
+        <Button type="button" className="btn btn-quiet" onClick={() => void p()}>
           Schedule the morning email
-        </button>
+        </Button>
       )}
       {c ? (
         <p className="md-ok" role="status">
@@ -645,9 +648,9 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
         <p className="md-refused" role="alert">
           {u}
         </p>
-        <button type="button" className="btn btn-primary" disabled={b} onClick={() => void C('core', !0)}>
+        <Button type="button" className="btn btn-primary" disabled={b} onClick={() => void C('core', !0)}>
           {b ? 'Trying again…' : 'Try again'}
-        </button>
+        </Button>
       </section>
     )
   const w = e
@@ -674,9 +677,9 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
               {b ? `Showing ${Wn(S)}, updating…` : `Updated ${Wn(S)}`}
             </span>
           ) : null}
-          <button type="button" className="btn btn-quiet" onClick={x} disabled={!w || b}>
+          <Button type="button" className="btn btn-quiet" onClick={x} disabled={!w || b}>
             {b ? 'Refreshing…' : 'Refresh'}
-          </button>
+          </Button>
         </div>
       </header>
       {u && w ? (

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Head, LoadError, fetchJson, useSe, dayAt } from './shared'
 import { today } from './pw'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
+import { Button, Textarea } from '@/features/shared/components/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* I — the actions facade. */
@@ -85,8 +86,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
         <label className="cx-label" htmlFor={`${id}-n`}>
           Where it stands
         </label>
-        <textarea
-          className="cx-textarea"
+        <Textarea
           id={`${id}-n`}
           value={note}
           onInput={(e) => setNote(e.currentTarget.value)}
@@ -99,43 +99,37 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
         </p>
       ) : null}
       <div style={{ display: 'flex', gap: 'var(--cx-space-2)', flexWrap: 'wrap' }}>
-        <button
-          type="button"
-          className="cx-btn cx-btn--primary"
+        <Button
+          variant="primary"
           disabled={busy}
           onClick={() =>
             act(() => api.actionsPostUpdate(a.actionId, { note }), 'Update posted. Your team lead sees it in the next review.')
           }
         >
           Post update
-        </button>
+        </Button>
         {a.status !== 'blocked' ? (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             disabled={busy}
             onClick={() => act(() => api.actionsSetStatus(a.actionId, 'blocked', note), 'Marked blocked. Your team lead sees why.')}
           >
             I am blocked
-          </button>
+          </Button>
         ) : (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             disabled={busy}
             onClick={() => act(() => api.actionsSetStatus(a.actionId, 'open', note), 'Back to open.')}
           >
             Unblocked
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           disabled={busy}
           onClick={() => act(() => api.actionsSetStatus(a.actionId, 'done', note), 'Marked done.')}
         >
           Done
-        </button>
+        </Button>
       </div>
     </article>
   )

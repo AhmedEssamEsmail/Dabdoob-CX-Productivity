@@ -1,6 +1,8 @@
 'use client'
 
+import '@/app/styles/hub.css'
 import { useEffect, useState } from 'react'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 interface RosterUser {
   email: string
@@ -111,13 +113,12 @@ export default function AdminRosterPage() {
       <section className="cx-section">
         <div className="cx-section__head">
           <h2 className="cx-section__title">Users</h2>
-          <button
-            type="button"
-            className={`cx-btn ${showAddForm ? 'cx-btn--quiet' : 'cx-btn--primary'}`}
+          <Button
+            variant={showAddForm ? 'quiet' : 'primary'}
             onClick={() => setShowAddForm(!showAddForm)}
           >
             {showAddForm ? 'Cancel' : 'Add user'}
-          </button>
+          </Button>
         </div>
 
         {showAddForm && (
@@ -125,9 +126,8 @@ export default function AdminRosterPage() {
             <div className="cx-grid-2">
               <div className="field">
                 <label className="field-label" htmlFor="nu-email">Email</label>
-                <input
+                <Input
                   id="nu-email"
-                  className="cx-input"
                   type="email"
                   value={newUser.email}
                   onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
@@ -136,9 +136,8 @@ export default function AdminRosterPage() {
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="nu-name">Name</label>
-                <input
+                <Input
                   id="nu-name"
-                  className="cx-input"
                   value={newUser.name}
                   onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                   required
@@ -146,9 +145,8 @@ export default function AdminRosterPage() {
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="nu-role">Role</label>
-                <select
+                <Select
                   id="nu-role"
-                  className="cx-select"
                   value={newUser.role}
                   onChange={(e) => setNewUser({ ...newUser, role: e.target.value as RosterUser['role'] })}
                 >
@@ -156,13 +154,12 @@ export default function AdminRosterPage() {
                   <option value="tl">TL</option>
                   <option value="specialist">Specialist</option>
                   <option value="admin">Admin</option>
-                </select>
+                </Select>
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="nu-tl">TL email</label>
-                <input
+                <Input
                   id="nu-tl"
-                  className="cx-input"
                   type="email"
                   value={newUser.tl_email}
                   onChange={(e) => setNewUser({ ...newUser, tl_email: e.target.value })}
@@ -170,9 +167,8 @@ export default function AdminRosterPage() {
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="nu-country">Country</label>
-                <input
+                <Input
                   id="nu-country"
-                  className="cx-input"
                   value={newUser.country}
                   onChange={(e) => setNewUser({ ...newUser, country: e.target.value })}
                 />
@@ -180,6 +176,7 @@ export default function AdminRosterPage() {
               <div className="field">
                 <label className="field-label" htmlFor="nu-active">Active</label>
                 <span>
+                  {/* kept raw: id="nu-active" pairs with the field-label htmlFor; Toggle can't carry id */}
                   <input
                     id="nu-active"
                     type="checkbox"
@@ -191,12 +188,12 @@ export default function AdminRosterPage() {
               </div>
             </div>
             <p>
-              <button type="button" className="cx-btn cx-btn--primary" onClick={handleAdd}>
+              <Button variant="primary" onClick={handleAdd}>
                 Add user
-              </button>{' '}
-              <button type="button" className="cx-btn cx-btn--quiet" onClick={() => setShowAddForm(false)}>
+              </Button>{' '}
+              <Button variant="quiet" onClick={() => setShowAddForm(false)}>
                 Cancel
-              </button>
+              </Button>
             </p>
           </div>
         )}
@@ -221,8 +218,7 @@ export default function AdminRosterPage() {
                     <td>{user.email}</td>
                     <td>
                       {editingEmail === user.email ? (
-                        <input
-                          className="cx-input"
+                        <Input
                           value={editData.name ?? ''}
                           onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                         />
@@ -237,8 +233,7 @@ export default function AdminRosterPage() {
                     </td>
                     <td>
                       {editingEmail === user.email ? (
-                        <input
-                          className="cx-input"
+                        <Input
                           value={editData.tl_email ?? ''}
                           onChange={(e) => setEditData({ ...editData, tl_email: e.target.value })}
                         />
@@ -248,8 +243,7 @@ export default function AdminRosterPage() {
                     </td>
                     <td>
                       {editingEmail === user.email ? (
-                        <input
-                          className="cx-input"
+                        <Input
                           value={editData.country ?? ''}
                           onChange={(e) => setEditData({ ...editData, country: e.target.value })}
                         />
@@ -265,25 +259,17 @@ export default function AdminRosterPage() {
                     <td>
                       {editingEmail === user.email ? (
                         <>
-                          <button
-                            type="button"
-                            className="cx-btn cx-btn--primary"
-                            onClick={() => handleSave(user.email)}
-                          >
+                          <Button variant="primary" onClick={() => handleSave(user.email)}>
                             Save
-                          </button>{' '}
-                          <button type="button" className="cx-btn cx-btn--quiet" onClick={handleCancel}>
+                          </Button>{' '}
+                          <Button variant="quiet" onClick={handleCancel}>
                             Cancel
-                          </button>
+                          </Button>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          className="cx-btn cx-btn--quiet"
-                          onClick={() => handleEdit(user)}
-                        >
+                        <Button variant="quiet" onClick={() => handleEdit(user)}>
                           Edit
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>

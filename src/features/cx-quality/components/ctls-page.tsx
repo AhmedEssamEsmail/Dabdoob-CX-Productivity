@@ -24,6 +24,7 @@ import {
   qaTicketLabel,
   useSe,
 } from './qa-shared'
+import { Button, Input, Seg, Textarea } from '@/features/shared/components/ui'
 
 /* --- Ds — find my open CTLs matching a ticket number or audit/CTL id --------- */
 function findOpenCtls(t: any[], n: string): any[] {
@@ -169,8 +170,7 @@ function CtlForm({
           <label className="cx-label" htmlFor="ctl-ref">
             Ticket number or audit ID
           </label>
-          <input
-            className="cx-input"
+          <Input
             id="ctl-ref"
             value={picked.ref}
             autoComplete="off"
@@ -185,6 +185,7 @@ function CtlForm({
             </legend>
             {g.map((k) => (
               <label key={k.ctlId}>
+                {/* eslint-disable-next-line -- kept raw: fieldset/legend radio pick; Seg has no legend slot */}
                 <input
                   type="radio"
                   name="ctl-pick"
@@ -214,22 +215,16 @@ function CtlForm({
             <span className="cx-label" id="ctl-out-l">
               Outcome
             </span>
-            <div className="cx-seg" role="radiogroup" aria-labelledby="ctl-out-l">
-              {[
-                ['acknowledged', 'Acknowledged'],
-                ['dispute', 'Dispute'],
-              ].map(([k, C]) => (
-                <label key={k}>
-                  <input
-                    type="radio"
-                    name="ctl-outcome"
-                    checked={c === k}
-                    onChange={() => l(k)}
-                  />
-                  <span>{C}</span>
-                </label>
-              ))}
-            </div>
+            <Seg
+              name="ctl-outcome"
+              value={c}
+              onChange={l}
+              options={[
+                { value: 'acknowledged', label: 'Acknowledged' },
+                { value: 'dispute', label: 'Dispute' },
+              ]}
+              aria-labelledby="ctl-out-l"
+            />
           </div>
         )}
         {T === 'dispute' && !_ ? (
@@ -237,8 +232,7 @@ function CtlForm({
             <label className="cx-label" htmlFor="ctl-reason">
               The agent&apos;s case
             </label>
-            <textarea
-              className="cx-textarea"
+            <Textarea
               id="ctl-reason"
               value={d}
               onInput={(k) => o(k.currentTarget.value)}
@@ -251,8 +245,7 @@ function CtlForm({
           <label className="cx-label" htmlFor="ctl-notes">
             Coaching notes
           </label>
-          <textarea
-            className="cx-textarea"
+          <Textarea
             id="ctl-notes"
             value={p}
             onInput={(k) => m(k.currentTarget.value)}
@@ -265,9 +258,9 @@ function CtlForm({
           </p>
         ) : null}
         <div className="qa-actions">
-          <button type="submit" className="cx-btn cx-btn--primary" disabled={h}>
+          <Button type="submit" variant="primary" disabled={h}>
             {h ? 'Submitting…' : 'Submit CTL'}
-          </button>
+          </Button>
           <span className="cx-faint">The date and time are recorded when you submit.</span>
         </div>
       </form>
@@ -310,9 +303,9 @@ function ResendMail({ auditId, ticketId }: { auditId: string; ticketId: string }
     )
   }
   return (
-    <button type="button" className="cx-btn" disabled={a} onClick={() => i(false)}>
+    <Button disabled={a} onClick={() => i(false)}>
       {a ? 'Sending…' : 'Resend result email'}
-    </button>
+    </Button>
   )
 }
 
@@ -393,13 +386,12 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                     </p>
                     {r.status === 'open' ? (
                       <div className="qa-actions">
-                        <button
-                          type="button"
-                          className="cx-btn cx-btn--primary"
+                        <Button
+                          variant="primary"
                           onClick={() => m(r)}
                         >
                           Open in the form
-                        </button>
+                        </Button>
                       </div>
                     ) : r.notes ? (
                       <p className="cx-muted">

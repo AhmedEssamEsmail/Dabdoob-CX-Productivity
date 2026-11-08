@@ -6,6 +6,7 @@
  * button + result note, and the holiday form/table. */
 
 import { useState } from 'react'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 import { Eo, Ft, jl, Oo, sh, Ti, To, Vf, Vi, Yn } from './hub-shared'
 
 type Q = Record<string, any>
@@ -136,7 +137,7 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
         <label className="cx-label" htmlFor={`role-${n.email}`}>
           Role
         </label>
-        <select className="cx-input" id={`role-${n.email}`} value={l} onChange={(x) => h(x.currentTarget.value)}>
+        <Select className="cx-input" id={`role-${n.email}`} value={l} onChange={(x) => h(x.currentTarget.value)}>
           <option value="">
             {qo(n)}: {Gi[n.hctRole] || n.hctRole || (n.roleOverride ? 'none recorded, becomes Agent' : Gi[n.role] || n.role)}
           </option>
@@ -147,13 +148,13 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
                 {Gi[x]} (override)
               </option>
             ))}
-        </select>
+        </Select>
       </div>
       <div className="cx-field">
         <label className="cx-label" htmlFor={`tl-${n.email}`}>
           Reports to
         </label>
-        <select className="cx-input" id={`tl-${n.email}`} value={u} onChange={(x) => d(x.currentTarget.value)}>
+        <Select className="cx-input" id={`tl-${n.email}`} value={u} onChange={(x) => d(x.currentTarget.value)}>
           <option value="">
             {qo(n)}: {n.hctTlEmail || (!n.tlOverride && n.tlEmail) ? m(n.hctTlEmail || n.tlEmail) : 'nobody'}
           </option>
@@ -162,7 +163,7 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
               {x.name} (override)
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <span className="cx-hint">
         Overrides stay through every HCT sync until you set them back to &quot;{qo(n)}&quot;. Changes
@@ -174,6 +175,7 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
         <div className="dq-days">
           {t.map((x) => (
             <label className="cx-toggle" key={x}>
+              {/* eslint-disable-next-line -- kept raw: cx-toggle CSS hides the native checkbox */}
               <input
                 type="checkbox"
                 checked={o.includes(x)}
@@ -194,12 +196,12 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
         </p>
       ) : null}
       <div className="dq-editor__actions">
-        <button type="button" className="cx-btn cx-btn--primary" disabled={y} onClick={C}>
+        <Button variant="primary" className="cx-btn" disabled={y} onClick={C}>
           {y ? 'Saving…' : 'Save'}
-        </button>
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={s}>
+        </Button>
+        <Button variant="quiet" className="cx-btn" onClick={s}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -254,9 +256,9 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
         title={n.title}
         sub="Role, who each person reports to, where they are based, their days off, and public holidays by country. The daily HCT sync never changes what you set here."
         aside={
-          <button type="button" className="cx-btn" disabled={p} onClick={x}>
+          <Button className="cx-btn" disabled={p} onClick={x}>
             {p ? 'Syncing…' : 'Sync roster from HCT now'}
-          </button>
+          </Button>
         }
       />
       {u ? (
@@ -283,6 +285,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 People
               </h2>
               <label className="cx-toggle">
+                {/* eslint-disable-next-line -- kept raw: cx-toggle CSS hides the native checkbox */}
                 <input type="checkbox" checked={y} onChange={(S) => v(S.currentTarget.checked)} />
                 <span>Show people who left</span>
               </label>
@@ -377,9 +380,9 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                           )}
                         </td>
                         <td>
-                          <button type="button" className="cx-btn cx-btn--quiet" onClick={() => a(S.email)} aria-label={`Edit ${S.name}`}>
+                          <Button variant="quiet" className="cx-btn" onClick={() => a(S.email)} aria-label={`Edit ${S.name}`}>
                             Edit
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     )
@@ -403,7 +406,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="hol-date">
                   Date
                 </label>
-                <input
+                <Input
                   className="cx-input"
                   id="hol-date"
                   type="date"
@@ -418,7 +421,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="hol-name">
                   Holiday
                 </label>
-                <input
+                <Input
                   className="cx-input"
                   id="hol-name"
                   maxLength={80}
@@ -430,9 +433,9 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   }}
                 />
               </div>
-              <button type="submit" className="cx-btn cx-btn--primary">
+              <Button type="submit" variant="primary" className="cx-btn">
                 Add holiday
-              </button>
+              </Button>
               {l ? (
                 <p className="cx-error" role="alert">
                   {l}
@@ -460,9 +463,9 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                       <td>{S.name}</td>
                       <td className="cx-muted">{S.addedBy}</td>
                       <td>
-                        <button type="button" className="cx-btn cx-btn--quiet" onClick={() => C(S.id)} aria-label={`Remove ${S.name}`}>
+                        <Button variant="quiet" className="cx-btn" onClick={() => C(S.id)} aria-label={`Remove ${S.name}`}>
                           Remove
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}

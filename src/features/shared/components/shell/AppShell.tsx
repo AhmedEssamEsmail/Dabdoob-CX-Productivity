@@ -45,6 +45,7 @@ import {
 } from '@/features/shared/components/shell/registry'
 import NavIcon from '@/features/shared/components/shell/NavIcon'
 import ErrorBoundary from '@/features/shared/components/shell/ErrorBoundary'
+import { Button } from '@/features/shared/components/ui'
 import { ViewAsBanner, ViewAsPicker } from '@/features/shared/components/shell/ViewAs'
 import Popups from '@/features/shared/components/shell/Popups'
 
@@ -240,6 +241,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       <main className="state-screen">
         <h1>{D('{app} could not start', { app: ctxTitle })}</h1>
         <p>{bootError}</p>
+        {/* kept raw: legacy .btn contract */}
         <button
           type="button"
           className="btn btn-primary"
@@ -363,15 +365,14 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               <span className="brand-mark" aria-hidden="true" />
               <span className="brand-name">{ctxTitle}</span>
             </a>
-            <button
-              type="button"
+            <Button
               className="nav-toggle"
               aria-expanded={navOpen}
               aria-controls="nav"
               onClick={() => setNavOpen((open) => !open)}
             >
               {D(navOpen ? 'Close' : 'Menu')}
-            </button>
+            </Button>
           </div>
           <nav id="nav" className="nav" aria-label={D('Main')} ref={navRef}>
             <span className="nav-ind" ref={indRef} aria-hidden="true" hidden />
@@ -473,8 +474,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                   : D(WHO_ROLE_LABELS[user.role] ?? user.role)}
               </p>
             </div>
-            <button
-              type="button"
+            <Button
               className="rail-collapse"
               aria-label={D(railOff ? 'Show the menu' : 'Hide the menu')}
               aria-expanded={!railOff}
@@ -490,7 +490,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m15 6-6 6 6 6" />
               </svg>
-            </button>
+            </Button>
           </div>
         </aside>
         <main id="main" className="main" tabIndex={-1}>

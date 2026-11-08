@@ -7,6 +7,7 @@ import {
   type ViewAsPerson,
 } from '@/features/shared/shell/context'
 import { displayRole, ROLE_LABELS } from '@/features/shared/shell/gates'
+import { Button, Input } from '@/features/shared/components/ui'
 
 /**
  * Vt + kn — the "View as" banner and people picker, ported 1:1.
@@ -40,6 +41,7 @@ export function ViewAsBanner({ user }: { user: ShellUser }) {
         {error ? <span className="va-banner-error"> {error}</span> : null}
       </p>
       <ViewAsPicker label="Switch person" quiet />
+      {/* kept raw: legacy .btn contract */}
       <button
         type="button"
         className="btn va-exit"
@@ -112,8 +114,7 @@ export function ViewAsPicker({
 
   return (
     <>
-      <button
-        type="button"
+      <Button
         className={quiet ? 'btn va-switch' : 'va-open'}
         aria-haspopup="dialog"
         title={quiet ? undefined : 'See the apps as one person sees them, read-only'}
@@ -125,7 +126,7 @@ export function ViewAsPicker({
           </svg>
         )}
         <span className="va-open-text">{label}</span>
-      </button>
+      </Button>
       <dialog
         ref={dialogRef}
         className="popup va-picker"
@@ -142,7 +143,7 @@ export function ViewAsPicker({
           </p>
           <label className="field va-search">
             <span className="field-label">Find a person</span>
-            <input
+            <Input
               ref={inputRef}
               className="input"
               type="search"
@@ -171,8 +172,7 @@ export function ViewAsPicker({
             <ul className="va-list" aria-label="People">
               {matches.map((person) => (
                 <li key={person.email}>
-                  <button
-                    type="button"
+                  <Button
                     className="va-person"
                     disabled={!!busy}
                     onClick={() => pick(person)}
@@ -191,12 +191,13 @@ export function ViewAsPicker({
                           .join(', ')}
                       </span>
                     </span>
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           ) : null}
           <div className="popup-actions">
+            {/* kept raw: legacy .btn contract */}
             <button type="button" className="btn btn-quiet" onClick={() => setOpen(false)}>
               Cancel
             </button>

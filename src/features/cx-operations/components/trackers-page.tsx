@@ -20,6 +20,7 @@ import {
 } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { pageParams } from '@/features/shared/shell/gates'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 // ---------------------------------------------------------------- API surface
 // (ee in the closure: getTrackersPage / getTrackerRecords / addTrackerRecord /
@@ -260,7 +261,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
     <div className="trk-fe">
       <div className="field">
         <label className="field-label" htmlFor={`${a}-n`}>Field name</label>
-        <input id={`${a}-n`} className="input" maxLength={60} value={e.label} aria-invalid={h || undefined}
+        <Input id={`${a}-n`} className="input" maxLength={60} value={e.label} aria-invalid={h || undefined}
           onInput={(u) => i({ label: u.currentTarget.value })} />
         {h ? <p className="field-error">Give the field a name so people know what to enter.</p> : null}
       </div>
@@ -270,6 +271,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
           const d = u.type === 'dependent' && !n.length
           return (
             <label key={u.type} className={`trk-kind ${e.type === u.type ? 'is-on' : ''} ${d ? 'is-off' : ''}`}>
+              {/* eslint-disable-next-line -- kept raw: visually-hidden radio covering the .trk-kind card (CSS: .trk-kind input) */}
               <input type="radio" name={`${a}-k`} value={u.type} checked={e.type === u.type} disabled={d}
                 onChange={() => i({ type: u.type })} />
               <span className="trk-kind-name">{u.name}</span>
@@ -285,7 +287,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
           <ul className="trk-choices">
             {e.choicesText.map((u, d) => (
               <li key={d}>
-                <input className="input" aria-label={`Choice ${d + 1}`} value={u}
+                <Input className="input" aria-label={`Choice ${d + 1}`} value={u}
                   readOnly={d < (e.locked ?? 0)}
                   title={d < (e.locked ?? 0) ? 'Saved choice: it stays, so records that use it keep their answer' : undefined}
                   maxLength={120}
@@ -295,17 +297,17 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
                     i({ choicesText: f })
                   }} />
                 {e.choicesText.length > 1 && d >= (e.locked ?? 0) ? (
-                  <button type="button" className="btn btn-quiet" aria-label={`Remove choice ${d + 1}`}
+                  <Button variant="quiet" aria-label={`Remove choice ${d + 1}`}
                     onClick={() => i({ choicesText: e.choicesText.filter((m, f) => f !== d) })}>
                     Remove
-                  </button>
+                  </Button>
                 ) : null}
               </li>
             ))}
           </ul>
-          <button type="button" className="btn btn-quiet trk-add-choice" onClick={() => i({ choicesText: [...e.choicesText, ''] })}>
+          <Button variant="quiet" className="trk-add-choice" onClick={() => i({ choicesText: [...e.choicesText, ''] })}>
             Add another choice
-          </button>
+          </Button>
           {s && !e.choicesText.some((u) => u.trim()) ? <p className="field-error">Add at least one choice, or pick Free text.</p> : null}
         </div>
       ) : null}
@@ -313,13 +315,13 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
         <Fragment>
           <div className="field">
             <label className="field-label" htmlFor={`${a}-p`}>Depends on</label>
-            <select id={`${a}-p`} className="select" value={e.parentRef}
+            <Select id={`${a}-p`} className="select" value={e.parentRef}
               onChange={(u) => i({ parentRef: u.currentTarget.value, depText: {} })}>
               <option value="">Choose a dropdown field…</option>
               {n.map((u) => (
                 <option key={u.ref} value={u.ref}>{u.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
           {c ? (
             <div className="field">
@@ -330,7 +332,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
                     <div key={u} className="trk-dep-row">
                       <dt>{u}</dt>
                       <dd>
-                        <input className="input" aria-label={`Choices when ${c.label} is ${u}, separated by commas`}
+                        <Input className="input" aria-label={`Choices when ${c.label} is ${u}, separated by commas`}
                           placeholder="Choices to offer, separated by commas" value={e.depText[u] ?? ''}
                           onInput={(d) => i({ depText: { ...e.depText, [u]: d.currentTarget.value } })} />
                       </dd>
@@ -345,6 +347,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
         </Fragment>
       ) : null}
       <label className="trk-check">
+        {/* eslint-disable-next-line -- kept raw: native checkbox inside .trk-check label */}
         <input type="checkbox" checked={e.required} onChange={(u) => i({ required: u.currentTarget.checked })} />
         People must fill this in
       </label>
@@ -415,8 +418,8 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
       ) : null}
       {f ? <p className="field-error" role="alert">{f}</p> : null}
       <div className="trk-dialog-actions">
-        <button type="button" className="btn btn-quiet" onClick={n}>Cancel</button>
-        <button type="button" className="btn btn-primary" onClick={g} disabled={d}>{d ? 'Saving…' : y}</button>
+        <Button variant="quiet" onClick={n}>Cancel</Button>
+        <Button variant="primary" onClick={g} disabled={d}>{d ? 'Saving…' : y}</Button>
       </div>
     </dialog>
   )
@@ -507,7 +510,7 @@ function Ut2({ listKey: e, label: t, value: n, onChange: s, placeholder: a = 'Ch
         {t}
         {i ? <span className="req" aria-hidden="true"> *</span> : null}
       </label>
-      <select id={u} className="select" value={m ? OTHER : n} onChange={H}
+      <Select id={u} className="select" value={m ? OTHER : n} onChange={H}
         disabled={c || d === undefined} required={i}
         aria-describedby={[L, R].filter(Boolean).join(' ') || undefined}>
         <option value="" disabled={i}>{d === undefined ? 'Loading choices…' : a}</option>
@@ -515,11 +518,11 @@ function Ut2({ listKey: e, label: t, value: n, onChange: s, placeholder: a = 'Ch
           <option key={T} value={T}>{T}</option>
         ))}
         <option value={OTHER}>Other…</option>
-      </select>
+      </Select>
       {h ? <p id={L} className="field-hint">{h}</p> : null}
       {m ? (
         <div className="other-row">
-          <input ref={q} className="input" type="text" maxLength={120} value={o}
+          <Input ref={q} className="input" type="text" maxLength={120} value={o}
             aria-label={`New choice for ${t}`} placeholder="Type the new choice"
             onInput={(T) => _(T.currentTarget.value)}
             onKeyDown={(T) => {
@@ -528,8 +531,8 @@ function Ut2({ listKey: e, label: t, value: n, onChange: s, placeholder: a = 'Ch
                 F()
               } else if (T.key === 'Escape') j()
             }} />
-          <button type="button" className="btn btn-primary" onClick={F} disabled={l || !o.trim()}>{l ? 'Adding…' : 'Add choice'}</button>
-          <button type="button" className="btn btn-quiet" onClick={j} disabled={l}>Cancel</button>
+          <Button variant="primary" onClick={F} disabled={l || !o.trim()}>{l ? 'Adding…' : 'Add choice'}</Button>
+          <Button variant="quiet" onClick={j} disabled={l}>Cancel</Button>
         </div>
       ) : null}
       {g || p ? (
@@ -604,7 +607,7 @@ function Xn({ data: e, me: t, onSaved: n }: { data: TrackerData; me: string; onS
               {l.label}
               {l.required ? <span className="req" aria-hidden="true"> *</span> : null}
             </label>
-            <input id={v} className={`input ${l.type === 'number' || l.type === 'money' ? 'trk-num' : ''}`}
+            <Input id={v} className={`input ${l.type === 'number' || l.type === 'money' ? 'trk-num' : ''}`}
               type={l.type === 'date' ? 'date' : l.type === 'link' ? 'url' : 'text'}
               inputMode={l.type === 'number' || l.type === 'money' ? 'decimal' : undefined}
               placeholder={l.type === 'link' ? 'https://' : l.type === 'money' ? '0.000' : undefined}
@@ -615,7 +618,7 @@ function Xn({ data: e, me: t, onSaved: n }: { data: TrackerData; me: string; onS
       })}
       {h ? <p className="field-error" role="alert">{h}</p> : null}
       {d ? <p className="trk-saved" role="status">{d}</p> : null}
-      <button type="submit" className="btn btn-primary" disabled={i}>{i ? 'Adding…' : 'Add record'}</button>
+      <Button type="submit" variant="primary" disabled={i}>{i ? 'Adding…' : 'Add record'}</Button>
     </form>
   )
 }
@@ -650,7 +653,7 @@ function Er({ onCancel: e, onCreated: t }: { onCancel: () => void; onCreated: (d
     <div className="trk-create">
       <div className="field">
         <label className="field-label" htmlFor="trk-name">Name of the new tracker</label>
-        <input id="trk-name" className="input" maxLength={60} value={n} onInput={(l) => s(l.currentTarget.value)} />
+        <Input id="trk-name" className="input" maxLength={60} value={n} onInput={(l) => s(l.currentTarget.value)} />
         <p className="field-hint">It is added to the tracker list for everyone.</p>
         {c && !n.trim() ? <p className="field-error">Give the tracker a name.</p> : null}
       </div>
@@ -660,18 +663,18 @@ function Er({ onCancel: e, onCreated: t }: { onCancel: () => void; onCreated: (d
             <div className="trk-create-field-head">
               <span>Field {v + 1}</span>
               {a.length > 1 ? (
-                <button type="button" className="btn btn-quiet" onClick={() => i(a.filter((g, y) => y !== v))}>Remove field</button>
+                <Button variant="quiet" onClick={() => i(a.filter((g, y) => y !== v))}>Remove field</Button>
               ) : null}
             </div>
             <Kt draft={l} parents={o(v)} showErrors={c} onChange={(g) => i(a.map((y, p) => (p === v ? g : y)))} />
           </li>
         ))}
       </ol>
-      <button type="button" className="btn btn-quiet" onClick={() => i([...a, Ie()])}>Add another field</button>
+      <Button variant="quiet" onClick={() => i([...a, Ie()])}>Add another field</Button>
       {m ? <p className="field-error" role="alert">{m}</p> : null}
       <div className="trk-dialog-actions">
-        <button type="button" className="btn btn-quiet" onClick={e}>Cancel</button>
-        <button type="button" className="btn btn-primary" onClick={_} disabled={u}>{u ? 'Creating…' : 'Create tracker'}</button>
+        <Button variant="quiet" onClick={e}>Cancel</Button>
+        <Button variant="primary" onClick={_} disabled={u}>{u ? 'Creating…' : 'Create tracker'}</Button>
       </div>
     </div>
   )
@@ -706,7 +709,10 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
             {e.map((a) => (
               <th key={a.id} scope="col" className={a.type === 'number' || a.type === 'money' ? 'trk-num' : undefined}>
                 {s && Wn(a) ? (
-                  <button type="button" className="trk-th-edit" onClick={() => s(a)} title="Edit this field">{a.label}</button>
+                  <>
+                    {/* eslint-disable-next-line -- kept raw: .trk-th-edit is an all:unset inline header button, not a cx-btn */}
+                    <button type="button" className="trk-th-edit" onClick={() => s(a)} title="Edit this field">{a.label}</button>
+                  </>
                 ) : (
                   a.label
                 )}
@@ -807,7 +813,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
         <div className="trk-switch field">
           <label className="field-label" htmlFor="trk-switch">Tracker</label>
           {t ? (
-            <select id="trk-switch" className="select trk-switch-select" value={d ? NEW_TRACKER : y?.id ?? ''}
+            <Select id="trk-switch" className="select trk-switch-select" value={d ? NEW_TRACKER : y?.id ?? ''}
               onChange={(p) => v(p.currentTarget.value)} disabled={h}>
               {t.trackers.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -816,7 +822,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
                 </option>
               ))}
               {t.canCreate ? <option value={NEW_TRACKER}>Other: create a new tracker…</option> : null}
-            </select>
+            </Select>
           ) : (
             <div className="trk-skel trk-skel-select" aria-hidden="true" />
           )}
@@ -853,7 +859,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
               <div className="trk-tools">
                 <label className="trk-search">
                   <span className="sr-only">Search records</span>
-                  <input className="input" type="search" placeholder="Search records" value={_} onInput={(p) => l(p.currentTarget.value)} />
+                  <Input className="input" type="search" placeholder="Search records" value={_} onInput={(p) => l(p.currentTarget.value)} />
                 </label>
                 <p className="trk-count">
                   {g.length === s.total ? `${s.total} record${s.total === 1 ? '' : 's'}` : `${g.length} of ${s.total}`}
@@ -861,7 +867,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
                   {s.tracker.seesAll ? '' : ', only the ones you added'}
                 </p>
                 {s.tracker.canBuild ? (
-                  <button type="button" className="btn btn-quiet trk-addfield" onClick={() => o('new')}>Add field</button>
+                  <Button variant="quiet" className="trk-addfield" onClick={() => o('new')}>Add field</Button>
                 ) : null}
               </div>
               <Zn2 fields={s.fields} rows={g} empty={s.total === 0} onEdit={s.tracker.canBuild ? o : undefined} />

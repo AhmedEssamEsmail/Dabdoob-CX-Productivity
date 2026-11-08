@@ -6,7 +6,7 @@
  */
 
 const SPLASH_CSS = `
-.boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:center;gap:14px;background:radial-gradient(900px 500px at 8% -10%,#cfe4ff 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#fbd9e8 0,transparent 55%),#f2f5f4;color:#4d5d63;font:500 0.875rem/1.3 'IBM Plex Sans',system-ui,sans-serif}
+.boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:center;gap:14px;background:radial-gradient(900px 500px at 8% -10%,#cfe4ff 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#fbd9e8 0,transparent 55%),#f2f5f4;color:#4d5d63;font:500 0.875rem/1.3 'IBM Plex Sans',system-ui,sans-serif}/* kept raw: verbatim pre-paint splash palette; decorative gradient stops have no token equivalent */
 #app:not(:empty)+.boot-splash{display:none}
 .bl-mix{position:relative;display:grid;width:260px;height:190px}
 .bl-scene{grid-area:1/1;display:grid;place-items:center;align-content:center;opacity:0;animation:bl-cycle 9s infinite}
@@ -23,9 +23,9 @@ const SPLASH_CSS = `
 .bl-peek{position:absolute;bottom:-6px;left:50%;margin-left:-37px;transform-origin:50% 100%;animation:bl-peek 2.6s ease-in-out infinite}
 @keyframes bl-peek{0%,100%{transform:translateY(80%)}25%,70%{transform:translateY(8%) rotate(-5deg)}47%{transform:translateY(8%) rotate(6deg)}}
 .bl-peekskel{position:absolute;inset:auto 0 0;display:grid;gap:8px;padding:0 8px}
-.bl-peekskel i{display:block;height:12px;border-radius:6px;background:#e3e9f2}.bl-peekskel i:nth-child(2){width:70%}.bl-peekskel i:nth-child(3){width:45%}
+.bl-peekskel i{display:block;height:12px;border-radius:6px;background:#e3e9f2}/* kept raw: verbatim pre-paint splash palette */.bl-peekskel i:nth-child(2){width:70%}.bl-peekskel i:nth-child(3){width:45%}/* kept raw: verbatim pre-paint splash palette */
 html[data-reduce-motion] .boot-splash *{animation:none!important}
-@media (prefers-color-scheme:dark){.boot-splash{background:radial-gradient(900px 500px at 8% -10%,#10305c 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#4a1535 0,transparent 55%),#131b1d;color:#a9b8b5}.bl-peekskel i{background:#22324d}}
+@media (prefers-color-scheme:dark){.boot-splash{background:radial-gradient(900px 500px at 8% -10%,#10305c 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#4a1535 0,transparent 55%),#131b1d;color:#a9b8b5}.bl-peekskel i{background:#22324d}}/* kept raw: verbatim pre-paint splash palette */
 @media (prefers-reduced-motion:reduce){.boot-splash *{animation:none!important}}`
 
 export default function BootSplash() {

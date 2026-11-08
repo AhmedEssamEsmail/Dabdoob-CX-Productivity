@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
+import { Button } from '@/features/shared/components/ui'
 
 /**
  * Shared UI primitives ported from the legacy bundle with exact classes:
@@ -88,9 +89,9 @@ export function LoadError({
     <div className="cx-note" data-status="bad" role="alert">
       <div>
         <strong>This page could not load.</strong> {message}{' '}
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={onRetry}>
+        <Button variant="quiet" onClick={onRetry}>
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   )

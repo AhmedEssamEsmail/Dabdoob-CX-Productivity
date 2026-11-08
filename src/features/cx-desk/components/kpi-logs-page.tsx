@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * KPI logs — port of the legacy Desk page (KpiLogs.js): three hand-kept
@@ -52,9 +53,9 @@ function Failed({ message, retry }: { message: string; retry: () => void }) {
   return (
     <div className="dk-failed" role="alert">
       <p>This page could not load: {message}</p>
-      <button type="button" className="btn btn-primary" onClick={retry}>
+      <Button variant="primary" onClick={retry}>
         Try again
-      </button>
+      </Button>
     </div>
   )
 }
@@ -123,14 +124,14 @@ function AgentPick({ d, f, set }: { d: KpiData; f: Record<string, string>; set: 
   return (
     <label className="dk-fine">
       Agent
-      <select className="select" value={f.email} onChange={(e) => set('email', e.currentTarget.value)} required>
+      <Select className="select" value={f.email} onChange={(e) => set('email', e.currentTarget.value)} required>
         <option value="">Choose…</option>
         {d.agents.map((a) => (
           <option key={a.email} value={a.email}>
             {a.name}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   )
 }
@@ -163,9 +164,9 @@ function LogForm({
     <form className="dk-kb-form" onSubmit={submit}>
       {children(f, (k, v) => setF((m) => ({ ...m, [k]: v })))}
       <div className="md-actions">
-        <button type="submit" className="btn btn-primary dk-sm" disabled={run.busy}>
+        <Button type="submit" variant="primary" className="dk-sm" disabled={run.busy}>
           {run.busy ? 'Saving…' : label}
-        </button>
+        </Button>
       </div>
       <ErrMsg message={run.error} />
     </form>
@@ -176,9 +177,9 @@ function RemoveBtn({ kind, id, onDone }: { kind: string; id: string; onDone: () 
   const run = useRun()
   return (
     <>
-      <button
-        type="button"
-        className="btn btn-quiet dk-sm"
+      <Button
+        variant="quiet"
+        className="dk-sm"
         disabled={run.busy}
         onClick={() =>
           void run.run(async () => {
@@ -189,7 +190,7 @@ function RemoveBtn({ kind, id, onDone }: { kind: string; id: string; onDone: () 
         }
       >
         {run.busy ? 'Removing…' : 'Remove'}
-      </button>
+      </Button>
       <ErrMsg message={run.error} />
     </>
   )
@@ -227,7 +228,7 @@ export default function KpiLogsPage() {
             <AgentPick d={data} f={f} set={set} />
             <label className="dk-fine">
               Date of the case
-              <input
+              <Input
                 className="input"
                 type="date"
                 value={f.date}
@@ -238,7 +239,7 @@ export default function KpiLogsPage() {
             </label>
             <label className="dk-fine dk-kb-note">
               What happened
-              <input className="input" value={f.note} onInput={(e) => set('note', e.currentTarget.value)} required />
+              <Input className="input" value={f.note} onInput={(e) => set('note', e.currentTarget.value)} required />
             </label>
           </>
         )}
@@ -272,7 +273,7 @@ export default function KpiLogsPage() {
             <AgentPick d={data} f={f} set={set} />
             <label className="dk-fine">
               First day
-              <input
+              <Input
                 className="input"
                 type="date"
                 value={f.from}
@@ -282,20 +283,20 @@ export default function KpiLogsPage() {
             </label>
             <label className="dk-fine">
               Last day
-              <input className="input" type="date" value={f.to} min={f.from} onInput={(e) => set('to', e.currentTarget.value)} />
+              <Input className="input" type="date" value={f.to} min={f.from} onInput={(e) => set('to', e.currentTarget.value)} />
             </label>
             <label className="dk-fine">
               Type
-              <select className="select" value={f.type} onChange={(e) => set('type', e.currentTarget.value)} required>
+              <Select className="select" value={f.type} onChange={(e) => set('type', e.currentTarget.value)} required>
                 <option value="">Choose…</option>
                 {data.leaveTypes.map((t) => (
                   <option key={t}>{t}</option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className="dk-fine dk-kb-note">
               Note
-              <input className="input" value={f.note} onInput={(e) => set('note', e.currentTarget.value)} />
+              <Input className="input" value={f.note} onInput={(e) => set('note', e.currentTarget.value)} />
             </label>
           </>
         )}
@@ -338,15 +339,15 @@ export default function KpiLogsPage() {
             <>
               <label className="dk-fine">
                 Area
-                <select className="select" value={f.area} onChange={(e) => set('area', e.currentTarget.value)}>
+                <Select className="select" value={f.area} onChange={(e) => set('area', e.currentTarget.value)}>
                   {data.canExclude.map((a) => (
                     <option key={a}>{a}</option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="dk-fine">
                 Ticket IDs
-                <input
+                <Input
                   className="input"
                   value={f.ticketIds}
                   placeholder="451230, 451244"
@@ -357,7 +358,7 @@ export default function KpiLogsPage() {
               </label>
               <label className="dk-fine">
                 Why
-                <input
+                <Input
                   className="input"
                   value={f.reason}
                   placeholder="Ajex"

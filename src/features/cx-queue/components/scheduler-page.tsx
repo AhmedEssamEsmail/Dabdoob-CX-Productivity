@@ -4,6 +4,7 @@
  * Z/xt/Es/$l/In/zt/jl/Bl/Dl/El/Fl/Pl/Rl/Hl/Il/Ol/ql/Nl/Ll. */
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 import { fetchJson, sweepStyle, useSweep } from './shared'
 
 /** Z — the scheduler API object (google.script.run facade). */
@@ -101,13 +102,12 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
           {Object.keys(n.defaults).map((o) => (
             <label key={o} className="field">
               <span className="field-label">{CFG_LABELS[o] ?? o}</span>
-              <input className="input" value={a[o] ?? ''} onInput={(f) => l((g) => ({ ...g, [o]: (f.target as HTMLInputElement).value }))} />
+              <Input className="input" value={a[o] ?? ''} onInput={(f) => l((g) => ({ ...g, [o]: (f.target as HTMLInputElement).value }))} />
             </label>
           ))}
         </div>
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variant="primary"
           onClick={async () => {
             try {
               await Z.saveSettings(a)
@@ -119,7 +119,7 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
           }}
         >
           Save rules
-        </button>
+        </Button>
       </div>
       <div className="block">
         <h2 className="block-title">Joining and leaving dates</h2>
@@ -141,7 +141,7 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
                   <th scope="row">{o.display}</th>
                   {(['start', 'end'] as const).map((f) => (
                     <td key={f}>
-                      <input
+                      <Input
                         className="input"
                         type="date"
                         aria-label={`${o.display} ${f === 'start' ? 'joins' : 'leaves'}`}
@@ -176,10 +176,9 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
         <p className="block-text">
           One line per day: name or email, date (YYYY-MM-DD), AM, PM, OFF or LEAVE. Every line is checked before any is applied.
         </p>
-        <textarea className="input sch-paste" rows={5} value={r} onInput={(o) => i((o.target as HTMLTextAreaElement).value)} aria-label="Roster to import" />
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Textarea className="input sch-paste" rows={5} value={r} onInput={(o) => i((o.target as HTMLTextAreaElement).value)} aria-label="Roster to import" />
+        <Button
+          variant="primary"
           disabled={!r.trim() || h}
           onClick={async () => {
             p(true)
@@ -201,7 +200,7 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
           }}
         >
           {h ? 'Importing…' : 'Import'}
-        </button>
+        </Button>
         {h ? (
           <p className="block-text" role="status">
             Importing. Keep this page open.
@@ -252,7 +251,7 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
                   <th scope="row">{l.names[d] ?? d}</th>
                   <td>
                     {admin ? (
-                      <select
+                      <Select
                         className="select"
                         aria-label={`Rest days for ${l.names[d]}`}
                         value={c}
@@ -273,7 +272,7 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
                             {o.label}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     ) : c ? (
                       c
                         .split(',')
@@ -348,7 +347,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
         <div className="sch-edit-row">
           <label className="field">
             <span className="field-label">Type</span>
-            <select
+            <Select
               className="select"
               value={i.type}
               onChange={(c) => {
@@ -360,38 +359,38 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
               <option value="swap">Swap a shift</option>
               <option value="leave">Leave</option>
               <option value="offday">Change rest days</option>
-            </select>
+            </Select>
           </label>
           <label className="field">
             <span className="field-label">{i.type === 'leave' ? 'From' : 'Date'}</span>
-            <input className="input" type="date" value={i.dateFrom} onInput={(c) => p('dateFrom', (c.target as HTMLInputElement).value)} />
+            <Input className="input" type="date" value={i.dateFrom} onInput={(c) => p('dateFrom', (c.target as HTMLInputElement).value)} />
           </label>
           {i.type === 'leave' ? (
             <label className="field">
               <span className="field-label">To</span>
-              <input className="input" type="date" value={i.dateTo} onInput={(c) => p('dateTo', (c.target as HTMLInputElement).value)} />
+              <Input className="input" type="date" value={i.dateTo} onInput={(c) => p('dateTo', (c.target as HTMLInputElement).value)} />
             </label>
           ) : null}
           {i.type === 'wfh' || i.type === 'swap' ? (
             <label className="field">
               <span className="field-label">{i.type === 'swap' ? 'My shift' : 'Shift'}</span>
-              <select className="select" value={i.shift} onChange={(c) => p('shift', (c.target as HTMLSelectElement).value)}>
+              <Select className="select" value={i.shift} onChange={(c) => p('shift', (c.target as HTMLSelectElement).value)}>
                 <option>AM</option>
                 <option>PM</option>
-              </select>
+              </Select>
             </label>
           ) : null}
           {i.type === 'offday' ? (
             <label className="field">
               <span className="field-label">Two days (0 = Sunday)</span>
-              <input className="input" placeholder="5,6" value={i.shift} onInput={(c) => p('shift', (c.target as HTMLInputElement).value)} />
+              <Input className="input" placeholder="5,6" value={i.shift} onInput={(c) => p('shift', (c.target as HTMLInputElement).value)} />
             </label>
           ) : null}
           {i.type === 'swap' ? (
             <Fragment>
               <label className="field">
                 <span className="field-label">With</span>
-                <select className="select" value={i.withTl} onChange={(c) => p('withTl', (c.target as HTMLSelectElement).value)}>
+                <Select className="select" value={i.withTl} onChange={(c) => p('withTl', (c.target as HTMLSelectElement).value)}>
                   <option value="">Choose…</option>
                   {l
                     .filter((c) => c.email !== s?.me)
@@ -400,26 +399,25 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
                         {c.display}
                       </option>
                     ))}
-                </select>
+                </Select>
               </label>
               <label className="field">
                 <span className="field-label">Their shift</span>
-                <select className="select" value={i.withShift} onChange={(c) => p('withShift', (c.target as HTMLSelectElement).value)}>
+                <Select className="select" value={i.withShift} onChange={(c) => p('withShift', (c.target as HTMLSelectElement).value)}>
                   <option value="">Off</option>
                   <option>AM</option>
                   <option>PM</option>
-                </select>
+                </Select>
               </label>
             </Fragment>
           ) : null}
           <label className="field sch-grow">
             <span className="field-label">Reason</span>
-            <input className="input" value={i.reason} onInput={(c) => p('reason', (c.target as HTMLInputElement).value)} />
+            <Input className="input" value={i.reason} onInput={(c) => p('reason', (c.target as HTMLInputElement).value)} />
           </label>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variant="primary"
           onClick={() =>
             void u(
               () =>
@@ -431,7 +429,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
           }
         >
           Send request
-        </button>
+        </Button>
       </div>
       <div className="sch-scroll">
         <table className="sch-table">
@@ -468,22 +466,22 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
                 <td className="sch-actions">
                   {c.needsMyAnswer ? (
                     <Fragment>
-                      <button type="button" className="btn btn-quiet" onClick={() => void u(() => Z.respondToSwap(c.id, true), 'Agreed.')}>
+                      <Button variant="quiet" onClick={() => void u(() => Z.respondToSwap(c.id, true), 'Agreed.')}>
                         Agree
-                      </button>
-                      <button type="button" className="btn btn-quiet" onClick={() => void u(() => Z.respondToSwap(c.id, false), 'Declined.')}>
+                      </Button>
+                      <Button variant="quiet" onClick={() => void u(() => Z.respondToSwap(c.id, false), 'Declined.')}>
                         Decline
-                      </button>
+                      </Button>
                     </Fragment>
                   ) : null}
                   {admin && c.status === 'Pending' ? (
                     <Fragment>
-                      <button type="button" className="btn btn-primary" onClick={() => void u(() => Z.decide(c.id, 'approve', ''), 'Approved.')}>
+                      <Button variant="primary" onClick={() => void u(() => Z.decide(c.id, 'approve', ''), 'Approved.')}>
                         Approve
-                      </button>
-                      <button type="button" className="btn btn-quiet" onClick={() => void u(() => Z.decide(c.id, 'reject', ''), 'Rejected.')}>
+                      </Button>
+                      <Button variant="quiet" onClick={() => void u(() => Z.decide(c.id, 'reject', ''), 'Rejected.')}>
                         Reject
-                      </button>
+                      </Button>
                     </Fragment>
                   ) : null}
                 </td>
@@ -510,26 +508,26 @@ function DayEdit({ plan, tl, date, onClose, onSaved }: { plan: any; tl: string; 
       <div className="sch-edit-row">
         <label className="field">
           <span className="field-label">Shift</span>
-          <select className="select" value={i} onChange={(o) => h((o.target as HTMLSelectElement).value)}>
+          <Select className="select" value={i} onChange={(o) => h((o.target as HTMLSelectElement).value)}>
             <option value="">As generated</option>
             <option value="AM">AM</option>
             <option value="PM">PM</option>
             <option value="OFF">Off</option>
             <option value="LEAVE">Leave</option>
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Reason</span>
-          <input className="input" value={p} onInput={(o) => d((o.target as HTMLInputElement).value)} />
+          <Input className="input" value={p} onInput={(o) => d((o.target as HTMLInputElement).value)} />
         </label>
         <label className="sch-check">
+          {/* kept raw:sch-check is a bespoke inline checkbox, not a ui/Toggle pill */}
           <input type="checkbox" checked={u} onChange={(o) => c((o.target as HTMLInputElement).checked)} /> Working from home
         </label>
       </div>
       <div className="sch-edit-row">
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variant="primary"
           onClick={async () => {
             try {
               await Z.setOverride({ date, tl, shift: i, wfh: u, reason: p })
@@ -540,10 +538,10 @@ function DayEdit({ plan, tl, date, onClose, onSaved }: { plan: any; tl: string; 
           }}
         >
           Apply
-        </button>
-        <button type="button" className="btn btn-quiet" onClick={onClose}>
+        </Button>
+        <Button variant="quiet" onClick={onClose}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -617,6 +615,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
               </th>
               {l.days.map((h: any) => (
                 <th key={h.key} scope="col" className={`sch-day${h.dow === 5 || h.dow === 6 ? ' wk' : ''}`}>
+                  {/* kept raw:sch-day-btn is a bespoke day-header button, not a ui/Button */}
                   <button type="button" className="sch-day-btn" onClick={() => onOpenDay(h.key)} title="Open this day hour by hour">
                     <span>{DOW[h.dow]}</span>
                     <b>{h.dom}</b>
@@ -639,6 +638,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
                   const c = `${l.names[h]} · ${p.key} · ${d.shift === 'OFF' ? (d.leave ? 'leave' : 'off') : `${d.shift} ${d.start}-${d.end}${d.wfh ? ' · working from home' : ''}`}${d.reason ? ' · ' + d.reason : ''}`
                   return (
                     <td key={p.key} className="sch-cell-td">
+                      {/* kept raw: sch-cell is a bespoke roster grid cell (sch-* kind classes + manual ring), not a ui/Button */}
                       <button
                         type="button"
                         className={`sch-cell sch-${d.shift.toLowerCase()}${d.manual ? ' manual' : ''}`}
@@ -695,17 +695,17 @@ function HourEdit({ plan, hours, date, sel, onClose, onSaved }: { plan: any; hou
       <div className="sch-edit-row">
         <label className="field">
           <span className="field-label">From</span>
-          <select className="select" value={i} onChange={(m) => h(+(m.target as HTMLSelectElement).value)}>
+          <Select className="select" value={i} onChange={(m) => h(+(m.target as HTMLSelectElement).value)}>
             {hours.map((m) => (
               <option key={m} value={m}>
                 {String(m).padStart(2, '0')}:00
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Until the end of</span>
-          <select className="select" value={p} onChange={(m) => d(+(m.target as HTMLSelectElement).value)}>
+          <Select className="select" value={p} onChange={(m) => d(+(m.target as HTMLSelectElement).value)}>
             {hours
               .filter((m) => m >= i)
               .map((m) => (
@@ -713,33 +713,33 @@ function HourEdit({ plan, hours, date, sel, onClose, onSaved }: { plan: any; hou
                   {String(m).padStart(2, '0')}:00
                 </option>
               ))}
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Doing</span>
-          <select className="select" value={u} onChange={(m) => c((m.target as HTMLSelectElement).value)}>
+          <Select className="select" value={u} onChange={(m) => c((m.target as HTMLSelectElement).value)}>
             {KINDS.filter((m) => m !== 'meeting').map((m) => (
               <option key={m} value={m}>
                 {kindLabel(m)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Label (optional)</span>
-          <input className="input" value={o} onInput={(m) => f((m.target as HTMLInputElement).value)} />
+          <Input className="input" value={o} onInput={(m) => f((m.target as HTMLInputElement).value)} />
         </label>
       </div>
       <div className="sch-edit-row">
-        <button type="button" className="btn btn-primary" onClick={() => void g(u)}>
+        <Button variant="primary" onClick={() => void g(u)}>
           Apply
-        </button>
-        <button type="button" className="btn btn-quiet" onClick={() => void g('')}>
+        </Button>
+        <Button variant="quiet" onClick={() => void g('')}>
           Clear my edit
-        </button>
-        <button type="button" className="btn btn-quiet" onClick={onClose}>
+        </Button>
+        <Button variant="quiet" onClick={onClose}>
           Close
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -879,13 +879,13 @@ function TimelineTab({ res, admin, date, setDate, onChanged }: { res: any; admin
   return (
     <Fragment>
       <div className="sch-daybar">
-        <button type="button" className="btn btn-quiet" disabled={d <= 0} onClick={() => setDate(r.days[d - 1].key)} aria-label="Previous day">
+        <Button variant="quiet" disabled={d <= 0} onClick={() => setDate(r.days[d - 1].key)} aria-label="Previous day">
           ‹
-        </button>
+        </Button>
         <label className="sr-only" htmlFor="sch-date">
           Day
         </label>
-        <select
+        <Select
           id="sch-date"
           className="select"
           value={date}
@@ -899,10 +899,10 @@ function TimelineTab({ res, admin, date, setDate, onChanged }: { res: any; admin
               {DOW[g.dow]} {g.dom}
             </option>
           ))}
-        </select>
-        <button type="button" className="btn btn-quiet" disabled={d >= r.days.length - 1} onClick={() => setDate(r.days[d + 1].key)} aria-label="Next day">
+        </Select>
+        <Button variant="quiet" disabled={d >= r.days.length - 1} onClick={() => setDate(r.days[d + 1].key)} aria-label="Next day">
           ›
-        </button>
+        </Button>
         <strong className="sch-daytitle">{date ? `${DOW[r.days[d]?.dow ?? 0]} ${date}` : ''}</strong>
       </div>
       {h.length ? (
@@ -1028,42 +1028,39 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
         </div>
         <div className="sch-controls">
           <div className="sch-month" role="group" aria-label="Month">
-            <button type="button" className="btn btn-quiet" onClick={() => b(-1)} aria-label="Previous month">
+            <Button variant="quiet" onClick={() => b(-1)} aria-label="Previous month">
               ‹
-            </button>
+            </Button>
             <strong className="sch-month-name">{l?.plan.monthName ?? '…'}</strong>
-            <button type="button" className="btn btn-quiet" onClick={() => b(1)} aria-label="Next month">
+            <Button variant="quiet" onClick={() => b(1)} aria-label="Next month">
               ›
-            </button>
+            </Button>
           </div>
           {m ? (
             <Fragment>
-              <button
-                type="button"
-                className="btn btn-primary"
+              <Button
+                variant="primary"
                 disabled={p}
                 onClick={() => void g({ reshuffle: true })}
                 title="Try another arrangement of who works which week. Covers every slot the current roster covers."
               >
                 Regenerate
-              </button>
+              </Button>
               {l && l.plan.variant > 0 ? (
-                <button type="button" className="btn btn-quiet" disabled={p} onClick={() => void g({ original: true })}>
+                <Button variant="quiet" disabled={p} onClick={() => void g({ original: true })}>
                   Original roster
-                </button>
+                </Button>
               ) : null}
-              <button
-                type="button"
-                className="btn btn-quiet"
+              <Button
+                variant="quiet"
                 disabled={p}
                 onClick={() => void g({ fresh: true })}
                 title="Read every sheet again. Use after editing a tab by hand."
               >
                 Re-read inputs
-              </button>
-              <button
-                type="button"
-                className="btn btn-quiet"
+              </Button>
+              <Button
+                variant="quiet"
                 disabled={p}
                 onClick={async () => {
                   try {
@@ -1075,7 +1072,7 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
                 }}
               >
                 Save roster
-              </button>
+              </Button>
             </Fragment>
           ) : null}
         </div>
@@ -1093,6 +1090,7 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
       ) : null}
       <div className="sch-tabs" role="tablist" aria-label="Scheduler views">
         {v.map(([y, w]) => (
+          // kept raw:sch-tab is a bespoke tab button (sch-tab/.on classes + sch-panel aria hooks), not a ui/Tabs
           <button
             key={y}
             type="button"

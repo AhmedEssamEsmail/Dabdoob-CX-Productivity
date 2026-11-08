@@ -13,6 +13,7 @@ import {
   useState,
 } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 import { getBoot, setBoot, useBootSelector } from '@/features/shared/shell/context'
 import { applyAppearance, D } from '@/features/shared/shell/i18n'
 
@@ -218,9 +219,9 @@ export function sh({ message, onRetry }: { message: string; onRetry: () => void 
     <div className="cx-note" data-status="bad" role="alert">
       <div>
         <strong>This page could not load.</strong> {message}{' '}
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={onRetry}>
+        <Button variant="quiet" className="cx-btn" onClick={onRetry}>
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -473,6 +474,7 @@ export function Wf({
       {tipEl}
       <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
         {counts.map((o, c) => (
+          // eslint-disable-next-line -- kept raw: cx-ladder__seg is a data-viz segment sized by --n, not a button
           <button
             key={c}
             type="button"
@@ -526,14 +528,14 @@ export function rg({
   const sel = (name: string, c: FilterCtl) => (
     <label key={name} className="cx-filter">
       <span className="sr-only">{name}</span>
-      <select className="select" value={c.value} onChange={(l) => c.onChange(l.target.value)}>
+      <Select className="select" value={c.value} onChange={(l) => c.onChange(l.target.value)}>
         <option value="">{c.all}</option>
         {c.options.map((l) => (
           <option key={l.value} value={l.value}>
             {l.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   )
   return (
@@ -542,10 +544,12 @@ export function rg({
       {team ? sel('Team', team) : null}
       {priority ? (
         <div className="pw-seg" role="group" aria-label="Priority">
+          {/* eslint-disable-next-line -- kept raw: pw-seg styles its own segmented buttons */}
           <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
             Any priority
           </button>
           {priority.options.map((o) => (
+            // eslint-disable-next-line -- kept raw: pw-seg styles its own segmented buttons
             <button
               key={o}
               type="button"
@@ -560,7 +564,7 @@ export function rg({
       {search ? (
         <label className="cx-filter cx-filter--search">
           <span className="sr-only">Search</span>
-          <input
+          <Input
             className="input"
             type="search"
             value={search.value}
@@ -613,9 +617,9 @@ export function Hf({ onDone }: { onDone: () => void }) {
   }
   return (
     <span className="dq-refresh">
-      <button type="button" className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={run}>
+      <Button className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={run}>
         {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
-      </button>
+      </Button>
       {msg ? (
         <span className="cx-section__hint" role="status">
           {msg}
@@ -635,9 +639,9 @@ export interface UpNextItem {
 }
 export function If({ item }: { item: UpNextItem }) {
   return (
-    <button type="button" className="btn btn-quiet upnext-jump" onClick={Om}>
+    <Button className="btn btn-quiet upnext-jump" onClick={Om}>
       {item.live ? 'Now' : 'Next'}: <span className="upnext-num">{item.at}</span>
-    </button>
+    </Button>
   )
 }
 export function Nf({ item }: { item: UpNextItem }) {
@@ -790,7 +794,7 @@ export function Oo({
           </span>
         ) : null}
       </label>
-      <select
+      <Select
         id={c}
         className="select"
         value={other ? Go : value}
@@ -808,7 +812,7 @@ export function Oo({
           </option>
         ))}
         <option value={Go}>Other…</option>
-      </select>
+      </Select>
       {hint ? (
         <p id={R} className="field-hint">
           {hint}
@@ -816,7 +820,7 @@ export function Oo({
       ) : null}
       {other ? (
         <div className="other-row">
-          <input
+          <Input
             ref={inputRef}
             className="input"
             type="text"
@@ -832,12 +836,12 @@ export function Oo({
               } else if (L.key === 'Escape') T()
             }}
           />
-          <button type="button" className="btn btn-primary" onClick={() => void _()} disabled={adding || !draft.trim()}>
+          <Button type="button" className="btn btn-primary" onClick={() => void _()} disabled={adding || !draft.trim()}>
             {adding ? 'Adding…' : 'Add choice'}
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={T} disabled={adding}>
+          </Button>
+          <Button type="button" className="btn btn-quiet" onClick={T} disabled={adding}>
             Cancel
-          </button>
+          </Button>
         </div>
       ) : null}
       {err || loadErr ? (

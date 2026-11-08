@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/styles/productivity.css'
 import { Fragment, useState } from 'react'
 import {
   Chip,
@@ -8,6 +9,7 @@ import {
   PageHead,
   Section,
 } from '@/features/shared/components/shell/ui'
+import { Button } from '@/features/shared/components/ui'
 import {
   Ba,
   CalibrationChart,
@@ -101,18 +103,11 @@ export default function ProductivityAnalyticsPage() {
   }
   const aside = s ? (
     <div className="pv-week">
-      <button type="button" className="cx-btn" onClick={() => shift(-1)}>
-        Previous week
-      </button>
+      <Button onClick={() => shift(-1)}>Previous week</Button>
       <span>Week of {s.week}</span>
-      <button
-        type="button"
-        className="cx-btn"
-        disabled={s.week >= s.thisWeek}
-        onClick={() => shift(1)}
-      >
+      <Button disabled={s.week >= s.thisWeek} onClick={() => shift(1)}>
         Next week
-      </button>
+      </Button>
     </div>
   ) : null
   return (

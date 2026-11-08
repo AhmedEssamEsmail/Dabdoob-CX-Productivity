@@ -1,0 +1,482 @@
+/* ============================================================================
+   theme.css — single source of truth for every design token.
+   Refined-neutral ops console: hairline borders, one restrained accent,
+   tight type hierarchy, dense data surfaces. Loads before cx-kit.css;
+   generated legacy stylesheets are no longer imported.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* primitives — color */
+  --pine: #14332b;
+  --pine-2: #1f6b57;
+  --pine-ink: #d9e9e3;
+  --paper: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #1d2632;
+  --ink-2: #4f5d6b;
+  --line: #e0e5ea;
+  --signal: #e9a412;
+  --signal-ink: #3a2a00;
+  --signal-hover: #f7c65a;
+  --ok: #1f7a55;
+  --focus: #2f6fed;
+  --danger: #b3261e;
+  --hover: color-mix(in srgb, var(--ink) 6%, transparent);
+  --scrim: rgba(15, 23, 32, .5);
+  --age-0: #9aa5b1;
+  --age-1: #d9a94f;
+  --age-2: #dd8a2d;
+  --age-3: #d05f2a;
+  --age-4: #b03a2e;
+  --age-5: #8f2b26;
+  --age-6: #6b1f22;
+
+  /* primitives — elevation */
+  --shadow-1: 0 1px 2px rgb(16 24 34 / .07);
+  --shadow-2: 0 6px 20px rgb(16 24 34 / .1);
+  --shadow-3: 0 24px 60px rgb(10 18 28 / .28);
+  --line-strong: #828a96; /* ≥3:1 vs --surface and --paper (light); ≥3:1 on dark */
+
+  /* primitives — type */
+  --font: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: .75rem;
+  --text-sm: .8125rem;
+  --text-md: .875rem;
+  --text-base: .9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+  --text-title: clamp(1.5rem, 1.25rem + .9vw, 2.125rem);
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-body: 1.5;
+  --lh-arabic: 1.75;
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-strong: 600;
+  --w-bold: 700;
+
+  /* primitives — space / radius / motion / layout */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --ease: cubic-bezier(.2, .65, .3, 1);
+  --dur-fast: .12s;
+  --dur: .18s;
+  --dur-slow: .26s;
+  --cc-sweep: .4s;
+  --cc-stagger: 30ms;
+  --rail-w: clamp(13.5rem, 16vw, 16rem);
+  --rail-w-mini: 3.5rem;
+  --gutter: clamp(1rem, 2.5vw, 3rem);
+  --main-pad: clamp(1.25rem, 2.5vw, 2rem);
+  --fill-h: calc(100vh - 2 * var(--main-pad));
+  --page-max: none;
+  --page-narrow: 62rem;
+  --dialog-s: 30rem;
+  --dialog-m: 38rem;
+  --dialog-l: 52rem;
+  --target: 2.25rem;
+
+  /* cx-* aliases — same contract as legacy globals.css :root */
+  --cx-font: var(--font);
+  --cx-font-ar: "IBM Plex Sans Arabic", var(--font);
+  --cx-font-mono: var(--font-mono);
+  --cx-text-xs: var(--text-xs);
+  --cx-text-sm: var(--text-sm);
+  --cx-text-md: var(--text-md);
+  --cx-text-lg: var(--text-lg);
+  --cx-text-xl: var(--text-xl);
+  --cx-text-2xl: var(--text-2xl);
+  --cx-text-3xl: var(--text-3xl);
+  --cx-lh-latin: 1.45;
+  --cx-lh-arabic: 1.8;
+  --cx-lh-latin-dense: 1.3;
+  --cx-lh-arabic-dense: 1.6;
+  --cx-weight-regular: 400;
+  --cx-weight-medium: 500;
+  --cx-weight-strong: 600;
+  --cx-space-1: .25rem;
+  --cx-space-2: .5rem;
+  --cx-space-3: .75rem;
+  --cx-space-4: 1rem;
+  --cx-space-5: 1.5rem;
+  --cx-space-6: 2rem;
+  --cx-space-7: 3rem;
+  --cx-space-8: 4rem;
+  --cx-gutter: var(--gutter);
+  --cx-target: 2.25rem;
+  --cx-radius-control: var(--radius-m);
+  --cx-radius-object: var(--radius-l);
+  --cx-radius-bar: var(--radius-s);
+  --cx-ease: var(--ease);
+  --cx-dur: var(--dur-fast);
+  --cx-rail-width: var(--rail-w);
+  --cx-topbar-height: 3rem;
+  --cx-bg: var(--paper);
+  --cx-surface: var(--surface);
+  --cx-surface-2: color-mix(in oklab, var(--paper) 55%, var(--surface));
+  --cx-surface-sunken: color-mix(in oklab, var(--line) 45%, var(--paper));
+  --cx-ink: var(--ink);
+  --cx-ink-2: var(--ink-2);
+  --cx-ink-3: color-mix(in oklab, var(--ink-2) 85%, var(--surface));
+  --cx-line: var(--line);
+  --cx-line-strong: var(--line-strong);
+  --cx-accent: var(--pine-2);
+  --cx-accent-hover: var(--pine);
+  /* Text on neutral/tinted surfaces; the accent fill is only >=3:1 in dark pine. */
+  --cx-accent-text: var(--cx-accent-hover);
+  --cx-accent-ink: #ffffff;
+  --cx-accent-soft: color-mix(in oklab, var(--pine-2) 12%, var(--surface));
+  --cx-focus: var(--focus);
+  --cx-shadow-pop: 0 12px 32px rgb(15 23 34 / .14);
+  --cx-focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--focus);
+
+  /* status triples */
+  --cx-status-neutral-fg: #46546a;
+  --cx-status-neutral-bg: #e6eaf1;
+  --cx-status-neutral-edge: #6e7887;
+  --cx-status-info-fg: #0f5a96;
+  --cx-status-info-bg: #e3eefa;
+  --cx-status-info-edge: #176aaa;
+  --cx-status-ok-fg: #17744a;
+  --cx-status-ok-bg: #e4f4ec;
+  --cx-status-ok-edge: #2e9a69;
+  --cx-status-warn-fg: #7d5000;
+  --cx-status-warn-bg: #fdf0d6;
+  --cx-status-warn-edge: #9a6b12;
+  --cx-status-bad-fg: #b3261e;
+  --cx-status-bad-bg: #fbe9e7;
+  --cx-status-bad-edge: #d9483f;
+
+  /* age ramp */
+  --cx-age-0: var(--age-0);
+  --cx-age-1: var(--age-1);
+  --cx-age-2: var(--age-2);
+  --cx-age-3: var(--age-3);
+  --cx-age-4: var(--age-4);
+  --cx-age-5: var(--age-5);
+  --cx-age-6: var(--age-6);
+  --cx-age-ink-0: #0f1720;
+  --cx-age-ink-1: #0f1720;
+  --cx-age-ink-2: #0f1720;
+  --cx-age-ink-3: #0f1720;
+  --cx-age-ink-4: #ffffff;
+  --cx-age-ink-5: #ffffff;
+  --cx-age-ink-6: #ffffff;
+}
+
+/* density contract — base data font */
+table, .cx-table { font-size: .8125rem; }
+
+/* ========================================================================== */
+/* Dark — explicit theme */
+/* ========================================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --pine: #0d1f1a;
+  --pine-2: #3d8f76;
+  --pine-ink: #c6d8d2;
+  --paper: #131a20;
+  --surface: #1a232b;
+  --ink: #e8edf1;
+  --ink-2: #9aa9b4;
+  --line: #2c3742;
+  --signal: #f0b429;
+  --signal-ink: #3a2a00;
+  --signal-hover: #f7c65a;
+  --ok: #4cb782;
+  --focus: #86a8ff;
+  --danger: #ff8a80;
+  --scrim: rgba(0, 0, 0, .62);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / .45);
+  --shadow-3: 0 24px 60px rgb(0 0 0 / .6);
+
+  --age-0: #5b6673;
+  --age-1: #a3862e;
+  --age-2: #df9134;
+  --age-3: #f0772d;
+  --age-4: #f05940;
+  --age-5: #e63c47;
+  --age-6: #d71f45;
+
+  --cx-accent-hover: #59b795;
+  --cx-accent-ink: #08130f;
+  --cx-accent-soft: color-mix(in oklab, var(--pine-2) 18%, var(--surface));
+  --cx-shadow-pop: 0 12px 32px rgb(0 0 0 / .5);
+
+  --cx-status-neutral-fg: #a9b7cc;
+  --cx-status-neutral-bg: #1c2a3f;
+  --cx-status-neutral-edge: #6d7f98;
+  --cx-status-info-fg: #82bdee;
+  --cx-status-info-bg: #15304d;
+  --cx-status-info-edge: #5aa8e6;
+  --cx-status-ok-fg: #5fd1a0;
+  --cx-status-ok-bg: #123325;
+  --cx-status-ok-edge: #3fae80;
+  --cx-status-warn-fg: #f0bd62;
+  --cx-status-warn-bg: #36280d;
+  --cx-status-warn-edge: #c68a1a;
+  --cx-status-bad-fg: #ff9a90;
+  --cx-status-bad-bg: #3d1a18;
+  --cx-status-bad-edge: #e5584d;
+
+  --cx-age-ink-0: #ffffff;
+  --cx-age-ink-1: #0b121d;
+  --cx-age-ink-2: #0b121d;
+  --cx-age-ink-3: #0b121d;
+  --cx-age-ink-4: #0b121d;
+  --cx-age-ink-5: #0b121d;
+  --cx-age-ink-6: #ffffff;
+}
+
+/* Dark — auto (prefers-color-scheme, no explicit light choice) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --pine: #0d1f1a;
+    --pine-2: #3d8f76;
+    --pine-ink: #c6d8d2;
+    --paper: #131a20;
+    --surface: #1a232b;
+    --ink: #e8edf1;
+    --ink-2: #9aa9b4;
+    --line: #2c3742;
+    --signal: #f0b429;
+    --signal-ink: #3a2a00;
+    --signal-hover: #f7c65a;
+    --ok: #4cb782;
+    --focus: #86a8ff;
+    --danger: #ff8a80;
+    --scrim: rgba(0, 0, 0, .62);
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
+    --shadow-2: 0 8px 24px rgb(0 0 0 / .45);
+    --shadow-3: 0 24px 60px rgb(0 0 0 / .6);
+
+    --age-0: #5b6673;
+    --age-1: #a3862e;
+    --age-2: #df9134;
+    --age-3: #f0772d;
+    --age-4: #f05940;
+    --age-5: #e63c47;
+    --age-6: #d71f45;
+
+    --cx-accent-hover: #59b795;
+    --cx-accent-ink: #08130f;
+    --cx-accent-soft: color-mix(in oklab, var(--pine-2) 18%, var(--surface));
+    --cx-shadow-pop: 0 12px 32px rgb(0 0 0 / .5);
+
+    --cx-status-neutral-fg: #a9b7cc;
+    --cx-status-neutral-bg: #1c2a3f;
+    --cx-status-neutral-edge: #6d7f98;
+    --cx-status-info-fg: #82bdee;
+    --cx-status-info-bg: #15304d;
+    --cx-status-info-edge: #5aa8e6;
+    --cx-status-ok-fg: #5fd1a0;
+    --cx-status-ok-bg: #123325;
+    --cx-status-ok-edge: #3fae80;
+    --cx-status-warn-fg: #f0bd62;
+    --cx-status-warn-bg: #36280d;
+    --cx-status-warn-edge: #c68a1a;
+    --cx-status-bad-fg: #ff9a90;
+    --cx-status-bad-bg: #3d1a18;
+    --cx-status-bad-edge: #e5584d;
+
+    --cx-age-ink-0: #ffffff;
+    --cx-age-ink-1: #0b121d;
+    --cx-age-ink-2: #0b121d;
+    --cx-age-ink-3: #0b121d;
+    --cx-age-ink-4: #0b121d;
+    --cx-age-ink-5: #0b121d;
+    --cx-age-ink-6: #ffffff;
+  }
+}
+
+/* ========================================================================== */
+/* Accent variants — Appearance UI offers blue / plum / rust (default = pine) */
+/* ========================================================================== */
+html[data-accent="blue"] {
+  --pine: #16304f;
+  --pine-2: #2b5797;
+  --cx-accent: #2b5797;
+  --cx-accent-hover: #1f4277;
+  --cx-accent-ink: #ffffff;
+  --cx-accent-soft: color-mix(in oklab, #2b5797 12%, var(--surface));
+}
+html[data-accent="plum"] {
+  --pine: #3a2145;
+  --pine-2: #6b3a72;
+  --cx-accent: #6b3a72;
+  --cx-accent-hover: #532c59;
+  --cx-accent-ink: #ffffff;
+  --cx-accent-soft: color-mix(in oklab, #6b3a72 12%, var(--surface));
+}
+html[data-accent="rust"] {
+  --pine: #4a2410;
+  --pine-2: #9a4a1f;
+  --cx-accent: #9a4a1f;
+  --cx-accent-hover: #7b3a17;
+  --cx-accent-ink: #ffffff;
+  --cx-accent-soft: color-mix(in oklab, #9a4a1f 12%, var(--surface));
+}
+
+/* accent variants — dark */
+html[data-theme="dark"][data-accent="blue"] {
+  --pine: #0d1a33;
+  --pine-2: #7aa8f5;
+  --cx-accent: #7aa8f5;
+  --cx-accent-hover: #93bdf8;
+  --cx-accent-ink: #0e1e3f;
+  --cx-accent-soft: color-mix(in oklab, #7aa8f5 18%, var(--surface));
+}
+html[data-theme="dark"][data-accent="plum"] {
+  --pine: #1c0f24;
+  --pine-2: #b78ad0;
+  --cx-accent: #b78ad0;
+  --cx-accent-hover: #cba3e0;
+  --cx-accent-ink: #2a1233;
+  --cx-accent-soft: color-mix(in oklab, #b78ad0 18%, var(--surface));
+}
+html[data-theme="dark"][data-accent="rust"] {
+  --pine: #241108;
+  --pine-2: #e0955c;
+  --cx-accent: #e0955c;
+  --cx-accent-hover: #eba878;
+  --cx-accent-ink: #3a1c08;
+  --cx-accent-soft: color-mix(in oklab, #e0955c 18%, var(--surface));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="blue"] {
+    --pine: #0d1a33;
+    --pine-2: #7aa8f5;
+    --cx-accent: #7aa8f5;
+    --cx-accent-hover: #93bdf8;
+    --cx-accent-ink: #0e1e3f;
+    --cx-accent-soft: color-mix(in oklab, #7aa8f5 18%, var(--surface));
+  }
+  :root:not([data-theme="light"])[data-accent="plum"] {
+    --pine: #1c0f24;
+    --pine-2: #b78ad0;
+    --cx-accent: #b78ad0;
+    --cx-accent-hover: #cba3e0;
+    --cx-accent-ink: #2a1233;
+    --cx-accent-soft: color-mix(in oklab, #b78ad0 18%, var(--surface));
+  }
+  :root:not([data-theme="light"])[data-accent="rust"] {
+    --pine: #241108;
+    --pine-2: #e0955c;
+    --cx-accent: #e0955c;
+    --cx-accent-hover: #eba878;
+    --cx-accent-ink: #3a1c08;
+    --cx-accent-soft: color-mix(in oklab, #e0955c 18%, var(--surface));
+  }
+}
+
+/* ========================================================================== */
+/* Density contract — coarse pointers get taller targets */
+/* ========================================================================== */
+@media (pointer: coarse) {
+  :root { --cx-target: 2.75rem; --target: 2.75rem; }
+}
+
+/* Re-pin at app scope: per-app re-declares in legacy-apps.css lose
+   (same specificity, theme.css loads later). */
+[data-app] {
+  --cx-target: 2.25rem;
+  --target: 2.25rem;
+  --cx-radius-control: var(--radius-m);
+  --cx-text-sm: .8125rem;
+}
+@media (pointer: coarse) {
+  [data-app] { --cx-target: 2.75rem; --target: 2.75rem; }
+}
+
+/* ========================================================================== */
+/* Focus ring — AA-visible on light and dark surfaces */
+/* ========================================================================== */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: var(--cx-focus-ring);
+}
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; box-shadow: none; }
+}
+
+/* ========================================================================== */
+/* Reduced transparency — kill translucency / backdrop-filter */
+/* ========================================================================== */
+html[data-reduce-transparency] *,
+html[data-reduce-transparency] *::backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-reduce-transparency] {
+  --qg-glass: var(--surface);
+  --qg-glass-strong: var(--surface);
+  --qg-glass-edge: var(--line-strong);
+  --qg-blur: none;
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --qg-glass: var(--surface);
+    --qg-glass-strong: var(--surface);
+    --qg-glass-edge: var(--line-strong);
+    --qg-blur: none;
+  }
+}
+
+/* ========================================================================== */
+/* Reduced motion — zero durations, kill transitions/animations */
+/* ========================================================================== */
+html[data-reduce-motion] {
+  --dur-fast: 0s;
+  --dur: 0s;
+  --dur-slow: 0s;
+  --cc-sweep: 0s;
+  --cc-stagger: 0s;
+  --cx-dur: 0s;
+  --cx-ease: linear;
+}
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0s;
+    --dur: 0s;
+    --dur-slow: 0s;
+    --cc-sweep: 0s;
+    --cc-stagger: 0s;
+    --cx-dur: 0s;
+    --cx-ease: linear;
+  }
+  *, *::before, *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

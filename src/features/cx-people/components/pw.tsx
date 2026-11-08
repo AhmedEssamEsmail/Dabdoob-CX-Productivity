@@ -23,6 +23,7 @@ import { PAGES, APPS } from '@/features/shared/components/shell/registry'
 import { pageParams } from '@/features/shared/shell/gates'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 import { useEnterAnim } from '@/features/shared/components/shell/ui'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 export { toast }
 export { prefersReducedMotion, useEnterAnim }
@@ -119,9 +120,9 @@ export function PwLate({ message, retry }: { message: string; retry: () => void 
     <div className="pw-panel pw-late" role="alert">
       <p>This page could not load: {message}</p>
       <div className="pw-actions-bar">
-        <button type="button" className="btn btn-primary" onClick={retry}>
+        <Button variant="primary" onClick={retry}>
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -320,7 +321,7 @@ export function PwCombo({
           </span>
         ) : null}
       </label>
-      <select
+      <Select
         id={uid}
         className="select"
         value={other ? OTHER : value}
@@ -338,7 +339,7 @@ export function PwCombo({
           </option>
         ))}
         <option value={OTHER}>Other…</option>
-      </select>
+      </Select>
       {hint ? (
         <p id={hintId} className="field-hint">
           {hint}
@@ -346,7 +347,7 @@ export function PwCombo({
       ) : null}
       {other ? (
         <div className="other-row">
-          <input
+          <Input
             ref={inputRef}
             className="input"
             type="text"
@@ -364,12 +365,12 @@ export function PwCombo({
               }
             }}
           />
-          <button type="button" className="btn btn-primary" onClick={add} disabled={adding || !newChoice.trim()}>
+          <Button variant="primary" onClick={add} disabled={adding || !newChoice.trim()}>
             {adding ? 'Adding…' : 'Add choice'}
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={cancel} disabled={adding}>
+          </Button>
+          <Button variant="quiet" onClick={cancel} disabled={adding}>
             Cancel
-          </button>
+          </Button>
         </div>
       ) : null}
       {addErr || loadErr ? (
@@ -422,7 +423,7 @@ export function PwDialog({
       )}
       <label className="field">
         <span className="field-label">Reason (kept with the deleted record)</span>
-        <input
+        <Input
           className="input"
           value={reason}
           placeholder="For example: logged twice"
@@ -431,12 +432,11 @@ export function PwDialog({
       </label>
       <PwErr message={busy.error} />
       <div className="pw-dialog-actions">
-        <button type="button" className="btn btn-quiet" onClick={onClose}>
+        <Button variant="quiet" onClick={onClose}>
           Keep it
-        </button>
-        <button
-          type="button"
-          className="btn btn-danger"
+        </Button>
+        <Button
+          variant="danger"
           disabled={busy.busy || loading || !reason.trim()}
           onClick={() =>
             busy
@@ -447,7 +447,7 @@ export function PwDialog({
           }
         >
           {busy.busy ? 'Deleting…' : confirmLabel}
-        </button>
+        </Button>
       </div>
     </dialog>
   )

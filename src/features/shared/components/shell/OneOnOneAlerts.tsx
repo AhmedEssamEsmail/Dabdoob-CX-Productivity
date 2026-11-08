@@ -242,6 +242,7 @@ export default function OneOnOneAlerts() {
                   Open the 1:1
                 </a>
               ) : null}
+              {/* kept raw: legacy .btn contract */}
               <button
                 type="button"
                 className="btn btn-quiet btn-small"

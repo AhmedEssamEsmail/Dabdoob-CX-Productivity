@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/styles/productivity.css'
 import {
   Fragment,
   useCallback,
@@ -19,6 +20,7 @@ import {
   Section,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Seg, Select, Toggle } from '@/features/shared/components/ui'
 import { fetchJson, useSe } from '@/features/cx-productivity/components/pv-shared'
 import { pageParams } from '@/features/shared/shell/gates'
 
@@ -373,9 +375,7 @@ function ht({ text, select }: { text: string; select: (tab: string, focus?: bool
   return (
     <p className="tph-back">
       <Chip status="warn">{text}</Chip>
-      <button type="button" className="cx-btn" onClick={() => select('overview', true)}>
-        See Overview
-      </button>
+      <Button onClick={() => select('overview', true)}>See Overview</Button>
     </p>
   )
 }
@@ -385,23 +385,20 @@ function ht({ text, select }: { text: string; select: (tab: string, focus?: bool
 function Ja({ d, go }: { d: TphData; go: (date: string) => void }) {
   return (
     <div className="tph-day">
-      <button type="button" className="cx-btn" onClick={() => go(dt(d.date, -1))}>
-        Previous day
-      </button>
+      <Button onClick={() => go(dt(d.date, -1))}>Previous day</Button>
       <label className="sr-only" htmlFor="tph-date">
         Day
       </label>
-      <input
+      <Input
         id="tph-date"
-        className="cx-input"
         type="date"
         value={d.date}
         max={d.today}
         onChange={(e) => e.currentTarget.value && go(e.currentTarget.value)}
       />
-      <button type="button" className="cx-btn" disabled={d.date >= d.today} onClick={() => go(dt(d.date, 1))}>
+      <Button disabled={d.date >= d.today} onClick={() => go(dt(d.date, 1))}>
         Next day
-      </button>
+      </Button>
     </div>
   )
 }
@@ -434,9 +431,8 @@ function Ya({ tab, select, badges }: { tab: string; select: (t: string, focus?: 
       }}
     >
       {te.map(([k, label]) => (
-        <button
+        <Button
           key={k}
-          type="button"
           role="tab"
           id={`tph-tab-${k}`}
           className="tph-tab"
@@ -452,7 +448,7 @@ function Ya({ tab, select, badges }: { tab: string; select: (t: string, focus?: 
               <span className="cx-sr"> need attention</span>
             </span>
           ) : null}
-        </button>
+        </Button>
       ))}
     </div>
   )
@@ -497,8 +493,7 @@ function Qa({ d, trend, go }: { d: TphData; trend: { forD: TphData; days: TrendD
               : `${P(r.pct)}%${r.pctRaw !== r.pct ? `, un-clipped ${P(r.pctRaw)}%` : ''}, scored ${r.scored} of ${r.onGrid} agent-hours`
             return (
               <li key={r.date} className="tph-trend__col" data-sel={r.date === d.date ? '' : undefined}>
-                <button
-                  type="button"
+                <Button
                   className="tph-trend__hit"
                   onClick={() => go(r.date)}
                   aria-label={`${r.date}: ${h}. Open this day`}
@@ -519,7 +514,7 @@ function Qa({ d, trend, go }: { d: TphData; trend: { forD: TphData; days: TrendD
                     <br />
                     {r.date.slice(8)}
                   </span>
-                </button>
+                </Button>
               </li>
             )
           })}
@@ -587,14 +582,14 @@ function Xa({ d, sum, runner, trend, select, go }: {
     h || (i ? 'No cases for this day: rebuild needed' : sum.scored ? '' : 'No scored hours yet: no agent has a cap and touches')
   const { running: m, progress: f, run: v, btn: y } = runner
   const x = (label: string) => (
-    <button type="button" className={`cx-btn ${y.class}`} style={y.style} disabled={m} onClick={v}>
+    <Button className={y.class || undefined} style={y.style} disabled={m} onClick={v}>
       {y.label === 'Rebuild cases and touches' ? label : y.label}
-    </button>
+    </Button>
   )
   const M = (tab: string, label: string) => (
-    <button type="button" className="cx-btn tph-attn__go" onClick={() => select(tab, true)}>
+    <Button className="tph-attn__go" onClick={() => select(tab, true)}>
       {label}
-    </button>
+    </Button>
   )
   const k: { key: string; title: string; body: ReactNode; actions: ReactNode }[] = []
   if (i)
@@ -895,27 +890,48 @@ function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
       title="Who is on which channel"
       hint={saving ? 'Saving…' : d.canEdit ? 'Pick a channel or activity, then click or drag across the slots' : 'Read-only'}
     >
-      <div className="tph-brush cx-seg" role="radiogroup" aria-label="Channel or activity to paint" hidden={!d.canEdit}>
-        {[...d.channels.map((c) => c.key), ...d.activities.map((c) => c.key), d.off, ''].map((k) => (
-          <label key={k || 'clear'}>
-            <input type="radio" name="tph-brush" checked={brush === k} onChange={() => setBrush(k)} />
-            <span>
-              {k ? <i className="tph-swatch" data-ch={Gt(d, k)} aria-hidden="true" /> : null}
-              {k ? label(k) : 'Clear'}
-            </span>
-          </label>
-        ))}
+      <div hidden={!d.canEdit}>
+        <Seg
+          name="tph-brush"
+          className="tph-brush"
+          aria-label="Channel or activity to paint"
+          value={brush}
+          onChange={setBrush}
+          options={[...d.channels.map((c) => c.key), ...d.activities.map((c) => c.key), d.off, ''].map((k) => ({
+            value: k,
+            label: k ? (
+              <>
+                <i className="tph-swatch" data-ch={Gt(d, k)} aria-hidden="true" />
+                {label(k)}
+              </>
+            ) : (
+              'Clear'
+            ),
+          }))}
+        />
       </div>
-      <div className="tph-brush cx-seg" role="radiogroup" aria-label="Inbound calls alongside the channel" hidden={!d.canEdit}>
-        {([[oe, '+ Calls (blended)'], [Ze, '− Calls']] as [string, string][]).map(([k, lbl]) => (
-          <label key={k}>
-            <input type="radio" name="tph-brush" checked={brush === k} onChange={() => setBrush(k)} />
-            <span>
-              {k === oe ? <i className="tph-swatch tph-swatch--calls" aria-hidden="true" /> : null}
-              {lbl}
-            </span>
-          </label>
-        ))}
+      <div hidden={!d.canEdit}>
+        <Seg
+          name="tph-brush"
+          className="tph-brush"
+          aria-label="Inbound calls alongside the channel"
+          value={brush}
+          onChange={setBrush}
+          options={([
+            [oe, '+ Calls (blended)'],
+            [Ze, '− Calls'],
+          ] as [string, string][]).map(([k, lbl]) => ({
+            value: k,
+            label: k === oe ? (
+              <>
+                <i className="tph-swatch tph-swatch--calls" aria-hidden="true" />
+                {lbl}
+              </>
+            ) : (
+              lbl
+            ),
+          }))}
+        />
       </div>
       <div className="cx-panel tph-gridwrap">
         <div
@@ -943,9 +959,8 @@ function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
                 const v = d.firstSlot + f
                 const y = `${a.name} ${Wa(v)}: ${cell.c ? label(cell.c) : 'nothing logged'}${cell.calls ? ' + inbound calls' : ''}${cell.src === 'carried' ? ' (carried)' : cell.src === 'task' ? ' (from a task)' : ''}`
                 return (
-                  <button
+                  <Button
                     key={v}
-                    type="button"
                     role="gridcell"
                     className="tph-cell"
                     title={y}
@@ -1034,19 +1049,19 @@ function Ts({ d, onSaved }: { d: TphData; onSaved: () => void }) {
           <label className="cx-label" htmlFor="tt-a">
             Agent
           </label>
-          <select id="tt-a" className="cx-select" value={form.email} onChange={h('email')}>
+          <Select id="tt-a" value={form.email} onChange={h('email')}>
             {d.agents.map((a) => (
               <option key={a.email} value={a.email}>
                 {a.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="cx-field">
           <label className="cx-label" htmlFor="tt-c">
             Channel
           </label>
-          <select id="tt-c" className="cx-select" value={form.channel} onChange={h('channel')}>
+          <Select id="tt-c" value={form.channel} onChange={h('channel')}>
             {d.channels.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.name}
@@ -1058,32 +1073,31 @@ function Ts({ d, onSaved }: { d: TphData; onSaved: () => void }) {
               </option>
             ))}
             <option value={d.off}>Off shift</option>
-          </select>
+          </Select>
         </div>
         <div className="cx-field">
           <label className="cx-label" htmlFor="tt-s">
             Start
           </label>
-          <input id="tt-s" className="cx-input" type="time" step={300} required value={form.start} onInput={h('start')} />
+          <Input id="tt-s" type="time" step={300} required value={form.start} onInput={h('start')} />
         </div>
         <div className="cx-field">
           <label className="cx-label" htmlFor="tt-e">
             End
           </label>
-          <input id="tt-e" className="cx-input" type="time" step={300} required value={form.end} onInput={h('end')} />
+          <Input id="tt-e" type="time" step={300} required value={form.end} onInput={h('end')} />
         </div>
-        <label className="tph-check">
-          <input
-            type="checkbox"
-            checked={form.calls}
-            disabled={form.channel === d.off || form.channel === 'calls'}
-            onChange={(e) => setForm({ ...form, calls: e.currentTarget.checked })}
-          />{' '}
+        <Toggle
+          className="tph-check"
+          checked={form.calls}
+          disabled={form.channel === d.off || form.channel === 'calls'}
+          onChange={(c) => setForm({ ...form, calls: c })}
+        >
           + Inbound calls
-        </label>
-        <button type="submit" className="cx-btn cx-btn--primary" disabled={busy || !form.email}>
+        </Toggle>
+        <Button type="submit" variant="primary" disabled={busy || !form.email}>
           {busy ? 'Logging…' : 'Log task'}
-        </button>
+        </Button>
       </form>
       {err ? (
         <p className="cx-error" role="alert">
@@ -1099,9 +1113,7 @@ function Ts({ d, onSaved }: { d: TphData; onSaved: () => void }) {
                 {t.calls ? ' + inbound calls' : ''} <span className="cx-faint">by {t.by}</span>
               </span>
               {d.canEdit ? (
-                <button type="button" className="cx-btn" onClick={() => remove(t.taskId)}>
-                  Remove
-                </button>
+                <Button onClick={() => remove(t.taskId)}>Remove</Button>
               ) : null}
             </li>
           ))}
@@ -1156,8 +1168,8 @@ function As({ d, onSaved, missing, select }: {
                   const cell = o.byChannel[ch.key]
                   return (
                     <td key={ch.key}>
-                      <input
-                        className="cx-input tph-num"
+                      <Input
+                        className="tph-num"
                         type="number"
                         min={0}
                         step={1}
@@ -1225,11 +1237,10 @@ function Rs({ d, badge, select }: { d: TphData; badge: string; select: (t: strin
         </p>
       )}
       {r && d.table.some((u) => u.agents.some((c) => !onGrid(c))) ? (
-        <label className="tph-check">
-          <input type="checkbox" checked={onlyGrid} onChange={(e) => setOnlyGrid(e.currentTarget.checked)} />
+        <Toggle className="tph-check" checked={onlyGrid} onChange={setOnlyGrid}>
           Only agents on the grid
           {p ? ` (${p} with touches but no grid time hidden)` : ''}
-        </label>
+        </Toggle>
       ) : null}
       {rows.length ? (
         <Fragment>
@@ -1409,14 +1420,14 @@ function Cs({ d }: { d: TphData }) {
       title="Agents by hour"
       hint="09:30 to 22:00. Click a number for that hour's channels, or a name for the agent's day."
     >
-      <div className="tph-brush cx-seg tph-hg-seg" role="radiogroup" aria-label="Value in each cell">
-        {ls.map(([k, label]) => (
-          <label key={k}>
-            <input type="radio" name="tph-hg-metric" checked={metric === k} onChange={() => setMetric(k)} />
-            <span>{label}</span>
-          </label>
-        ))}
-      </div>
+      <Seg
+        name="tph-hg-metric"
+        className="tph-brush tph-hg-seg"
+        aria-label="Value in each cell"
+        value={metric}
+        onChange={setMetric}
+        options={ls.map(([k, label]) => ({ value: k, label }))}
+      />
       <div className="cx-panel cx-tablewrap">
         <table className="cx-table tph-hg">
           <thead>
@@ -1436,9 +1447,9 @@ function Cs({ d }: { d: TphData }) {
               return (
                 <tr key={email}>
                   <th scope="row">
-                    <button type="button" className="tph-hg__name" onClick={() => setSel({ email })}>
+                    <Button className="tph-hg__name" onClick={() => setSel({ email })}>
                       {o.get(email)}
-                    </button>
+                    </Button>
                   </th>
                   {hours913.map((hh) => {
                     const v = r.get(email)?.get(hh)
@@ -1446,8 +1457,7 @@ function Cs({ d }: { d: TphData }) {
                     const y = je(v)
                     return (
                       <td key={hh} className="cx-num">
-                        <button
-                          type="button"
+                        <Button
                           className="tph-hg__cell"
                           data-status={metric === 'pct' && y.pct != null ? xe(y.pct) : undefined}
                           aria-label={`${o.get(email)} ${hourLabel(hh)}: ${cellText(y)}`}
@@ -1455,20 +1465,19 @@ function Cs({ d }: { d: TphData }) {
                           onClick={() => setSel({ email, hour: hh })}
                         >
                           {cellText(y)}
-                        </button>
+                        </Button>
                       </td>
                     )
                   })}
                   <td className="cx-num">
-                    <button
-                      type="button"
+                    <Button
                       className="tph-hg__cell tph-hg__day"
                       data-status={m.p != null ? xe(m.p) : undefined}
                       aria-label={`${o.get(email)} day: ${m.text}`}
                       onClick={() => setSel({ email })}
                     >
                       {m.text}
-                    </button>
+                    </Button>
                     {i.get(email)?.overHours ? (
                       <span className="tph-hg__over">
                         <Chip status="warn">
@@ -1617,9 +1626,9 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                       return (
                         <tr key={m}>
                           <th scope="row">
-                            <button type="button" className="tph-hg__name" onClick={() => pick({ email: sel.email, hour: m })}>
+                            <Button className="tph-hg__name" onClick={() => pick({ email: sel.email, hour: m })}>
                               {F(m)}
-                            </button>
+                            </Button>
                           </th>
                           <td>{f.map((y) => chName(y.r.channel)).join(', ')}</td>
                           <td className="cx-num">{f.reduce((y, x) => y + x.a.minutes, 0)}</td>
@@ -1627,14 +1636,13 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                           <td className="cx-num">{P(v.cap)}</td>
                           <td className="cx-num">
                             {v.touches ? (
-                              <button
-                                type="button"
+                              <Button
                                 className="tph-hg__name"
                                 aria-label={`View touches ${F(m)} to ${F(m + 1)} (${v.touches})`}
                                 onClick={() => loadTouches(m)}
                               >
                                 {P(v.touches)}
-                              </button>
+                              </Button>
                             ) : (
                               P(v.touches)
                             )}
@@ -1658,14 +1666,13 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                   <dt>Touches</dt>
                   <dd>
                     {total.touches ? (
-                      <button
-                        type="button"
+                      <Button
                         className="tph-hg__name"
                         aria-expanded={!!touches}
                         onClick={() => loadTouches(null)}
                       >
                         View touches ({total.touches})
-                      </button>
+                      </Button>
                     ) : (
                       (total.touches ?? 'pending')
                     )}
@@ -1701,9 +1708,9 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                   {touches.hour == null ? 'Every touch this day' : `Touches ${F(touches.hour)} to ${F(touches.hour + 1)}`}
                   {touches.data ? ` (${visible.length})` : ''}
                   {touches.hour != null && touches.data ? (
-                    <button type="button" className="cx-btn tph-touches__all" onClick={() => loadTouches(null)}>
+                    <Button className="tph-touches__all" onClick={() => loadTouches(null)}>
                       Show all hours
-                    </button>
+                    </Button>
                   ) : null}
                 </h3>
                 {touches.busy ? (
@@ -1715,9 +1722,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                     <p className="cx-error" role="alert">
                       Touches could not load: {touches.err}
                     </p>
-                    <button type="button" className="cx-btn" onClick={() => loadTouches(touches.hour)}>
-                      Try again
-                    </button>
+                    <Button onClick={() => loadTouches(touches.hour)}>Try again</Button>
                   </Fragment>
                 ) : touches.data ? (
                   <Fragment>
@@ -1766,13 +1771,9 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
         )}
         <div className="popup-actions">
           {sel.hour != null ? (
-            <button type="button" className="cx-btn" onClick={() => pick({ email: sel.email })}>
-              {name}&apos;s day
-            </button>
+            <Button onClick={() => pick({ email: sel.email })}>{name}&apos;s day</Button>
           ) : null}
-          <button type="button" className="cx-btn cx-btn--primary" onClick={close}>
-            Close
-          </button>
+          <Button variant="primary" onClick={close}>Close</Button>
         </div>
       </div>
     </dialog>

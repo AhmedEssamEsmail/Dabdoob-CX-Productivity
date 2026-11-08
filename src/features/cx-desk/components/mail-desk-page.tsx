@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Textarea } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * Mail Desk — port of the legacy Google Apps Script page.
@@ -122,9 +123,9 @@ function Failed({ message, retry }: { message: string; retry: () => void }) {
   return (
     <div className="dk-failed" role="alert">
       <p>This page could not load: {message}</p>
-      <button type="button" className="btn btn-primary" onClick={retry}>
+      <Button variant="primary" onClick={retry}>
         Try again
-      </button>
+      </Button>
     </div>
   )
 }
@@ -280,7 +281,7 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
           <label className="md-label" htmlFor={`md-text-${a.threadId}`}>
             Reply text (added under Approved or Rejected, or sent on its own)
           </label>
-          <textarea
+          <Textarea
             id={`md-text-${a.threadId}`}
             className="input dk-note"
             rows={2}
@@ -298,9 +299,9 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
               : 'Sending…'}
           </p>
           {a.stuck ? (
-            <button
-              type="button"
-              className="btn btn-quiet dk-sm"
+            <Button
+              variant="quiet"
+              className="dk-sm"
               disabled={run.busy}
               onClick={() => {
                 if (
@@ -316,7 +317,7 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
               }}
             >
               Reset to pending
-            </button>
+            </Button>
           ) : null}
         </div>
       ) : pending ? (
@@ -328,34 +329,34 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
             {dryRun ? ' Dry run is on: nothing is emailed.' : ''}
           </p>
           <div className="md-actions">
-            <button type="button" className="btn btn-primary dk-sm" disabled={run.busy} onClick={() => void confirm()}>
+            <Button variant="primary" className="dk-sm" disabled={run.busy} onClick={() => void confirm()}>
               {run.busy ? 'Sending…' : dryRun ? 'Record decision' : 'Send now'}
-            </button>
-            <button type="button" className="btn btn-quiet dk-sm" disabled={run.busy} onClick={() => setPending(null)}>
+            </Button>
+            <Button variant="quiet" className="dk-sm" disabled={run.busy} onClick={() => setPending(null)}>
               Back
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         <div className="md-actions">
-          <button type="button" className="btn btn-primary dk-sm" onClick={() => setPending({ decision: 'approved', tok: token() })}>
+          <Button variant="primary" className="dk-sm" onClick={() => setPending({ decision: 'approved', tok: token() })}>
             Approved
-          </button>
-          <button
-            type="button"
-            className="btn btn-quiet dk-sm md-reject"
+          </Button>
+          <Button
+            variant="quiet"
+            className="dk-sm md-reject"
             onClick={() => setPending({ decision: 'rejected', tok: token() })}
           >
             Rejected
-          </button>
-          <button
-            type="button"
-            className="btn btn-quiet dk-sm"
+          </Button>
+          <Button
+            variant="quiet"
+            className="dk-sm"
             disabled={text.trim().length < 2}
             onClick={() => setPending({ decision: 'reply', tok: token() })}
           >
             Send reply only
-          </button>
+          </Button>
         </div>
       )}
       {run.error ? <ErrMsg message={run.error} /> : null}
@@ -374,9 +375,9 @@ export default function MailDeskPage() {
   const run = useRun()
   const aside = data?.isApprover ? (
     <div className="md-aside">
-      <button
-        type="button"
-        className="btn btn-quiet dk-sm"
+      <Button
+        variant="quiet"
+        className="dk-sm"
         disabled={run.busy}
         onClick={() =>
           void run.run(async () => {
@@ -385,7 +386,7 @@ export default function MailDeskPage() {
         }
       >
         {run.busy ? 'Checking Gmail…' : 'Check Gmail now'}
-      </button>
+      </Button>
       {run.error ? <ErrMsg message={run.error} /> : null}
     </div>
   ) : null
@@ -462,10 +463,10 @@ export default function MailDeskPage() {
         </h2>
         <div className="md-filter" role="group" aria-label="Show">
           {(['all', 'open', 'missed'] as const).map((f) => (
-            <button
+            <Button
               key={f}
-              type="button"
-              className="btn btn-quiet dk-sm"
+              variant="quiet"
+              className="dk-sm"
               aria-pressed={filter === f}
               data-on={filter === f}
               onClick={() => setFilter(f)}
@@ -475,7 +476,7 @@ export default function MailDeskPage() {
                 : f === 'open'
                   ? `Open, ${data.sla.filter((m) => m.status === 'open').length}`
                   : 'Late or covered by another TL'}
-            </button>
+            </Button>
           ))}
         </div>
         {rows.length ? (

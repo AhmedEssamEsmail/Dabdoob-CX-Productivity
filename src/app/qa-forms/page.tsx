@@ -1,4 +1,5 @@
 /* verbatim port of the legacy Quality Audit forms page — thin route entry. */
+import '@/app/styles/quality.css'
 import { QaFormsPage } from '@/features/cx-quality/components/qa-forms-page'
 
 export default function Page() {

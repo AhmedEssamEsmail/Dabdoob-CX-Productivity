@@ -11,6 +11,7 @@ test.describe('Status Validation Page', () => {
     // Desktop viewport: the rail nav is display:none <=820px (behind Menu)
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/status-validation')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     await expect(page.getByRole('heading', { name: 'Status validation' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Main' }).getByText('Productivity', { exact: true })).toBeVisible()
@@ -21,6 +22,7 @@ test.describe('Status Validation Page', () => {
 
   test('pending flags show the agent, interval, suggestion and review deadline', async ({ page }) => {
     await page.goto('/status-validation')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const firstFlag = page.locator('.pv-item').first()
     if (await firstFlag.count()) {
@@ -35,6 +37,7 @@ test.describe('Status Validation Page', () => {
 
   test('opening a flag shows the strip, cases and decision form', async ({ page }) => {
     await page.goto('/status-validation')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const firstFlag = page.locator('.pv-item').first()
     test.skip(!(await firstFlag.count()), 'No pending flags to open')
@@ -43,9 +46,9 @@ test.describe('Status Validation Page', () => {
     const detail = page.locator('.pv-detail')
     await expect(detail).toBeVisible()
     await expect(detail.locator('.pv-strip')).toBeVisible()
-    await expect(detail.getByText('Logged')).toBeVisible()
-    await expect(detail.getByText('Suggested')).toBeVisible()
-    await expect(detail.getByText('Reviewed')).toBeVisible()
+    await expect(detail.getByText('Logged', { exact: true })).toBeVisible()
+    await expect(detail.getByText('Suggested', { exact: true })).toBeVisible()
+    await expect(detail.getByText('Reviewed', { exact: true })).toBeVisible()
 
     const form = detail.locator('.pv-form')
     if (await form.count()) {
@@ -57,6 +60,7 @@ test.describe('Status Validation Page', () => {
 
   test('accepting a flag records the decision and toasts', async ({ page }) => {
     await page.goto('/status-validation')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const firstFlag = page.locator('.pv-item').first()
     test.skip(!(await firstFlag.count()), 'No pending flags to decide')

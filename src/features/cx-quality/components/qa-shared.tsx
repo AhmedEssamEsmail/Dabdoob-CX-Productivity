@@ -38,6 +38,7 @@ import {
   PageHead,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Seg, Select, Textarea } from '@/features/shared/components/ui'
 
 /* Re-exports so the pages draw from one file (merged from qa-shared2). */
 export { Chip, LinesSkeleton, LoadError, toast }
@@ -281,9 +282,9 @@ export function QaLink({
   onClick: () => void
 }) {
   return (
-    <button type="button" className="qa-link" onClick={onClick}>
+    <Button type="button" className="qa-link" onClick={onClick}>
       {label}
-    </button>
+    </Button>
   )
 }
 
@@ -455,9 +456,8 @@ export function ListSelect({
           </span>
         ) : null}
       </label>
-      <select
+      <Select
         id={m}
-        className="select"
         value={u ? LT : value}
         onChange={O}
         disabled={disabled || r === undefined}
@@ -473,7 +473,7 @@ export function ListSelect({
           </option>
         ))}
         <option value={LT}>Other…</option>
-      </select>
+      </Select>
       {hint ? (
         <p id={A} className="field-hint">
           {hint}
@@ -481,9 +481,8 @@ export function ListSelect({
       ) : null}
       {u ? (
         <div className="other-row">
-          <input
+          <Input
             ref={T}
-            className="input"
             type="text"
             maxLength={120}
             value={o}
@@ -494,17 +493,16 @@ export function ListSelect({
               R.key === 'Enter' ? (R.preventDefault(), v()) : R.key === 'Escape' && w()
             }}
           />
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             onClick={v}
             disabled={b || !o.trim()}
           >
             {b ? 'Adding…' : 'Add choice'}
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={w} disabled={b}>
+          </Button>
+          <Button variant="quiet" onClick={w} disabled={b}>
             Cancel
-          </button>
+          </Button>
         </div>
       ) : null}
       {f || y ? (
@@ -541,12 +539,12 @@ export function SortTh({
       scope="col"
       aria-sort={s === 'asc' ? 'ascending' : s === 'desc' ? 'descending' : 'none'}
     >
-      <button type="button" className="qa-sort" onClick={() => sort.toggle(col)}>
+      <Button type="button" className="qa-sort" onClick={() => sort.toggle(col)}>
         {children}
         <span className="qa-sort__arrow" aria-hidden="true">
           {s === 'asc' ? '▲' : s === 'desc' ? '▼' : ''}
         </span>
-      </button>
+      </Button>
     </th>
   )
 }
@@ -811,15 +809,14 @@ export function AuditForm({
       aria-label={`Audit: ${t.title}`}
     >
       <div className="qa-form__back">
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           onClick={I}
           disabled={y}
         >
           <span aria-hidden="true">← </span>
           {c}
-        </button>
+        </Button>
       </div>
       <div className="qa-form__head">
         <div className="qa-form__facts">{n}</div>
@@ -838,8 +835,7 @@ export function AuditForm({
         <label className="cx-label" htmlFor="qa-when">
           Interaction date and time (Riyadh)
         </label>
-        <input
-          className="cx-input"
+        <Input
           type="datetime-local"
           id="qa-when"
           required
@@ -880,14 +876,13 @@ export function AuditForm({
                     ? 'Optional. Skipped: every question is N/A, so the score is not affected.'
                     : 'Optional. Answered questions count; N/A ones do not.'}
                 </span>
-                <button
-                  type="button"
-                  className="cx-btn cx-btn--quiet"
+                <Button
+                  variant="quiet"
                   onClick={() => v(z, !X)}
                   aria-pressed={!X}
                 >
                   {X ? 'Answer this section' : 'Skip section (N/A)'}
-                </button>
+                </Button>
               </div>
             ) : null}
             {N.questions.map((F: any) => {
@@ -928,44 +923,34 @@ export function AuditForm({
                       </span>
                     ) : null}
                   </div>
-                  <div className="cx-seg" role="radiogroup" aria-label={F.text}>
-                    {da.map((le) => (
-                      <label key={le}>
-                        <input
-                          type="radio"
-                          name={`qa-${F.id}`}
-                          checked={Je === le}
-                          onChange={() => O(F.id, le)}
-                        />
-                        <span>{QA_ANSWER[le]}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <Seg
+                    name={`qa-${F.id}`}
+                    value={Je ?? ''}
+                    onChange={(v) => O(F.id, v)}
+                    options={da.map((le) => ({
+                      value: le,
+                      label: QA_ANSWER[le],
+                    }))}
+                    aria-label={F.text}
+                  />
                   {l && Je === 'fail' ? (
                     <div className="qa-q__why">
                       <span className="cx-faint" id={`qa-why-${F.id}`}>
                         Why it failed
                       </span>
-                      <div
-                        className="cx-seg"
-                        role="radiogroup"
+                      <Seg
+                        name={`qa-why-${F.id}`}
+                        value={f[F.id] ?? ''}
+                        onChange={(v) =>
+                          g((ha: any) => ({ ...ha, [F.id]: v }))
+                        }
+                        options={QA_WHY.map((le) => ({
+                          value: le.v,
+                          label: le.label,
+                        }))}
                         aria-labelledby={`qa-why-${F.id}`}
-                        aria-required="true"
-                      >
-                        {QA_WHY.map((le) => (
-                          <label key={le.v}>
-                            <input
-                              type="radio"
-                              name={`qa-why-${F.id}`}
-                              checked={f[F.id] === le.v}
-                              onChange={() =>
-                                g((ha: any) => ({ ...ha, [F.id]: le.v }))
-                              }
-                            />
-                            <span>{le.label}</span>
-                          </label>
-                        ))}
-                      </div>
+                        {...{ 'aria-required': 'true' }}
+                      />
                     </div>
                   ) : null}
                 </div>
@@ -978,8 +963,7 @@ export function AuditForm({
         <label className="cx-label" htmlFor="qa-comment">
           Note for the agent and team lead
         </label>
-        <textarea
-          className="cx-textarea"
+        <Textarea
           id="qa-comment"
           value={o}
           onInput={(N) => h(N.currentTarget.value)}
@@ -992,9 +976,9 @@ export function AuditForm({
         </p>
       ) : null}
       <div className="qa-form__foot">
-        <button
+        <Button
           type="submit"
-          className="cx-btn cx-btn--primary"
+          variant="primary"
           disabled={
             y || C.missing.length > 0 || C.score === null || A > 0 || !b
           }
@@ -1008,15 +992,14 @@ export function AuditForm({
                   ? `${a} (${A} ${A === 1 ? 'reason' : 'reasons'} left)`
                   : a
               : `${a} (interaction time needed)`}
-        </button>
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        </Button>
+        <Button
+          variant="quiet"
           onClick={I}
           disabled={y}
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -1309,19 +1292,16 @@ export function BasisSeg({
   onChange: (basis: string) => void
 }) {
   return (
-    <div className="cx-seg" role="radiogroup" aria-label="Count audits by">
-      {['interaction', 'audit'].map((a) => (
-        <label key={a}>
-          <input
-            type="radio"
-            name="qa-basis"
-            checked={basis === a}
-            onChange={() => onChange(a)}
-          />
-          <span>{a === 'interaction' ? 'By interaction date' : 'Audited in period'}</span>
-        </label>
-      ))}
-    </div>
+    <Seg
+      name="qa-basis"
+      value={basis}
+      onChange={onChange}
+      options={[
+        { value: 'interaction', label: 'By interaction date' },
+        { value: 'audit', label: 'Audited in period' },
+      ]}
+      aria-label="Count audits by"
+    />
   )
 }
 
@@ -1357,9 +1337,9 @@ export function DrillSection({
         <span className="cx-section__hint">
           {scope.label}. Every counted audit of the period, whatever its basis.
         </span>
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={close}>
+        <Button variant="quiet" onClick={close}>
           Close
-        </button>
+        </Button>
       </div>
       {c ? (
         <LoadError message={c} onRetry={l} />

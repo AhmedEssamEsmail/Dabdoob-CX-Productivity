@@ -14,6 +14,7 @@
 import { Fragment, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
 import { getBoot } from '@/features/shared/shell/context'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 import {
   AuditForm,
   P,
@@ -125,8 +126,7 @@ function PassForm({
         <label className="cx-label" htmlFor={`${b}-why`}>
           {x ? `Why remove ${qaTicketLabel(row.ticketId)}` : `Why not audit #${row.ticketId}`}
         </label>
-        <select
-          className="cx-input"
+        <Select
           id={`${b}-why`}
           value={i}
           onChange={(g) => c(g.currentTarget.value)}
@@ -137,14 +137,13 @@ function PassForm({
               {g}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="cx-field qa-pass__note">
         <label className="cx-label" htmlFor={`${b}-note`}>
           {i ? 'Details (optional)' : 'Reason'}
         </label>
-        <input
-          className="cx-input"
+        <Input
           id={`${b}-note`}
           maxLength={450}
           placeholder="e.g. Omar handled the call, not this agent"
@@ -154,12 +153,12 @@ function PassForm({
         />
       </div>
       <div className="qa-actions">
-        <button type="submit" className="cx-btn cx-btn--primary" disabled={u || !r}>
+        <Button type="submit" variant="primary" disabled={u || !r}>
           {u ? (x ? 'Removing…' : 'Passing…') : x ? 'Remove' : 'Confirm pass'}
-        </button>
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={onCancel}>
+        </Button>
+        <Button variant="quiet" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
       <p className="cx-faint qa-pass__hint">
         {x
@@ -225,8 +224,7 @@ function RequestForm({
         <label className="cx-label" htmlFor={`${g}-ticket`}>
           Ticket number
         </label>
-        <input
-          className="cx-input"
+        <Input
           id={`${g}-ticket`}
           inputMode="numeric"
           autoComplete="off"
@@ -239,8 +237,7 @@ function RequestForm({
         <label className="cx-label" htmlFor={`${g}-why`}>
           {off ? 'Note (optional)' : 'Why it needs an audit'}
         </label>
-        <input
-          className="cx-input"
+        <Input
           id={`${g}-why`}
           maxLength={500}
           placeholder={
@@ -256,8 +253,7 @@ function RequestForm({
         <label className="cx-label" htmlFor={`${g}-agent`}>
           Agent
         </label>
-        <select
-          className="cx-input"
+        <Select
           id={`${g}-agent`}
           value={p}
           onChange={(_) => m(_.currentTarget.value)}
@@ -268,14 +264,13 @@ function RequestForm({
               {_.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="cx-field">
         <label className="cx-label" htmlFor={`${g}-channel`}>
           Channel
         </label>
-        <select
-          className="cx-input"
+        <Select
           id={`${g}-channel`}
           value={r}
           onChange={(_) => u(_.currentTarget.value)}
@@ -286,12 +281,12 @@ function RequestForm({
               {_}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="qa-actions">
-        <button type="submit" className="cx-btn cx-btn--primary" disabled={busy || !f}>
+        <Button type="submit" variant="primary" disabled={busy || !f}>
           {off ? (busy ? 'Adding…' : 'Add and start audit') : busy ? 'Requesting…' : 'Request audit'}
-        </button>
+        </Button>
       </div>
       {h ? (
         <p className="cx-error" role="alert">
@@ -330,8 +325,7 @@ function WaiveForm({
         <label className="cx-label" htmlFor={r}>
           Why waive the audit of #{row.ticketId}
         </label>
-        <input
-          className="cx-input"
+        <Input
           id={r}
           maxLength={500}
           placeholder="e.g. Customer withdrew the complaint"
@@ -340,16 +334,16 @@ function WaiveForm({
         />
       </div>
       <div className="qa-actions">
-        <button
+        <Button
           type="submit"
-          className="cx-btn cx-btn--primary"
+          variant="primary"
           disabled={c || s.replace(/\s+/g, ' ').trim().length < 5}
         >
           {c ? 'Waiving…' : 'Confirm waive'}
-        </button>
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={onCancel}>
+        </Button>
+        <Button variant="quiet" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
       <p className="cx-faint qa-pass__hint">
         Requested by {row.requestedByName}: {row.requestReason}
@@ -388,14 +382,12 @@ function RequestedAudits({
       hint="Team leads asked for these. They count toward the agent's weekly audits and cannot be passed."
       aside={
         d.canRequest ? (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             aria-expanded={c}
             onClick={() => l(!c)}
           >
             {c ? 'Close' : 'Request an audit'}
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -469,9 +461,8 @@ function RequestedAudits({
                             {x.takenByOther ? (
                               <span className="cx-muted">Being audited</span>
                             ) : (
-                              <button
-                                type="button"
-                                className="cx-btn cx-btn--primary"
+                              <Button
+                                variant="primary"
                                 disabled={!!busyId || openId === x.queueId}
                                 onClick={() => onStart(x.queueId)}
                               >
@@ -480,17 +471,15 @@ function RequestedAudits({
                                   : x.status === 'in_progress'
                                     ? 'Continue audit'
                                     : 'Start audit'}
-                              </button>
+                              </Button>
                             )}
                             {d.canWaive ? (
-                              <button
-                                type="button"
-                                className="cx-btn"
+                              <Button
                                 aria-expanded={p === x.queueId}
                                 onClick={() => m(p === x.queueId ? '' : x.queueId)}
                               >
                                 Waive
-                              </button>
+                              </Button>
                             ) : null}
                           </div>
                         )}
@@ -553,8 +542,7 @@ function NonTicketForm({ d, onDone }: { d: any; onDone: (msg: string) => void })
         <label className="cx-label" htmlFor="qa-nt-type">
           Type
         </label>
-        <select
-          className="cx-input"
+        <Select
           id="qa-nt-type"
           value={a}
           onChange={(y) => s(y.currentTarget.value)}
@@ -565,14 +553,13 @@ function NonTicketForm({ d, onDone }: { d: any; onDone: (msg: string) => void })
               {y}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="cx-field qa-request__why">
         <label className="cx-label" htmlFor="qa-nt-ref">
           Reference
         </label>
-        <input
-          className="cx-input"
+        <Input
           id="qa-nt-ref"
           maxLength={200}
           autoComplete="off"
@@ -589,8 +576,7 @@ function NonTicketForm({ d, onDone }: { d: any; onDone: (msg: string) => void })
         <label className="cx-label" htmlFor="qa-nt-agent">
           Agent
         </label>
-        <select
-          className="cx-input"
+        <Select
           id="qa-nt-agent"
           value={l}
           onChange={(y) => p(y.currentTarget.value)}
@@ -601,14 +587,13 @@ function NonTicketForm({ d, onDone }: { d: any; onDone: (msg: string) => void })
               {y.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="cx-field qa-request__why">
         <label className="cx-label" htmlFor="qa-nt-note">
           Note (optional)
         </label>
-        <input
-          className="cx-input"
+        <Input
           id="qa-nt-note"
           maxLength={500}
           placeholder="e.g. Paid by bank transfer"
@@ -617,9 +602,9 @@ function NonTicketForm({ d, onDone }: { d: any; onDone: (msg: string) => void })
         />
       </div>
       <div className="qa-actions">
-        <button type="submit" className="cx-btn cx-btn--primary" disabled={u || !f}>
+        <Button type="submit" variant="primary" disabled={u || !f}>
           {u ? 'Adding…' : 'Add to the queue'}
-        </button>
+        </Button>
       </div>
       {o ? (
         <p className="cx-error" role="alert">
@@ -658,14 +643,12 @@ function NonTicketAudits({
       hint="Actions that are not Freshdesk tickets, such as cash refunds. Each type has its own audit form. They count toward the agent's weekly audits."
       aside={
         d.auditTypes?.length && !d.readOnly ? (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             aria-expanded={l}
             onClick={() => p(!l)}
           >
             {l ? 'Close' : 'New non-ticket audit'}
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -732,9 +715,8 @@ function NonTicketAudits({
                           <span className="cx-muted">Being audited</span>
                         ) : (
                           <div className="qa-actions">
-                            <button
-                              type="button"
-                              className="cx-btn cx-btn--primary"
+                            <Button
+                              variant="primary"
                               disabled={!!busyId || openId === h.queueId}
                               onClick={() => onStart(h.queueId)}
                             >
@@ -743,16 +725,14 @@ function NonTicketAudits({
                                 : h.status === 'in_progress'
                                   ? 'Continue audit'
                                   : 'Start audit'}
-                            </button>
-                            <button
-                              type="button"
-                              className="cx-btn"
+                            </Button>
+                            <Button
                               aria-expanded={m === h.queueId}
                               disabled={!!busyId}
                               onClick={() => r(m === h.queueId ? '' : h.queueId)}
                             >
                               Remove
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>
@@ -811,14 +791,12 @@ function OffQueueAudits({
       hint="A ticket that is not in your queue. It is scored and sent like any audit, but does not use up a queue slot, does not count toward the agent's weekly audits, and stays out of the headline scores."
       aside={
         d.readOnly ? null : (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             aria-expanded={l}
             onClick={() => p(!l)}
           >
             {l ? 'Close' : 'Audit a ticket off-queue'}
-          </button>
+          </Button>
         )
       }
     >
@@ -882,9 +860,8 @@ function OffQueueAudits({
                           <span className="cx-muted">Being audited</span>
                         ) : (
                           <div className="qa-actions">
-                            <button
-                              type="button"
-                              className="cx-btn cx-btn--primary"
+                            <Button
+                              variant="primary"
                               disabled={!!busyId || openId === o.queueId}
                               onClick={() => onStart(o.queueId)}
                             >
@@ -893,16 +870,14 @@ function OffQueueAudits({
                                 : o.status === 'in_progress'
                                   ? 'Continue audit'
                                   : 'Start audit'}
-                            </button>
-                            <button
-                              type="button"
-                              className="cx-btn"
+                            </Button>
+                            <Button
                               aria-expanded={m === o.queueId}
                               disabled={!!busyId}
                               onClick={() => r(m === o.queueId ? '' : o.queueId)}
                             >
                               Remove
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>
@@ -948,25 +923,23 @@ function WeekCoverage({ d }: { d: any }) {
       hint="Day by day against the daily audits per agent. Requested audits count toward each agent's weekly audits."
     >
       <div className="qa-weekstep" role="group" aria-label="Choose the week">
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           disabled={a >= d.quotaWeeks.length - 1}
           onClick={() => s(a + 1)}
         >
           Previous week
-        </button>
+        </Button>
         <span aria-live="polite">
           {qaDayName(p[0])} {p[0]} to {qaDayName(p[6])} {p[6]}
         </span>
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           disabled={l}
           onClick={() => s(a - 1)}
         >
           Next week
-        </button>
+        </Button>
       </div>
       <div className="cx-panel cx-tablewrap">
         <table className="cx-table qa-cov">
@@ -1046,8 +1019,7 @@ function ViewingAs({ d, onPick }: { d: any; onPick: (email: string) => void }) {
       <label className="cx-label" htmlFor="qa-desk">
         Audit Desk of
       </label>
-      <select
-        className="cx-select"
+      <Select
         id="qa-desk"
         value={d.viewing?.email ?? d.selfEmail}
         onChange={(s) => onPick(s.currentTarget.value)}
@@ -1058,7 +1030,7 @@ function ViewingAs({ d, onPick }: { d: any; onPick: (email: string) => void }) {
           </option>
         ))}
         <option value={d.selfEmail}>You, with admin tools</option>
-      </select>
+      </Select>
     </span>
   )
   return d.viewing ? (
@@ -1092,8 +1064,8 @@ function WeightInput({
   onChange: (v: number) => void
 }) {
   return (
-    <input
-      className="cx-input qa-w"
+    <Input
+      className="qa-w"
       type="number"
       min={0.1}
       max={20}
@@ -1205,8 +1177,8 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
           <h3 id="qs-ct" className="cx-section__title">
             Contact types
           </h3>
-          <input
-            className="cx-input qa-narrow"
+          <Input
+            className="qa-narrow"
             type="search"
             aria-label="Find a contact type"
             placeholder="Find a contact type"
@@ -1298,6 +1270,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                   <td>
                     <div className="qa-actions">
                       <label className="cx-toggle">
+                        {/* eslint-disable-next-line -- kept raw: Toggle drops aria-label; label text alone is ambiguous here */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets whose status now is ${v.name}`}
@@ -1307,6 +1280,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                         <span>Status now</span>
                       </label>
                       <label className="cx-toggle">
+                        {/* eslint-disable-next-line -- kept raw: Toggle drops aria-label; label text alone is ambiguous here */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets the agent set to ${v.name}`}
@@ -1329,9 +1303,9 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
         </p>
       ) : null}
       <div className="qa-actions">
-        <button type="submit" className="cx-btn cx-btn--primary" disabled={m || !T}>
+        <Button type="submit" variant="primary" disabled={m || !T}>
           {m ? 'Saving…' : 'Save weights'}
-        </button>
+        </Button>
         {page.engineLive ? null : (
           <span className="cx-muted">
             These apply once Quality builds the queue itself (qa_engine_live).
@@ -1361,9 +1335,9 @@ function SamplingPanel() {
       {a ? (
         <p className="cx-error" role="alert">
           {a}{' '}
-          <button type="button" className="cx-btn cx-btn--quiet" onClick={i}>
+          <Button variant="quiet" onClick={i}>
             Try again
-          </button>
+          </Button>
         </p>
       ) : t ? (
         <SamplingForm
@@ -1421,9 +1395,9 @@ function AccessPanel() {
       {a ? (
         <p className="cx-error" role="alert">
           {a}{' '}
-          <button type="button" className="cx-btn cx-btn--quiet" onClick={m}>
+          <Button variant="quiet" onClick={m}>
             Try again
-          </button>
+          </Button>
         </p>
       ) : t ? (
         <>
@@ -1440,8 +1414,7 @@ function AccessPanel() {
             <label className="cx-label" htmlFor="qa-access-find">
               Find a person
             </label>
-            <input
-              className="cx-input"
+            <Input
               id="qa-access-find"
               value={l}
               onInput={(o) => p(o.currentTarget.value)}
@@ -1479,23 +1452,20 @@ function AccessPanel() {
                     </td>
                     <td>
                       {o.via === 'granted' ? (
-                        <button
-                          type="button"
-                          className="cx-btn"
+                        <Button
                           disabled={!!i}
                           onClick={() => r(o.email, o.name, false)}
                         >
                           {i === o.email ? 'Removing…' : 'Remove'}
-                        </button>
+                        </Button>
                       ) : o.via ? null : (
-                        <button
-                          type="button"
-                          className="cx-btn cx-btn--primary"
+                        <Button
+                          variant="primary"
                           disabled={!!i}
                           onClick={() => r(o.email, o.name, true)}
                         >
                           {i === o.email ? 'Granting…' : 'Grant audit access'}
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>
@@ -1582,9 +1552,7 @@ function AuditQueuePage({
       sub="Tickets to audit today: audits team leads asked for first, then the daily sample of four per agent. Start audit opens the form with the ticket, agent and team lead filled in, and records when you started. Under 100% opens a CTL for the team lead."
       aside={
         s?.isAdmin ? (
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             disabled={u}
             onClick={() => {
               d(true)
@@ -1601,7 +1569,7 @@ function AuditQueuePage({
               : s?.engineLive
                 ? 'Build the queue now'
                 : 'Import the queue now'}
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -1741,9 +1709,9 @@ function AuditQueuePage({
           {b ? (
             <p className="cx-note" role="status">
               <span>{b}</span>{' '}
-              <button type="button" className="cx-btn cx-btn--quiet" onClick={() => x('')}>
+              <Button variant="quiet" onClick={() => x('')}>
                 Dismiss
-              </button>
+              </Button>
             </p>
           ) : null}
           <RequestedAudits
@@ -1871,9 +1839,8 @@ function AuditQueuePage({
                               <span className="cx-muted">Being audited</span>
                             ) : (
                               <div className="qa-actions">
-                                <button
-                                  type="button"
-                                  className="cx-btn cx-btn--primary"
+                                <Button
+                                  variant="primary"
                                   disabled={!!m || l?.queueId === w.queueId}
                                   onClick={() => y(w.queueId)}
                                 >
@@ -1882,16 +1849,14 @@ function AuditQueuePage({
                                     : w.status === 'in_progress'
                                       ? 'Continue audit'
                                       : 'Start audit'}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="cx-btn"
+                                </Button>
+                                <Button
                                   aria-expanded={o === w.queueId}
                                   disabled={!!m}
                                   onClick={() => h(o === w.queueId ? '' : w.queueId)}
                                 >
                                   Pass
-                                </button>
+                                </Button>
                               </div>
                             )}
                           </td>

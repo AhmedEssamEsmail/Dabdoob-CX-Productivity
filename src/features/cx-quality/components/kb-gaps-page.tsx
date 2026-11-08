@@ -16,6 +16,7 @@ import {
   useSe,
 } from './qa-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Select, Textarea } from '@/features/shared/components/ui'
 
 export function KbGapsPage({ route }: { route: { title: string } }) {
   const { data: n, error: a, reload: s } = useSe(P.kbGapsPage)
@@ -90,8 +91,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="kb-a">
                   From audit (ticket)
                 </label>
-                <select
-                  className="cx-select"
+                <Select
                   id="kb-a"
                   value={i}
                   onChange={(g) => c(g.currentTarget.value)}
@@ -103,7 +103,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                       {g.score}%)
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <ListSelect
                 listKey="qa.kb_gap_type"
@@ -116,8 +116,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="kb-d">
                   What is missing or wrong
                 </label>
-                <textarea
-                  className="cx-textarea"
+                <Textarea
                   id="kb-d"
                   value={m}
                   required
@@ -129,13 +128,13 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                   {b}
                 </p>
               ) : null}
-              <button
+              <Button
                 type="submit"
-                className="cx-btn cx-btn--primary"
+                variant="primary"
                 disabled={u}
               >
                 {u ? 'Saving…' : 'Log the gap'}
-              </button>
+              </Button>
             </form>
           ) : null}
           <QaSection
@@ -188,14 +187,12 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                               </span>
                             </>
                           ) : n.canMarkAdded ? (
-                            <button
-                              type="button"
-                              className="cx-btn"
+                            <Button
                               disabled={!!o}
                               onClick={() => f(g.gapId)}
                             >
                               {o === g.gapId ? 'Saving…' : 'Mark added to KB'}
-                            </button>
+                            </Button>
                           ) : (
                             <StatusChip s="open" />
                           )}

@@ -15,6 +15,6 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
       SUPABASE_ANON_KEY: 'test-anon-key',
     },
-    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/.devin/**'],
   },
 })

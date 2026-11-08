@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
+import { Button, Field, Input, Select, Toggle } from '@/features/shared/components/ui'
 import { AgeChip, AgeLadder, AsOfHint, Head, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 
 const PAGE = 50
@@ -23,26 +24,26 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
       <span className="dq-help">
         <span className="cx-chip" data-status="bad" title={flag.note}>Help asked by {String(flag.by).split('@')[0]}</span>
         <span className="cx-muted"> {flag.note}</span>{' '}
-        <button type="button" className="cx-btn cx-btn--quiet" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { flag_id: flag.flagId, resolved_note: '' }))}>
+        <Button variant="quiet" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { flag_id: flag.flagId, resolved_note: '' }))}>
           Mark handled
-        </button>
+        </Button>
         {err ? <span role="alert"> {err}</span> : null}
       </span>
     )
   if (scope !== 'agent') return <span className="cx-faint">–</span>
   return open ? (
     <span className="dq-help">
-      <input className="cx-input" aria-label={`What is blocking ticket ${t[0]}`} placeholder="What is blocking it, what you need" value={note} onInput={(e) => setNote((e.target as HTMLInputElement).value)} />{' '}
-      <button type="button" className="cx-btn" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { ticket_id: t[0], note }))}>Send</button>{' '}
-      <button type="button" className="cx-btn cx-btn--quiet" onClick={() => setOpen(false)}>Cancel</button>
+      <Input aria-label={`What is blocking ticket ${t[0]}`} placeholder="What is blocking it, what you need" value={note} onInput={(e) => setNote((e.target as HTMLInputElement).value)} />{' '}
+      <Button disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { ticket_id: t[0], note }))}>Send</Button>{' '}
+      <Button variant="quiet" onClick={() => setOpen(false)}>Cancel</Button>
       {err ? <span role="alert"> {err}</span> : null}
     </span>
   ) : flag ? (
     <span className="cx-chip" data-status="warn" title={flag.note}>Asked {flag.at ? '' : ''}: waiting on your TL</span>
   ) : (
-    <button type="button" className="cx-btn cx-btn--quiet" onClick={() => setOpen(true)} aria-label={`Ask your team lead for help with ticket ${t[0]}`}>
+    <Button variant="quiet" onClick={() => setOpen(true)} aria-label={`Ask your team lead for help with ticket ${t[0]}`}>
       Ask my TL for help
-    </button>
+    </Button>
   )
 }
 
@@ -149,6 +150,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                           <th scope="row">{x}</th>
                           {P.map((U, V) => (
                             <td key={V}>
+                              {/* kept raw:cx-agegrid cell is a bespoke age-ramp button (data-age/data-zero), not a ui/Button */}
                               <button
                                 type="button"
                                 data-age={ageRank(V, n.bands.labels.length)}
@@ -180,31 +182,28 @@ export function AgingPage({ route }: { route: { title: string } }) {
               <span className="cx-section__hint" aria-live="polite">{rows.length} ticket{rows.length === 1 ? '' : 's'}, oldest first</span>
             </div>
             <div className="cx-filters">
-              <div className="cx-field">
-                <label className="cx-label" htmlFor="f-q">Queue</label>
-                <select className="cx-select" id="f-q" value={queue} onChange={(e) => { setQueue((e.target as HTMLSelectElement).value); setShown(PAGE) }}>
+              <Field label="Queue">
+                <Select id="f-q" value={queue} onChange={(e) => { setQueue((e.target as HTMLSelectElement).value); setShown(PAGE) }}>
                   <option value="">All queues</option>
                   {queues.map((x) => <option key={x}>{x}</option>)}
-                </select>
-              </div>
+                </Select>
+              </Field>
               {n.scope !== 'agent' ? (
-                <div className="cx-field">
-                  <label className="cx-label" htmlFor="f-tl">Team lead</label>
-                  <select className="cx-select" id="f-tl" value={tl} onChange={(e) => { setTl((e.target as HTMLSelectElement).value); setShown(PAGE) }}>
+                <Field label="Team lead">
+                  <Select id="f-tl" value={tl} onChange={(e) => { setTl((e.target as HTMLSelectElement).value); setShown(PAGE) }}>
                     <option value="">All team leads</option>
                     {tls.map((x) => <option key={x}>{x}</option>)}
-                  </select>
-                </div>
+                  </Select>
+                </Field>
               ) : null}
-              <div className="cx-field">
-                <label className="cx-label" htmlFor="f-s">Ticket number</label>
-                <input className="cx-input cx-num" id="f-s" type="search" inputMode="numeric" value={search} onInput={(e) => setSearch((e.target as HTMLInputElement).value)} />
-              </div>
-              {n.scope === 'tl' ? <label className="cx-toggle"><input type="checkbox" checked={mine} onChange={(e) => setMine((e.target as HTMLInputElement).checked)} /><span>My team only</span></label> : null}
-              {n.scope !== 'agent' ? <label className="cx-toggle"><input type="checkbox" checked={unassigned} onChange={(e) => { setUnassigned((e.target as HTMLInputElement).checked); setShown(PAGE) }} /><span>Not assigned only</span></label> : null}
-              {n.flags?.length ? <label className="cx-toggle"><input type="checkbox" checked={flagged} onChange={(e) => { setFlagged((e.target as HTMLInputElement).checked); setShown(PAGE) }} /><span>Help asked ({n.flags.length})</span></label> : null}
-              <button className="cx-btn" type="button" onClick={() => showAll(false)}>Show tickets open {bandTop(n.bands.edges[T - 1])} or more</button>
-              <button className="cx-btn cx-btn--quiet" type="button" onClick={() => showAll(true)}>Show all open</button>
+              <Field label="Ticket number">
+                <Input id="f-s" type="search" inputMode="numeric" className="cx-num" value={search} onInput={(e) => setSearch((e.target as HTMLInputElement).value)} />
+              </Field>
+              {n.scope === 'tl' ? <Toggle checked={mine} onChange={setMine}>My team only</Toggle> : null}
+              {n.scope !== 'agent' ? <Toggle checked={unassigned} onChange={(v) => { setUnassigned(v); setShown(PAGE) }}>Not assigned only</Toggle> : null}
+              {n.flags?.length ? <Toggle checked={flagged} onChange={(v) => { setFlagged(v); setShown(PAGE) }}>Help asked ({n.flags.length})</Toggle> : null}
+              <Button type="button" onClick={() => showAll(false)}>Show tickets open {bandTop(n.bands.edges[T - 1])} or more</Button>
+              <Button variant="quiet" type="button" onClick={() => showAll(true)}>Show all open</Button>
             </div>
             <div className="cx-panel cx-tablewrap">
               <table className="cx-table cx-table--nowrap">
@@ -229,7 +228,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                 </tbody>
               </table>
             </div>
-            {rows.length > shown ? <button className="cx-btn" type="button" onClick={() => setShown((x) => x + PAGE)}>Show {Math.min(PAGE, rows.length - shown)} more</button> : null}
+            {rows.length > shown ? <Button type="button" onClick={() => setShown((x) => x + PAGE)}>Show {Math.min(PAGE, rows.length - shown)} more</Button> : null}
           </section>
         </>
       ) : null}

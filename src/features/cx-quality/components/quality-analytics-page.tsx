@@ -30,6 +30,7 @@ import {
   useTip,
 } from '@/features/shared/components/shell/ui'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
+import { Button, Seg, Select } from '@/features/shared/components/ui'
 
 /* --- constants (Ke/xt/ye/Me/Ge/Et/Pe/bn/Ks/Ot/yn/vn) -------------------- */
 const CONF: Record<string, string> = {
@@ -99,9 +100,9 @@ function QaLinkBtn({
   onClick: () => void
 }) {
   return (
-    <button type="button" className="qa-link" onClick={onClick}>
+    <Button type="button" className="qa-link" onClick={onClick}>
       {label}
-    </button>
+    </Button>
   )
 }
 
@@ -460,13 +461,12 @@ function Attention({
         </table>
       </div>
       {t.attention.length > 10 ? (
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           onClick={() => s(!a)}
         >
           {a ? 'Show the first 10' : `Show all ${t.attention.length}`}
-        </button>
+        </Button>
       ) : null}
     </QaSection>
   )
@@ -736,13 +736,12 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
         </table>
       </div>
       {t.questions.length > 15 ? (
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           onClick={() => s(!a)}
         >
           {a ? 'Show the top 15' : `Show all ${t.questions.length}`}
-        </button>
+        </Button>
       ) : null}
       {t.rescoredSkipped ? (
         <p className="cx-faint">
@@ -894,8 +893,7 @@ function Columns({ d: t }: { d: any }) {
         <label className="cx-label" htmlFor="qa-cols-agent">
           Show
         </label>
-        <select
-          className="cx-select"
+        <Select
           id="qa-cols-agent"
           value={n}
           onChange={(p) => a(p.currentTarget.value)}
@@ -908,7 +906,7 @@ function Columns({ d: t }: { d: any }) {
                 {m}
               </option>
             ))}
-        </select>
+        </Select>
       </div>
       <div className="qa-cols__grid">
         <ColsChart
@@ -1067,13 +1065,12 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
         </table>
       </div>
       {t.repeats.length > 10 ? (
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        <Button
+          variant="quiet"
           onClick={() => i(!s)}
         >
           {s ? 'Show the first 10' : `Show all ${t.repeats.length}`}
-        </button>
+        </Button>
       ) : null}
     </QaSection>
   )
@@ -1386,19 +1383,17 @@ function Coverage({ c: t }: { c: any }) {
   const c = t.agents.filter((m: any) => xn(m)[1] !== 'ok').length
   const l = t.agents.find((m: any) => m.expected && !m.actionPlan)?.offerPerDay ?? 0
   const p = (
-    <div className="cx-seg qa-view" role="radiogroup" aria-label="Count">
-      {['queued', 'audited'].map((m) => (
-        <label key={m}>
-          <input
-            type="radio"
-            name="qa-cov-count"
-            checked={n === m}
-            onChange={() => a(m)}
-          />
-          <span>{m === 'queued' ? 'Queued' : 'Audited'}</span>
-        </label>
-      ))}
-    </div>
+    <Seg
+      className="qa-view"
+      name="qa-cov-count"
+      value={n}
+      onChange={a}
+      options={[
+        { value: 'queued', label: 'Queued' },
+        { value: 'audited', label: 'Audited' },
+      ]}
+      aria-label="Count"
+    />
   )
   return (
     <>
@@ -1722,9 +1717,9 @@ function Drill({
         <span className="cx-section__hint">
           {t.label}. Every counted audit of the period, whatever its basis.
         </span>
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={s}>
+        <Button variant="quiet" onClick={s}>
           Close
-        </button>
+        </Button>
       </div>
       {c ? (
         <LoadError message={c} onRetry={l} />
@@ -1867,19 +1862,16 @@ function BasisSeg({
   onChange: (basis: string) => void
 }) {
   return (
-    <div className="cx-seg" role="radiogroup" aria-label="Count audits by">
-      {['interaction', 'audit'].map((a) => (
-        <label key={a}>
-          <input
-            type="radio"
-            name="qa-basis"
-            checked={t === a}
-            onChange={() => n(a)}
-          />
-          <span>{a === 'interaction' ? 'By interaction date' : 'Audited in period'}</span>
-        </label>
-      ))}
-    </div>
+    <Seg
+      name="qa-basis"
+      value={t}
+      onChange={n}
+      options={[
+        { value: 'interaction', label: 'By interaction date' },
+        { value: 'audit', label: 'Audited in period' },
+      ]}
+      aria-label="Count audits by"
+    />
   )
 }
 
@@ -1916,21 +1908,18 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
       {a ? (
         <>
           <div className="cx-filters">
-            <div className="cx-seg" role="radiogroup" aria-label="Period length">
-              {['week', 'month'].map((o) => (
-                <label key={o}>
-                  <input
-                    type="radio"
-                    name="qa-grain"
-                    checked={d === o}
-                    onChange={() => r(o, '')}
-                  />
-                  <span>{o === 'week' ? 'Week' : 'Month'}</span>
-                </label>
-              ))}
-            </div>
-            <select
-              className="cx-select qa-narrow"
+            <Seg
+              name="qa-grain"
+              value={d}
+              onChange={(o) => r(o, '')}
+              options={[
+                { value: 'week', label: 'Week' },
+                { value: 'month', label: 'Month' },
+              ]}
+              aria-label="Period length"
+            />
+            <Select
+              className="qa-narrow"
               aria-label="Period"
               value={a.period}
               onChange={(o) => r(d, o.currentTarget.value)}
@@ -1940,19 +1929,18 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
                   {qaPeriodLabel(a, o)}
                 </option>
               ))}
-            </select>
+            </Select>
             <BasisSeg
               basis={a.basis ?? 'interaction'}
               onChange={(o) => r(d, a.period, o)}
             />
-            <button
-              type="button"
-              className="cx-btn cx-btn--quiet"
+            <Button
+              variant="quiet"
               aria-expanded={p}
               onClick={() => m(!p)}
             >
               How scores work
-            </button>
+            </Button>
             <a className="cx-btn cx-btn--quiet" href="#/quality-scores">
               Team scores for any dates
             </a>

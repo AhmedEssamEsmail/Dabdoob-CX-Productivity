@@ -27,6 +27,7 @@ import {
   fetchJson,
 } from '@/features/cx-hub/components/hub-shared'
 import { PAGES } from '@/features/shared/components/shell/registry'
+import { Button } from '@/features/shared/components/ui'
 import { appForGroup, groupEntryLink } from '@/features/shared/shell/gates'
 
 // ---------------------------------------------------------------------------
@@ -133,11 +134,12 @@ const _r = ['hub', 'quality', 'productivity', 'queue', 'desk', 'people', 'operat
     down: 'Down',
     idle: 'Idle',
   },
+  // kept raw: WebGL/Three.js palette values cannot consume CSS custom properties.
   tr: Record<string, string> = {
-    ok: '#4cc2ff',
-    warn: '#ffb020',
-    down: '#ff5a5f',
-    idle: '#8e9bb2',
+    ok: '#86ab98',
+    warn: '#c2a878',
+    down: '#c98f88',
+    idle: '#8d97a5',
   },
   sa: Record<string, number> = {
     ok: 1,
@@ -2539,6 +2541,7 @@ function Scene3D(n: { health: any; onSelect: (id: string) => void }) {
   return <div className="eco3" role="group" aria-label="CX ecosystem in 3D: the Main Hub and seven systems"><div className="eco3-canvas" ref={t} /><div className="eco3-tags">{_r.map(_ => {
     const T = e.nodes[_],
       R = w === _
+    // eslint-disable-next-line -- kept raw: eco3-tag is a transform-positioned scene label, not a button
     return <button key={_} type="button" ref={D => {
       s.current[_] = D
     }} className={`eco3-tag eco3-s-${T.state}${R ? ' is-hot' : ''}${_ === 'hub' ? ' eco3-tag--hub' : ''}`} aria-label={`${ia[_]}, ${vu[T.state]}. Last run ${xu(T.lastRun)}. Opens ${ia[_]}.`} onPointerEnter={() => h({
@@ -2549,9 +2552,9 @@ function Scene3D(n: { health: any; onSelect: (id: string) => void }) {
     visibility: 'hidden',
   }}>{S ? <Ft><span className="eco3-tag-name"><i className="eco3-dot" />{ia[S]}</span><span className="eco3-tag-state">Last run {xu(e.nodes[S].lastRun)}</span></Ft> : null}</div></div>{C.state === 'loading' ? <div className="eco3-loading" role="status"><span>Loading the desert</span><i className="eco3-loading-bar" aria-hidden="true"><b style={{
     inlineSize: `${Math.round(C.p * 100)}%`,
-  }} /></i></div> : null}<div className="eco3-dock"><label className="eco3-time"><span className="eco3-clock"><b>{Hb(y)}</b>{' '}{zb(y)}</span><input type="range" min="0" max="24" step="0.25" value={y} aria-label="Time of day in the scene" onInput={_ => {
+  }} /></i></div> : null}<div className="eco3-dock"><label className="eco3-time"><span className="eco3-clock"><b>{Hb(y)}</b>{' '}{zb(y)}</span>{/* eslint-disable-next-line -- kept raw: eco3 range input is sized by the scene dock */}<input type="range" min="0" max="24" step="0.25" value={y} aria-label="Time of day in the scene" onInput={_ => {
     g(!1), v(Number(_.currentTarget.value))
-  }} /></label><button type="button" className="eco3-btn" aria-pressed={p} onClick={() => g(!0)} title="Follow your clock">Now</button><button type="button" className="eco3-btn" aria-pressed={m} onClick={() => E(_ => !_)}>Auto-rotate</button></div></div>
+  }} /></label>{/* eslint-disable-next-line -- kept raw: eco3-btn is a compact scene-dock control */}<button type="button" className="eco3-btn" aria-pressed={p} onClick={() => g(!0)} title="Follow your clock">Now</button>{/* eslint-disable-next-line -- kept raw: eco3-btn is a compact scene-dock control */}<button type="button" className="eco3-btn" aria-pressed={m} onClick={() => E(_ => !_)}>Auto-rotate</button></div></div>
 }
 
 // ---------------------------------------------------------------------------
@@ -2640,7 +2643,7 @@ function Jb({ boot: n, msg: e, setMsg: t }: { boot: any; msg: string; setMsg: (m
       return
     }
     location.href = Lr(lm(o, c => rh(c, n)))
-  }} /> : <div className="eco3-page-msg">{s ? <Ft><p>Ecosystem health did not load: {s}</p><button type="button" className="btn" onClick={r}>Try again</button></Ft> : <p>Loading the ecosystem</p>}</div>}<header className="eco3-head"><h1>Ecosystem</h1>{i?.asOf ? <span>Health as of {new Date(i.asOf).toLocaleTimeString('en-GB', {
+  }} /> : <div className="eco3-page-msg">{s ? <Ft><p>Ecosystem health did not load: {s}</p><Button className="btn" onClick={r}>Try again</Button></Ft> : <p>Loading the ecosystem</p>}</div>}<header className="eco3-head"><h1>Ecosystem</h1>{i?.asOf ? <span>Health as of {new Date(i.asOf).toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
   })}</span> : null}{e ? <span role="status">{e}</span> : null}<a href={Lr('overview')}>Hub home</a><small className="eco3-credit"><a href={As.source} target="_blank" rel="noopener noreferrer">Camel model</a>{' by'}{' '}<a href={As.authorUrl} target="_blank" rel="noopener noreferrer">{As.author}</a>,{' '}<a href={As.licenceUrl} target="_blank" rel="noopener noreferrer">{As.licence}</a></small></header></div>

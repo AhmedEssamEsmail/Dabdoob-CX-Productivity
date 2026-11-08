@@ -1,4 +1,5 @@
 /* verbatim port of the legacy Quality KB gaps page — thin route entry. */
+import '@/app/styles/quality.css'
 import { KbGapsPage } from '@/features/cx-quality/components/kb-gaps-page'
 
 export default function Page() {

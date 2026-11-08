@@ -9,6 +9,7 @@
  */
 import { useRef, useState } from 'react'
 import { Chip, useTip } from '@/features/shared/components/shell/ui'
+import { Button, Input, Seg } from '@/features/shared/components/ui'
 import { pageParams } from '@/features/shared/shell/gates'
 import {
   BasisSeg,
@@ -281,19 +282,13 @@ function BreakdownTable({
         <h2 className="cx-section__title" id="qs-tbl-h">
           Who is behind the score
         </h2>
-        <div className="cx-seg" role="radiogroup" aria-label="Show">
-          {QA_LEVELS.map(([r, u]) => (
-            <label key={r}>
-              <input
-                type="radio"
-                name="qs-level"
-                checked={s.by === r}
-                onChange={() => set({ by: r, tl: '' })}
-              />
-              <span>{u}</span>
-            </label>
-          ))}
-        </div>
+        <Seg
+          name="qs-level"
+          value={s.by}
+          onChange={(v) => set({ by: v, tl: '' })}
+          options={QA_LEVELS.map(([r, u]) => ({ value: r, label: u }))}
+          aria-label="Show"
+        />
       </div>
       {s.tl ? (
         <nav className="qs-crumbs" aria-label="Drill path">
@@ -457,19 +452,13 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
       {i && f ? (
         <>
           <div className="cx-filters qs-bar">
-            <div className="cx-seg" role="radiogroup" aria-label="Period">
-              {QA_PRESETS.map(([y, _]) => (
-                <label key={y}>
-                  <input
-                    type="radio"
-                    name="qs-preset"
-                    checked={n.preset === y}
-                    onChange={() => b(y)}
-                  />
-                  <span>{_}</span>
-                </label>
-              ))}
-            </div>
+            <Seg
+              name="qs-preset"
+              value={n.preset}
+              onChange={b}
+              options={QA_PRESETS.map(([y, _]) => ({ value: y, label: _ }))}
+              aria-label="Period"
+            />
             {n.preset === 'custom' ? (
               <form
                 className="qs-custom"
@@ -480,8 +469,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               >
                 <label>
                   From{' '}
-                  <input
-                    className="cx-input"
+                  <Input
                     type="date"
                     value={d.from}
                     max={qaToday()}
@@ -490,23 +478,21 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                 </label>
                 <label>
                   To{' '}
-                  <input
-                    className="cx-input"
+                  <Input
                     type="date"
                     value={d.to}
                     max={qaToday()}
                     onInput={(y) => o({ ...d, to: y.currentTarget.value })}
                   />
                 </label>
-                <button type="submit" className="cx-btn">
-                  Show
-                </button>
+                <Button type="submit">Show</Button>
               </form>
             ) : null}
             <span className="qs-range">
               {qaDayLabel(i.from)} to {qaDayLabel(i.to)}
             </span>
             <label className="qs-check">
+              {/* eslint-disable-next-line -- kept raw: qs-check shows a native checkbox; Toggle hides its input */}
               <input
                 type="checkbox"
                 checked={p}
@@ -605,14 +591,13 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
           <BreakdownTable d={i} s={n} set={h} open={x} />
           <SideBars d={i} />
           <p className="cx-faint">
-            <button
-              type="button"
+            <Button
               className="qa-link"
               aria-expanded={r}
               onClick={() => u(!r)}
             >
               How scores work
-            </button>{' '}
+            </Button>{' '}
             More detail by week or month:{' '}
             <a href="#/quality-analytics">Quality analytics</a>.
           </p>

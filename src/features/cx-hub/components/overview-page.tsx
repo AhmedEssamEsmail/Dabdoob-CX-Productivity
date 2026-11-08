@@ -6,6 +6,7 @@
  * TL dayrail + oldest, specialist note, agent oldest). */
 
 import { Fragment, useRef, useState } from 'react'
+import { Button } from '@/features/shared/components/ui'
 import {
   Ao, Df, du, Eo, Ft, Gf, gg, Gs, gu, Hf, Hi, If, jl, Kf, km, lo, Nf,
   Of, pg, Ql, rg, sh, To, useTh, Vf, Vi, Wf, Yn, Zf, _g,
@@ -211,6 +212,7 @@ function vg({ tiles, active, onPick, label }: Q) {
     <ul className="dq-stats" aria-label={label}>
       {tiles.map((s: Q) => (
         <li key={s.key}>
+          {/* eslint-disable-next-line -- kept raw: dq-stat is a full stat tile, not a button */}
           <button
             type="button"
             className="dq-stat"
@@ -318,9 +320,9 @@ function Mu() {
             {u ? (
               <Ft>
                 Queues counted in “{u.label}”: {p.length} of {n.queues.length}.{' '}
-                <button type="button" className="btn btn-quiet btn-small" onClick={() => s('')}>
+                <Button type="button" className="btn btn-quiet btn-small" onClick={() => s('')}>
                   Show all queues
-                </button>{' '}
+                </Button>{' '}
               </Ft>
             ) : null}
             {n.sinceSlot ? `Change is against the ${n.sinceSlot} snapshot.` : 'No snapshot yet today, so no change column.'}

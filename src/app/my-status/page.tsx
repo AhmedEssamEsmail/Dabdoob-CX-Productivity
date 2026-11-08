@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/styles/productivity.css'
 import { Fragment, useState, type FormEvent } from 'react'
 import {
   LinesSkeleton,
@@ -8,6 +9,7 @@ import {
   Section,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Textarea } from '@/features/shared/components/ui'
 import {
   CasesLine,
   DecisionChip,
@@ -90,8 +92,7 @@ function DisputeRaise({ f, onDone }: { f: FlagView; onDone: () => void }) {
         <label className="cx-label" htmlFor={`dr-${f.flagId}`}>
           What were you doing in this time?
         </label>
-        <textarea
-          className="cx-textarea"
+        <Textarea
           id={`dr-${f.flagId}`}
           value={reason}
           onInput={(e) => setReason(e.currentTarget.value)}
@@ -102,9 +103,9 @@ function DisputeRaise({ f, onDone }: { f: FlagView; onDone: () => void }) {
           {formError}
         </p>
       ) : null}
-      <button type="submit" className="cx-btn" disabled={saving}>
+      <Button type="submit" disabled={saving}>
         {saving ? 'Sending…' : 'Send the dispute'}
-      </button>
+      </Button>
     </form>
   )
 }
@@ -206,9 +207,9 @@ export default function MyStatusPage() {
                         }}
                       />
                     ) : (
-                      <button type="button" className="cx-btn" onClick={() => setOpen(f.flagId)}>
+                      <Button onClick={() => setOpen(f.flagId)}>
                         Dispute{f.disputeUntil ? ` (until ${f.disputeUntil})` : ''}
-                      </button>
+                      </Button>
                     )
                   ) : null}
                 </article>

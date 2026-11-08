@@ -4,6 +4,7 @@
    place — the first visible page, preferring My day then Hub home — instead of
    a landing screen, exactly like the legacy shell's n1 root branch. The shell
    computes the same fallback for the rail's aria-current, so this mirrors it. */
+import '@/app/styles/hub.css'
 import { PAGES } from '@/features/shared/components/shell/registry'
 import {
   appForGroup,

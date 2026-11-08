@@ -1,6 +1,8 @@
 'use client'
 
+import '@/app/styles/hub.css'
 import { useEffect, useState } from 'react'
+import { Button, Input } from '@/features/shared/components/ui'
 
 interface ConfigItem {
   key: string
@@ -97,8 +99,7 @@ export default function AdminConfigPage() {
                     </td>
                     <td>
                       {editingKey === item.key ? (
-                        <input
-                          className="cx-input"
+                        <Input
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                         />
@@ -112,25 +113,17 @@ export default function AdminConfigPage() {
                     <td>
                       {editingKey === item.key ? (
                         <>
-                          <button
-                            type="button"
-                            className="cx-btn cx-btn--primary"
-                            onClick={() => handleSave(item.key)}
-                          >
+                          <Button variant="primary" onClick={() => handleSave(item.key)}>
                             Save
-                          </button>{' '}
-                          <button type="button" className="cx-btn cx-btn--quiet" onClick={handleCancel}>
+                          </Button>{' '}
+                          <Button variant="quiet" onClick={handleCancel}>
                             Cancel
-                          </button>
+                          </Button>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          className="cx-btn cx-btn--quiet"
-                          onClick={() => handleEdit(item.key, item.value)}
-                        >
+                        <Button variant="quiet" onClick={() => handleEdit(item.key, item.value)}>
                           Edit
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>

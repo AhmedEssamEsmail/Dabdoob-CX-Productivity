@@ -23,6 +23,7 @@ import {
   routeOf,
 } from './pw'
 import { stagger } from '@/features/shared/components/shell/ui'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* I — the tasks facade (Tasks.js). */
 const api = {
@@ -118,14 +119,14 @@ function FilterBar({
   const sel = (srLabel: string, p: NonNullable<typeof owner>) => (
     <label className="cx-filter">
       <span className="sr-only">{srLabel}</span>
-      <select className="select" value={p.value} onChange={(e) => p.onChange(e.currentTarget.value)}>
+      <Select className="select" value={p.value} onChange={(e) => p.onChange(e.currentTarget.value)}>
         <option value="">{p.all}</option>
         {p.options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   )
   return (
@@ -134,10 +135,12 @@ function FilterBar({
       {team ? sel('Team', team) : null}
       {priority ? (
         <div className="pw-seg" role="group" aria-label="Priority">
+          {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
           <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
             Any priority
           </button>
           {priority.options.map((p) => (
+            // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
             <button
               key={p}
               type="button"
@@ -152,7 +155,7 @@ function FilterBar({
       {search ? (
         <label className="cx-filter cx-filter--search">
           <span className="sr-only">Search</span>
-          <input
+          <Input
             className="input"
             type="search"
             value={search.value}
@@ -215,16 +218,16 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
       <div className="form-grid" style={{ marginTop: 12 }}>
         <label className="field" style={{ gridColumn: '1 / -1' }}>
           <span className="field-label">Title</span>
-          <input className="input" value={form.title} onInput={(e) => patch({ title: e.currentTarget.value })} />
+          <Input className="input" value={form.title} onInput={(e) => patch({ title: e.currentTarget.value })} />
         </label>
         <label className="field" style={{ gridColumn: '1 / -1' }}>
           <span className="field-label">What done looks like</span>
-          <textarea className="pw-textarea" value={form.description} onInput={(e) => patch({ description: e.currentTarget.value })} />
+          <Textarea className="pw-textarea" value={form.description} onInput={(e) => patch({ description: e.currentTarget.value })} />
         </label>
         {form.ownerEmail !== data.me.email ? (
           <label className="field" style={{ gridColumn: '1 / -1' }}>
             <span className="field-label">Your expectation: the result you will rate Below, Meets or Exceeds in the 1:1</span>
-            <textarea
+            <Textarea
               className="pw-textarea"
               value={form.expectation ?? ''}
               onInput={(e) => patch({ expectation: e.currentTarget.value })}
@@ -234,19 +237,20 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         {data.me.role === 'admin' ? (
           <label className="field">
             <span className="field-label">Owner</span>
-            <select className="select" value={form.ownerEmail} onChange={(e) => patch({ ownerEmail: e.currentTarget.value })}>
+            <Select className="select" value={form.ownerEmail} onChange={(e) => patch({ ownerEmail: e.currentTarget.value })}>
               {data.owners.map((o: any) => (
                 <option key={o.email} value={o.email}>
                   {o.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         ) : null}
         <div className="field">
           <span className="field-label">Priority</span>
           <div className="pw-seg" role="group" aria-label="Priority">
             {['P1', 'P2', 'P3'].map((p) => (
+              // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
               <button key={p} type="button" aria-pressed={form.priority === p} onClick={() => patch({ priority: p })}>
                 {p}
               </button>
@@ -255,11 +259,11 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         </div>
         <label className="field">
           <span className="field-label">Starts (blank = now)</span>
-          <input className="input" type="datetime-local" value={form.startAt} onInput={(e) => patch({ startAt: e.currentTarget.value })} />
+          <Input className="input" type="datetime-local" value={form.startAt} onInput={(e) => patch({ startAt: e.currentTarget.value })} />
         </label>
         <label className="field">
           <span className="field-label">Deadline day</span>
-          <input
+          <Input
             className="input"
             type="date"
             min={today()}
@@ -270,7 +274,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         </label>
         <label className="field">
           <span className="field-label">Estimated effort (hours)</span>
-          <input
+          <Input
             className="input"
             type="number"
             min={0.5}
@@ -290,7 +294,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         <span className="field-label">Planned milestones (optional)</span>
         {(form.planned ?? []).map((m: any, i: number) => (
           <div key={i} className="pw-inline" style={{ marginTop: 8 }}>
-            <input
+            <Input
               className="input"
               style={{ flex: '2 1 200px' }}
               placeholder="e.g. Draft SOP"
@@ -300,7 +304,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
                 patch({ planned: form.planned.map((x: any, j: number) => (j === i ? { ...x, label: e.currentTarget.value } : x)) })
               }
             />
-            <input
+            <Input
               className="input"
               style={{ flex: '1 1 140px' }}
               type="date"
@@ -312,23 +316,22 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
                 })
               }
             />
-            <button
-              type="button"
-              className="btn btn-quiet btn-small"
+            <Button
+              size="sm"
+              variant="quiet"
               onClick={() => patch({ planned: form.planned.filter((x: any, j: number) => j !== i) })}
             >
               Remove
-            </button>
+            </Button>
           </div>
         ))}
         <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            className="btn btn-line btn-small"
+          <Button
+            size="sm"
             onClick={() => patch({ planned: [...(form.planned ?? []), { label: '', targetDate: form.deadlineAt }] })}
           >
             Add milestone
-          </button>
+          </Button>
         </div>
       </div>
       {preview ? (
@@ -345,22 +348,21 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         <div className="pw-panel pw-attention" role="alert" style={{ marginTop: 12 }}>
           <p>{doesNotFit}</p>
           <div className="pw-actions-bar">
-            <button type="button" className="btn btn-primary" onClick={() => create(true)}>
+            <Button variant="primary" onClick={() => create(true)}>
               Assign anyway
-            </button>
+            </Button>
             <span className="pw-small pw-muted">This is logged against the assignment.</span>
           </div>
         </div>
       ) : (
         <div className="pw-actions-bar">
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             disabled={busy.busy || !form.title.trim()}
             onClick={() => create(false)}
           >
             {data.me.role === 'admin' ? 'Assign task' : 'Add task'}
-          </button>
+          </Button>
         </div>
       )}
       <PwErr message={busy.error} />
@@ -404,6 +406,7 @@ function GanttRow({
   return (
     <div className="pw-g-row" aria-current={selected}>
       <div className="pw-g-label">
+        {/* eslint-disable-next-line -- kept raw: .pw-g-label button family chrome (ellipsis title pick) */}
         <button type="button" onClick={onSelect} title={t.title}>
           {t.title}
         </button>
@@ -428,6 +431,7 @@ function GanttRow({
             style={{ left: `${(f.i / nDays) * 100}%`, width: `${100 / nDays}%` }}
           />
         ))}
+        {/* eslint-disable-next-line -- kept raw: .pw-bar gantt bar is positioned family chrome, not a cx-btn */}
         <button
           type="button"
           className="pw-bar"
@@ -750,9 +754,9 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
           {t.deliveredAt ? <p className="pw-small pw-muted">{dayTime(t.deliveredAt)}</p> : null}
           {me.role === 'admin' ? (
             <div className="pw-actions-bar">
-              <button type="button" className="btn btn-line btn-small" disabled={busy.busy} onClick={() => setStatus('in_progress')}>
+              <Button size="sm" disabled={busy.busy} onClick={() => setStatus('in_progress')}>
                 Re-open task
-              </button>
+              </Button>
             </div>
           ) : null}
           <PwErr message={busy.error} />
@@ -761,9 +765,11 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
         <div className="pw-panel">
           <h2 className="pw-h2">Post an update</h2>
           <div className="pw-seg" role="group" aria-label="Update type" style={{ margin: '8px 0 12px' }}>
+            {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
             <button type="button" aria-pressed={kind === 'status'} onClick={() => setKind('status')}>
               Written update
             </button>
+            {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control) */}
             <button type="button" aria-pressed={kind === 'file'} onClick={() => setKind('file')}>
               Upload a file
             </button>
@@ -772,19 +778,19 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
             {kind === 'file' ? (
               <label className="field">
                 <span className="field-label">File (up to 10 MB)</span>
-                <input className="input" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+                <Input className="input" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               </label>
             ) : null}
             <label className="field">
               <span className="field-label">{kind === 'status' ? 'Where do you stand now?' : 'Note (optional)'}</span>
-              <textarea className="pw-textarea" value={note} onInput={(e) => setNote(e.currentTarget.value)} />
+              <Textarea className="pw-textarea" value={note} onInput={(e) => setNote(e.currentTarget.value)} />
             </label>
             {kind === 'status' ? (
               <>
                 <div className="pw-inline">
                   <label className="field" style={{ flex: '0 1 120px' }}>
                     <span className="field-label">% complete</span>
-                    <input
+                    <Input
                       className="input"
                       type="number"
                       min={0}
@@ -797,6 +803,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                     <span className="field-label">Status</span>
                     <div className="pw-seg" role="group" aria-label="Status">
                       {['on_track', 'at_risk', 'off_track'].map((r) => (
+                        // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
                         <button key={r} type="button" aria-pressed={rag === r} onClick={() => setRag(r)}>
                           {RAG_LABELS[r]}
                         </button>
@@ -806,14 +813,14 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                 </div>
                 <label className="field">
                   <span className="field-label">Next step</span>
-                  <input className="input" value={nextStep} onInput={(e) => setNextStep(e.currentTarget.value)} />
+                  <Input className="input" value={nextStep} onInput={(e) => setNextStep(e.currentTarget.value)} />
                 </label>
               </>
             ) : null}
             {t.planned.some((m: any) => !m.doneByUpdateId) ? (
               <label className="field">
                 <span className="field-label">Ticks off a planned milestone</span>
-                <select className="select" value={milestoneId} onChange={(e) => setMilestoneId(e.currentTarget.value)}>
+                <Select className="select" value={milestoneId} onChange={(e) => setMilestoneId(e.currentTarget.value)}>
                   <option value="">None</option>
                   {t.planned
                     .filter((m: any) => !m.doneByUpdateId)
@@ -822,52 +829,52 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                         {m.label}
                       </option>
                     ))}
-                </select>
+                </Select>
               </label>
             ) : null}
           </div>
           <div className="pw-actions-bar">
-            <button type="button" className="btn btn-primary" disabled={busy.busy} onClick={post}>
+            <Button variant="primary" disabled={busy.busy} onClick={post}>
               {kind === 'file' ? 'Upload file' : 'Post update'}
-            </button>
+            </Button>
           </div>
           <div className="pw-actions-bar" style={{ borderTop: '1px solid var(--line)', paddingTop: 14 }}>
             {t.status === 'blocked' ? (
-              <button type="button" className="btn btn-line btn-small" disabled={busy.busy} onClick={() => setStatus('in_progress')}>
+              <Button size="sm" disabled={busy.busy} onClick={() => setStatus('in_progress')}>
                 Unblock
-              </button>
+              </Button>
             ) : (
-              <button type="button" className="btn btn-line btn-small" onClick={() => setFlow('blocked')}>
+              <Button size="sm" onClick={() => setFlow('blocked')}>
                 Mark blocked
-              </button>
+              </Button>
             )}
-            <button type="button" className="btn btn-line btn-small" onClick={() => setFlow('done')}>
+            <Button size="sm" onClick={() => setFlow('done')}>
               Mark done
-            </button>
+            </Button>
             {canManage ? (
-              <button type="button" className="btn btn-line btn-small" onClick={() => setFlow('deadline')}>
+              <Button size="sm" onClick={() => setFlow('deadline')}>
                 Change deadline
-              </button>
+              </Button>
             ) : null}
             {me.role === 'admin' ? (
-              <button type="button" className="btn btn-quiet btn-small" onClick={() => setFlow('cancelled')}>
+              <Button size="sm" variant="quiet" onClick={() => setFlow('cancelled')}>
                 Cancel task
-              </button>
+              </Button>
             ) : null}
           </div>
           {flow === 'deadline' ? (
             <div className="pw-inline" style={{ marginTop: 10 }}>
               <label className="field" style={{ flex: '0 1 170px' }}>
                 <span className="field-label">New deadline</span>
-                <input className="input" type="date" value={newDeadline} onInput={(e) => setNewDeadline(e.currentTarget.value)} />
+                <Input className="input" type="date" value={newDeadline} onInput={(e) => setNewDeadline(e.currentTarget.value)} />
               </label>
               <label className="field">
                 <span className="field-label">Why it is changing</span>
-                <input className="input" value={deadlineReason} onInput={(e) => setDeadlineReason(e.currentTarget.value)} />
+                <Input className="input" value={deadlineReason} onInput={(e) => setDeadlineReason(e.currentTarget.value)} />
               </label>
-              <button type="button" className="btn btn-primary" disabled={busy.busy} onClick={changeDeadline}>
+              <Button variant="primary" disabled={busy.busy} onClick={changeDeadline}>
                 Change deadline
-              </button>
+              </Button>
             </div>
           ) : flow ? (
             <div className="pw-inline" style={{ marginTop: 10 }}>
@@ -875,11 +882,11 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                 <span className="field-label">
                   {flow === 'blocked' ? 'What is blocking it' : flow === 'done' ? 'Delivery link or file name' : 'Why it is cancelled'}
                 </span>
-                <input className="input" value={flowText} onInput={(e) => setFlowText(e.currentTarget.value)} />
+                <Input className="input" value={flowText} onInput={(e) => setFlowText(e.currentTarget.value)} />
               </label>
-              <button type="button" className="btn btn-primary" disabled={busy.busy} onClick={() => setStatus(flow)}>
+              <Button variant="primary" disabled={busy.busy} onClick={() => setStatus(flow)}>
                 {flow === 'blocked' ? 'Mark blocked' : flow === 'done' ? 'Mark done' : 'Cancel task'}
-              </button>
+              </Button>
             </div>
           ) : null}
           <PwErr message={busy.error} />
@@ -922,14 +929,13 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
       aside={
         data ? (
           <div className="pw-actions-bar">
-            <button
-              type="button"
-              className="btn btn-primary"
+            <Button
+              variant="primary"
               aria-expanded={formOpen}
               onClick={() => setFormOpen((o) => !o)}
             >
               {formOpen ? 'Close the form' : data.me.role === 'admin' ? 'Assign a task' : 'Add a task'}
-            </button>
+            </Button>
           </div>
         ) : null
       }
@@ -980,9 +986,11 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
               search={{ value: search, onChange: setSearch, placeholder: 'Search task titles' }}
             >
               <div className="pw-seg" role="group" aria-label="Show">
+                {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
                 <button type="button" aria-pressed={show === 'open'} onClick={() => setShow('open')}>
                   Open
                 </button>
+                {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control) */}
                 <button type="button" aria-pressed={show === 'all'} onClick={() => setShow('all')}>
                   Include done, last 30 days
                 </button>

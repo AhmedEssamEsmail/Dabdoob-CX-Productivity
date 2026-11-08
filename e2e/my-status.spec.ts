@@ -10,6 +10,7 @@ test.describe('My Status Page', () => {
 
   test('agent can view own productivity score', async ({ page }) => {
     await page.goto('/my-status')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     await expect(page.getByRole('heading', { name: 'My status' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible()
@@ -17,6 +18,7 @@ test.describe('My Status Page', () => {
 
   test('productivity score displays correctly', async ({ page }) => {
     await page.goto('/my-status')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const facts = page.locator('.pv-facts')
     if (await facts.count()) {
@@ -31,6 +33,7 @@ test.describe('My Status Page', () => {
 
   test('intervals list displays correctly', async ({ page }) => {
     await page.goto('/my-status')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const flags = page.locator('.pv-cards article')
     if (await flags.count()) {
@@ -46,6 +49,7 @@ test.describe('My Status Page', () => {
 
   test('status colors match design', async ({ page }) => {
     await page.goto('/my-status')
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
 
     const badges = page.locator('.cx-chip[data-status]')
     if (await badges.count()) {

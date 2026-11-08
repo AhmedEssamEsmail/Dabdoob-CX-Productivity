@@ -21,6 +21,8 @@ export const E2E_USERS = {
  * value='' — the giveaway is an inputValue that doesn't stick (webkit).
  */
 export async function fillSticky(page: Page, selector: string, value: string): Promise<void> {
+  // WebKit can accept a fill before React hydrates, then clear an earlier field.
+  await page.waitForLoadState('networkidle')
   const input = page.locator(selector)
   for (let i = 0; i < 20; i++) {
     await input.fill(value)

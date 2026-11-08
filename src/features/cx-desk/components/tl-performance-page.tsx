@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { pageParams } from '@/features/shared/shell/gates'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * TL performance — port of the legacy Desk page (TlPerformance.js):
@@ -176,9 +177,9 @@ function Failed({ message, retry }: { message: string; retry: () => void }) {
   return (
     <div className="dk-failed" role="alert">
       <p>This page could not load: {message}</p>
-      <button type="button" className="btn btn-primary" onClick={retry}>
+      <Button variant="primary" onClick={retry}>
         Try again
-      </button>
+      </Button>
     </div>
   )
 }
@@ -264,6 +265,7 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
         <label className="sr-only" htmlFor={`dk-r-${id}`}>
           Rating, 0 to 100
         </label>
+        {/* eslint-disable-next-line -- kept raw: .dk-slider input[type=range] needs native pseudo-element styling */}
         <input
           id={`dk-r-${id}`}
           type="range"
@@ -296,7 +298,7 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
           <label className="sr-only" htmlFor={`dk-note-${id}`}>
             Note
           </label>
-          <textarea
+          <Textarea
             id={`dk-note-${id}`}
             className="input dk-note"
             rows={2}
@@ -304,14 +306,14 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
             value={n}
             onInput={(e) => setN(e.currentTarget.value)}
           />
-          <button
-            type="button"
-            className="btn btn-primary dk-sm"
+          <Button
+            variant="primary"
+            className="dk-sm"
             disabled={busy || (v === value && n.trim() === note) || (g === 'below' && n.trim().length < 10)}
             onClick={() => void save()}
           >
             {busy ? 'Saving…' : 'Save rating'}
-          </button>
+          </Button>
         </>
       ) : null}
       <ErrMsg message={err} />
@@ -363,18 +365,18 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
           <label className="dk-fine" htmlFor="dk-otd-m">
             Enter OTD % for
           </label>
-          <select id="dk-otd-m" className="select" value={month} onChange={(e) => pick(e.currentTarget.value)}>
+          <Select id="dk-otd-m" className="select" value={month} onChange={(e) => pick(e.currentTarget.value)}>
             {data.months.map((m) => (
               <option key={m.month} value={m.month}>
                 {m.month}
               </option>
             ))}
-          </select>
+          </Select>
           <div className="dk-otd__grid">
             {data.warehouses.map((w, i) => (
               <label key={w} className="dk-fine">
                 {w}
-                <input
+                <Input
                   className="input"
                   type="number"
                   min={0}
@@ -389,9 +391,9 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
               </label>
             ))}
           </div>
-          <button
-            type="button"
-            className="btn btn-primary dk-sm"
+          <Button
+            variant="primary"
+            className="dk-sm"
             disabled={busy}
             onClick={async () => {
               setBusy(true)
@@ -407,7 +409,7 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
             }}
           >
             {busy ? 'Saving…' : 'Save OTD'}
-          </button>
+          </Button>
           <ErrMsg message={err} />
         </div>
       ) : null}
@@ -691,9 +693,9 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
         </p>
       ))}
       <p className="dk-fine">
-        <button type="button" className="btn btn-quiet dk-sm" onClick={reload}>
+        <Button variant="quiet" className="dk-sm" onClick={reload}>
           Reload
-        </button>
+        </Button>
       </p>
     </>
   )
@@ -717,13 +719,13 @@ export default function TlPerformancePage() {
     data && data.tls.length > 1 ? (
       <label className="dk-pick">
         <span className="sr-only">Team lead</span>
-        <select className="select" value={data.tl} onChange={(e) => setTl(e.currentTarget.value)}>
+        <Select className="select" value={data.tl} onChange={(e) => setTl(e.currentTarget.value)}>
           {data.tls.map((t) => (
             <option key={t.email} value={t.email}>
               {t.name}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
     ) : null
   return (

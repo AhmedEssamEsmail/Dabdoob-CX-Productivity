@@ -3,6 +3,7 @@
 /* verbatim port of the legacy Analytics page (analytics.closure.js symbols
  * Za/Sa/ke/el/tl/nl; Ja/ht vocabulary; Xe skeletons + an/_t/wt from ./shared). */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Seg, Toggle } from '@/features/shared/components/ui'
 import { AsOfHint, Count, Head, LoadError, Xe, fetchJson, fmt, sweepStyle, useSe, useSweep, useTip } from './shared'
 
 const Ja: [string, string][] = [
@@ -198,6 +199,7 @@ function RankPanel({
         <h2 className="cx-section__title" id="rank-h" ref={r} tabIndex={-1}>
           {l ? (
             <>
+              {/* kept raw:dq-crumb is a bespoke inline crumb button, not a ui/Button */}
               <button type="button" className="dq-crumb" onClick={() => i(null)}>
                 All inflow
               </button>
@@ -209,9 +211,12 @@ function RankPanel({
           )}
         </h2>
         {a ? (
-          <button type="button" className="cx-chip dq-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
-            {ke(s, n)} <span aria-hidden="true">×</span>
-          </button>
+          <>
+            {/* kept raw:dq-rank__chip is a bespoke chip-styled button, not a ui/Button */}
+            <button type="button" className="cx-chip dq-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
+              {ke(s, n)} <span aria-hidden="true">×</span>
+            </button>
+          </>
         ) : (
           <span className="cx-faint">{ke(s, n)}</span>
         )}
@@ -240,9 +245,12 @@ function RankPanel({
                 {t.inOne ? (
                   <div className="dq-rank__row">{b}</div>
                 ) : (
-                  <button type="button" className="dq-rank__row" onClick={() => i(c)} aria-label={`${g}: ${fmt(o)}, ${m}%. Show its channels`}>
-                    {b}
-                  </button>
+                  <>
+                    {/* kept raw:dq-rank__row is a bespoke rank-row button, not a ui/Button */}
+                    <button type="button" className="dq-rank__row" onClick={() => i(c)} aria-label={`${g}: ${fmt(o)}, ${m}%. Show its channels`}>
+                      {b}
+                    </button>
+                  </>
                 )}
               </li>
             )
@@ -323,29 +331,22 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
       ) : (
         <>
           <div className="cx-filters">
-            <div className="cx-seg" role="radiogroup" aria-label="Period">
-              {Ja.map(([y, w]) => (
-                <label key={y}>
-                  <input
-                    type="radio"
-                    name="grain"
-                    checked={l === y}
-                    onChange={() => {
-                      r(y)
-                      d(null)
-                    }}
-                  />
-                  <span>{w}</span>
-                </label>
-              ))}
-            </div>
+            <Seg
+              name="grain"
+              aria-label="Period"
+              value={l}
+              onChange={(y) => {
+                r(y)
+                d(null)
+              }}
+              options={Ja.map(([value, label]) => ({ value, label }))}
+            />
             <fieldset className="cx-fieldset dq-countries">
               <legend className="cx-label">Countries {i.size ? '' : '(all)'}</legend>
               {n.countries.map((y: string) => (
-                <label key={y} className="cx-toggle">
-                  <input type="checkbox" checked={i.has(y)} onChange={() => v(y)} />
-                  <span>{y}</span>
-                </label>
+                <Toggle key={y} checked={i.has(y)} onChange={() => v(y)}>
+                  {y}
+                </Toggle>
               ))}
             </fieldset>
           </div>

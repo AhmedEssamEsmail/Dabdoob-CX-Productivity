@@ -21,6 +21,7 @@ import {
   vsPrev,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 /** Qs — where the auditor and reference differ (verbatim). */
 function DiffList({ c: t }: { c: any }) {
@@ -179,8 +180,7 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
       <label className="cx-label" htmlFor={g}>
         {y}
       </label>
-      <select
-        className="cx-select"
+      <Select
         id={g}
         value={_}
         onChange={(O) => T(O.currentTarget.value)}
@@ -191,7 +191,7 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
             {O.name}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   )
 
@@ -228,8 +228,7 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
         <label className="cx-label" htmlFor="cal-t">
           Ticket number
         </label>
-        <input
-          className="cx-input"
+        <Input
           id="cal-t"
           inputMode="numeric"
           value={a}
@@ -251,13 +250,13 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
           {b}
         </p>
       ) : null}
-      <button
+      <Button
         type="submit"
-        className="cx-btn cx-btn--primary"
+        variant="primary"
         disabled={o}
       >
         {o ? 'Assigning…' : 'Assign calibration'}
-      </button>
+      </Button>
     </form>
   )
 }
@@ -335,15 +334,14 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
                       {u.channel}, as{' '}
                       {u.mineAs === 'tl' ? 'reference' : 'auditor'}
                     </span>
-                    <button
-                      type="button"
-                      className="cx-btn cx-btn--primary"
+                    <Button
+                      variant="primary"
                       onClick={() =>
                         c({ c: u, startedAt: new Date().toISOString() })
                       }
                     >
                       Audit
-                    </button>
+                    </Button>
                   </li>
                 ))}
               </ul>

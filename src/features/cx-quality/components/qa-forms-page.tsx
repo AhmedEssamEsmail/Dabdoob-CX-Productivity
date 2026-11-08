@@ -14,6 +14,7 @@ import {
 } from './qa-shared'
 import { PageHead } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select, Toggle } from '@/features/shared/components/ui'
 
 let aa = 0
 
@@ -118,8 +119,7 @@ function FormBuilder({
           <label className="cx-label" htmlFor="fb-t">
             Title
           </label>
-          <input
-            className="cx-input"
+          <Input
             id="fb-t"
             value={a.title}
             onInput={(h) => s({ ...a, title: h.currentTarget.value })}
@@ -145,53 +145,44 @@ function FormBuilder({
             required
           />
         )}
-        <label className="cx-toggle">
-          <input
-            type="checkbox"
-            checked={a.nonTicket}
-            disabled={a.everyChannel}
-            onChange={(h) =>
-              s({ ...a, nonTicket: h.currentTarget.checked, channel: '' })
-            }
-          />
-          <span>For a non-ticket audit type (e.g. cash refunds)</span>
-        </label>
+        <Toggle
+          checked={a.nonTicket}
+          disabled={a.everyChannel}
+          onChange={(h) =>
+            s({ ...a, nonTicket: h, channel: '' })
+          }
+        >
+          For a non-ticket audit type (e.g. cash refunds)
+        </Toggle>
         {a.nonTicket ? null : (
-          <label className="cx-toggle">
-            <input
-              type="checkbox"
-              checked={a.everyChannel}
-              onChange={(h) =>
-                s({ ...a, everyChannel: h.currentTarget.checked })
-              }
-            />
-            <span>Default for channels with no form of their own</span>
-          </label>
-        )}
-        <label className="cx-toggle">
-          <input
-            type="checkbox"
-            checked={a.active}
-            onChange={(h) => s({ ...a, active: h.currentTarget.checked })}
-          />
-          <span>Active</span>
-        </label>
-        <label className="cx-toggle">
-          <input
-            type="checkbox"
-            checked={a.placeholder}
+          <Toggle
+            checked={a.everyChannel}
             onChange={(h) =>
-              s({ ...a, placeholder: h.currentTarget.checked })
+              s({ ...a, everyChannel: h })
             }
-          />
-          <span>Placeholder (shows a warning on the form)</span>
-        </label>
+          >
+            Default for channels with no form of their own
+          </Toggle>
+        )}
+        <Toggle
+          checked={a.active}
+          onChange={(h) => s({ ...a, active: h })}
+        >
+          Active
+        </Toggle>
+        <Toggle
+          checked={a.placeholder}
+          onChange={(h) =>
+            s({ ...a, placeholder: h })
+          }
+        >
+          Placeholder (shows a warning on the form)
+        </Toggle>
         <div className="cx-field">
           <label className="cx-label" htmlFor="fb-sc">
             Scoring
           </label>
-          <select
-            className="cx-input"
+          <Select
             id="fb-sc"
             value={a.scoring}
             onChange={(h) =>
@@ -208,23 +199,21 @@ function FormBuilder({
             <option value="deduction">
               Deductions (100 minus what failed)
             </option>
-          </select>
+          </Select>
         </div>
       </div>
       {a.sections.map((h: any, b: number) => (
         <fieldset className="qa-sec" key={h.id}>
           <legend className="qa-sec__title">Section {b + 1}</legend>
           <div className="qa-row">
-            <input
-              className="cx-input"
+            <Input
               aria-label={`Section ${b + 1} title`}
               placeholder="Section title, e.g. Resolution"
               value={h.title}
               onInput={(x) => m(b, { title: x.currentTarget.value })}
             />
-            <button
-              type="button"
-              className="cx-btn cx-btn--quiet"
+            <Button
+              variant="quiet"
               disabled={a.sections.length < 2}
               onClick={() =>
                 s({
@@ -236,22 +225,17 @@ function FormBuilder({
               }
             >
               Remove section
-            </button>
+            </Button>
           </div>
-          <label className="cx-toggle">
-            <input
-              type="checkbox"
-              checked={!!h.optional}
-              onChange={(x) => m(b, { optional: x.currentTarget.checked })}
-            />
-            <span>
-              Optional: opens skipped (all N/A, no effect on the score)
-            </span>
-          </label>
+          <Toggle
+            checked={!!h.optional}
+            onChange={(x) => m(b, { optional: x })}
+          >
+            Optional: opens skipped (all N/A, no effect on the score)
+          </Toggle>
           {h.questions.map((x: any, f: number) => (
             <div className="qa-bq" key={x.id}>
-              <input
-                className="cx-input"
+              <Input
                 aria-label="Question"
                 placeholder="What the auditor checks"
                 value={x.text}
@@ -259,8 +243,8 @@ function FormBuilder({
               />
               {u ? (
                 <>
-                  <input
-                    className="cx-input qa-w"
+                  <Input
+                    className="qa-w"
                     type="number"
                     min={0}
                     max={100}
@@ -277,8 +261,8 @@ function FormBuilder({
                 </>
               ) : (
                 <>
-                  <input
-                    className="cx-input qa-w"
+                  <Input
+                    className="qa-w"
                     type="number"
                     min={1}
                     max={100}
@@ -289,21 +273,18 @@ function FormBuilder({
                       r(b, f, { weight: Number(g.currentTarget.value) })
                     }
                   />
-                  <label className="cx-toggle">
-                    <input
-                      type="checkbox"
-                      checked={!!x.fatal}
-                      onChange={(g) =>
-                        r(b, f, { fatal: g.currentTarget.checked })
-                      }
-                    />
-                    <span>Critical</span>
-                  </label>
+                  <Toggle
+                    checked={!!x.fatal}
+                    onChange={(g) =>
+                      r(b, f, { fatal: g })
+                    }
+                  >
+                    Critical
+                  </Toggle>
                 </>
               )}
-              <button
-                type="button"
-                className="cx-btn cx-btn--quiet"
+              <Button
+                variant="quiet"
                 disabled={h.questions.length < 2}
                 onClick={() =>
                   m(b, {
@@ -314,9 +295,9 @@ function FormBuilder({
                 }
               >
                 Remove
-              </button>
-              <input
-                className="cx-input qa-bq__hint"
+              </Button>
+              <Input
+                className="qa-bq__hint"
                 aria-label="Guidance for the auditor"
                 placeholder="Guidance for the auditor (optional)"
                 value={x.hint ?? ''}
@@ -324,23 +305,19 @@ function FormBuilder({
               />
             </div>
           ))}
-          <button
-            type="button"
-            className="cx-btn"
+          <Button
             onClick={() => m(b, { questions: [...h.questions, sa()] })}
           >
             Add question
-          </button>
+          </Button>
         </fieldset>
       ))}
       <div className="qa-row">
-        <button
-          type="button"
-          className="cx-btn"
+        <Button
           onClick={() => s({ ...a, sections: [...a.sections, la()] })}
         >
           Add section
-        </button>
+        </Button>
         {u ? (
           <span className="cx-muted">
             An audit scores 100 minus the deductions of the questions failed,
@@ -360,20 +337,19 @@ function FormBuilder({
         </p>
       ) : null}
       <div className="qa-form__foot">
-        <button
+        <Button
           type="submit"
-          className="cx-btn cx-btn--primary"
+          variant="primary"
           disabled={i}
         >
           {i ? 'Saving…' : a.formId ? 'Save as a new version' : 'Create form'}
-        </button>
-        <button
-          type="button"
-          className="cx-btn cx-btn--quiet"
+        </Button>
+        <Button
+          variant="quiet"
           onClick={() => n(false)}
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -406,9 +382,8 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
           />
         ) : (
           <>
-            <button
-              type="button"
-              className="cx-btn cx-btn--primary"
+            <Button
+              variant="primary"
               onClick={() =>
                 c({
                   title: '',
@@ -423,7 +398,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
               }
             >
               New form
-            </button>
+            </Button>
             <div className="cx-panel cx-tablewrap qa-gap">
               <table className="cx-table">
                 <thead>
@@ -468,13 +443,11 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
                         </Chip>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="cx-btn"
+                        <Button
                           onClick={() => c(fl(l, n.auditTypes ?? []))}
                         >
                           Edit
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}

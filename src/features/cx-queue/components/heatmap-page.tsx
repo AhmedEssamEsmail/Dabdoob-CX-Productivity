@@ -7,6 +7,7 @@
  * upload parsers live in ../lib/heatmap-engine (As/Cs/cl/dl/hl/ul/xs + rn/Ts/
  * ml/gl/fl). google.script.run is the /api/queue/heatmap route. */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 import { fetchJson } from './shared'
 import {
   HM_AHT_GROUPS, hmChatSlotMin_, hmCsvParse_, hmCsv_, hmDeepMerge_, hmDefaults_,
@@ -121,17 +122,17 @@ function AdminBuild({ full, onLoaded }: { full: any; onLoaded: (r: any) => void 
             Spreadsheet with the raw tabs (Maqsam, Freshchat, Freshdesk, WA)
           </label>
           <div className="hm-save-set">
-            <input id="hm-sid" className="input" placeholder="Spreadsheet id" value={s} onInput={(c) => a(c.currentTarget.value)} />
-            <button type="button" className="btn btn-quiet" disabled={!!l || !s.trim()} onClick={() => u('source')}>
+            <Input id="hm-sid" className="input" placeholder="Spreadsheet id" value={s} onInput={(c) => a(c.currentTarget.value)} />
+            <Button variant="quiet" disabled={!!l || !s.trim()} onClick={() => u('source')}>
               {l === 'source' ? 'Building…' : 'Build volumes'}
-            </button>
+            </Button>
           </div>
           <p className="hm-hint">Cairo timestamps are moved to Kuwait time before they are counted. Large tabs take up to a few minutes.</p>
         </div>
         <div>
-          <button type="button" className="btn btn-quiet" disabled={!!l} onClick={() => u('prior')}>
+          <Button variant="quiet" disabled={!!l} onClick={() => u('prior')}>
             {l === 'prior' ? 'Reading the September sheet…' : 'Compare with the September heatmap'}
-          </button>
+          </Button>
           <p className="hm-hint">Rebuilds the 03-Sep-2026 heatmap from its own raw tabs and compares it with its HeatMap tab.</p>
         </div>
         {i ? <p className="field-error">{i}</p> : null}
@@ -166,9 +167,9 @@ function SavedSets({ page, over, setOver, onSets }: { page: any; over: any; setO
           {page.sets.map((c: any) => (
             <li key={c.id}>
               <span>{c.name}</span>
-              <button type="button" className="btn btn-quiet" onClick={() => setOver(c.assumptions)}>
+              <Button variant="quiet" onClick={() => setOver(c.assumptions)}>
                 Apply
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -176,10 +177,10 @@ function SavedSets({ page, over, setOver, onSets }: { page: any; over: any; setO
         <p className="hm-hint">None yet. Save the current assumptions to come back to them.</p>
       )}
       <div className="hm-save-set">
-        <input className="input" aria-label="Name for these assumptions" placeholder="Name, e.g. Ramadan plan" maxLength={60} value={l} onInput={(c) => r(c.currentTarget.value)} />
-        <button type="button" className="btn btn-quiet" disabled={!l.trim() || p} onClick={u}>
+        <Input className="input" aria-label="Name for these assumptions" placeholder="Name, e.g. Ramadan plan" maxLength={60} value={l} onInput={(c) => r(c.currentTarget.value)} />
+        <Button variant="quiet" disabled={!l.trim() || p} onClick={u}>
           {p ? 'Saving…' : 'Save assumptions'}
-        </button>
+        </Button>
       </div>
       {i ? <p className="field-error">{i}</p> : null}
     </div>
@@ -221,11 +222,13 @@ function CountryChips({ page, selected, setSelected, onSaved }: { page: any; sel
       <h2 id="hm-countries-h" className="hm-h2">Countries</h2>
       <div className="hm-chips">
         <label className={`hm-chip ${f ? 'is-on' : ''}`}>
+          {/* kept raw:hm-chip is a bespoke chip toggle (is-on class + hidden input), not a ui/Toggle pill */}
           <input type="checkbox" checked={f} onChange={() => setSelected([])} />
           All countries
         </label>
         {o.map((b: string) => (
           <label key={b} className={`hm-chip ${!f && selected.includes(b) ? 'is-on' : ''}`}>
+            {/* kept raw:hm-chip is a bespoke chip toggle (is-on class + hidden input), not a ui/Toggle pill */}
             <input type="checkbox" checked={!f && selected.includes(b)} onChange={() => g(b)} />
             {b}
           </label>
@@ -236,21 +239,20 @@ function CountryChips({ page, selected, setSelected, onSaved }: { page: any; sel
         l ? (
           <div className="hm-edit-countries">
             <label className="field-label" htmlFor="hm-cl">Country list, one per line</label>
-            <textarea id="hm-cl" className="input" rows={5} value={i} onInput={(b) => h(b.currentTarget.value)} />
+            <Textarea id="hm-cl" className="input" rows={5} value={i} onInput={(b) => h(b.currentTarget.value)} />
             <label className="field-label" htmlFor="hm-al">
               Other spellings in the data, one per line as &quot;Saudi Arabia = KSA&quot;
             </label>
-            <textarea id="hm-al" className="input" rows={3} value={p} onInput={(b) => d(b.currentTarget.value)} />
+            <Textarea id="hm-al" className="input" rows={3} value={p} onInput={(b) => d(b.currentTarget.value)} />
             {u ? <p className="field-error">{u}</p> : null}
             <div className="hm-dialog-actions">
-              <button type="button" className="btn btn-quiet" onClick={() => r(false)}>Cancel</button>
-              <button type="button" className="btn btn-primary" onClick={m}>Save countries</button>
+              <Button variant="quiet" onClick={() => r(false)}>Cancel</Button>
+              <Button variant="primary" onClick={m}>Save countries</Button>
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            className="btn btn-quiet"
+          <Button
+            variant="quiet"
             onClick={() => {
               h(o.join('\n'))
               d(Object.entries(page.aliases).map(([b, v]) => `${b} = ${v}`).join('\n'))
@@ -258,7 +260,7 @@ function CountryChips({ page, selected, setSelected, onSaved }: { page: any; sel
             }}
           >
             Edit country list
-          </button>
+          </Button>
         )
       ) : null}
     </div>
@@ -279,6 +281,7 @@ function HmGroup({ title, children, open = true }: { title: string; children: Re
 function HmToggle({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
     <label className="hm-toggle">
+      {/* kept raw:hm-toggle is a bespoke inline checkbox row, not a ui/Toggle pill */}
       <input type="checkbox" checked={checked} onChange={(l) => onChange(l.currentTarget.checked)} />
       <span>
         {label}
@@ -296,7 +299,7 @@ function HmTime({ label, value, onChange, compact }: { label: string; value: str
       <label htmlFor={l} className={compact ? 'sr-only' : undefined}>
         {label}
       </label>
-      <input id={l} className="input" type="time" step={1800} value={value} onChange={(r) => r.currentTarget.value && onChange(r.currentTarget.value)} />
+      <Input id={l} className="input" type="time" step={1800} value={value} onChange={(r) => r.currentTarget.value && onChange(r.currentTarget.value)} />
     </div>
   )
 }
@@ -315,7 +318,7 @@ function HmNum({ label, path, a, set, scale = 1, min, max, step = 1, hint, unit 
         {label}
         {unit ? <span className="hm-unit"> ({unit})</span> : null}
       </label>
-      <input
+      <Input
         id={u}
         className="input"
         type="number"
@@ -347,9 +350,9 @@ function AssumptionPanel({ a, set, chatSlotAuto, onReset }: { a: any; set: (path
     <div className="hm-panel">
       <div className="hm-panel-head">
         <h2 className="hm-h2">Assumptions</h2>
-        <button type="button" className="btn btn-quiet" onClick={onReset}>
+        <Button variant="quiet" onClick={onReset}>
           Reset to defaults
-        </button>
+        </Button>
       </div>
       <HmGroup title="Calls (Erlang C)">
         <HmNum label="Service level target" unit="%" path={['calls', 'slTarget']} a={a} set={set} scale={100} min={50} max={99} />
@@ -378,7 +381,7 @@ function AssumptionPanel({ a, set, chatSlotAuto, onReset }: { a: any; set: (path
           <label htmlFor="hm-slot">
             Slot time per chat <span className="hm-unit">(minutes)</span>
           </label>
-          <input
+          <Input
             id="hm-slot"
             className="input"
             type="number"
@@ -425,6 +428,7 @@ function AssumptionPanel({ a, set, chatSlotAuto, onReset }: { a: any; set: (path
           {l.map((d: any, u: number) => (
             <div className="hm-shift" key={d.id}>
               <label className="hm-toggle">
+                {/* kept raw:hm-shift enable checkbox is a bespoke hm-toggle row, not a ui/Toggle pill */}
                 <input type="checkbox" checked={d.enabled !== false} onChange={(c) => i(u, { enabled: c.currentTarget.checked })} />
                 <span className={`hm-shift-name hm-shift-${String(d.id).toLowerCase()}`}>{d.id}</span>
               </label>
@@ -666,6 +670,7 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
           <legend className="sr-only">Show</legend>
           {c.map((f) => (
             <label key={f.id} className={`hm-chip ${layer === f.id ? 'is-on' : ''}`}>
+              {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
               <input type="radio" name="hm-layer" checked={layer === f.id} onChange={() => setLayer(f.id)} />
               {f.label}
             </label>
@@ -826,6 +831,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
       <h2 id="hm-up" className="hm-h2">Upload a heatmap</h2>
       <p className="hm-hint">Use volumes you prepared elsewhere. Headcount is worked out from them the same way, with the assumptions on this page.</p>
       <label className="hm-drop">
+        {/* kept raw:hm-drop is a bespoke file dropzone (hidden input + dashed frame), not a ui control */}
         <input type="file" accept=".csv,.xlsx" onChange={(A) => T(A.currentTarget.files?.[0] ?? undefined)} />
         <span>{d || 'Choose a .csv or .xlsx file'}</span>
       </label>
@@ -836,6 +842,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
             <legend>Each row covers</legend>
             {[60, 30].map((A) => (
               <label key={A} className={`hm-chip ${w === A ? 'is-on' : ''}`}>
+                {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
                 <input type="radio" name="hm-int" checked={w === A} onChange={() => M(A)} />
                 {A === 60 ? 'One hour' : 'Half an hour'}
               </label>
@@ -847,12 +854,13 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
               <legend>This file is for</legend>
               {['*', ...countries, OTHER].map((A) => (
                 <label key={A} className={`hm-chip ${m === A ? 'is-on' : ''}`}>
+                  {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
                   <input type="radio" name="hm-c" checked={m === A} onChange={() => b(A)} />
                   {A === '*' ? 'All countries together' : A === OTHER ? 'Other…' : A}
                 </label>
               ))}
               {m === OTHER ? (
-                <input className="input hm-other" placeholder="Country name" maxLength={40} value={v} onInput={(A) => y(A.currentTarget.value)} aria-label="Other country" />
+                <Input className="input hm-other" placeholder="Country name" maxLength={40} value={v} onInput={(A) => y(A.currentTarget.value)} aria-label="Other country" />
               ) : null}
             </fieldset>
           ) : null}
@@ -868,7 +876,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
           )}
           <div className="field">
             <label className="field-label" htmlFor="hm-up-name">Name</label>
-            <input id="hm-up-name" className="input" maxLength={80} value={$} onInput={(A) => L(A.currentTarget.value)} />
+            <Input id="hm-up-name" className="input" maxLength={80} value={$} onInput={(A) => L(A.currentTarget.value)} />
           </div>
         </div>
       ) : null}
@@ -928,22 +936,22 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
           file is one country; you choose which after choosing the file.
         </p>
         <div className="hm-need-actions">
-          <button type="button" className="btn btn-quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
+          <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
             Download example: one row per value
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
+          </Button>
+          <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
             Download example: HeatMap tab layout
-          </button>
+          </Button>
         </div>
       </details>
       {f ? (
         <p className="field-error" role="alert">{f}</p>
       ) : null}
       <div className="hm-dialog-actions">
-        <button type="button" className="btn btn-quiet" onClick={onClose}>Cancel</button>
-        <button type="button" className="btn btn-primary" disabled={!C || !!q || H || !N.length} onClick={k}>
+        <Button variant="quiet" onClick={onClose}>Cancel</Button>
+        <Button variant="primary" disabled={!C || !!q || H || !N.length} onClick={k}>
           {H ? 'Saving…' : 'Use this heatmap'}
-        </button>
+        </Button>
       </div>
     </dialog>
   )
@@ -1020,19 +1028,19 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
           {n && n.inputs.length ? (
             <div className="field hm-source">
               <label className="field-label" htmlFor="hm-src">Volumes</label>
-              <select id="hm-src" className="select" value={r?.id ?? ''} onChange={(S) => L(S.currentTarget.value)}>
+              <Select id="hm-src" className="select" value={r?.id ?? ''} onChange={(S) => L(S.currentTarget.value)}>
                 {n.inputs.map((S: any) => (
                   <option key={S.id} value={S.id}>{S.name}</option>
                 ))}
-              </select>
+              </Select>
             </div>
           ) : null}
-          <button type="button" className="btn btn-quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())} title="A small file in the format the upload expects. Replace its numbers with yours.">
+          <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())} title="A small file in the format the upload expects. Replace its numbers with yours.">
             Download example file
-          </button>
-          <button type="button" className="btn btn-primary" onClick={() => b(true)} disabled={!n}>
+          </Button>
+          <Button variant="primary" onClick={() => b(true)} disabled={!n}>
             Upload heatmap
-          </button>
+          </Button>
         </div>
       </header>
       {h ? (
@@ -1041,7 +1049,7 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
       {v ? (
         <p className="hm-banner" role="status">
           {v}{' '}
-          <button type="button" className="btn btn-quiet" onClick={() => y('')}>Dismiss</button>
+          <Button variant="quiet" onClick={() => y('')}>Dismiss</Button>
         </p>
       ) : null}
       <div className="hm-layout">
@@ -1062,12 +1070,12 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
               <p>No volumes yet. Upload a heatmap{n.canAdmin ? ', or build one from the raw tabs below' : ''}.</p>
               <p className="hm-hint">Not sure what the file looks like? Download an example, replace its numbers with yours, then upload it.</p>
               <div className="hm-need-actions">
-                <button type="button" className="btn btn-quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
+                <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
                   Example: one row per value
-                </button>
-                <button type="button" className="btn btn-quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
+                </Button>
+                <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
                   Example: HeatMap tab layout
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/cx-productivity/components/pv-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * KB tracker — port of the legacy Desk page: articles requested of the
@@ -129,9 +130,9 @@ function Failed({ message, retry }: { message: string; retry: () => void }) {
   return (
     <div className="dk-failed" role="alert">
       <p>This page could not load: {message}</p>
-      <button type="button" className="btn btn-primary" onClick={retry}>
+      <Button variant="primary" onClick={retry}>
         Try again
-      </button>
+      </Button>
     </div>
   )
 }
@@ -220,11 +221,11 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
     <form className="dk-kb-form" onSubmit={submit}>
       <label className="dk-fine">
         Article or topic
-        <input className="input" value={f.topic ?? ''} onInput={(e) => set('topic', e.currentTarget.value)} required />
+        <Input className="input" value={f.topic ?? ''} onInput={(e) => set('topic', e.currentTarget.value)} required />
       </label>
       <label className="dk-fine">
         Requested
-        <input
+        <Input
           className="input"
           type="datetime-local"
           value={toLocal(f.requestedAt ?? '')}
@@ -233,7 +234,7 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
       </label>
       <label className="dk-fine">
         Done
-        <input
+        <Input
           className="input"
           type="datetime-local"
           value={toLocal(f.doneAt ?? '')}
@@ -242,23 +243,23 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
       </label>
       <label className="dk-fine">
         Accurate
-        <select className="select" value={f.accurate ?? ''} onChange={(e) => set('accurate', e.currentTarget.value)}>
+        <Select className="select" value={f.accurate ?? ''} onChange={(e) => set('accurate', e.currentTarget.value)}>
           <option value="">Not checked</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
-        </select>
+        </Select>
       </label>
       <label className="dk-fine dk-kb-note">
         Note
-        <input className="input" value={f.note ?? ''} onInput={(e) => set('note', e.currentTarget.value)} />
+        <Input className="input" value={f.note ?? ''} onInput={(e) => set('note', e.currentTarget.value)} />
       </label>
       <div className="md-actions">
-        <button type="submit" className="btn btn-primary dk-sm" disabled={run.busy}>
+        <Button type="submit" variant="primary" className="dk-sm" disabled={run.busy}>
           {run.busy ? 'Saving…' : 'Save'}
-        </button>
-        <button type="button" className="btn btn-quiet dk-sm" onClick={onCancel}>
+        </Button>
+        <Button variant="quiet" className="dk-sm" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
       <ErrMsg message={run.error} />
     </form>
@@ -297,9 +298,9 @@ export default function KbTrackerPage() {
       route={ROUTE}
       aside={
         data.canEdit && !editing ? (
-          <button type="button" className="btn btn-primary dk-sm" onClick={() => setEditing(blank())}>
+          <Button variant="primary" className="dk-sm" onClick={() => setEditing(blank())}>
             Add a KB update
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -342,9 +343,9 @@ export default function KbTrackerPage() {
                   <Badge tone="warn">Open</Badge>
                 )}
                 {data.canEdit ? (
-                  <button type="button" className="btn btn-quiet dk-sm" onClick={() => setEditing(r)}>
+                  <Button variant="quiet" className="dk-sm" onClick={() => setEditing(r)}>
                     Edit
-                  </button>
+                  </Button>
                 ) : null}
               </div>
               <span className="dk-fine">

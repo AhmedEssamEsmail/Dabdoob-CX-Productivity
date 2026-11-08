@@ -1,4 +1,5 @@
 /* verbatim port of the legacy Admin page — thin route entry. */
+import '@/app/styles/hub.css'
 import { AdminPage } from '@/features/cx-hub/components/admin-page'
 
 export default function Page() {

@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchJson, useSe } from './shared'
 import { PwShell, PwLate, PwSkel, PwErr, useBusy, dayTime, taskDraft, routeOf } from './pw'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* Sa / ta — note statuses. */
 const STATUS_LABELS: Record<string, string> = {
@@ -56,7 +57,7 @@ function NoteCapture({ onSaved }: { onSaved: (note: any) => void }) {
   }
   return (
     <section className="nt-capture" aria-label="New note">
-      <textarea
+      <Textarea
         ref={boxRef}
         className="input nt-capture-box"
         rows={4}
@@ -72,7 +73,7 @@ function NoteCapture({ onSaved }: { onSaved: (note: any) => void }) {
         }}
       />
       <div className="nt-capture-foot">
-        <input
+        <Input
           className="input nt-tag"
           list="note-tags"
           placeholder="Tag: a person or topic (optional)"
@@ -87,9 +88,9 @@ function NoteCapture({ onSaved }: { onSaved: (note: any) => void }) {
           }}
         />
         <span className="pw-muted pw-small nt-hint">{SAVE_HINT} saves</span>
-        <button type="button" className="btn btn-primary" disabled={!text.trim()} onClick={save}>
+        <Button variant="primary" disabled={!text.trim()} onClick={save}>
           Save note
-        </button>
+        </Button>
       </div>
       <PwErr message={error} />
     </section>
@@ -142,7 +143,7 @@ function NoteRow({
   return (
     <li className="nt-item" data-status={note.status}>
       {editing ? (
-        <textarea
+        <Textarea
           className="input nt-edit"
           rows={Math.min(12, Math.max(3, draft.split('\n').length + 1))}
           aria-label="Edit note"
@@ -163,7 +164,7 @@ function NoteRow({
         <p className="nt-text">{note.text}</p>
       )}
       <div className="nt-meta">
-        <input
+        <Input
           className="input nt-tag nt-tag-inline"
           list="note-tags"
           placeholder="Add a tag"
@@ -173,7 +174,7 @@ function NoteRow({
           onBlur={saveTag}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
         />
-        <select
+        <Select
           className="select nt-status"
           aria-label="Status"
           value={note.status}
@@ -184,55 +185,55 @@ function NoteRow({
               {STATUS_LABELS[s]}
             </option>
           ))}
-        </select>
+        </Select>
         <time className="pw-muted pw-small pw-num" dateTime={note.createdAt}>
           {dayTime(note.createdAt)}
         </time>
         <span className="nt-actions">
           {editing ? (
             <>
-              <button type="button" className="btn btn-small btn-primary" disabled={!draft.trim()} onClick={saveText}>
+              <Button size="sm" variant="primary" disabled={!draft.trim()} onClick={saveText}>
                 Save
-              </button>
-              <button
-                type="button"
-                className="btn btn-small btn-quiet"
+              </Button>
+              <Button
+                size="sm"
+                variant="quiet"
                 onClick={() => {
                   setDraft(note.text)
                   setEditing(false)
                 }}
               >
                 Cancel
-              </button>
+              </Button>
             </>
           ) : confirming ? (
             <>
               <span className="pw-small">Delete this note?</span>
-              <button type="button" className="btn btn-small btn-danger" disabled={busy} onClick={() => void onDelete()}>
+              <Button size="sm" variant="danger" disabled={busy} onClick={() => void onDelete()}>
                 Delete
-              </button>
-              <button type="button" className="btn btn-small btn-quiet" onClick={() => setConfirming(false)}>
+              </Button>
+              <Button size="sm" variant="quiet" onClick={() => setConfirming(false)}>
                 Keep it
-              </button>
+              </Button>
             </>
           ) : (
             <>
-              <button type="button" className="btn btn-small btn-quiet" onClick={makeTask}>
+              <Button size="sm" variant="quiet" onClick={makeTask}>
                 Make task
-              </button>
-              <button
-                type="button"
-                className="btn btn-small btn-quiet"
+              </Button>
+              <Button
+                size="sm"
+                variant="quiet"
                 onClick={() => {
                   setDraft(note.text)
                   setEditing(true)
                 }}
               >
                 Edit
-              </button>
-              <button type="button" className="btn btn-small btn-quiet nt-del" onClick={() => setConfirming(true)}>
+              </Button>
+              <Button size="sm" variant="quiet" className="nt-del" onClick={() => setConfirming(true)}>
                 Delete
-              </button>
+              </Button>
             </>
           )}
         </span>
@@ -278,7 +279,7 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
       ) : data ? (
         <>
           <div className="nt-bar">
-            <input
+            <Input
               className="input nt-search"
               type="search"
               placeholder="Search notes and tags"

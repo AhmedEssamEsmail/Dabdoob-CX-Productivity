@@ -7,6 +7,7 @@
  *   Mt → qaIsNum, P.confirmCtl → confirmQaCtl.
  */
 import { useState } from 'react'
+import { Button, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   Count,
@@ -63,38 +64,33 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
             </p>
           ) : null}
           <div className="qa-actions">
-            <button
-              type="button"
-              className="cx-btn cx-btn--primary"
+            <Button
+              variant="primary"
               disabled={l}
               onClick={() => u(P.confirmCtl(d.ctlId, true, ''), 'Confirmed: the CTL is done.')}
             >
               Confirm, it was done with {d.tlName || 'my team lead'}
-            </button>
-            <button
-              type="button"
-              className="cx-btn cx-btn--quiet"
+            </Button>
+            <Button
+              variant="quiet"
               disabled={l}
               aria-expanded={deny}
               onClick={() => s(!deny)}
             >
               Deny
-            </button>
+            </Button>
           </div>
           {deny ? (
             <div className="cx-field">
               <label className="cx-label" htmlFor={`nh-${a.auditId}`}>
                 Why you deny it (Mohamed and the team leads read this)
               </label>
-              <textarea
-                className="cx-textarea"
+              <Textarea
                 id={`nh-${a.auditId}`}
                 value={i}
                 onInput={(o) => c(o.currentTarget.value)}
               />
-              <button
-                type="button"
-                className="cx-btn"
+              <Button
                 disabled={l || i.trim().length < 5}
                 onClick={() =>
                   u(
@@ -104,7 +100,7 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
                 }
               >
                 Send denial
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Check-ins page (checkins.closure.js symbol Xa). */
 import { useEffect, useState } from 'react'
+import { Button, Field, Input, Textarea } from '@/features/shared/components/ui'
 import { AgeChip, Head, ListSelect, LoadError, Skeleton, fetchJson, hm, useHashParams, useSe } from './shared'
 
 const STATUS_ORDER = (t: string) => {
@@ -115,7 +116,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
             <div className="cx-note" data-status="warn">
               <div>
                 <strong>Missed today: {missed.map((k: any) => k.slot).join(', ')}.</strong> You can still answer a missed check-in; it is saved as late with your note, so Mohamed sees why.{' '}
-                {missed.map((k: any) => <button key={k.slot} type="button" className="cx-btn cx-btn--quiet" onClick={() => setSlot(k.slot)}>Answer {k.slot}</button>)}
+                {missed.map((k: any) => <Button key={k.slot} variant="quiet" onClick={() => setSlot(k.slot)}>Answer {k.slot}</Button>)}
               </div>
             </div>
           ) : null}
@@ -149,8 +150,9 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                       <span><b className="cx-num">{k.open}</b> open</span>
                       {a.previousSlot ? <span className="cx-delta">{delta(k.delta)} since {a.previousSlot}</span> : null}
                       <span className="cx-lock">{k.kind === 'chat' ? `From the daily report${k.sourceAsOf ? `, ${hm(k.sourceAsOf)}` : ''}` : `From Freshdesk${a.dataAsOf ? `, ${hm(a.dataAsOf)}` : ''}`}</span>
+                      {/* kept raw:dq-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
                       <label className="dq-correct"><input type="checkbox" checked={draft[k.queue].correct} onChange={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], correct: (e.target as HTMLInputElement).checked } }))} /> Correct the count</label>
-                      {draft[k.queue].correct ? <input className="cx-input cx-num" type="number" min={0} aria-label={`Correct open count for ${k.queue}`} value={draft[k.queue].openCorrected} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], openCorrected: (e.target as HTMLInputElement).value } }))} /> : null}
+                      {draft[k.queue].correct ? <Input className="cx-num" type="number" min={0} aria-label={`Correct open count for ${k.queue}`} value={draft[k.queue].openCorrected} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], openCorrected: (e.target as HTMLInputElement).value } }))} /> : null}
                     </div>
                     <div className="cx-readout">
                       <span>Oldest</span>
@@ -158,33 +160,36 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                       <span className="cx-delta">{k.unassigned} not assigned</span>
                     </div>
                     <div style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
-                      <div className="cx-field">
-                        <label className="cx-label" htmlFor={`q-${k.queue.replace(/\W+/g, '-')}-ag`}>Agents on it now</label>
-                        <input className="cx-input cx-num" id={`q-${k.queue.replace(/\W+/g, '-')}-ag`} type="number" min={0} inputMode="numeric" value={draft[k.queue].agents} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], agents: (e.target as HTMLInputElement).value } }))} />
-                      </div>
+                      <Field label={`Agents on it now`}>
+                        <Input id={`q-${k.queue.replace(/\W+/g, '-')}-ag`} type="number" min={0} inputMode="numeric" className="cx-num" value={draft[k.queue].agents} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], agents: (e.target as HTMLInputElement).value } }))} />
+                      </Field>
                       <ListSelect listKey="queue.status" label="How is it going?" value={draft[k.queue].status} onChange={(s) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], status: s } }))} />
                     </div>
-                    <div className="cx-field">
-                      <label className="cx-label" htmlFor={`q-${k.queue.replace(/\W+/g, '-')}-n`}>What is driving it? <span className="cx-faint" style={{ fontWeight: 400, visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></label>
-                      <textarea className="cx-textarea" id={`q-${k.queue.replace(/\W+/g, '-')}-n`} style={{ minHeight: '6.2rem' }} placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
-                      {errs[k.queue] ? <span className="cx-error">{errs[k.queue]}</span> : null}
-                    </div>
+                    <Field
+                      label={<>What is driving it? <span className="cx-faint" style={{ fontWeight: 400, visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></>}
+                      error={errs[k.queue]}
+                    >
+                      <Textarea id={`q-${k.queue.replace(/\W+/g, '-')}-n`} style={{ minHeight: '6.2rem' }} placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
+                    </Field>
                   </fieldset>
                 ) : null
               )}
               <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)', borderBlockStart: '1px solid var(--cx-line)' }}>
                 {needsReason ? (
-                  <div className="cx-field"><label className="cx-label" htmlFor="reason">Why did you change a count from Freshdesk?</label><input className="cx-input" id="reason" value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} /></div>
+                  <Field label="Why did you change a count from Freshdesk?"><Input id="reason" value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} /></Field>
                 ) : null}
-                <div className="cx-field"><label className="cx-label" htmlFor="gen">Anything the next shift or Mohamed should know? <span className="cx-faint" style={{ fontWeight: 400 }}>Optional</span></label><textarea className="cx-textarea" id="gen" value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} /></div>
+                <Field label={<>Anything the next shift or Mohamed should know? <span className="cx-faint" style={{ fontWeight: 400 }}>Optional</span></>}>
+                  <Textarea id="gen" value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} />
+                </Field>
+                {/* kept raw:dq-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
                 <label className="dq-correct"><input type="checkbox" checked={help} onChange={(e) => setHelp((e.target as HTMLInputElement).checked)} /> I need help from Mohamed now</label>
                 {help ? (
-                  <div className="cx-field"><label className="cx-label" htmlFor="help">What help do you need?</label><textarea className="cx-textarea" id="help" value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /><span className="cx-hint">Mohamed gets an email and a card on his Home as soon as you submit.</span></div>
+                  <Field label="What help do you need?" hint="Mohamed gets an email and a card on his Home as soon as you submit."><Textarea id="help" value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /></Field>
                 ) : null}
                 {err ? <p className="cx-error" role="alert">{err}</p> : null}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--cx-space-3)', alignItems: 'center', justifyContent: 'space-between' }}>
                   <p className="cx-hint">Submitting as <span className="cx-isolate">{a.you}</span>. Saved to the {cur.slot} slot with the time you press the button.</p>
-                  <button className="cx-btn cx-btn--primary" type="submit" disabled={busy || notOpen}>{busy ? 'Submitting…' : done ? `Update ${cur.slot} check-in` : `Submit ${cur.slot} check-in`}</button>
+                  <Button variant="primary" type="submit" disabled={busy || notOpen}>{busy ? 'Submitting…' : done ? `Update ${cur.slot} check-in` : `Submit ${cur.slot} check-in`}</Button>
                 </div>
               </div>
             </form>

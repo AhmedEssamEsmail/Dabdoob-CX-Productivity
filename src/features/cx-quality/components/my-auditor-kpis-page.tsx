@@ -4,6 +4,7 @@
  * (my-auditor-kpis.closure.js symbol js).
  */
 import { useRef } from 'react'
+import { Select } from '@/features/shared/components/ui'
 import {
   P,
   QaPage,
@@ -35,8 +36,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
               <label className="cx-label" htmlFor="mak-m">
                 Month
               </label>
-              <select
-                className="cx-select"
+              <Select
                 id="mak-m"
                 value={a.month}
                 onChange={(l) => {
@@ -49,7 +49,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
                     {l}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           <QaSection id="mak-h" title={`${a.name}, ${a.month}`}>

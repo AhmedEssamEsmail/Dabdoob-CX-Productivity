@@ -8,6 +8,7 @@
  */
 import { useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
+import { Button, Input, Seg, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   P,
@@ -73,26 +74,19 @@ function DecisionForm({
         )
       }}
     >
-      <div className="cx-seg" role="radiogroup" aria-label="Meeting outcome">
-        {x.map(([f, g]) => (
-          <label key={f}>
-            <input
-              type="radio"
-              name={`dec-${disputeId}`}
-              checked={c === f}
-              onChange={() => l(f)}
-            />
-            <span>{g}</span>
-          </label>
-        ))}
-      </div>
+      <Seg
+        name={`dec-${disputeId}`}
+        value={c}
+        onChange={l}
+        options={x.map(([f, g]) => ({ value: f, label: g }))}
+        aria-label="Meeting outcome"
+      />
       {c === 'rescore' ? (
         <div className="cx-field qa-narrow">
           <label className="cx-label" htmlFor={`ns-${disputeId}`}>
             New score, %
           </label>
-          <input
-            className="cx-input"
+          <Input
             id={`ns-${disputeId}`}
             type="number"
             min={0}
@@ -109,8 +103,7 @@ function DecisionForm({
             ? `Where the meeting did not align, for ${ownerName}`
             : 'Note to the agent, auditor and team lead'}
         </label>
-        <textarea
-          className="cx-textarea"
+        <Textarea
           id={`dn-${disputeId}`}
           value={r}
           onInput={(f) => u(f.currentTarget.value)}
@@ -121,9 +114,9 @@ function DecisionForm({
           {h}
         </p>
       ) : null}
-      <button type="submit" className="cx-btn cx-btn--primary" disabled={d}>
+      <Button type="submit" variant="primary" disabled={d}>
         {d ? 'Saving…' : c === 'escalate' ? 'Escalate' : 'Record the decision'}
-      </button>
+      </Button>
     </form>
   )
 }

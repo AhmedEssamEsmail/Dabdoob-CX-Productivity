@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AsOfHint, Head, LoadError, fetchJson, useSe } from './shared'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
+import { Button, Input, Seg, Select } from '@/features/shared/components/ui'
 import { useBoot } from '@/features/shared/shell/context'
 
 /* me — the scorecard facade (Scorecard.js). */
@@ -309,8 +310,7 @@ function ScorecardAdmin() {
               <label className="cx-label" htmlFor="ps-month">
                 Month
               </label>
-              <input
-                className="cx-input"
+              <Input
                 id="ps-month"
                 type="month"
                 required
@@ -323,11 +323,11 @@ function ScorecardAdmin() {
               <label className="cx-label" htmlFor="ps-link">
                 Workbook link or ID
               </label>
-              <input className="cx-input" id="ps-link" required value={link} onInput={(e) => setLink(e.currentTarget.value)} />
+              <Input id="ps-link" required value={link} onInput={(e) => setLink(e.currentTarget.value)} />
             </div>
-            <button type="submit" className="cx-btn cx-btn--primary" disabled={busyKey === 'save'}>
+            <Button type="submit" variant="primary" disabled={busyKey === 'save'}>
               {busyKey === 'save' ? 'Checking…' : 'Check and save'}
-            </button>
+            </Button>
           </form>
           {noteErr ? (
             <div className="cx-note" data-status="bad" role="alert">
@@ -409,13 +409,13 @@ function ScorecardAdmin() {
                       )}
                     </td>
                     <td>
-                      <button type="button" className="cx-btn" disabled={!!busyKey} onClick={() => refresh(m.month)}>
+                      <Button disabled={!!busyKey} onClick={() => refresh(m.month)}>
                         {busyKey === 'r' + m.month ? 'Reading…' : 'Refresh now'}
-                      </button>{' '}
+                      </Button>{' '}
                       {m.usingFallback ? null : (
-                        <button type="button" className="cx-btn cx-btn--danger" disabled={!!busyKey} onClick={() => remove(m.month)}>
+                        <Button variant="danger" disabled={!!busyKey} onClick={() => remove(m.month)}>
                           Remove
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>
@@ -554,30 +554,30 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="sc-from">
                   From
                 </label>
-                <input className="cx-input" id="sc-from" type="date" value={from} onInput={(e) => setFrom(e.currentTarget.value)} />
+                <Input id="sc-from" type="date" value={from} onInput={(e) => setFrom(e.currentTarget.value)} />
               </div>
               <div className="cx-field">
                 <label className="cx-label" htmlFor="sc-to">
                   To
                 </label>
-                <input className="cx-input" id="sc-to" type="date" value={to} onInput={(e) => setTo(e.currentTarget.value)} />
+                <Input id="sc-to" type="date" value={to} onInput={(e) => setTo(e.currentTarget.value)} />
               </div>
-              <button type="button" className="cx-btn cx-btn--primary" onClick={() => apply(from, to)}>
+              <Button variant="primary" onClick={() => apply(from, to)}>
                 Apply
-              </button>
-              <button type="button" className="cx-btn" onClick={() => apply(addDays(todayStr, -30), todayStr)}>
+              </Button>
+              <Button onClick={() => apply(addDays(todayStr, -30), todayStr)}>
                 Last 30 Days
-              </button>
-              <button type="button" className="cx-btn" onClick={() => apply(monthStart(lastMonthEnd), lastMonthEnd)}>
+              </Button>
+              <Button onClick={() => apply(monthStart(lastMonthEnd), lastMonthEnd)}>
                 Last Month
-              </button>
-              <button type="button" className="cx-btn" onClick={() => apply(monthStart(todayStr), todayStr)}>
+              </Button>
+              <Button onClick={() => apply(monthStart(todayStr), todayStr)}>
                 This Month
-              </button>
+              </Button>
               {data.canRefresh ? (
-                <button type="button" className="cx-btn cx-btn--quiet" onClick={refreshNow} disabled={refreshing}>
+                <Button variant="quiet" onClick={refreshNow} disabled={refreshing}>
                   {refreshing ? 'Reading the workbook…' : 'Refresh now'}
-                </button>
+                </Button>
               ) : null}
             </div>
             <p className="cx-hint">
@@ -597,17 +597,20 @@ export function AgentsPage({ route }: { route: { title: string } }) {
           </section>
           {teamView ? (
             <div className="cx-filters">
-              <div className="cx-seg" role="radiogroup" aria-label="View">
-                {['rank', 'detail'].map((v) => (
-                  <label key={v}>
-                    <input type="radio" name="sc-view" checked={view === v} onChange={() => setView(v)} />
-                    <span>{v === 'rank' ? 'Stack Ranking' : 'Agent Detail'}</span>
-                  </label>
-                ))}
-              </div>
+              <Seg
+                name="sc-view"
+                value={view}
+                onChange={(v) => setView(v)}
+                aria-label="View"
+                options={[
+                  { value: 'rank', label: 'Stack Ranking' },
+                  { value: 'detail', label: 'Agent Detail' },
+                ]}
+              />
               {data.scope === 'tl' && view === 'rank' ? (
                 <label className="cx-switch">
                   <span>My team only</span>
+                  {/* eslint-disable-next-line -- kept raw: native checkbox inside .cx-switch label (track span is CSS) */}
                   <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.currentTarget.checked)} />
                   <span className="cx-switch__track" aria-hidden="true" />
                 </label>
@@ -648,16 +651,15 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                         <td className="cx-num-col cx-num">{a.rank ?? '–'}</td>
                         <th scope="row" className="dq-rowhead">
                           {teamView ? (
-                            <button
-                              type="button"
-                              className="cx-btn cx-btn--quiet"
+                            <Button
+                              variant="quiet"
                               onClick={() => {
                                 setAgent(a.email)
                                 setView('detail')
                               }}
                             >
                               {a.name}
-                            </button>
+                            </Button>
                           ) : (
                             a.name
                           )}
@@ -693,7 +695,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 <label className="cx-label" htmlFor="sc-agent">
                   Agent
                 </label>
-                <select className="cx-select" id="sc-agent" value={agent} onChange={(e) => setAgent(e.currentTarget.value)}>
+                <Select id="sc-agent" value={agent} onChange={(e) => setAgent(e.currentTarget.value)}>
                   <option value="">Select agent…</option>
                   {data.agents.map((a: any) => (
                     <option key={a.email} value={a.email}>
@@ -701,7 +703,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                       {a.tlName ? `  —  ${a.tlName}` : ''}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
               {agent ? (
                 detailErr ? (

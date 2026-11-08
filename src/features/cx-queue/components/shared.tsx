@@ -8,6 +8,7 @@
  */
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
+import { Button, Input, Select } from '@/features/shared/components/ui'
 import { pageParams } from '@/features/shared/shell/gates'
 
 export const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
@@ -61,9 +62,9 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
     <div className="cx-note" data-status="bad" role="alert">
       <div>
         <strong>This page could not load.</strong> {message}{' '}
-        <button type="button" className="cx-btn cx-btn--quiet" onClick={onRetry}>
+        <Button variant="quiet" onClick={onRetry}>
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -369,14 +370,14 @@ export function CxFilters({
   const sel = (name: string, p: FilterPick) => (
     <label className="cx-filter" key={name}>
       <span className="sr-only">{name}</span>
-      <select className="select" value={p.value} onChange={(e) => p.onChange(e.target.value)}>
+      <Select className="select" value={p.value} onChange={(e) => p.onChange(e.target.value)}>
         <option value="">{p.all}</option>
         {p.options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   )
   return (
@@ -385,10 +386,12 @@ export function CxFilters({
       {team ? sel('Team', team) : null}
       {priority ? (
         <div className="pw-seg" role="group" aria-label="Priority">
+          {/* kept raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg */}
           <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
             Any priority
           </button>
           {priority.options.map((o) => (
+            // kept raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg
             <button key={o} type="button" aria-pressed={priority.value === o} onClick={() => priority.onChange(priority.value === o ? '' : o)}>
               {o}
             </button>
@@ -398,7 +401,7 @@ export function CxFilters({
       {search ? (
         <label className="cx-filter cx-filter--search">
           <span className="sr-only">Search</span>
-          <input
+          <Input
             className="input"
             type="search"
             value={search.value}
@@ -447,9 +450,9 @@ export function RefreshNow({ onDone }: { onDone: () => void }) {
   }
   return (
     <span className="dq-refresh">
-      <button type="button" className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={go}>
+      <Button disabled={busy || left > 0} aria-busy={busy} onClick={go}>
         {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
-      </button>
+      </Button>
       {msg ? (
         <span className="cx-section__hint" role="status">
           {msg}
@@ -477,6 +480,7 @@ export function AgeLadder({
       {tipEl}
       <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
         {counts.map((h, p) => (
+          // kept raw:cx-ladder__seg is a bespoke age-ramp segment (data-age/--n sizing), not a ui/Button
           <button
             key={p}
             type="button"
@@ -668,7 +672,7 @@ export function ListSelect({
           </span>
         ) : null}
       </label>
-      <select
+      <Select
         id={p}
         className="select"
         value={u ? OPT_OTHER : value}
@@ -686,7 +690,7 @@ export function ListSelect({
           </option>
         ))}
         <option value={OPT_OTHER}>Other…</option>
-      </select>
+      </Select>
       {hint ? (
         <p id={S} className="field-hint">
           {hint}
@@ -694,7 +698,7 @@ export function ListSelect({
       ) : null}
       {u ? (
         <div className="other-row">
-          <input
+          <Input
             ref={M}
             className="input"
             type="text"
@@ -710,12 +714,12 @@ export function ListSelect({
               } else if (q.key === 'Escape') T()
             }}
           />
-          <button type="button" className="btn btn-primary" onClick={O} disabled={g || !o.trim()}>
+          <Button variant="primary" onClick={O} disabled={g || !o.trim()}>
             {g ? 'Adding…' : 'Add choice'}
-          </button>
-          <button type="button" className="btn btn-quiet" onClick={T} disabled={g}>
+          </Button>
+          <Button variant="quiet" onClick={T} disabled={g}>
             Cancel
-          </button>
+          </Button>
         </div>
       ) : null}
       {b || y ? (

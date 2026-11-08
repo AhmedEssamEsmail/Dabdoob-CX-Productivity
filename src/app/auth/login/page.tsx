@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button, Field, Input } from '@/features/shared/components/ui'
 
 /**
  * Legacy state-screen chrome around the sign-in form — same centred panel the
@@ -51,11 +52,8 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-        <div className="field">
-          <label className="field-label" htmlFor="email">
-            Email address
-          </label>
-          <input
+        <Field label="Email address" className="field">
+          <Input
             id="email"
             name="email"
             type="email"
@@ -64,14 +62,10 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@dabdoob.com"
-            className="cx-input"
           />
-        </div>
-        <div className="field">
-          <label className="field-label" htmlFor="password">
-            Password
-          </label>
-          <input
+        </Field>
+        <Field label="Password" className="field">
+          <Input
             id="password"
             name="password"
             type="password"
@@ -79,12 +73,11 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="cx-input"
           />
-        </div>
-        <button type="submit" disabled={loading} className="cx-btn cx-btn--primary">
+        </Field>
+        <Button type="submit" variant="primary" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
-        </button>
+        </Button>
       </form>
       <p className="cx-muted">Secure access for CX Helm team members</p>
     </main>

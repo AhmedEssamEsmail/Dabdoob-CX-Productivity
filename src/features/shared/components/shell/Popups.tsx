@@ -107,6 +107,7 @@ export default function Popups({ popups: initial }: { popups: ShellPopup[] }) {
                   {current.kind.startsWith('qa_') ? 'Open' : 'Log it now'}
                 </a>
               ) : null}
+              {/* kept raw: legacy .btn contract */}
               <button type="button" className="btn btn-quiet" onClick={later}>
                 Later
               </button>

@@ -4,6 +4,7 @@
  * Ie/Ba/Na/Wa/ja/ys/Ua/Va (the cx-ladder _s, Ca filter bar, it status line,
  * count-up nn/gs and skeleton xe live in ./shared). */
 import { Fragment, useRef, useState } from 'react'
+import { Button } from '@/features/shared/components/ui'
 import {
   AgeChip, AgeLadder, AsOfHint, Count, CxFilters, Head, LoadError, RefreshNow, StatusChip, Xe,
   ageRank, bandTop, dayAt, deltaFmt, edgeRank, fetchJson, fmt, hm, reduceMotion,
@@ -75,6 +76,7 @@ function StatTiles({ tiles, active, onPick, label }: { tiles: StatTile[]; active
     <ul className="dq-stats" aria-label={label}>
       {tiles.map((l) => (
         <li key={l.key}>
+          {/* kept raw:dq-stat is a bespoke stat tile (data-status edge + aria-pressed), not a ui/Button */}
           <button type="button" className="dq-stat" data-status={l.status} aria-pressed={active === l.key} onClick={() => onPick(active === l.key ? '' : l.key)}>
             <span className="dq-stat__label">{l.label}</span>
             <span className="dq-stat__row">
@@ -190,9 +192,9 @@ function Board() {
             {c ? (
               <Fragment>
                 Queues counted in “{c.label}”: {f.length} of {t.queues.length}.{' '}
-                <button type="button" className="btn btn-quiet btn-small" onClick={() => l('')}>
+                <Button variant="quiet" size="sm" onClick={() => l('')}>
                   Show all queues
-                </button>{' '}
+                </Button>{' '}
               </Fragment>
             ) : null}
             {t.sinceSlot ? `Change is against the ${t.sinceSlot} snapshot.` : 'No snapshot yet today, so no change column.'}

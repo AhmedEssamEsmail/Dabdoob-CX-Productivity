@@ -7,6 +7,7 @@
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useEffect, useState } from 'react'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -59,12 +60,12 @@ function Pm({ row: n, onSaved: e, onCancel: t }: { row: ConfigRow; onSaved: (row
   return (
     <form className="setting-edit" onSubmit={(u) => void h(u)}>
       {n.kind === 'boolean' ? (
-        <select id={l} className="select" aria-label={n.key} value={i} onChange={(u) => s(u.target.value)}>
+        <Select id={l} className="select" aria-label={n.key} value={i} onChange={(u) => s(u.target.value)}>
           <option value="true">true</option>
           <option value="false">false</option>
-        </select>
+        </Select>
       ) : n.kind === 'list' || n.kind === 'json' ? (
-        <textarea
+        <Textarea
           id={l}
           className="input setting-json"
           aria-label={n.key}
@@ -75,7 +76,7 @@ function Pm({ row: n, onSaved: e, onCancel: t }: { row: ConfigRow; onSaved: (row
           aria-invalid={o ? !0 : void 0}
         />
       ) : (
-        <input
+        <Input
           id={l}
           className="input"
           aria-label={n.key}
@@ -97,12 +98,12 @@ function Pm({ row: n, onSaved: e, onCancel: t }: { row: ConfigRow; onSaved: (row
         </p>
       ) : null}
       <div className="setting-actions">
-        <button type="submit" className="btn btn-primary btn-small" disabled={r}>
+        <Button type="submit" className="btn btn-primary btn-small" disabled={r}>
           {r ? 'Saving…' : 'Save'}
-        </button>
-        <button type="button" className="btn btn-quiet btn-small" disabled={r} onClick={t}>
+        </Button>
+        <Button type="button" className="btn btn-quiet btn-small" disabled={r} onClick={t}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -123,7 +124,7 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
         <label className="field-label" htmlFor="cfg-find">
           Find a setting
         </label>
-        <input
+        <Input
           id="cfg-find"
           className="input"
           type="search"
@@ -156,7 +157,7 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
                 <div className="setting-view">
                   <span className="setting-value">{Am(h)}</span>
                   {h.kind === 'boolean' ? (
-                    <button
+                    <Button
                       type="button"
                       className="btn btn-quiet btn-small"
                       disabled={o === h.key}
@@ -175,11 +176,11 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
                       }}
                     >
                       {o === h.key ? 'Saving…' : `Set to ${!h.value}`}
-                    </button>
+                    </Button>
                   ) : (
-                    <button type="button" className="btn btn-quiet btn-small" onClick={() => a(h.key)} aria-label={`Edit ${h.key}`}>
+                    <Button type="button" className="btn btn-quiet btn-small" onClick={() => a(h.key)} aria-label={`Edit ${h.key}`}>
                       Edit
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -236,7 +237,7 @@ function Im() {
                 {APPS[h].title}
                 {h === Hr ? ' (this app)' : ''}
               </label>
-              <input
+              <Input
                 id={u}
                 className="input"
                 type="url"
@@ -282,11 +283,11 @@ function Pf({ route: n, narrow: e, children: t }: { route: { title: string; purp
 /* Tm — Appearance: the browser-local theme controls. */
 const bm: [string, string][] = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']]
 const wm: [string, string][] = [['en', 'English'], ['ar', 'العربية']]
-const Em: [string, string, string][] = [
-  ['pine', 'Pine', '#1b4c45'],
-  ['blue', 'Blue', '#2b5797'],
-  ['plum', 'Plum', '#6b3a72'],
-  ['rust', 'Rust', '#9a4a1f'],
+const Em: [string, string][] = [
+  ['pine', 'Pine'],
+  ['blue', 'Blue'],
+  ['plum', 'Plum'],
+  ['rust', 'Rust'],
 ]
 const Mf = 'cx.appearance'
 const iu = { theme: 'auto', accent: 'pine', solid: !1, still: !1, lang: 'en' }
@@ -320,6 +321,7 @@ function Tm() {
         <div className="ap-themes">
           {bm.map(([i, s]) => (
             <label className="ap-theme" key={i}>
+              {/* eslint-disable-next-line -- kept raw: ap-theme CSS hides the native radio and styles the sibling swatch */}
               <input type="radio" name="ap-theme" value={i} checked={n.theme === i} onChange={() => t({ theme: i })} />
               <span className="ap-swatch" data-t={i} aria-hidden="true" />
               {D(s)}
@@ -331,19 +333,22 @@ function Tm() {
       <fieldset>
         <legend>{D('Accent')}</legend>
         <div className="ap-dots">
-          {Em.map(([i, s, r]) => (
+          {Em.map(([i, s]) => (
             <label className="ap-dot" title={s} key={i}>
+              {/* eslint-disable-next-line -- kept raw: ap-dot CSS hides the native radio and styles the sibling swatch */}
               <input type="radio" name="ap-accent" value={i} checked={n.accent === i} onChange={() => t({ accent: i })} aria-label={s} />
-              <span style={{ background: r }} />
+              <span data-accent-preview={i} />
             </label>
           ))}
         </div>
       </fieldset>
       <label className="ap-check">
+        {/* eslint-disable-next-line -- kept raw: native checkbox inside ap-check label */}
         <input type="checkbox" checked={n.solid} onChange={(i) => t({ solid: i.target.checked })} />
         {D('Reduce transparency')}
       </label>
       <label className="ap-check">
+        {/* eslint-disable-next-line -- kept raw: native checkbox inside ap-check label */}
         <input type="checkbox" checked={n.still} onChange={(i) => t({ still: i.target.checked })} />
         {D('Reduce motion')}
       </label>
@@ -352,6 +357,7 @@ function Tm() {
         <div className="ap-themes">
           {wm.map(([i, s]) => (
             <label className="ap-check" lang={i} key={i}>
+              {/* eslint-disable-next-line -- kept raw: native radio inside ap-check label */}
               <input type="radio" name="ap-lang" value={i} checked={n.lang === i} onChange={() => t({ lang: i })} />
               {s}
             </label>

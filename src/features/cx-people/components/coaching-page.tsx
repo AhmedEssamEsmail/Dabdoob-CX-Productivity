@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Head, LoadError, fetchJson, useSe } from './shared'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
+import { Button, Select, Textarea } from '@/features/shared/components/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* I — the coaching facade. */
@@ -64,7 +65,7 @@ export function CoachingPage({ route }: { route: { title: string } }) {
               <label className="cx-label" htmlFor="cs-p">
                 Person
               </label>
-              <select className="cx-select" id="cs-p" value={person} onChange={(e) => setPerson(e.currentTarget.value)}>
+              <Select id="cs-p" value={person} onChange={(e) => setPerson(e.currentTarget.value)}>
                 <option value="">Choose a person</option>
                 {data.people.map((p: any) => (
                   <option key={p.email} value={p.email}>
@@ -72,26 +73,25 @@ export function CoachingPage({ route }: { route: { title: string } }) {
                     {p.managerName ? `, team of ${p.managerName}` : ''}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="cx-field">
               <label className="cx-label" htmlFor="cs-t">
                 Topic
               </label>
-              <select className="cx-select" id="cs-t" value={topic} onChange={(e) => setTopic(e.currentTarget.value)}>
+              <Select id="cs-t" value={topic} onChange={(e) => setTopic(e.currentTarget.value)}>
                 {data.topics.map((t: any) => (
                   <option key={t.id} value={t.id}>
                     {t.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="cx-field">
               <label className="cx-label" htmlFor="cs-r">
                 What you saw
               </label>
-              <textarea
-                className="cx-textarea"
+              <Textarea
                 id="cs-r"
                 value={reason}
                 onInput={(e) => setReason(e.currentTarget.value)}
@@ -103,9 +103,9 @@ export function CoachingPage({ route }: { route: { title: string } }) {
                 {formError}
               </p>
             ) : null}
-            <button type="submit" className="cx-btn cx-btn--primary" disabled={busy} style={{ justifySelf: 'start' }}>
+            <Button type="submit" variant="primary" disabled={busy} style={{ justifySelf: 'start' }}>
               {busy ? 'Sending…' : 'Send to their team lead'}
-            </button>
+            </Button>
           </form>
           <section className="cx-section" aria-labelledby="cs-h">
             <div className="cx-section__head">

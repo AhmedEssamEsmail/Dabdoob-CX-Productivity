@@ -30,6 +30,7 @@ export default class ErrorBoundary extends Component<
           <p className="field-error" role="alert">
             This page hit an error and could not be shown: {this.state.error}
           </p>
+          {/* kept raw: legacy .btn contract */}
           <button
             type="button"
             className="btn btn-quiet"

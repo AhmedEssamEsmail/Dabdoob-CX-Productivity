@@ -29,6 +29,7 @@ import {
   prefersReducedMotion,
 } from './pw'
 import { useBootSelector, getBoot } from '@/features/shared/shell/context'
+import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* I — the one-on-ones + tasks facade. */
 const api = {
@@ -608,19 +609,19 @@ function PeriodMetric({
       <div className="oo-period-bar">
         <label className="oo-period-pick">
           <span className="sr-only">{label} period</span>
-          <select className="select" value={pick} onChange={(e) => choose(e.currentTarget.value)}>
+          <Select className="select" value={pick} onChange={(e) => choose(e.currentTarget.value)}>
             {PERIODS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <span className="oo-period-dates">{periodLabel(range[0], range[1])}</span>
       </div>
       {pick === 'custom' ? (
         <div className="oo-period-custom">
-          <input
+          <Input
             className="input"
             type="date"
             aria-label="From"
@@ -628,7 +629,7 @@ function PeriodMetric({
             max={now}
             onInput={(e) => setCustom([e.currentTarget.value, custom[1]])}
           />
-          <input
+          <Input
             className="input"
             type="date"
             aria-label="To"
@@ -636,14 +637,13 @@ function PeriodMetric({
             max={now}
             onInput={(e) => setCustom([custom[0], e.currentTarget.value])}
           />
-          <button
-            type="button"
-            className="btn btn-line btn-small"
+          <Button
+            size="sm"
             disabled={!custom[0] || !custom[1] || custom[0] > custom[1]}
             onClick={() => setRange([custom[0], custom[1]])}
           >
             Show
-          </button>
+          </Button>
         </div>
       ) : null}
       {err ? (
@@ -956,6 +956,7 @@ function ProjStatusForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) =>
     <div className="oo-proj-form">
       <div className="pw-seg" role="group" aria-label="Status">
         {PROJ_STATUS.map((b) => (
+          // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
           <button key={b.id} type="button" aria-pressed={status === b.id} onClick={() => setStatus(b.id)}>
             {b.label}
           </button>
@@ -964,17 +965,17 @@ function ProjStatusForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) =>
       {lbl ? (
         <label className="field">
           <span className="field-label">{lbl}</span>
-          <input className="input" value={text} onInput={(e) => setText(e.currentTarget.value)} />
+          <Input className="input" value={text} onInput={(e) => setText(e.currentTarget.value)} />
         </label>
       ) : null}
       <PwErr message={busy.error} />
       <div className="oo-proj-btns">
-        <button type="button" className="btn btn-quiet btn-small" onClick={onCancel}>
+        <Button size="sm" variant="quiet" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-small"
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
           disabled={busy.busy || (!!lbl && status !== 'cancelled' && !text.trim())}
           onClick={() =>
             void busy.run(async () => {
@@ -998,7 +999,7 @@ function ProjStatusForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) =>
           }
         >
           Save status
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -1023,12 +1024,12 @@ function FitBox({
         <strong>Does not fit the free hours.</strong> {text}
       </p>
       <div className="oo-proj-btns">
-        <button type="button" className="btn btn-line btn-small" onClick={onCancel}>
+        <Button size="sm" onClick={onCancel}>
           Change it
-        </button>
-        <button type="button" className="btn btn-primary btn-small" disabled={busy} onClick={onAnyway}>
+        </Button>
+        <Button size="sm" variant="primary" disabled={busy} onClick={onAnyway}>
           Save anyway
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -1084,70 +1085,70 @@ function ProjEditForm({
     <div className="oo-proj-form">
       <label className="field">
         <span className="field-label">Title</span>
-        <input className="input" value={f.title} onInput={set('title')} />
+        <Input className="input" value={f.title} onInput={set('title')} />
       </label>
       <label className="field">
         <span className="field-label">Description</span>
-        <textarea className="pw-textarea" rows={2} value={f.description} onInput={set('description')} />
+        <Textarea className="pw-textarea" rows={2} value={f.description} onInput={set('description')} />
       </label>
       <label className="field">
         <span className="field-label">Your expectation (what it is rated against)</span>
-        <textarea className="pw-textarea" rows={2} value={f.expectation} onInput={set('expectation')} />
+        <Textarea className="pw-textarea" rows={2} value={f.expectation} onInput={set('expectation')} />
       </label>
       <div className="oo-proj-grid">
         <label className="field">
           <span className="field-label">Priority</span>
-          <select className="select" value={f.priority} onChange={set('priority')}>
+          <Select className="select" value={f.priority} onChange={set('priority')}>
             {['P1', 'P2', 'P3'].map((p) => (
               <option key={p}>{p}</option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Estimate (h)</span>
-          <input className="input" type="number" min={1} max={500} step={0.5} value={f.est} onInput={set('est')} />
+          <Input className="input" type="number" min={1} max={500} step={0.5} value={f.est} onInput={set('est')} />
         </label>
         <label className="field">
           <span className="field-label">Start (Kuwait)</span>
-          <input className="input" type="datetime-local" value={f.start} onInput={set('start')} />
+          <Input className="input" type="datetime-local" value={f.start} onInput={set('start')} />
         </label>
         <label className="field">
           <span className="field-label">Deadline (Kuwait)</span>
-          <input className="input" type="datetime-local" value={f.deadline} onInput={set('deadline')} />
+          <Input className="input" type="datetime-local" value={f.deadline} onInput={set('deadline')} />
         </label>
       </div>
       {moved ? (
         <label className="field">
           <span className="field-label">Why the deadline moves</span>
-          <input className="input" value={f.reason} onInput={set('reason')} />
+          <Input className="input" value={f.reason} onInput={set('reason')} />
         </label>
       ) : null}
       {owners.length ? (
         <label className="field">
           <span className="field-label">Owner</span>
-          <select className="select" value={f.owner} onChange={set('owner')}>
+          <Select className="select" value={f.owner} onChange={set('owner')}>
             {owners.map((o) => (
               <option key={o.email} value={o.email}>
                 {o.name}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       ) : null}
       <FitBox text={busy.fit} busy={busy.busy} onAnyway={() => void save(true)} onCancel={() => busy.setFit('')} />
       <PwErr message={busy.error} />
       <div className="oo-proj-btns">
-        <button type="button" className="btn btn-quiet btn-small" onClick={onCancel}>
+        <Button size="sm" variant="quiet" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-small"
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
           disabled={busy.busy || !f.title.trim() || (moved && !f.reason.trim())}
           onClick={() => void save()}
         >
           {busy.busy ? 'Saving…' : 'Save changes'}
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -1163,7 +1164,7 @@ function ProjProgressForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) 
       <div className="oo-proj-grid">
         <label className="field">
           <span className="field-label">Percent done</span>
-          <input
+          <Input
             className="input"
             type="number"
             min={0}
@@ -1175,21 +1176,21 @@ function ProjProgressForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) 
         </label>
         <label className="field">
           <span className="field-label">Next step</span>
-          <input className="input" value={nextStep} onInput={(e) => setNextStep(e.currentTarget.value)} />
+          <Input className="input" value={nextStep} onInput={(e) => setNextStep(e.currentTarget.value)} />
         </label>
       </div>
       <label className="field">
         <span className="field-label">Where it stands</span>
-        <input className="input" value={note} onInput={(e) => setNote(e.currentTarget.value)} />
+        <Input className="input" value={note} onInput={(e) => setNote(e.currentTarget.value)} />
       </label>
       <PwErr message={busy.error} />
       <div className="oo-proj-btns">
-        <button type="button" className="btn btn-quiet btn-small" onClick={onCancel}>
+        <Button size="sm" variant="quiet" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-small"
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
           disabled={busy.busy || !note.trim()}
           onClick={() =>
             void busy.run(async () => {
@@ -1206,7 +1207,7 @@ function ProjProgressForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) 
           }
         >
           Post progress
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -1256,15 +1257,15 @@ function ProjectRow({ t, i, owners, onSaved }: { t: any; i: number; owners: any[
       </p>
       {!closed && !form ? (
         <div className="oo-proj-btns oo-proj-btns--start">
-          <button type="button" className="btn btn-line btn-small" onClick={() => setForm('edit')}>
+          <Button size="sm" onClick={() => setForm('edit')}>
             Edit
-          </button>
-          <button type="button" className="btn btn-line btn-small" onClick={() => setForm('progress')}>
+          </Button>
+          <Button size="sm" onClick={() => setForm('progress')}>
             Post progress
-          </button>
-          <button type="button" className="btn btn-line btn-small" onClick={() => setForm('status')}>
+          </Button>
+          <Button size="sm" onClick={() => setForm('status')}>
             Status
-          </button>
+          </Button>
         </div>
       ) : null}
       {form === 'edit' ? <ProjEditForm t={t} owners={owners} onSaved={saved} onCancel={() => setForm('')} /> : null}
@@ -1303,11 +1304,11 @@ function ProjectAdd({ owner, onAdded }: { owner: string; onAdded: (x: any) => vo
     <div className="oo-proj-form">
       <label className="field">
         <span className="field-label">New project title</span>
-        <input className="input" value={f.title} onInput={(e) => setF({ ...f, title: e.currentTarget.value })} />
+        <Input className="input" value={f.title} onInput={(e) => setF({ ...f, title: e.currentTarget.value })} />
       </label>
       <label className="field">
         <span className="field-label">Your expectation: the result you will rate Below, Meets or Exceeds</span>
-        <textarea
+        <Textarea
           className="pw-textarea"
           rows={2}
           value={f.expectation}
@@ -1317,15 +1318,15 @@ function ProjectAdd({ owner, onAdded }: { owner: string; onAdded: (x: any) => vo
       <div className="oo-proj-grid">
         <label className="field">
           <span className="field-label">Priority</span>
-          <select className="select" value={f.priority} onChange={(e) => setF({ ...f, priority: e.currentTarget.value })}>
+          <Select className="select" value={f.priority} onChange={(e) => setF({ ...f, priority: e.currentTarget.value })}>
             {['P1', 'P2', 'P3'].map((p) => (
               <option key={p}>{p}</option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="field">
           <span className="field-label">Estimate (h)</span>
-          <input
+          <Input
             className="input"
             type="number"
             min={1}
@@ -1336,7 +1337,7 @@ function ProjectAdd({ owner, onAdded }: { owner: string; onAdded: (x: any) => vo
         </label>
         <label className="field">
           <span className="field-label">Deadline (end of their shift)</span>
-          <input
+          <Input
             className="input"
             type="date"
             value={f.deadline}
@@ -1347,23 +1348,23 @@ function ProjectAdd({ owner, onAdded }: { owner: string; onAdded: (x: any) => vo
       <FitBox text={busy.fit} busy={busy.busy} onAnyway={() => void save(true)} onCancel={() => busy.setFit('')} />
       <PwErr message={busy.error} />
       <div className="oo-proj-btns">
-        <button type="button" className="btn btn-quiet btn-small" onClick={() => setOpen(false)}>
+        <Button size="sm" variant="quiet" onClick={() => setOpen(false)}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-small"
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
           disabled={busy.busy || !f.title.trim() || !(Number(f.est) > 0)}
           onClick={() => void save()}
         >
           {busy.busy ? 'Adding…' : 'Add project'}
-        </button>
+        </Button>
       </div>
     </div>
   ) : (
-    <button type="button" className="btn btn-line btn-small oo-proj-add" onClick={() => setOpen(true)}>
+    <Button size="sm" className="oo-proj-add" onClick={() => setOpen(true)}>
       Add project
-    </button>
+    </Button>
   )
 }
 
@@ -1478,6 +1479,7 @@ function TopicSection({
         </h3>
         <div className="pw-seg" role="group" aria-label="Raised by">
           {raisers.map((r) => (
+            // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
             <button key={r} type="button" aria-pressed={state.raisedBy === r} onClick={() => onChange({ raisedBy: r })}>
               {raiserLabel[r]}
             </button>
@@ -1491,7 +1493,7 @@ function TopicSection({
             <span className="field-label" style={{ fontWeight: 500 }}>
               {p.text}
             </span>
-            <textarea
+            <Textarea
               className="pw-textarea"
               style={{ minHeight: 56 }}
               value={state.answers[p.id] ?? ''}
@@ -1513,6 +1515,7 @@ function TopicSection({
               <span className="field-label">{f.label}</span>
               <div className="pw-seg" role="group" aria-label={f.label}>
                 {['yes', 'no'].map((v) => (
+                  // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
                   <button
                     key={v}
                     type="button"
@@ -1530,7 +1533,7 @@ function TopicSection({
                 {f.label}
                 {f.required ? <span className="req"> *</span> : null}
               </span>
-              <input
+              <Input
                 className="input"
                 type={f.type === 'date' ? 'date' : 'text'}
                 value={state.fields[f.id] ?? ''}
@@ -1551,13 +1554,14 @@ function TopicSection({
             ).map(([k, lbl]) => (
               <label key={k} className="field">
                 <span className="field-label">{lbl}</span>
-                <input className="input" value={ev[k]} onInput={(e) => setEv(k, e.currentTarget.value)} />
+                <Input className="input" value={ev[k]} onInput={(e) => setEv(k, e.currentTarget.value)} />
               </label>
             ))}
             <div className="field">
               <span className="field-label">Was the standard shown to them before?</span>
               <div className="pw-seg" role="group" aria-label="Was the standard shown before?">
                 {['yes', 'no', 'unsure'].map((v) => (
+                  // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
                   <button key={v} type="button" aria-pressed={ev.shownBefore === v} onClick={() => setEv('shownBefore', v)}>
                     {v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure'}
                   </button>
@@ -1571,20 +1575,20 @@ function TopicSection({
             </div>
             <label className="field">
               <span className="field-label">Their explanation</span>
-              <input className="input" value={ev.explanation} onInput={(e) => setEv('explanation', e.currentTarget.value)} />
+              <Input className="input" value={ev.explanation} onInput={(e) => setEv('explanation', e.currentTarget.value)} />
             </label>
           </fieldset>
         ) : null}
         <label className="field" style={{ maxWidth: 320 }}>
           <span className="field-label">Outcome</span>
-          <select className="select" value={state.outcome} onChange={(e) => onChange({ outcome: e.currentTarget.value })}>
+          <Select className="select" value={state.outcome} onChange={(e) => onChange({ outcome: e.currentTarget.value })}>
             <option value="">Choose an outcome</option>
             {shown.map((o) => (
               <option key={o} value={o}>
                 {o}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       </div>
     </section>
@@ -1649,6 +1653,7 @@ function CarriedReview({
             </div>
             <div className="pw-seg" role="group" aria-label={`Outcome for ${a.title}`}>
               {REVIEW_OUTCOMES.map((o) => (
+                // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
                 <button
                   key={o.id}
                   type="button"
@@ -1664,7 +1669,7 @@ function CarriedReview({
               v.outcome === 'carried' ? (
                 <label className="field" style={{ maxWidth: 220 }}>
                   <span className="field-label">New due date</span>
-                  <input
+                  <Input
                     className="input"
                     type="date"
                     min={today()}
@@ -1676,7 +1681,7 @@ function CarriedReview({
               ) : (
                 <label className="field">
                   <span className="field-label">{REVIEW_NOTE_LABELS[v.outcome]}</span>
-                  <input
+                  <Input
                     className="input"
                     value={v.note ?? ''}
                     disabled={disabled}
@@ -1839,6 +1844,7 @@ function LogForm({
               {start.suggestions.map((s: any) => (
                 <div key={s.topic} className="pw-suggest">
                   <label className="pw-check">
+                    {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
                     <input type="checkbox" checked={topics.includes(s.topic)} onChange={() => toggleTopic(s.topic)} />
                     <strong>{s.label}</strong>
                   </label>
@@ -1860,6 +1866,7 @@ function LogForm({
           ) : null}
           <div className="pw-chips" role="group" aria-label="Topics">
             {library.map((d: any) => (
+              // eslint-disable-next-line -- kept raw: .pw-chip aria-pressed toggle chip (family chrome)
               <button
                 key={d.id}
                 type="button"
@@ -1894,7 +1901,7 @@ function LogForm({
               <div key={i} className="pw-new-action">
                 <label className="field">
                   <span className="field-label">Action</span>
-                  <input
+                  <Input
                     className="input"
                     placeholder="Starts with a verb, e.g. Re-read refund SOP section 4"
                     value={a.title}
@@ -1905,7 +1912,7 @@ function LogForm({
                 </label>
                 <label className="field">
                   <span className="field-label">Owner</span>
-                  <select
+                  <Select
                     className="select"
                     value={a.ownerEmail}
                     onChange={(e) =>
@@ -1917,11 +1924,11 @@ function LogForm({
                         {o.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className="field">
                   <span className="field-label">Due</span>
-                  <input
+                  <Input
                     className="input"
                     type="date"
                     min={today()}
@@ -1931,29 +1938,28 @@ function LogForm({
                     }
                   />
                 </label>
-                <button
-                  type="button"
-                  className="btn btn-quiet btn-small"
+                <Button
+                  size="sm"
+                  variant="quiet"
                   aria-label={`Remove action ${i + 1}`}
                   onClick={() => setActions((v) => v.filter((_, j) => j !== i))}
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             ))}
-            <button
-              type="button"
-              className="btn btn-line btn-small"
+            <Button
+              size="sm"
               onClick={() =>
                 setActions((v) => [...v, { title: '', ownerEmail: start.report.email, dueDate: addDays(today(), 7) }])
               }
             >
               Add action
-            </button>
+            </Button>
             {actions.some((a) => a.title.trim()) ? null : (
               <label className="field" style={{ marginTop: 14 }}>
                 <span className="field-label">No action needed because</span>
-                <input className="input" value={noActionReason} onInput={(e) => setNoActionReason(e.currentTarget.value)} />
+                <Input className="input" value={noActionReason} onInput={(e) => setNoActionReason(e.currentTarget.value)} />
                 <span className="field-hint">
                   Allowed only when every topic is Recognition, Career or Wellbeing and resolved. Reports flag it.
                 </span>
@@ -1968,11 +1974,11 @@ function LogForm({
           <div className="pw-panel" style={{ display: 'grid', gap: 14 }}>
             <label className="field" style={{ maxWidth: 260 }}>
               <span className="field-label">Held at (Kuwait)</span>
-              <input className="input" type="datetime-local" value={heldAt} onInput={(e) => setHeldAt(e.currentTarget.value)} />
+              <Input className="input" type="datetime-local" value={heldAt} onInput={(e) => setHeldAt(e.currentTarget.value)} />
             </label>
             <label className="field">
               <span className="field-label">Private note</span>
-              <textarea className="pw-textarea" value={privateNote} onInput={(e) => setPrivateNote(e.currentTarget.value)} />
+              <Textarea className="pw-textarea" value={privateNote} onInput={(e) => setPrivateNote(e.currentTarget.value)} />
               <span className="field-hint">Seen only by you and Mohamed, never by {start.report.name}.</span>
             </label>
             {start.kind === 'tl' && me.role === 'admin' ? (
@@ -1987,7 +1993,7 @@ function LogForm({
                 ).map(([k, lbl]) => (
                   <label key={k} className="field">
                     <span className="field-label">{lbl}</span>
-                    <textarea
+                    <Textarea
                       className="pw-textarea"
                       value={assessment[k]}
                       onInput={(e) => setAssessment((v) => ({ ...v, [k]: e.currentTarget.value }))}
@@ -1998,14 +2004,13 @@ function LogForm({
             ) : null}
           </div>
           <div className="pw-actions-bar">
-            <button
-              type="button"
-              className="btn btn-primary"
+            <Button
+              variant="primary"
               disabled={busy.busy || !topics.length || needSkipReason.some((s: any) => !skips[s.topic])}
               onClick={submit}
             >
               {busy.busy ? 'Submitting…' : 'Submit 1:1 record'}
-            </button>
+            </Button>
             {allReviewed ? null : <span className="pw-small pw-muted">Review every open action first.</span>}
             {needSkipReason.some((s: any) => !skips[s.topic]) ? (
               <span className="pw-small pw-muted">Give a reason for each unticked suggestion.</span>
@@ -2068,18 +2073,18 @@ function DueRow({
         )}
       </div>
       <div className="pw-row-actions">
-        <button type="button" className="btn btn-line btn-small" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <Button size="sm" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           {booked ? 'Move' : 'Book a time'}
-        </button>
-        <button type="button" className="btn btn-primary btn-small" onClick={() => startLog(p.email)}>
+        </Button>
+        <Button size="sm" variant="primary" onClick={() => startLog(p.email)}>
           Log 1:1
-        </button>
+        </Button>
       </div>
       {open ? (
         <div className="pw-row-wide pw-inline">
           <label className="field">
             <span className="field-label">Date and time (Kuwait)</span>
-            <input
+            <Input
               className="input"
               type="datetime-local"
               value={when || (p.scheduled ? inputDT(p.scheduled.scheduledAt) : '')}
@@ -2089,12 +2094,12 @@ function DueRow({
           {booked ? (
             <label className="field">
               <span className="field-label">Reason for moving</span>
-              <input className="input" value={reason} onInput={(e) => setReason(e.currentTarget.value)} />
+              <Input className="input" value={reason} onInput={(e) => setReason(e.currentTarget.value)} />
             </label>
           ) : (
             <label className="field" style={{ flex: '0 1 120px' }}>
               <span className="field-label">Minutes</span>
-              <input
+              <Input
                 className="input"
                 type="number"
                 min={10}
@@ -2105,9 +2110,9 @@ function DueRow({
               />
             </label>
           )}
-          <button type="button" className="btn btn-primary" disabled={busy.busy || !when} onClick={save}>
+          <Button variant="primary" disabled={busy.busy || !when} onClick={save}>
             {booked ? 'Move 1:1' : 'Book 1:1'}
-          </button>
+          </Button>
         </div>
       ) : null}
       {warnings.length ? (
@@ -2149,12 +2154,12 @@ function MissedRow({
         <span className="pw-row-title">{row.reportName}</span>
         <span className="pw-row-meta pw-num">Planned {dayTime(row.scheduledAt)}</span>
         <span className="pw-row-actions">
-          <button type="button" className="btn btn-primary btn-small" onClick={() => startLog(row.reportEmail, row.scheduleId)}>
+          <Button size="sm" variant="primary" onClick={() => startLog(row.reportEmail, row.scheduleId)}>
             Submit record
-          </button>
-          <button type="button" className="btn btn-line btn-small" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+          </Button>
+          <Button size="sm" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
             Not held
-          </button>
+          </Button>
         </span>
       </div>
       {open ? (
@@ -2168,18 +2173,17 @@ function MissedRow({
           />
           <label className="field">
             <span className="field-label">New date and time (within 5 working days)</span>
-            <input className="input" type="datetime-local" value={newWhen} onInput={(e) => setNewWhen(e.currentTarget.value)} />
+            <Input className="input" type="datetime-local" value={newWhen} onInput={(e) => setNewWhen(e.currentTarget.value)} />
           </label>
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             disabled={busy.busy}
             onClick={() =>
               busy.run(() => api.oneOnOnesMarkNotHeld(row.scheduleId, reason, newWhen)).then((r) => r && reload())
             }
           >
             Mark not held
-          </button>
+          </Button>
         </div>
       ) : null}
       <PwErr message={busy.error} />
@@ -2233,23 +2237,23 @@ function BookedRow({
       </div>
       <div className="pw-row-actions">
         {holder && !started ? (
-          <button type="button" className="btn btn-line btn-small" aria-expanded={move} onClick={() => setMove((m) => !m)}>
+          <Button size="sm" aria-expanded={move} onClick={() => setMove((m) => !m)}>
             Move
-          </button>
+          </Button>
         ) : null}
         {holder ? (
-          <button
-            type="button"
-            className="btn btn-primary btn-small"
+          <Button
+            size="sm"
+            variant="primary"
             onClick={() => startLog(row.reportEmail, row.scheduleId)}
           >
             Log 1:1
-          </button>
+          </Button>
         ) : null}
         {me.role === 'admin' ? (
-          <button type="button" className="btn btn-line btn-small pw-del-btn" onClick={() => setDel(true)}>
+          <Button size="sm" className="pw-del-btn" onClick={() => setDel(true)}>
             Delete
-          </button>
+          </Button>
         ) : null}
       </div>
       {del ? (
@@ -2275,22 +2279,21 @@ function BookedRow({
         <div className="pw-row-wide pw-inline">
           <label className="field">
             <span className="field-label">New date and time (Kuwait)</span>
-            <input className="input" type="datetime-local" value={when} onInput={(e) => setWhen(e.currentTarget.value)} />
+            <Input className="input" type="datetime-local" value={when} onInput={(e) => setWhen(e.currentTarget.value)} />
           </label>
           <label className="field">
             <span className="field-label">Reason for moving</span>
-            <input className="input" value={reason} onInput={(e) => setReason(e.currentTarget.value)} />
+            <Input className="input" value={reason} onInput={(e) => setReason(e.currentTarget.value)} />
           </label>
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             disabled={busy.busy || !when || !reason.trim()}
             onClick={() =>
               busy.run(() => api.oneOnOnesReschedule(row.scheduleId, when, reason)).then((r) => r && reload())
             }
           >
             Move 1:1
-          </button>
+          </Button>
         </div>
       ) : null}
       {busy.error ? (
@@ -2431,7 +2434,7 @@ function LogTab({ data, initial, onDone }: { data: any; initial: any; onDone: ()
       <div className="pw-inline pw-section">
         <label className="field">
           <span className="field-label">Who is the 1:1 with?</span>
-          <select
+          <Select
             className="select"
             value={email}
             onChange={(e) => {
@@ -2445,12 +2448,12 @@ function LogTab({ data, initial, onDone }: { data: any; initial: any; onDone: ()
                 {p.name}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         {slots.length ? (
           <label className="field">
             <span className="field-label">Which booked slot does this record?</span>
-            <select className="select" value={slot} onChange={(e) => setSlot(e.currentTarget.value)}>
+            <Select className="select" value={slot} onChange={(e) => setSlot(e.currentTarget.value)}>
               <option value="">Not booked in advance</option>
               {slots.map((r: any) => (
                 <option key={r.scheduleId} value={r.scheduleId}>
@@ -2458,7 +2461,7 @@ function LogTab({ data, initial, onDone }: { data: any; initial: any; onDone: ()
                   {r.status === 'missed' ? ' (missed)' : ''}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         ) : null}
       </div>
@@ -2545,9 +2548,8 @@ function Records({
               </div>
               <span></span>
               <div className="pw-row-actions">
-                <button
-                  type="button"
-                  className="btn btn-line btn-small"
+                <Button
+                  size="sm"
                   disabled={busy.busy}
                   onClick={() =>
                     busy.run(() => api.oneOnOnesRestore(d.type, d.id)).then((r) => {
@@ -2559,7 +2561,7 @@ function Records({
                   }
                 >
                   Restore
-                </button>
+                </Button>
               </div>
             </li>
           ))}
@@ -2570,12 +2572,12 @@ function Records({
     <>
       <label className="field pw-section" style={{ maxWidth: 280 }}>
         <span className="field-label">Person</span>
-        <select className="select" value={person} onChange={(e) => setPerson(e.currentTarget.value)}>
+        <Select className="select" value={person} onChange={(e) => setPerson(e.currentTarget.value)}>
           <option value="">Everyone</option>
           {names.map((n) => (
             <option key={n}>{n}</option>
           ))}
-        </select>
+        </Select>
       </label>
       <ul className="pw-rows">
         {shown.map((l: any) => (
@@ -2593,18 +2595,17 @@ function Records({
               ) : null}
             </div>
             <div className="pw-row-actions">
-              <button
-                type="button"
-                className="btn btn-line btn-small"
+              <Button
+                size="sm"
                 aria-expanded={openId === l.logId}
                 onClick={() => toggle(openId === l.logId ? '' : l.logId)}
               >
                 {openId === l.logId ? 'Hide' : 'Read'}
-              </button>
+              </Button>
               {admin ? (
-                <button type="button" className="btn btn-line btn-small pw-del-btn" onClick={() => previewDelete(l)}>
+                <Button size="sm" className="pw-del-btn" onClick={() => previewDelete(l)}>
                   Delete
-                </button>
+                </Button>
               ) : null}
             </div>
             {openId === l.logId ? (
@@ -2691,6 +2692,7 @@ export function OneOnOnesPage({ route }: { route: { title: string; purpose?: str
     <PwShell route={routeOf('one-on-ones', route)}>
       <div className="pw-tabs" role="tablist" aria-label="One-to-ones">
         {tabs.map((t) => (
+          // eslint-disable-next-line -- kept raw: .pw-tab role=tab element (family tab chrome)
           <button
             key={t.id}
             type="button"
