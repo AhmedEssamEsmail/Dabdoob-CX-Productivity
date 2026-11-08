@@ -16,7 +16,7 @@
  */
 
 import { pwKwDate_, pwKwTime_ } from '@/features/shared/lib/adapters'
-import { getConfig, setConfig } from '@/features/shared/platform/settings'
+import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { pwDirectory, requireJobCaller } from '@/features/shared/platform/identity'
 import { dqStep_ } from '@/features/shared/jobs/steps'
 import type { JobEnv } from '@/features/shared/jobs/env'
@@ -53,6 +53,16 @@ export async function pwSendOnce_(
   actor: string,
 ): Promise<string> {
   if (sent[key]) return 'skipped'
+  if (!(await remindersOn())) {
+    await pwAppend_('pw_reminder_log', [
+      {
+        dedupe_key: key, kind: msg.kind, ref: msg.ref || '',
+        recipient: ([] as unknown[]).concat(msg.to).join(','), status: 'skipped_off',
+      },
+    ], actor)
+    sent[key] = true
+    return 'skipped'
+  }
   const res = await sendMail(msg as never, actor)
   await pwAppend_('pw_reminder_log', [
     {

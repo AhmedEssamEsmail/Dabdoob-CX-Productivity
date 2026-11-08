@@ -15,7 +15,7 @@ import { sendMail, escapeHtml } from './mail'
 import { raisePopup } from './popups'
 import { normEmail, currentEmail, pwDirectory } from './identity'
 import { assertWritable } from './viewas'
-import { getConfig, appUrls, ccApp } from './settings'
+import { getConfig, appUrls, ccApp, remindersOn } from './settings'
 
 export interface NotifyInput {
   to: string | string[]
@@ -229,6 +229,7 @@ export interface OoAlert {
 export async function oneOnOneAlerts(): Promise<{ now: string; alerts: OoAlert[] }> {
   const email = await currentEmail()
   const now = Date.now()
+  if (!(await remindersOn())) return { now: new Date(now).toISOString(), alerts: [] }
   const soonOn = await pwOoOn('one_on_one_inapp_15min')
   const startOn = await pwOoOn('one_on_one_inapp_start')
   if (!soonOn && !startOn) return { now: new Date(now).toISOString(), alerts: [] }

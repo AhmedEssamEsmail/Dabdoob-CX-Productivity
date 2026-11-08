@@ -42,6 +42,20 @@ function fx(over: HubFx = {}): HubFx {
   }
 }
 
+/**
+ * Config-map envelopes: the port may return extra keys (e.g. `reminders_enabled`,
+ * a port-only feature), but every oracle key must match exactly. Error/refusal
+ * envelopes stay exact via expectSame.
+ */
+function expectConfigSuperset(portRes: { ok?: unknown; err?: string }, legacyRes: { ok?: unknown; err?: string }, label?: string) {
+  const isMap = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+  if (!isMap(legacyRes.ok) || !isMap(portRes.ok)) return expectSame(portRes, legacyRes, label)
+  for (const k of Object.keys(legacyRes.ok)) {
+    const d = diffPath(legacyRes.ok[k], portRes.ok[k], '$.' + k)
+    if (d) throw new Error((label ? label + ' — ' : '') + 'oracle mismatch at ' + d)
+  }
+}
+
 describe('hub admin — config surface (Code.js:69-95)', () => {
   beforeEach(() => {
     cacheClear()
@@ -51,12 +65,12 @@ describe('hub admin — config surface (Code.js:69-95)', () => {
 
   it('getConfig matches', async () => {
     const lf = hubInstall(fx())
-    expectSame(await portCall(() => getAdminConfig()), hubCall('getConfig', [], lf), 'getConfig')
+    expectConfigSuperset(await portCall(() => getAdminConfig()), hubCall('getConfig', [], lf), 'getConfig')
   })
 
   it('setConfig writes + returns the whole map, same as the oracle', async () => {
     const lf = hubInstall(fx())
-    expectSame(
+    expectConfigSuperset(
       await portCall(() => setAdminConfig('checkin_slots', '["09:00","13:00","18:00"]')),
       hubCall('setConfig', ['checkin_slots', '["09:00","13:00","18:00"]'], lf),
       'setConfig'
@@ -79,7 +93,7 @@ describe('hub admin — config surface (Code.js:69-95)', () => {
     ]
     for (const [k, v] of cases) {
       const lf = hubInstall(fx())
-      expectSame(await portCall(() => setAdminConfig(k, v)), hubCall('setConfig', [k, v], lf), 'setConfig ' + k + '=' + JSON.stringify(v))
+      expectConfigSuperset(await portCall(() => setAdminConfig(k, v)), hubCall('setConfig', [k, v], lf), 'setConfig ' + k + '=' + JSON.stringify(v))
     }
   })
 

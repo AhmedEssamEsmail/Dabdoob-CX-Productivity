@@ -109,14 +109,13 @@ function Pm({ row: n, onSaved: e, onCancel: t }: { row: ConfigRow; onSaved: (row
   )
 }
 
-function Dm({ initial: n }: { initial: ConfigRow[] }) {
-  const [e, t] = useState(n)
+function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[]) => void }) {
   const [i, s] = useState('')
   const [r, a] = useState('')
   const [o, c] = useState('')
   const l = (() => {
     const h = i.trim().toLowerCase()
-    return h ? e.filter((u) => u.key.includes(h) || u.description.toLowerCase().includes(h)) : e
+    return h ? rows.filter((u) => u.key.includes(h) || u.description.toLowerCase().includes(h)) : rows
   })()
   return (
     <Ft>
@@ -134,7 +133,7 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
         />
       </div>
       <p className="field-hint">
-        {l.length} of {e.length}. A change applies here at once and in the other apps within 5 minutes.
+        {l.length} of {rows.length}. A change applies here at once and in the other apps within 5 minutes.
       </p>
       <dl className="kv">
         {l.map((h) => (
@@ -149,7 +148,7 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
                   row={h}
                   onCancel={() => a('')}
                   onSaved={(u) => {
-                    t(u)
+                    onSaved(u)
                     a('')
                   }}
                 />
@@ -167,7 +166,7 @@ function Dm({ initial: n }: { initial: ConfigRow[] }) {
                         Ln.saveConfigSetting(h.key, !h.value)
                           .then(
                             (u) => {
-                              t(u)
+                              onSaved(u)
                               Ti(`${h.key} is now ${!h.value}`)
                             },
                             (u) => Ti((u as Error).message, 'error')
@@ -369,6 +368,42 @@ function Tm() {
   )
 }
 
+function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: ConfigRow[]) => void }) {
+  const [busy, setBusy] = useState(false)
+  const row = rows?.find((x) => x.key === 'reminders_enabled')
+  const on = row ? row.value === true : true
+  return (
+    <div className="block">
+      <h2 className="block-title">Reminders</h2>
+      <p className="block-text">
+        Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
+      </p>
+      <p className="block-text">{rows === null ? 'Loading…' : `Reminders are ${on ? 'on' : 'off'}`}</p>
+      <Button
+        type="button"
+        className="btn btn-quiet btn-small"
+        disabled={busy || !row}
+        aria-label={`Turn reminders ${on ? 'off' : 'on'}`}
+        aria-pressed={on}
+        onClick={() => {
+          setBusy(true)
+          Ln.saveConfigSetting('reminders_enabled', !on)
+            .then(
+              (updated) => {
+                onSaved(updated)
+                Ti(`Reminders are ${!on ? 'on' : 'off'}`)
+              },
+              (error) => Ti((error as Error).message, 'error')
+            )
+            .finally(() => setBusy(false))
+        }}
+      >
+        {busy ? 'Saving…' : on ? 'Turn off' : 'Turn on'}
+      </Button>
+    </div>
+  )
+}
+
 /* Nm — the admin page itself. */
 export function AdminPage({ route: n }: { route: { title: string; purpose?: string; reqs?: number[] } }) {
   const [e, t] = useState('')
@@ -400,6 +435,7 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
         </div>
       </div>
       <Im />
+      <Rb rows={r} onSaved={a} />
       <div className="block">
         <h2 className="block-title">Appearance</h2>
         <Tm />
@@ -411,7 +447,7 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
             Settings did not load: {o}
           </p>
         ) : r ? (
-          <Dm initial={r} />
+          <Dm rows={r} onSaved={a} />
         ) : (
           <p className="block-text">Loading settings…</p>
         )}

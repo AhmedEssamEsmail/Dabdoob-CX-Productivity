@@ -28,6 +28,7 @@ export const CONFIG_DEFAULTS: Record<string, { value: unknown; description: stri
   one_on_one_email_15min: { value: true, description: 'Email both people 15 minutes before a booked 1:1 (needs installOneOnOneReminderTrigger).' },
   one_on_one_inapp_15min: { value: true, description: 'In-app alert for both people 15 minutes before a booked 1:1, while the app is open.' },
   one_on_one_inapp_start: { value: true, description: 'In-app alert with a chime at the start time of a booked 1:1, while the app is open.' },
+  reminders_enabled: { value: true, description: 'Master switch; when false all reminders (popups, in-app 1:1 alerts, reminder emails) stop for everyone.' },
   app_url_hub: { value: '', description: 'Web app URL of the Hub app (Hub Admin > Connected apps). Blank: app_url.' },
   app_url_quality: { value: '', description: 'Web app URL of the Quality app (Hub Admin > Connected apps). The rail and the diagram open Quality there.' },
   app_url_productivity: { value: '', description: 'Web app URL of the Productivity app (Hub Admin > Connected apps). The rail and the diagram open Productivity there.' },
@@ -173,6 +174,12 @@ export function bustConfigCache(): void {
 export async function getConfig(key: string, fallback?: unknown): Promise<unknown> {
   const all = await configAll()
   return key in all && all[key] !== '' ? all[key] : fallback
+}
+
+/** remindersOn: master switch for every reminder (popups, in-app alerts, emails). */
+export async function remindersOn(): Promise<boolean> {
+  const v = await getConfig('reminders_enabled', true)
+  return !(v === false || String(v).toLowerCase() === 'false')
 }
 
 /** dqSetting_: a Stores.js setting — table value, else the DQ_SETTINGS default, else ''. */

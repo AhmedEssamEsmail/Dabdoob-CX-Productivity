@@ -8,7 +8,7 @@
  */
 
 import { appendRow, db, cachePut } from '@/features/shared/platform/repo'
-import { configAll } from '@/features/shared/platform/settings'
+import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
 import { raisePopup } from '@/features/shared/platform/popups'
@@ -244,6 +244,7 @@ async function dqActiveTlEmails_(): Promise<string[]> {
 
 /** dqRemindMissedCheckins_ verbatim. */
 export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof dqCheckpoints_>): Promise<void> {
+  const on = await remindersOn()
   const cfg = await cfg_()
   const owners = (dqSetting_(cfg, 'checkin_owner_emails') || {}) as Record<string, string[]>
   const due = cps.filter((cp) => now > cp.dueAt && now.getTime() - cp.dueAt.getTime() < 12 * 3600000)
@@ -275,7 +276,7 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
           body: cp.name + ' check-in for ' + cp.date + ' is past due. Submit it from Check-ins.', link: '#/checkins' },
         'system:job'
       )
-      await sendMail(
+      if (on) await sendMail(
         { to: email, subject: title,
           htmlBody: '<p>The ' + escapeHtml(cp.name) + ' check-in (' + cp.slot + ' Kuwait, ' + cp.date + ') has not been submitted. Open CX Helm, Check-ins, and submit it.</p>' },
         'system:job'

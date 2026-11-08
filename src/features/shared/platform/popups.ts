@@ -12,8 +12,10 @@
 import { db, readRows, appendRow, updateRows, newId, cacheGet, cachePut, cacheRemove } from './repo'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'
+import { remindersOn } from './settings'
 
 const POPUPS_TABLE = 'popups'
+const REMINDER_POPUP_KINDS = new Set(['missed_1on1', 'qa_ctl_due'])
 const POPUPS_POLL_KEY = 'pop:poll:'
 const POPUPS_POLL_S = 300
 
@@ -28,6 +30,7 @@ export interface PendingPopup {
 
 /** Every open row for the caller (pendingPopupsFor_). queue_checkin_missed stays mail-only. */
 export async function pendingPopupsFor(email: string): Promise<PendingPopup[]> {
+  if (!(await remindersOn())) return []
   let rows: Record<string, unknown>[]
   try {
     rows = await readRows(POPUPS_TABLE)
@@ -59,6 +62,7 @@ export interface RaisePopupInput {
 
 /** Opens a pop-up unless an open one already exists for the same recipient + kind + ref (raisePopup_). */
 export async function raisePopup(p: RaisePopupInput, actor: string): Promise<Record<string, unknown>> {
+  if (REMINDER_POPUP_KINDS.has(p.kind) && !(await remindersOn())) return { skipped: 'off' }
   await assertWritable()
   const dupe = await readRows(POPUPS_TABLE, {
     where: (r) =>
@@ -113,6 +117,7 @@ export async function resolvePopups(kind: string, ref: string, actor: string): P
  * within POPUPS_POLL_S, or at once when resolved here.
  */
 export async function popupsPoll(email: string): Promise<{ popups: PendingPopup[] }> {
+  if (!(await remindersOn())) return { popups: [] }
   const { count, error } = await db()
     .from(POPUPS_TABLE)
     .select('*', { count: 'exact', head: true })

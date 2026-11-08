@@ -67,6 +67,9 @@ describe('seeded settings coverage', () => {
     expect(CONFIG_DEFAULTS.allowed_domain.value).toBe('dabdoob.com')
     expect(CONFIG_DEFAULTS.mail_dry_run.value).toBe(true)
     expect(CONFIG_DEFAULTS.one_on_one_cutoff.value).toBe('22:00')
+    expect(CONFIG_DEFAULTS.reminders_enabled.value).toBe(true)
+    expect(configKind(CONFIG_DEFAULTS.reminders_enabled.value)).toBe('boolean')
+    expect(ALL_SETTINGS.reminders_enabled).toBeDefined()
   })
 
   it('DQ_SETTINGS and PROD_SETTINGS are present in ALL_SETTINGS', () => {

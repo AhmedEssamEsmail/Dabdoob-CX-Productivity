@@ -13,7 +13,7 @@
  */
 
 import { appendRow, cacheGet, cachePut, db, newId, readRows, sanitizeInput } from '@/features/shared/platform/repo'
-import { getConfig, setConfig } from '@/features/shared/platform/settings'
+import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { hbBeat, hbFlush, hbRun } from '@/features/shared/platform/health'
@@ -2121,12 +2121,13 @@ export async function qaQueueStep_(actor: string): Promise<Row | null> {
 export async function qaCtlReminders(): Promise<Row> {
   await requireJobCaller() /* jobQualityDaily's requireJobCaller_: sessionless cron or admin — also gates the dispatcher hand-run */
   return hbRun('qa_ctl_reminders', async () => {
+    const on = await remindersOn()
     const today = qaToday_()
     const dir = await pwDirectory()
     const open = (await qaRows_('qa_ctls')).filter((c) => c.status === 'open')
-    const raised = await qaEnsureCtlPopups_()
+    const raised = on ? await qaEnsureCtlPopups_() : 0
     const due = open.filter((c) => String(c.due_date) <= today && String(c.reminded_date) !== today)
-    for (const c of due) {
+    for (const c of on ? due : []) {
       const late = String(c.due_date) < today
       await notify(
         {
@@ -2151,6 +2152,7 @@ export async function qaCtlReminders(): Promise<Row> {
         await qaUpsertIn_('qa_ctls', ['ctl_id'], fresh)
       })
     }
+    if (!on) return { reminded: due.length, popups: 0, skipped: 'off' }
     return { reminded: due.length, popups: raised }
   })
 }

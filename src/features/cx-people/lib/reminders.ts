@@ -31,6 +31,7 @@ import type { JobEnv } from '@/features/shared/jobs/env'
 import { pwIsWorkingDate, pwAddWorkingDays, pwWorkingDaysBetween } from '@/features/shared/platform/calendar'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import { raisePopup } from '@/features/shared/platform/popups'
+import { remindersOn } from '@/features/shared/platform/settings'
 import { pwIsOpenStatus_, pwOpenSeriesActions_ } from './scorecard/index'
 import { pwAppend_ } from './actions'
 import { pwRows_, pwTaskContext_, pwTasksOut_, pwNextMeetings_ } from './work-core'
@@ -144,17 +145,19 @@ export async function runMissedOneOnOneCheck_(nowMs?: number) {
     }
     if (late.length) {
       const cc = dir.admins.filter((a) => a !== mgr)
-      const res = await sendMail(
-        {
-          to: mgr, cc: cc.length ? cc : undefined, kind: 'missed_1on1_escalated', ref: String(late[0].schedule_id),
-          subject: '[Escalated] 1:1 records outstanding 2+ working days: ' + dir.name(mgr),
-          htmlBody:
-            '<p>Hi ' + escapeHtml(pwFirstName_(dir, mgr)) + ',</p><p>This has been outstanding since ' +
-            pwKwDate_(late[0].scheduled_at) + ':</p>' + list(late) +
-            '<p>Submit each record, or mark it not held with a new date.</p><p>CX Helm</p>',
-        },
-        JOB_ACTOR,
-      )
+      const res = (await remindersOn())
+        ? await sendMail(
+            {
+              to: mgr, cc: cc.length ? cc : undefined, kind: 'missed_1on1_escalated', ref: String(late[0].schedule_id),
+              subject: '[Escalated] 1:1 records outstanding 2+ working days: ' + dir.name(mgr),
+              htmlBody:
+                '<p>Hi ' + escapeHtml(pwFirstName_(dir, mgr)) + ',</p><p>This has been outstanding since ' +
+                pwKwDate_(late[0].scheduled_at) + ':</p>' + list(late) +
+                '<p>Submit each record, or mark it not held with a new date.</p><p>CX Helm</p>',
+            },
+            JOB_ACTOR,
+          )
+        : { status: 'skipped_off' }
       await pwAppend_(
         'pw_reminder_log',
         late.map((s) => {
