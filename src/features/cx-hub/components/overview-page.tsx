@@ -8,8 +8,8 @@
 import { Fragment, useRef, useState } from 'react'
 import { Button } from '@/features/shared/components/ui'
 import {
-  Ao, Df, du, Eo, Ft, Gf, gg, Gs, gu, Hf, Hi, If, jl, Kf, km, lo, Nf,
-  Of, pg, Ql, rg, sh, To, useTh, Vf, Vi, Wf, Yn, Zf, _g,
+  Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, gu, Hf, Hi, If, jl, Kf, km, lo, Nf,
+  Of, pg, Ql, rg, sh, To, useTh, Vi, Wf, Yn, _g,
 } from './hub-shared'
 
 type Q = Record<string, any>
@@ -120,54 +120,6 @@ function _u({ rows, title, empty, ticketUrl, showAgent, allLink }: Q) {
   )
 }
 
-function bg({ cards }: { cards: Q[] }) {
-  const e = cards.filter((i) => i.count > 0)
-  const t = cards.filter((i) => i.count === 0)
-  return (
-    <div className="dq-needs">
-      {e.length ? (
-        <div className={`cx-needs ${e.length === 3 ? 'cx-needs--3' : ''}`}>
-          {e.map((i) => (
-            <article key={i.id} className="cx-need" data-status={i.status}>
-              <span className="cx-need__count cx-num">
-                <Zf v={i.count} />
-              </span>
-              <h3 className="cx-need__title">{i.title}</h3>
-              <p className="cx-need__who">
-                {i.who.map((s: string, r: number) => (
-                  <span key={r}>{s}</span>
-                ))}
-              </p>
-              <a className="cx-btn" href={i.link}>
-                {i.linkLabel}
-              </a>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <p className="cx-note" data-status="ok">
-          <span>
-            <strong>Nothing is waiting on you.</strong> No ticket has crossed the oldest band and
-            every check-in so far is in.
-          </span>
-        </p>
-      )}
-      {t.length ? (
-        <ul className="dq-clear">
-          {t.map((i) => (
-            <li key={i.id}>
-              <span className="cx-chip" data-status="ok">
-                0
-              </span>{' '}
-              {i.title}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  )
-}
-
 /* ------------------------------------------------------------ admin board */
 const gr: Record<string, (n: Q) => number> = {
   open: (n) => n.open,
@@ -263,6 +215,35 @@ function xg({ iso, what = 'Freshdesk' }: { iso: string; what?: string }) {
     <span className="cx-section__hint">No data yet: the first scheduled run has not finished.</span>
   )
 }
+
+function OvIco({ s }: { s: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      {s === 'bad' ? (
+        <Fragment>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4M12 16h.01" />
+        </Fragment>
+      ) : s === 'warn' ? (
+        <Fragment>
+          <path d="M4 21V4" />
+          <path d="M4 4h13l-2.5 4L17 12H4" />
+        </Fragment>
+      ) : s === 'ok' ? (
+        <Fragment>
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </Fragment>
+      ) : (
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      )}
+    </svg>
+  )
+}
+
+const OV_CSS =
+  '.ov-main{display:grid;grid-template-columns:1.7fr 1fr;gap:1rem;align-items:start}' +
+  '@media (max-width:900px){.ov-main{grid-template-columns:1fr}}'
 
 function Mu() {
   const { data: n, error: e, reload: t } = Eo(Of.queueHealth)
@@ -422,41 +403,96 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
   const { data: e, error: t, reload: i } = Eo(Vi.home)
   const s = e ? String(e.name).split(' ')[0] : ''
   const r = e && !e.specialist && e.role !== 'agent' ? Ag(e) : null
+  const edgeCount = e?.bands?.edges?.length ?? 0
+  const topEdge = edgeCount ? e.bands.edges[edgeCount - 1] : 0
+  const aged = edgeCount ? (e.ladder?.[edgeCount] ?? 0) : 0
+  const homeNeeds = (e?.needs ?? []) as { id?: string; count?: number }[]
+  const flags = homeNeeds
+    .filter((c) => c.id === 'aging-help' || c.id === 'checkin-help')
+    .reduce((a, c) => a + (c.count ?? 0), 0)
+  const unassigned = homeNeeds.find((c) => c.id === 'unassigned')?.count ?? 0
+  const homeSlots = (e?.slots ?? []) as { state?: string }[]
+  const slotsDone = homeSlots.filter((x) => x.state === 'done').length
+  const slotsTotal = homeSlots.length
+  const needsRows = ((e?.needs ?? []) as Q[]).filter((i) => (i.count ?? 0) > 0)
+  const ovQueues = ((e?.queues ?? []) as Q[]).slice(0, 6)
+  const qMax = Math.max(1, ...ovQueues.map((q) => Number(q.open) || 0))
+  const bandLabels = (e?.bands?.labels ?? []) as string[]
+  const bandTotal = Math.max(
+    1,
+    Number(e?.openTotal) ||
+      ((e?.ladder ?? []) as number[]).reduce((a: number, c) => a + (Number(c) || 0), 0)
+  )
+  const pulseRows = bandLabels
+    .map((label, i) => ({ label, count: Number(e?.ladder?.[i]) || 0, i }))
+    .filter((r) => r.count > 0)
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!e && !t}>
-      <Vf
-        title={e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
-        sub={
-          e && !e.specialist && e.role !== 'agent'
-            ? Cg(e)
-            : e?.specialist
-              ? 'Your open actions and the coaching signals you sent.'
-              : e?.role === 'agent'
-                ? 'Your oldest open tickets first.'
-                : e?.role === 'tl'
-                  ? 'What needs you now, then your day in order.'
-                  : 'What is red right now, and which queue or team lead it sits with.'
-        }
-        aside={
-          e ? (
-            <span className="cx-section__hint">
-              {To(e.now)}, {Yn(e.now)} Kuwait
-              {e.role !== 'agent' ? (
-                <Ft>
-                  {' '}
-                  <Hf onDone={i} />
-                </Ft>
-              ) : null}
-              {r ? (
-                <Ft>
-                  {' '}
-                  <If item={r} />
-                </Ft>
-              ) : null}
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
+          </h1>
+          {e ? (
+            <p className="page-sub">
+              {To(e.now)}, {Yn(e.now)} Kuwait ·{' '}
+              {!e.specialist && e.role !== 'agent'
+                ? Cg(e)
+                : e.specialist
+                  ? 'Your open actions and the coaching signals you sent.'
+                  : e.role === 'agent'
+                    ? 'Your oldest open tickets first.'
+                    : e.role === 'tl'
+                      ? 'What needs you now, then your day in order.'
+                      : 'What is red right now, and which queue or team lead it sits with.'}
+            </p>
+          ) : null}
+        </div>
+        {e ? (
+          <div className="page-actions">
+            {e.role !== 'agent' ? <Hf onDone={i} /> : null}
+            {r ? <If item={r} /> : null}
+          </div>
+        ) : null}
+      </header>
+      {e ? (
+        <div className="grid grid-4 mb-3">
+          <div className="stat" data-tone={aged ? 'bad' : 'ok'}>
+            <span className="stat-l">Open {gg(topEdge)}+</span>
+            <span className="stat-v num">{Hi(aged)}</span>
+            <span className="stat-d">
+              {aged ? 'in the oldest band' : 'nothing in the oldest band'}
             </span>
-          ) : null
-        }
-      />
+          </div>
+          <div className="stat">
+            <span className="stat-l">Open now</span>
+            <span className="stat-v num">{Hi(e.openTotal ?? 0)}</span>
+            <span className="stat-d">
+              {unassigned ? `${Hi(unassigned)} not assigned` : 'all assigned'}
+            </span>
+          </div>
+          <div className="stat" data-tone={flags ? 'warn' : 'ok'}>
+            <span className="stat-l">Flags to review</span>
+            <span className="stat-v num">{Hi(flags)}</span>
+            <span className="stat-d">
+              {flags ? 'agents and leads asking for help' : 'nothing waiting on review'}
+            </span>
+          </div>
+          <div className="stat" data-tone="ok">
+            <span className="stat-l">Check-ins in today</span>
+            <span className="stat-v num">{Hi(slotsDone)}</span>
+            <span className="stat-d">
+              {slotsTotal
+                ? slotsDone === slotsTotal
+                  ? 'all done'
+                  : `${Hi(slotsTotal - slotsDone)} still to come`
+                : 'no check-ins today'}
+            </span>
+          </div>
+        </div>
+      ) : t ? null : (
+        <LoTiles />
+      )}
       {t ? sh({ message: t, onRetry: i }) : null}
       {r ? <Nf item={r} /> : null}
       {e && e.role !== 'agent' && !e.specialist && e.ecosystem ? (
@@ -475,15 +511,122 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
           )}
         </section>
       ) : null}
-      <section className="cx-section" aria-labelledby="needs-h">
-        <div className="cx-section__head">
-          <h2 className="cx-section__title" id="needs-h">
-            {e?.role === 'tl' ? 'Do now' : 'Needs you today'}
-          </h2>
-          <span className="cx-section__hint">Ordered by how long each has waited.</span>
+      {e ? (
+        <div className="ov-main">
+          <style dangerouslySetInnerHTML={{ __html: OV_CSS }} />
+          <section className="card" aria-labelledby="needs-h">
+            <div className="card-head">
+              <div>
+                <h2 id="needs-h" className="card-title" style={{ margin: 0 }}>
+                  {e.role === 'tl' ? 'Do now' : 'Needs you today'}
+                </h2>
+                <div className="card-hint">Ordered by how long each has waited.</div>
+              </div>
+            </div>
+            {needsRows.length ? (
+              <div className="worklist">
+                {needsRows.map((i) => {
+                  const who = ((i.who ?? []) as string[]).slice(0, 2).join(' · ')
+                  const waited = Number(i.waitedH) || 0
+                  return (
+                    <a key={i.id} className="workitem" href={i.link}>
+                      <span className={`wi-ico${i.status && i.status !== 'neutral' ? ` ${i.status}` : ''}`}>
+                        <OvIco s={String(i.status ?? '')} />
+                      </span>
+                      <div className="wi-main">
+                        <div className="wi-t">{i.title}</div>
+                        <div className="wi-s">{who}</div>
+                      </div>
+                      <div className="wi-side">
+                        <div className="t">{Hi(Number(i.count) || 0)}</div>
+                        <div className="s">{waited ? fg(waited) : 'open'}</div>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="empty">
+                <div className="s">Nothing is waiting on you.</div>
+              </div>
+            )}
+          </section>
+          <div className="grid" style={{ alignContent: 'start' }}>
+            <section className="card" aria-labelledby="ovq-h">
+              <div className="card-head">
+                <h2 id="ovq-h" className="card-title" style={{ margin: 0 }}>
+                  Queues right now
+                </h2>
+                <a className="card-hint" href="#/queue">
+                  Open →
+                </a>
+              </div>
+              {ovQueues.length ? (
+                <div
+                  className="card-pad"
+                  style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}
+                >
+                  {ovQueues.map((q) => {
+                    const ne = (e.bands?.edges ?? []).length
+                    const qb = pg(Number(q.oldestH) || 0, e.bands?.edges ?? [])
+                    const qt = !ne ? '' : qb >= ne ? 'bad' : qb === ne - 1 ? 'warn' : ''
+                    const qo = Number(q.open) || 0
+                    return (
+                      <div key={q.queue}>
+                        <div className="between small">
+                          <b>
+                            {q.queue}
+                            {q.kind === 'chat' ? <span className="cx-faint"> (best effort)</span> : null}
+                          </b>
+                          <span className="num">
+                            {Hi(qo)} open{qo && Number(q.oldestH) ? ` · oldest ${gg(Number(q.oldestH))}` : ''}
+                          </span>
+                        </div>
+                        <div className={`bar ${qt} mt-1`}>
+                          <i style={{ width: `${Math.round((100 * qo) / qMax)}%` }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="empty">
+                  <div className="s">No queue snapshot yet.</div>
+                </div>
+              )}
+            </section>
+            <section className="card" aria-labelledby="ovp-h">
+              <div className="card-head">
+                <div>
+                  <h2 id="ovp-h" className="card-title" style={{ margin: 0 }}>
+                    Team pulse
+                  </h2>
+                  <div className="card-hint">Open tickets by age band</div>
+                </div>
+              </div>
+              {pulseRows.length ? (
+                <div className="card-pad">
+                  {pulseRows.map((r) => (
+                    <div className="hbar-row" key={r.label}>
+                      <span className="small">{r.label}</span>
+                      <div className={`bar${r.i === bandLabels.length - 1 ? ' bad' : r.i === bandLabels.length - 2 ? ' warn' : ''}`}>
+                        <i style={{ width: `${Math.round((100 * r.count) / bandTotal)}%` }} />
+                      </div>
+                      <b className="num small">{Hi(r.count)}</b>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty">
+                  <div className="s">No open tickets in view.</div>
+                </div>
+              )}
+            </section>
+          </div>
         </div>
-        {e ? bg({ cards: e.needs }) : jl({ lines: 2, tall: true })}
-      </section>
+      ) : (
+        jl({ lines: 2, tall: true })
+      )}
       {e ? (
         e.specialist ? (
           <section className="cx-section">

@@ -39,6 +39,19 @@ const KIND_LABEL: Record<string, string> = {
 const KINDS = Object.keys(KIND_LABEL)
 const kindLabel = (t: string) => KIND_LABEL[t]
 
+/** Request status -> shared .pill tone. */
+function StatusPill({ status }: { status: string }) {
+  const tone =
+    status === 'Approved' || status === 'Done'
+      ? 'ok'
+      : status === 'Rejected' || status === 'Declined by peer'
+        ? 'bad'
+        : status === 'Pending' || status === 'Awaiting peer'
+          ? 'warn'
+          : ''
+  return <span className={tone ? `pill ${tone}` : 'pill'}>{status}</span>
+}
+
 // SVG geometry (Pe / Tl / Ne / $e / _e / Nn).
 const LABEL_W = 150
 const TICK_W = 16
@@ -460,7 +473,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
                   {c.reason ? <div className="sch-hint">{c.reason}</div> : null}
                 </td>
                 <td>
-                  {c.status}
+                  {c.status ? <StatusPill status={c.status} /> : null}
                   {c.note ? <div className="sch-hint">{c.note}</div> : null}
                 </td>
                 <td className="sch-actions">
@@ -1023,7 +1036,7 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
             {route.title}
           </h1>
           <p className="page-purpose">
-            Who works which shift, and what each lead is doing in every hour. Meetings, 1:1s and tasks come from their own tabs.
+            Who works which shift, and what each lead is doing in every hour.
           </p>
         </div>
         <div className="sch-controls">
@@ -1105,13 +1118,21 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`sch-panel-${u}`} aria-labelledby={`sch-tab-${u}`} aria-busy={p}>
+      <div role="tabpanel" id={`sch-panel-${u}`} aria-labelledby={`sch-tab-${u}`} aria-busy={p} className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">{v.find(([y]) => y === u)?.[1] ?? ''}</div>
+            <div className="card-hint">{l?.plan.monthName ?? ''}</div>
+          </div>
+        </div>
+        <div className="card-pad">
         {!l && !i ? <div className="skeleton" style={{ height: '220px' }} /> : null}
         {l && u === 'month' ? <MonthGrid res={l} admin={!!m} onOpenDay={(y) => { f(y); c('timeline') }} onChanged={() => g()} /> : null}
         {l && u === 'timeline' ? <TimelineTab res={l} admin={!!m} date={o} setDate={f} onChanged={() => g()} /> : null}
         {l && u === 'off' ? <RestDaysTab year={s.year} month={s.month} admin={!!m} onChanged={() => g()} /> : null}
         {l && u === 'requests' ? <RequestsTab admin={!!m} onChanged={() => g()} /> : null}
         {l && u === 'settings' && m ? <SettingsTab onChanged={() => g()} /> : null}
+        </div>
       </div>
     </section>
   )

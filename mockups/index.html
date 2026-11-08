@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CX Helm — UI refresh mockups</title>
+<link rel="stylesheet" href="assets/mock.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(20rem,1fr)); gap:1rem; }
+  .shot { display:block; }
+  .shot .frame { border-radius:var(--r-l); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow-1); aspect-ratio:16/9; background:var(--surface-2); }
+  .shot iframe { width:200%; height:200%; border:0; transform:scale(.5); transform-origin:0 0; pointer-events:none; }
+  .shot .cap { display:flex; align-items:center; justify-content:space-between; margin-top:.55rem; }
+  .shot .cap .t { font-weight:650; font-size:.875rem; }
+  .shot .cap .s { font-size:.72rem; color:var(--ink-3); }
+  .shot:hover .frame { border-color:var(--accent); }
+</style>
+</head>
+<body>
+<main style="max-width:80rem;margin:0 auto;padding:2.5rem 2rem">
+  <div class="kicker">Design proposal · not production code</div>
+  <h1 class="page-title">CX Helm — UI refresh mockups</h1>
+  <p class="page-sub mb-3">10 redesigned screens, static HTML with sample data. One shared design language: cleaner shell, real hierarchy, no visible bullets, prose moved to help affordances. Open a frame to view full-size.</p>
+
+  <div class="gallery">
+    <a class="shot" href="pages/01-login.html"><div class="frame"><iframe src="pages/01-login.html" loading="lazy"></iframe></div><div class="cap"><span class="t">01 · Sign in</span><span class="s">card + brand</span></div></a>
+    <a class="shot" href="pages/02-home.html"><div class="frame"><iframe src="pages/02-home.html" loading="lazy"></iframe></div><div class="cap"><span class="t">02 · Home</span><span class="s">dashboard</span></div></a>
+    <a class="shot" href="pages/03-my-day.html"><div class="frame"><iframe src="pages/03-my-day.html" loading="lazy"></iframe></div><div class="cap"><span class="t">03 · My day</span><span class="s">agenda</span></div></a>
+    <a class="shot" href="pages/04-queue-health.html"><div class="frame"><iframe src="pages/04-queue-health.html" loading="lazy"></iframe></div><div class="cap"><span class="t">04 · Queue health</span><span class="s">ops dashboard</span></div></a>
+    <a class="shot" href="pages/05-aging-cases.html"><div class="frame"><iframe src="pages/05-aging-cases.html" loading="lazy"></iframe></div><div class="cap"><span class="t">05 · Aging cases</span><span class="s">heat matrix</span></div></a>
+    <a class="shot" href="pages/06-audit-desk.html"><div class="frame"><iframe src="pages/06-audit-desk.html" loading="lazy"></iframe></div><div class="cap"><span class="t">06 · Audit Desk</span><span class="s">master–detail</span></div></a>
+    <a class="shot" href="pages/07-status-validation.html"><div class="frame"><iframe src="pages/07-status-validation.html" loading="lazy"></iframe></div><div class="cap"><span class="t">07 · Status validation</span><span class="s">master–detail</span></div></a>
+    <a class="shot" href="pages/08-agents.html"><div class="frame"><iframe src="pages/08-agents.html" loading="lazy"></iframe></div><div class="cap"><span class="t">08 · Agent performance</span><span class="s">leaderboard</span></div></a>
+    <a class="shot" href="pages/09-tph.html"><div class="frame"><iframe src="pages/09-tph.html" loading="lazy"></iframe></div><div class="cap"><span class="t">09 · TPH and caps</span><span class="s">hourly chart</span></div></a>
+    <a class="shot" href="pages/10-my-status.html"><div class="frame"><iframe src="pages/10-my-status.html" loading="lazy"></iframe></div><div class="cap"><span class="t">10 · My status</span><span class="s">agent view</span></div></a>
+  </div>
+
+  <hr class="hr" style="margin:2.5rem 0">
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:.75rem">What changed vs current</h2>
+  <div class="grid grid-3" style="font-size:.8125rem;color:var(--ink-2)">
+    <div class="card card-pad"><b style="color:var(--ink)">Login</b><br>Centered card, brand mark, consistent "CX Helm" naming, error state, forgot-password affordance — replaces the bare floating form.</div>
+    <div class="card card-pad"><b style="color:var(--ink)">Shell</b><br>No list bullets, grouped nav with badge counts, ⌘K search box, stable "CX Helm" identity, user card footer, toasts moved off the rail.</div>
+    <div class="card card-pad"><b style="color:var(--ink)">Content</b><br>Prose paragraphs become one-line purposes + help notes; KPI cards tighter with delta chips; master–detail on workflow pages; empty states designed.</div>
+  </div>
+  <p class="small faint mt-3">Findings write-up: <a href="UI-REVIEW.md" style="color:var(--accent-2);font-weight:600">UI-REVIEW.md</a> · Source shots: <code>.devin/work/shots/redesign/</code></p>
+</main>
+</body>
+</html>

@@ -9,7 +9,6 @@ import {
   PwLate,
   PwSkel,
   PwErr,
-  PwBadge,
   PwCombo,
   useBusy,
   useEnterAnim,
@@ -338,9 +337,9 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         <p className="pw-panel pw-num" style={{ marginTop: 16 }} aria-live="polite">
           {hLabel(preview.free)} task hours free of {hLabel(preview.available)} working hours; estimate{' '}
           {hLabel(form.estHours)}:{' '}
-          <PwBadge tone={preview.fitStatus === 'fits' ? 'ok' : preview.fitStatus === 'tight' ? 'warn' : 'bad'}>
+          <span className={`pill ${preview.fitStatus === 'fits' ? 'ok' : preview.fitStatus === 'tight' ? 'warn' : 'bad'}`}>
             {FIT_LABELS[preview.fitStatus]}
-          </PwBadge>
+          </span>
           {preview.estimated ? <span className="pw-small pw-muted"> Estimated: roster not published.</span> : null}
         </p>
       ) : null}
@@ -413,11 +412,11 @@ function GanttRow({
         <div className="pw-small pw-muted pw-num">
           {dayLabel(kwDate(t.startAt))} to {dayLabel(kwDate(t.deadlineAt))}{' '}
           {t.status === 'done' ? (
-            <PwBadge tone="ok">Done</PwBadge>
+            <span className="pill ok">Done</span>
           ) : t.overdue ? (
-            <PwBadge tone="bad">Overdue</PwBadge>
+            <span className="pill bad">Overdue</span>
           ) : t.atRisk ? (
-            <PwBadge tone="warn">At risk</PwBadge>
+            <span className="pill warn">At risk</span>
           ) : null}
         </div>
       </div>
@@ -509,7 +508,7 @@ function Gantt({ data, tasks, selected, onSelect }: { data: any; tasks: any[]; s
   return (
     <>
       <div
-        className="pw-gantt-wrap cc-chart"
+        className="card pw-gantt-wrap cc-chart"
         ref={wrapRef}
         tabIndex={0}
         role="region"
@@ -680,9 +679,9 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
           <dd>{hLabel(t.estHours)}</dd>
           <dt>Fit</dt>
           <dd>
-            <PwBadge tone={t.fitStatus === 'fits' ? 'ok' : t.fitStatus === 'tight' ? 'warn' : 'bad'}>
+            <span className={`pill ${t.fitStatus === 'fits' ? 'ok' : t.fitStatus === 'tight' ? 'warn' : 'bad'}`}>
               {FIT_LABELS[t.fitStatus]}
-            </PwBadge>
+            </span>
           </dd>
           <dt>Hours used so far</dt>
           <dd>{hLabel(t.hours.elapsed)}</dd>
@@ -744,7 +743,9 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
               ))}
           </ul>
         ) : (
-          <p className="pw-empty">No update yet.</p>
+          <div className="empty">
+            <div className="s">No update yet.</div>
+          </div>
         )}
       </div>
       {closed ? (
@@ -1000,11 +1001,17 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
           {shown.length ? (
             <Gantt data={data} tasks={shown} selected={selected} onSelect={setSelected} />
           ) : (
-            <p className="pw-empty">
-              {ownerFilter || priority || search.trim()
-                ? 'No tasks match these filters. Clear one to see more.'
-                : `No tasks here yet. Use ${data.me.role === 'admin' ? 'Assign a task' : 'Add a task'} to start one.`}
-            </p>
+            <section className="card pw-section">
+              <div className="card-pad">
+                <div className="empty">
+                  <div className="s">
+                    {ownerFilter || priority || search.trim()
+                      ? 'No tasks match these filters. Clear one to see more.'
+                      : `No tasks here yet. Use ${data.me.role === 'admin' ? 'Assign a task' : 'Add a task'} to start one.`}
+                  </div>
+                </div>
+              </div>
+            </section>
           )}
           {selectedTask ? <TaskDetail key={selectedTask.actionId} task={selectedTask} me={data.me} onChange={patchTask} /> : null}
         </>

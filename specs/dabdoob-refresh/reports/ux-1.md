@@ -1,0 +1,41 @@
+# ux report - dabdoob-refresh - round 1 (FULL)
+
+Verdict: FAIL
+Open: 0B / 1H / 7M / 5L
+States checked: loading (skeleton shots), empty (.empty mounts in audit-queue, StateScreen), error (state-screens only — login error state styled but not captured), disabled (audit form submit gating), long text (page-sub ellipsis ok), mobile (390px queue/my-status), dark (all routes), keyboard (⌘K palette code + global keydown), focus (theme.css :focus-visible ring). Dark-mode contrast measured for every new token pair.
+
+| ID | Sev | file:line or route+element | Evidence | Exact fix | Owner(dev) |
+|---|---|---|---|---|---|
+| ux-1 | HIGH | refresh.css:519 + login/page.tsx:127-141 | `.login-card .btn-primary` never matches — `Button` renders `.cx-btn--primary` (Button.tsx:23-24). Height rule lost; the bare `<svg>` (no width/height) defaults to 300×150 and inflates the submit CTA to ~250px tall. Visible in `auth-login.png` and `auth-login-dark.png` — mocks show a 40px `.btn-primary` with a small arrow. | Change selector to `.login-card .cx-btn--primary` (or pass `className="btn-primary"`), and add `.login-card .btn-primary svg{width:.95rem;height:.95rem}` (or width/height attrs on the svg). | dev |
+| ux-2 | MED | login/page.tsx:107-114 | "Forgot password?" is `<a href="#">` — a dead control on the primary path; clicking only mutates the hash. | Point it at the real reset flow if one exists; otherwise drop the link (mock contract does not require a dead affordance) or render it as disabled text/hint. | dev |
+| ux-3 | MED | CommandPalette.tsx + AppShell.tsx:597-603 | `aria-modal="true"` but focus is not managed: Tab leaves the dialog into the background page, and on Esc/backdrop/Enter close nothing restores focus to `.rail-search` — focus drops to `document.body`. Dialog pattern broken for keyboard users. | Trap Tab/Shift+Tab inside `.cpk` (only one focusable node: the input — simplest is `onKeyDown` preventDefault on Tab), and on close return focus to the `.rail-search` trigger (keep a ref in AppShell). | dev |
+| ux-4 | MED | CommandPalette.tsx:132-148 + refresh.css:127 | `.cpk-list` max-height 22rem vs up to 20 items + group labels (~640px). ArrowDown past ~11 items moves the `.on` highlight below the fold — no `scrollIntoView`, so the "focused" option is invisible (2.4.11 spirit). | In the Arrow/Home/End handler (or an effect on `active`), call `itemRef.scrollIntoView({block:'nearest'})`. | dev |
+| ux-5 | MED | CommandPalette.tsx:164-203 | The input is a plain `aria-label`led field; `.cpk-list` is `role=listbox` with `role=option`/`aria-selected`, but nothing ties them: no `role=combobox`, `aria-expanded`, `aria-controls`, `aria-activedescendant` — SR users get a text field with silence on arrows. | Add `role="combobox" aria-expanded="true" aria-controls=<listId> aria-activedescendant=<id of .cpk-item.on>`; give each option an id. | dev |
+| ux-6 | MED | agents-page.tsx:287-299 | Prose wall remains: 4-sentence technical paragraph ("reads each month's workbook … fallback holds that month's rows") under "Productivity workbook per month". PLAN §5: "none keep prose-wall descriptions". | Trim to one `.card-hint`/`page-sub` line (e.g. "Reads each month's workbook into V2; months without one use the fallback") and drop implementation detail to a tooltip/docs if needed. | dev |
+| ux-7 | MED | refresh.css:352-355 + queue mixbar | `.mixbar > div` sets `color: var(--cx-accent-ink)` = `#fff`; on light age-ramp fills measured: on `#9aa5b1` 2.50:1, `#d9a94f` ~2.8:1, `#dd8a2d` 2.71:1 (WCAG 1.4.3 needs 4.5; even large-text 3:1 fails). `queue.png` "25"/"36" visibly faint. | Use per-segment ink like `.agechip` does (`--cx-age-ink-*`, dark text on light ages), or darken label bg; keep white only on age≥4 fills. | dev |
+| ux-8 | MED | refresh.css:31 (.kicker); login/page.tsx:110 (inline color) | `--cx-accent` is a fill token; used as TEXT it measures 4.08:1 on dark `--cx-surface` (needs 4.5). `.kicker` on cards and the login "Forgot password?" link fail in dark theme (light theme 6.37 ok). Project lesson: separate fill vs text tokens. | Use `--cx-accent-text` (dark `#59b795` = 7.2:1 on paper) for `.kicker` and the forgot-password link. | dev |
+| ux-9 | LOW | refresh.css:116-125 vs CommandPalette.tsx:164 | Markup/style mismatch: `.cpk-input` IS the `<input>`, but CSS was written for a container (`display:flex` + `.cpk-input input` inner styles — dead selector). Result: typed query renders `--cx-ink-3` (placeholder-like), and UA top/left/right borders remain on the field. | Either wrap input in `.cpk-input` div (with search icon per mock) or restyle the bare input: `width:100%;border:0;color:var(--cx-ink);font:inherit`. | dev |
+| ux-10 | LOW | theme.css:137 (`--cx-ink-3`) | Measured `--cx-ink-3` on `--cx-bg`: 4.42:1 (<4.5). Affects small text placed on the page background: `.topbar .crumbs`, `.ag-t` (agenda times). On `--cx-surface` it is 4.84 — fine. | Nudge `--cx-ink-3` one step darker (e.g. ink-2 88-90% mix) or give `.crumbs`/`.ag-t` `--cx-ink-2`. | dev |
+| ux-11 | LOW | refresh.css:79-92 + shots | `.rail-search` label wraps to two lines at rail width (all shots show "Search or jump / to…") and in `rail-off` the label+kbd clip under `overflow:hidden`; also no min-height (~34px vs 36px contract). | `white-space:nowrap` + let it overflow to an ellipsis, or shorten label to "Search…"; in `rail-off` show icon-only. | dev |
+| ux-12 | LOW | AppShell.tsx:443 | `<kbd>⌘K</kbd>` shown unconditionally — Ctrl+K works on Windows/Linux but the hint only shows the mac glyph. | Render `Ctrl K` when `navigator.platform` is non-Mac (or "⌘/Ctrl K"). | dev |
+| ux-13 | LOW | AppShell.tsx:442, CommandPalette.tsx:161/167/207 | New shell strings ("Search or jump to…", "Search pages", "No pages match") absent from `specs/legacy-parity/data/legacy-i18n-ar.json` — render English under `lang=ar` (verified via dictionary lookup). | Add the three keys to the Arabic dictionary. | dev |
+
+## Verified PASS
+- **No nav bullets**: `cx-kit.css:921 .nav ul{list-style:none}` (+ `.nav li`); shots show clean rail.
+- **Toast off the rail**: `.toasts` bottom-right, `margin-inline-start: rail-w+1rem`, RTL mirror + mobile reset (cx-kit.css:1264-1312).
+- **Brand stable**: "Dabdoob CX" + "Operations console" identical across app contexts; `APPS` titles = "Dabdoob CX*"; `layout.tsx` title; BootSplash text (+AR string).
+- **Density contract**: `--cx-target` = 36px fine / 44px coarse — contract-report.json `targetOk` on all 103 shots; `.icon-btn` 32px, `.rail-collapse` 32×36px measured.
+- **Focus rings**: global `:focus-visible` 2px `--focus` + halo, `forced-colors` fallback (theme.css:446-454).
+- **Dark mode**: all status triples ≥5:1, ink ramp ≥6.6:1, accent-text ≥5.3:1 — measured; dark accent-ink on buttons 4.85 ✓; dark screenshots show consistent reskin.
+- **Keyboard**: palette Esc/Arrows/Home/End/Enter; global ⌘K/Ctrl+K ignores editable targets; skip link; dialogs Esc→Later; `nav-toggle`/`rail-collapse` aria-expanded+aria-controls.
+- **Semantics**: `aria-current="page"`, `.seg`/`workitem` `aria-pressed`, `role=status/alert` on banners, Field `htmlFor` + `aria-describedby`, AuditForm `.card`/`.tbl` keeps `aria-live` score + `#qa-audit-open`.
+- **Responsive/RTL**: 390px stacks to top bar + Menu, grids collapse ≤820px, `.md` ≤900px, RTL mirrors correctly (queue-rtl.png).
+- **Reduced motion**: `prefers-reduced-motion` + `data-reduce-motion` zero out all animation incl. BootSplash.
+
+## Not verified / assumptions
+- Palette keyboard walkthrough assessed from code only (no live session — dev server wasn't running); behavior findings ux-3..ux-5 are code-verified.
+- 320px reflow of wide `.tbl` tables: `.cx-tablewrap` has `overflow-x:auto`, but `.tbl` mounted bare in `.card` may overflow at 320px — only 390px was shot.
+- `queue-dark.png` mixbar renders compressed/mid-sweep — likely a settle-time animation artifact, not verified as a defect.
+- Login error state styled (`.login-error`, `role=alert`) but not captured; 200% text zoom not exercised.
+- Amber "1 Issue" badge bottom-left in shots = Next.js dev-overlay indicator (dev-server artifact), not app UI.
+- Most route shots captured skeleton loading state (slow local data); verified queue/agents/login/no-access fully rendered.

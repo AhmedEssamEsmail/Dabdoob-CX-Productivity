@@ -64,14 +64,20 @@ function Shell({ route, children }: { route: { title: string; purpose: string };
   return (
     <section className="page dk" aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {route.title}
-        </h1>
-        <p className="page-purpose">{route.purpose}</p>
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-purpose">{route.purpose}</p>
+        </div>
       </header>
       {children}
     </section>
   )
+}
+
+function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
+  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
 }
 
 function ErrMsg({ message }: { message: string }) {
@@ -222,6 +228,7 @@ export default function KpiLogsPage() {
     <Shell route={ROUTE}>
       <h2 className="dk-h">Behaviour cases confirmed by HR</h2>
       <p className="dk-fine">One case in the period takes the agent&apos;s Behaviour KPI to 0 (15 points).</p>
+      <div className="card card-pad">
       <LogForm kind="behaviour" label="Log the case" blank={{ email: '', date: todayKw(), note: '' }} onSaved={refresh}>
         {(f, set) => (
           <>
@@ -251,6 +258,7 @@ export default function KpiLogsPage() {
               <div className="dk-row">
                 <b>{a.name}</b>
                 <span>{B(a.date)}</span>
+                <Badge tone="bad">Confirmed case</Badge>
                 <RemoveBtn kind="behaviour" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -260,13 +268,17 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <p className="dk-none">No cases in the last {data.days} days.</p>
+        <div className="empty">
+          <div className="s">No cases in the last {data.days} days.</div>
+        </div>
       )}
+      </div>
       <h2 className="dk-h">Unplanned leaves</h2>
       <p className="dk-fine">
         Each entry is one leave, however many days it covers. 3 inside any 2 months within the last 3 months make the
         agent not eligible for KPIs.
       </p>
+      <div className="card card-pad">
       <LogForm kind="leave" label="Log the leave" blank={{ email: '', from: todayKw(), to: '', type: '', note: '' }} onSaved={refresh}>
         {(f, set) => (
           <>
@@ -311,7 +323,7 @@ export default function KpiLogsPage() {
                   {B(a.from)}
                   {a.to !== a.from ? ` to ${B(a.to)}` : ''}
                 </span>
-                <span>{a.type}</span>
+                <Badge>{a.type}</Badge>
                 <RemoveBtn kind="leave" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -321,13 +333,17 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <p className="dk-none">No unplanned leaves in the last {data.days} days.</p>
+        <div className="empty">
+          <div className="s">No unplanned leaves in the last {data.days} days.</div>
+        </div>
       )}
+      </div>
       <h2 className="dk-h">Tickets left out of an area&apos;s SLA</h2>
       <p className="dk-fine">
         For tickets the data cannot tell apart, such as Returns shipped with Ajex or outside KSA. Applied at the next
         hourly update.
       </p>
+      <div className="card card-pad">
       {data.canExclude.length ? (
         <LogForm
           kind="exclusion"
@@ -370,7 +386,9 @@ export default function KpiLogsPage() {
           )}
         </LogForm>
       ) : (
-        <p className="dk-fine">Only an area&apos;s owner or an admin can leave tickets out.</p>
+        <div className="empty">
+          <div className="s">Only an area&apos;s owner or an admin can leave tickets out.</div>
+        </div>
       )}
       {data.exclusions.length ? (
         <ul className="dk-list">
@@ -379,7 +397,7 @@ export default function KpiLogsPage() {
               <div className="dk-row">
                 <b>#{a.ticketId}</b>
                 <span>{a.area}</span>
-                <span>{a.reason}</span>
+                <Badge tone="warn">{a.reason}</Badge>
                 <RemoveBtn kind="exclusion" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -389,8 +407,11 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <p className="dk-none">No tickets left out in the last {data.days} days.</p>
+        <div className="empty">
+          <div className="s">No tickets left out in the last {data.days} days.</div>
+        </div>
       )}
+      </div>
     </Shell>
   )
 }

@@ -804,202 +804,250 @@ export function AuditForm({
 
   return (
     <form
-      className="cx-panel cx-panel--pad qa-form"
+      className="card qa-form"
       onSubmit={Z}
       aria-label={`Audit: ${t.title}`}
     >
-      <div className="qa-form__back">
-        <Button
-          variant="quiet"
-          onClick={I}
-          disabled={y}
-        >
-          <span aria-hidden="true">← </span>
-          {c}
-        </Button>
-      </div>
-      <div className="qa-form__head">
-        <div className="qa-form__facts">{n}</div>
-        <div className="qa-score" data-status={J} aria-live="polite">
-          <span className="qa-score__num cx-num">
-            {C.score === null ? '–' : `${C.score}%`}
-          </span>
-          <span className="qa-score__sub">
-            {C.fatal
-              ? 'Critical fail: the audit scores 0'
-              : `${C.answered} of ${C.total} answered`}
-          </span>
+      <div className="card-head">
+        <div>
+          <div className="card-title">{t.title}</div>
+          <div className="card-hint">
+            Under 100% opens a CTL for the team lead.
+          </div>
+        </div>
+        <div className="flex">
+          <Button
+            variant="quiet"
+            onClick={I}
+            disabled={y}
+          >
+            <span aria-hidden="true">← </span>
+            {c}
+          </Button>
+          <span className="pill warn">In progress</span>
         </div>
       </div>
-      <div className="cx-field">
-        <label className="cx-label" htmlFor="qa-when">
-          Interaction date and time (Riyadh)
-        </label>
-        <Input
-          type="datetime-local"
-          id="qa-when"
-          required
-          max={hs()}
-          value={b}
-          onInput={(N) => x(N.currentTarget.value)}
-        />
-      </div>
-      {t.placeholder ? (
-        <p className="cx-note" data-status="warn">
-          <span>
-            This is the placeholder form. Its questions stand in until the real
-            criteria are added in Audit forms.
-          </span>
-        </p>
-      ) : null}
-      {R ? (
-        <p className="cx-note" data-status="warn">
-          <span>
-            {`This agent has failed ${R === 1 ? 'one question' : `${R} questions`} more than once lately, or again after coaching. They are marked below.`}
-          </span>
-        </p>
-      ) : null}
-      {t.sections.map((N: any) => {
-        const z = N.questions.map((F: any) => F.id)
-        const X = !!N.optional && z.every((F: string) => u[F] === 'na')
-        return (
-          <fieldset
-            className="qa-sec"
-            data-skipped={X ? 'true' : undefined}
-            key={N.id}
-          >
-            <legend className="qa-sec__title">{N.title}</legend>
-            {N.optional ? (
-              <div className="qa-sec__opt">
-                <span className="cx-muted">
-                  {X
-                    ? 'Optional. Skipped: every question is N/A, so the score is not affected.'
-                    : 'Optional. Answered questions count; N/A ones do not.'}
-                </span>
-                <Button
-                  variant="quiet"
-                  onClick={() => v(z, !X)}
-                  aria-pressed={!X}
-                >
-                  {X ? 'Answer this section' : 'Skip section (N/A)'}
-                </Button>
-              </div>
-            ) : null}
-            {N.questions.map((F: any) => {
-              const da =
-                (F.fatal || (B && F.weight >= 100)) &&
-                !N.optional &&
-                N.title !== 'Call Control'
-                  ? ['pass', 'fail']
-                  : ['pass', 'fail', 'na']
-              const ua = B
-                ? F.fatal
-                  ? 'Critical: −100%'
-                  : `−${F.weight}% if failed`
-                : F.fatal
-                  ? 'Critical'
-                  : `${F.weight} pts`
-              const Je = u[F.id]
-              const et = S(F.id)
-              return (
-                <div
-                  className="qa-q"
-                  data-answer={Je ?? ''}
-                  data-fatal={F.fatal ? 'true' : undefined}
-                  key={F.id}
-                >
-                  <div className="qa-q__text">
-                    <span>{F.text}</span>
-                    <span className="cx-faint qa-q__w">{ua}</span>
-                    {F.hint ? (
-                      <span className="cx-muted qa-q__hint">{F.hint}</span>
-                    ) : null}
-                    {et ? (
-                      <span
-                        className="qa-q__memo"
-                        data-repeat={et.repeat ? 'true' : undefined}
-                      >
-                        {us(et)}
-                      </span>
-                    ) : null}
-                  </div>
-                  <Seg
-                    name={`qa-${F.id}`}
-                    value={Je ?? ''}
-                    onChange={(v) => O(F.id, v)}
-                    options={da.map((le) => ({
-                      value: le,
-                      label: QA_ANSWER[le],
-                    }))}
-                    aria-label={F.text}
-                  />
-                  {l && Je === 'fail' ? (
-                    <div className="qa-q__why">
-                      <span className="cx-faint" id={`qa-why-${F.id}`}>
-                        Why it failed
-                      </span>
-                      <Seg
-                        name={`qa-why-${F.id}`}
-                        value={f[F.id] ?? ''}
-                        onChange={(v) =>
-                          g((ha: any) => ({ ...ha, [F.id]: v }))
-                        }
-                        options={QA_WHY.map((le) => ({
-                          value: le.v,
-                          label: le.label,
-                        }))}
-                        aria-labelledby={`qa-why-${F.id}`}
-                        {...{ 'aria-required': 'true' }}
-                      />
-                    </div>
-                  ) : null}
+      <div className="card-pad">
+        <div className="qa-form__facts">{n}</div>
+        <div className="cx-field">
+          <label className="cx-label" htmlFor="qa-when">
+            Interaction date and time (Riyadh)
+          </label>
+          <Input
+            type="datetime-local"
+            id="qa-when"
+            required
+            max={hs()}
+            value={b}
+            onInput={(N) => x(N.currentTarget.value)}
+          />
+        </div>
+        {t.placeholder ? (
+          <p className="cx-note" data-status="warn">
+            <span>
+              This is the placeholder form. Its questions stand in until the real
+              criteria are added in Audit forms.
+            </span>
+          </p>
+        ) : null}
+        {R ? (
+          <p className="cx-note" data-status="warn">
+            <span>
+              {`This agent has failed ${R === 1 ? 'one question' : `${R} questions`} more than once lately, or again after coaching. They are marked below.`}
+            </span>
+          </p>
+        ) : null}
+        {t.sections.map((N: any) => {
+          const z = N.questions.map((F: any) => F.id)
+          const X = !!N.optional && z.every((F: string) => u[F] === 'na')
+          return (
+            <fieldset
+              className="qa-sec"
+              data-skipped={X ? 'true' : undefined}
+              key={N.id}
+            >
+              <legend className="qa-sec__title">{N.title}</legend>
+              {N.optional ? (
+                <div className="qa-sec__opt">
+                  <span className="cx-muted">
+                    {X
+                      ? 'Optional. Skipped: every question is N/A, so the score is not affected.'
+                      : 'Optional. Answered questions count; N/A ones do not.'}
+                  </span>
+                  <Button
+                    variant="quiet"
+                    onClick={() => v(z, !X)}
+                    aria-pressed={!X}
+                  >
+                    {X ? 'Answer this section' : 'Skip section (N/A)'}
+                  </Button>
                 </div>
-              )
-            })}
-          </fieldset>
-        )
-      })}
-      <div className="cx-field">
-        <label className="cx-label" htmlFor="qa-comment">
-          Note for the agent and team lead
-        </label>
-        <Textarea
-          id="qa-comment"
-          value={o}
-          onInput={(N) => h(N.currentTarget.value)}
-          placeholder="What to keep doing, and what to change, with the moment in the ticket."
-        />
-      </div>
-      {T ? (
-        <p className="cx-error" role="alert">
-          {T}
-        </p>
-      ) : null}
-      <div className="qa-form__foot">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={
-            y || C.missing.length > 0 || C.score === null || A > 0 || !b
-          }
-        >
-          {y
-            ? 'Saving…'
-            : b
-              ? C.missing.length
-                ? `${a} (${C.missing.length} left)`
-                : A
-                  ? `${a} (${A} ${A === 1 ? 'reason' : 'reasons'} left)`
-                  : a
-              : `${a} (interaction time needed)`}
-        </Button>
-        <Button
-          variant="quiet"
-          onClick={I}
-          disabled={y}
-        >
-          Cancel
-        </Button>
+              ) : null}
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Question</th>
+                    <th className="num">Weight</th>
+                    <th className="num">Answer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {N.questions.map((F: any) => {
+                    const da =
+                      (F.fatal || (B && F.weight >= 100)) &&
+                      !N.optional &&
+                      N.title !== 'Call Control'
+                        ? ['pass', 'fail']
+                        : ['pass', 'fail', 'na']
+                    const ua = B
+                      ? F.fatal
+                        ? 'Critical: −100%'
+                        : `−${F.weight}% if failed`
+                      : F.fatal
+                        ? 'Critical'
+                        : `${F.weight} pts`
+                    const Je = u[F.id]
+                    const et = S(F.id)
+                    return (
+                      <tr
+                        className="qa-q"
+                        data-answer={Je ?? ''}
+                        data-fatal={F.fatal ? 'true' : undefined}
+                        key={F.id}
+                      >
+                        <td>
+                          <div className="qa-q__text">
+                            <span className="lead">{F.text}</span>
+                            {F.hint ? (
+                              <span className="cx-muted qa-q__hint">{F.hint}</span>
+                            ) : null}
+                            {et ? (
+                              <span
+                                className="qa-q__memo"
+                                data-repeat={et.repeat ? 'true' : undefined}
+                              >
+                                {us(et)}
+                              </span>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="num">{ua}</td>
+                        <td className="num">
+                          <Seg
+                            name={`qa-${F.id}`}
+                            value={Je ?? ''}
+                            onChange={(v) => O(F.id, v)}
+                            options={da.map((le) => ({
+                              value: le,
+                              label: QA_ANSWER[le],
+                            }))}
+                            aria-label={F.text}
+                          />
+                          {l && Je === 'fail' ? (
+                            <div className="qa-q__why">
+                              <span className="cx-faint" id={`qa-why-${F.id}`}>
+                                Why it failed
+                              </span>
+                              <Seg
+                                name={`qa-why-${F.id}`}
+                                value={f[F.id] ?? ''}
+                                onChange={(v) =>
+                                  g((ha: any) => ({ ...ha, [F.id]: v }))
+                                }
+                                options={QA_WHY.map((le) => ({
+                                  value: le.v,
+                                  label: le.label,
+                                }))}
+                                aria-labelledby={`qa-why-${F.id}`}
+                                {...{ 'aria-required': 'true' }}
+                              />
+                            </div>
+                          ) : null}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </fieldset>
+          )
+        })}
+        <div className="cx-field">
+          <label className="cx-label" htmlFor="qa-comment">
+            Note for the agent and team lead
+          </label>
+          <Textarea
+            id="qa-comment"
+            value={o}
+            onInput={(N) => h(N.currentTarget.value)}
+            placeholder="What to keep doing, and what to change, with the moment in the ticket."
+          />
+        </div>
+        {T ? (
+          <p className="cx-error" role="alert">
+            {T}
+          </p>
+        ) : null}
+        <div className="between">
+          <div className="flex">
+            <div className="qa-score" data-status={J} aria-live="polite">
+              <span className="qa-score__num cx-num">
+                {C.score === null ? '–' : `${C.score}%`}
+              </span>
+              <span className="qa-score__sub">
+                {C.fatal
+                  ? 'Critical fail: the audit scores 0'
+                  : `${C.answered} of ${C.total} answered`}
+              </span>
+            </div>
+            {C.score !== null && C.score < 100 ? (
+              <span className="pill bad">opens CTL</span>
+            ) : null}
+          </div>
+          <div className="qa-form__foot">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={
+                y || C.missing.length > 0 || C.score === null || A > 0 || !b
+              }
+            >
+              {y
+                ? 'Saving…'
+                : b
+                  ? C.missing.length
+                    ? `${a} (${C.missing.length} left)`
+                    : A
+                      ? `${a} (${A} ${A === 1 ? 'reason' : 'reasons'} left)`
+                      : a
+                  : `${a} (interaction time needed)`}
+            </Button>
+            <Button
+              variant="quiet"
+              onClick={I}
+              disabled={y}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+        <div className="note">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4M12 8h.01" />
+          </svg>
+          <span>
+            Submitting emails the result to the agent. Under 100% opens a CTL
+            for the team lead.
+          </span>
+        </div>
       </div>
     </form>
   )

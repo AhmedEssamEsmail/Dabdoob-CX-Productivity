@@ -188,11 +188,13 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
   return (
     <section className="page dk" aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {route.title}
-        </h1>
-        <p className="page-purpose">{route.purpose}</p>
-        {aside}
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-purpose">{route.purpose}</p>
+        </div>
+        {aside ? <div className="page-actions">{aside}</div> : null}
       </header>
       {children}
     </section>
@@ -200,11 +202,7 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
 }
 
 function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return (
-    <span className="dk-badge" data-tone={tone}>
-      {children}
-    </span>
-  )
+  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
 }
 
 function Rating({ value, label }: { value: number | null; label: string }) {
@@ -334,8 +332,9 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
   }
   return (
     <div className="dk-otd">
-      <div className="dk-scroll">
-        <table className="dk-table">
+      <div className="card card-pad">
+        <div className="dk-scroll">
+          <table className="dk-table">
           <thead>
             <tr>
               <th scope="col">Month</th>
@@ -359,6 +358,7 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       {canEdit ? (
         <div className="dk-otd__edit">
@@ -509,6 +509,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
       )}
       <h2 className="dk-h">Responsibilities, week of {B(p.week)}</h2>
       {areas.length ? (
+        <div className="card card-pad">
         <ul className="dk-list">
           {areas.map((a) => (
             <li key={a.area}>
@@ -553,12 +554,18 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
             </li>
           ))}
         </ul>
+        </div>
       ) : (
-        <p className="dk-none">No areas are set for {first}. Add them under Hub Admin, tlp_tl_areas.</p>
+        <div className="card">
+          <div className="empty">
+            <div className="s">No areas are set for {first}. Add them under Hub Admin, tlp_tl_areas.</div>
+          </div>
+        </div>
       )}
       <h2 className="dk-h">Projects against your expectation</h2>
       <p className="dk-fine">Shown for the 1:1; not part of the overall score.</p>
       {projects.length ? (
+        <div className="card card-pad">
         <ul className="dk-list">
           {projects.map((o) => (
             <li key={o.actionId}>
@@ -585,14 +592,23 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
             </li>
           ))}
         </ul>
+        </div>
       ) : (
-        <p className="dk-none">No projects in the last 90 days.</p>
+        <div className="card">
+          <div className="empty">
+            <div className="s">No projects in the last 90 days.</div>
+          </div>
+        </div>
       )}
       <h2 className="dk-h">
         While on queue, {B(p.from)} to {B(p.to)}
       </h2>
       {!p.queue || !p.queue.days.length ? (
-        <p className="dk-none">No queue-hour numbers for {first} these 7 days. The Hub writes them hourly from the TL scheduler.</p>
+        <div className="card">
+          <div className="empty">
+            <div className="s">No queue-hour numbers for {first} these 7 days. The Hub writes them hourly from the TL scheduler.</div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="dk-stats">
@@ -615,7 +631,8 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
               average response ({p.queue.total.respCount})
             </div>
           </div>
-          <div className="dk-scroll">
+          <div className="card card-pad">
+            <div className="dk-scroll">
             <table className="dk-table">
               <thead>
                 <tr>
@@ -644,6 +661,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
           <p className="dk-fine">
             Queue hours from the TL scheduler. Calls from Maqsam: answered = answered or completed, or any handling
@@ -657,7 +675,11 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
       )}
       <h2 className="dk-h">Mails to answer by the end of the shift</h2>
       {!p.mail || !p.mail.items.length ? (
-        <p className="dk-none">No MyFatoorah refund updates or chargeback mails for {first} these 7 days.</p>
+        <div className="card">
+          <div className="empty">
+            <div className="s">No MyFatoorah refund updates or chargeback mails for {first} these 7 days.</div>
+          </div>
+        </div>
       ) : (
         <>
           <div className="dk-stats">
@@ -680,11 +702,13 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
               late{p.mail.open ? `, ${p.mail.open} open` : ''}
             </div>
           </div>
+          <div className="card card-pad">
           <ul className="dk-list">
             {p.mail.items.map((m) => (
               <MailItem key={m.messageId} m={m} />
             ))}
           </ul>
+          </div>
         </>
       )}
       {p.notes.map((n) => (
@@ -703,7 +727,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
 
 const ROUTE = {
   title: 'TL performance',
-  purpose: "A team lead's week: team scores, responsibilities, projects against expectation, queue hours and mails to answer.",
+  purpose: "A team lead's week: scores, projects, queue hours and mails.",
 }
 
 export default function TlPerformancePage() {

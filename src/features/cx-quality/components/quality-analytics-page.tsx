@@ -290,7 +290,16 @@ function HealthHead({ d: t }: { d: any }) {
   const n = t.health
   const a = t.bases.filter((s: any) => s.basis !== 'random')
   return (
-    <>
+    <section className="card" aria-labelledby="qa-health-h">
+      <div className="card-head">
+        <div>
+          <div className="card-title" id="qa-health-h">
+            Team health
+          </div>
+          <div className="card-hint">{qaPeriodLabel(t)}</div>
+        </div>
+      </div>
+      <div className="card-pad">
       <dl className="dq-totals qa-health">
         <div
           className="dq-totals__item"
@@ -391,7 +400,8 @@ function HealthHead({ d: t }: { d: any }) {
             : ''}
         </p>
       ) : null}
-    </>
+      </div>
+    </section>
   )
 }
 
@@ -859,9 +869,11 @@ function ColsChart({
         </svg>
       </div>
       {y ? null : (
-        <p className="cx-faint qa-cols__none">
-          No audits in these {n === 'week' ? 'weeks' : 'months'}.
-        </p>
+        <div className="empty qa-cols__none">
+          <div className="s">
+            No audits in these {n === 'week' ? 'weeks' : 'months'}.
+          </div>
+        </div>
       )}
     </figure>
   )
@@ -1374,10 +1386,12 @@ function Coverage({ c: t }: { c: any }) {
   if (!t.agents.length)
     return (
       <QaSection id="qa-cov-h" title="Samples per agent per day">
-        <p className="cx-muted">
-          No agents on the roster and nothing in the Queue Log for the last{' '}
-          {t.days.length} days.
-        </p>
+        <div className="empty">
+          <div className="s">
+            No agents on the roster and nothing in the Queue Log for the last{' '}
+            {t.days.length} days.
+          </div>
+        </div>
       </QaSection>
     )
   const c = t.agents.filter((m: any) => xn(m)[1] !== 'ok').length
@@ -1903,7 +1917,7 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
       d={a}
       error={s}
       reload={i}
-      sub="Where to look this period. Scores use the random daily sample only, each agent counted once; requested, history and non-ticket audits are shown apart. Disputed audits return when decided."
+      sub="Scores use the random daily sample, each agent counted once; other bases are shown apart, and disputed audits return when decided."
     >
       {a ? (
         <>

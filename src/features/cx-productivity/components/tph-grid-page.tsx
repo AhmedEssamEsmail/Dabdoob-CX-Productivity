@@ -15,9 +15,9 @@ import {
   Chip,
   LinesSkeleton,
   LoadError,
-  PageHead,
   Section,
 } from '@/features/shared/components/shell/ui'
+import { D } from '@/features/shared/shell/i18n'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { Button, Input, Seg, Select, Toggle } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
@@ -933,9 +933,25 @@ function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
           }))}
         />
       </div>
-      <div className="cx-panel tph-gridwrap">
-        <div
-          className="tph-grid"
+      <section className="card" aria-labelledby="tph-grid-card-h">
+        <div className="card-head">
+          <div>
+            <h2 id="tph-grid-card-h" className="card-title" style={{ margin: 0 }}>
+              {D('Who is on which channel')}
+            </h2>
+            <div className="card-hint">
+              {D('{agents} agents · {channels} channels · {slots} slots of {minutes} min', {
+                agents: String(d.agents.length),
+                channels: String(d.channels.length),
+                slots: String(n),
+                minutes: String(d.slotMin),
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="tph-gridwrap">
+          <div
+            className="tph-grid"
           style={{ '--tph-n': n } as CSSProperties}
           role="grid"
           aria-label={`Channel per agent, ${d.slotMin}-minute slots`}
@@ -990,8 +1006,9 @@ function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
               })}
             </div>
           ))}
+          </div>
         </div>
-      </div>
+      </section>
       <p className="cx-faint tph-note">
         A dark bar on top marks Inbound calls blended with the channel. Hatched slots were not logged and repeat the
         slot before them until Off shift or now.
@@ -1972,6 +1989,155 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
   )
 }
 
+/* --- Qs — the mid-section: % of cap by hour + needs attention --------------- */
+
+function Qs({ d, sum }: { d: TphData; sum: Sum }) {
+  const byHour = new Map(sum.hours.map((h) => [h.hour, h]))
+  const sparkHours = sum.hours
+  const o = d.date < d.today
+  const missingMap = Ua(d.table)
+  const below = d.dayTotals.filter((w) => w.pctOfCap != null && w.pctOfCap < 60)
+  const attn: { key: string; title: string; body: ReactNode }[] = []
+  if (!d.hasCases && o)
+    attn.push({
+      key: 'noday',
+      title: `No cases for ${d.date} yet`,
+      body: 'Rebuild this day from history to get caps, TPH and % of cap.',
+    })
+  if (missingMap.size)
+    attn.push({
+      key: 'missing',
+      title: `Cases: ${U(sum.missing, 'hour-channel')} missing, so nobody on them has a score`,
+      body: [...missingMap]
+        .map(([w, V]) => `${We(d, w)}: ${V.map(F).join(', ')}`)
+        .join(' · '),
+    })
+  if (!d.touchesReady && o)
+    attn.push({
+      key: 'touches',
+      title: `Touches for ${d.date} have not been computed`,
+      body: 'TPH and % of cap stay empty for this day until they are computed.',
+    })
+  if (d.callVariance.length)
+    attn.push({
+      key: 'calls',
+      title: 'Call time deducted where the grid shows no calls',
+      body: d.callVariance.map((w) => `${w.name}, ${F(w.hour)}: ${w.callMin} min`).join(' · '),
+    })
+  if (sum.over)
+    attn.push({
+      key: 'over',
+      title: `Over cap: ${U(sum.overAgents, 'agent')} in ${U(sum.over, 'hour-channel')}`,
+      body: `${P(sum.overTouches)} touches went above the cap.`,
+    })
+  if (below.length)
+    attn.push({
+      key: 'below',
+      title: `${U(below.length, 'agent')} below 60% of cap`,
+      body: below.map((w) => `${w.name}: ${P(w.pctOfCap)}%`).join(', '),
+    })
+  if (sum.zeroCapTouches)
+    attn.push({
+      key: 'zero',
+      title: `${U(sum.zeroCapTouches, 'touch', 'touches')} in hours with a cap of 0`,
+      body: 'This work is not scored.',
+    })
+  return (
+    <div className="grid mb-3" style={{ gridTemplateColumns: '1.4fr 1fr', alignItems: 'start' }}>
+      <section className="card" aria-labelledby="tph-cap-h">
+        <div className="card-head">
+          <div>
+            <h2 id="tph-cap-h" className="card-title" style={{ margin: 0 }}>
+              {D('Team % of cap — today by hour')}
+            </h2>
+            <div className="card-hint">{D('cap = hourly share of offered cases')}</div>
+          </div>
+        </div>
+        <div className="card-pad">
+          <div
+            className="mixbar"
+            role="img"
+            aria-label={D('Team percent of cap for each hour of {date}', { date: d.date })}
+          >
+            {d.hours.map((h) => {
+              const r = byHour.get(h)
+              const over = !!r?.over
+              const scored = r?.pct != null
+              const flat = !over && !(scored && d.touchesReady)
+              const bg = over ? 'var(--cx-status-bad-fg)' : scored && d.touchesReady ? 'var(--cx-accent)' : 'var(--cx-line-2)'
+              const ink = flat ? { color: 'var(--cx-ink)' } : undefined
+              return (
+                <div
+                  key={h}
+                  title={`${F(h)}: ${r?.pct == null ? 'no score' : `${P(r.pct)}%${over ? `, over cap ${P(r.pctRaw)}%` : ''}`}`}
+                  style={{ flex: 1, background: bg, minWidth: 0, ...ink }}
+                >
+                  <span>{String(h).padStart(2, '0')}</span>
+                </div>
+              )
+            })}
+          </div>
+          <div className="mixbar-legend">
+            <span>
+              <i style={{ background: 'var(--cx-accent)' }} />
+              {D('Actual')}
+            </span>
+            <span>
+              <i style={{ background: 'var(--cx-line-2)' }} />
+              {D('Scheduled / estimate')}
+            </span>
+            <span>
+              <i style={{ background: 'var(--cx-status-bad-fg)' }} />
+              {D('Over cap')}
+            </span>
+          </div>
+        </div>
+      </section>
+      <section className="card" aria-labelledby="tph-attn-h">
+        <div className="card-head">
+          <div>
+            <h2 id="tph-attn-h" className="card-title" style={{ margin: 0 }}>
+              {D('Needs attention')}
+            </h2>
+            <div className="card-hint">{D('today')}</div>
+          </div>
+        </div>
+        {attn.length ? (
+          <div className="card-pad" style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+            {attn.map((w) => (
+              <div key={w.key}>
+                <strong className="small">{w.title}</strong>
+                <div className="small faint">{w.body}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty" style={{ padding: '2rem' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+              <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
+              <path d="M22 4 12 14l-3-3" />
+            </svg>
+            <div className="t">{D('Nothing needs attention')}</div>
+            <div className="s">{D('All channels covered and no agent is over cap so far today.')}</div>
+          </div>
+        )}
+        <div className="card-pad" style={{ borderTop: '1px solid var(--line)' }}>
+          <div className="small faint mb-2">{D("Today's % of cap by hour (clipped)")}</div>
+          <div className="spark" style={{ height: '3rem' }}>
+            {sparkHours.map((w) => (
+              <i
+                key={w.hour}
+                title={`${F(w.hour)}: ${w.pct == null ? 'no score' : `${P(w.pct)}%`}`}
+                style={{ height: w.pct == null ? '6%' : `${Math.max(w.pct, 4)}%`, opacity: w.pct == null ? 0.3 : 0.8 }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 /* --- za — the page -------------------------------------------------------------- */
 
 const ROUTE = { title: 'TPH and caps' }
@@ -1983,15 +2149,92 @@ export function TphGridPage() {
     dateRef.current = date
     reload()
   }
+  const sum = useMemo(() => (d ? Va(d.table, Ka) : null), [d])
+  const touchesPending = !!d && !d.touchesReady
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!d && !error}>
-      <PageHead
-        title={ROUTE.title}
-        sub="Log which channel each agent is on, check the cases offered each hour, and compare each agent's touches with their cap."
-        aside={d ? <Ja d={d} go={go} /> : null}
-      />
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {ROUTE.title}
+          </h1>
+          <p className="page-sub">
+            {D("Log which channel each agent is on, check the cases offered each hour, and compare each agent's touches with their cap.")}
+          </p>
+        </div>
+        {d ? (
+          <div className="page-actions">
+            <Ja d={d} go={go} />
+            {d.lastAuto ? (
+              <span className="small faint">{D('Last build {at}', { at: $e(d.lastAuto.at) })}</span>
+            ) : null}
+          </div>
+        ) : null}
+      </header>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!d && !error ? <LinesSkeleton lines={6} /> : null}
+      {d && sum ? (
+        <Fragment>
+          {touchesPending ? (
+            <div className="note warn mb-3" role="status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+              <span>
+                <b>{D("Touches aren't in yet.")}</b>{' '}
+                {d.date < d.today
+                  ? D('Touches for {date} have not been computed.', { date: d.date })
+                  : D("Today's counts arrive tomorrow ~08:30 — percentages below are capped at estimate.")}
+              </span>
+            </div>
+          ) : null}
+          <div className="grid grid-5 mb-3">
+            <div className="stat">
+              <span className="stat-l">{D('Team TPH excl. calls')}</span>
+              <span className="stat-v num">{P(sum.tphExCalls)}</span>
+              <span className="stat-d muted">{touchesPending ? D('tomorrow 08:30') : D('excl. Inbound calls')}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-l">{D('Cases coverage')}</span>
+              <span className="stat-v num">
+                {sum.covered}
+                <span className="faint" style={{ fontSize: '1rem' }}>
+                  {' '}
+                  / {sum.covered + sum.missing}
+                </span>
+              </span>
+              <span className="stat-d muted">{D('on-grid slots with cases')}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-l">{D('Agents on grid')}</span>
+              <span className="stat-v num">{sum.agents}</span>
+              <span className="stat-d">{D('{n} channels', { n: String(d.channels.length) })}</span>
+            </div>
+            <div className="stat" data-tone="warn">
+              <span className="stat-l">{D('Over cap')}</span>
+              <span className="stat-v num">{d.touchesReady ? U(sum.over, 'hour-channel') : '–'}</span>
+              <span className="stat-d muted">
+                {d.touchesReady
+                  ? sum.over
+                    ? D('{a} · {t} touches above cap', { a: U(sum.overAgents, 'agent'), t: P(sum.overTouches) })
+                    : D('nobody went over a cap')
+                  : D('computed with touches')}
+              </span>
+            </div>
+            <div className="stat">
+              <span className="stat-l">{D('Call time')}</span>
+              <span className="stat-v">{d.callsBasis === 'actual' ? D('Actual') : D('Estimate')}</span>
+              <span className="stat-d">
+                {d.callsBasis === 'actual'
+                  ? D('Maqsam minutes, {at}', { at: $e(d.callsAsOf) })
+                  : D('marked slots × {pct}%', { pct: String(Math.round(d.callsFactor * 100)) })}
+              </span>
+            </div>
+          </div>
+          <Qs d={d} sum={sum} />
+        </Fragment>
+      ) : null}
       {d ? <Ga d={d} reload={reload} go={go} /> : null}
     </section>
   )

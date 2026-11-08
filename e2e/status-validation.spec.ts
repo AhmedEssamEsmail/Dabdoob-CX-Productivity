@@ -3,6 +3,7 @@ import { E2E_USERS, login } from './users'
 
 test.describe('Status Validation Page', () => {
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(45000) // login + remote ready-wait can exceed 30s under load
     await login(page, E2E_USERS.tl)
     await page.waitForURL('/')
   })
@@ -11,7 +12,8 @@ test.describe('Status Validation Page', () => {
     // Desktop viewport: the rail nav is display:none <=820px (behind Menu)
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/status-validation')
-    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
+    // Remote data can take >5s under parallel load — wait for busy to clear.
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible({ timeout: 15000 })
 
     await expect(page.getByRole('heading', { name: 'Status validation' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Main' }).getByText('Productivity', { exact: true })).toBeVisible()
@@ -22,7 +24,8 @@ test.describe('Status Validation Page', () => {
 
   test('pending flags show the agent, interval, suggestion and review deadline', async ({ page }) => {
     await page.goto('/status-validation')
-    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
+    // Remote data can take >5s under parallel load — wait for busy to clear.
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible({ timeout: 15000 })
 
     const firstFlag = page.locator('.pv-item').first()
     if (await firstFlag.count()) {
@@ -37,7 +40,8 @@ test.describe('Status Validation Page', () => {
 
   test('opening a flag shows the strip, cases and decision form', async ({ page }) => {
     await page.goto('/status-validation')
-    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
+    // Remote data can take >5s under parallel load — wait for busy to clear.
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible({ timeout: 15000 })
 
     const firstFlag = page.locator('.pv-item').first()
     test.skip(!(await firstFlag.count()), 'No pending flags to open')
@@ -60,7 +64,8 @@ test.describe('Status Validation Page', () => {
 
   test('accepting a flag records the decision and toasts', async ({ page }) => {
     await page.goto('/status-validation')
-    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible()
+    // Remote data can take >5s under parallel load — wait for busy to clear.
+    await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible({ timeout: 15000 })
 
     const firstFlag = page.locator('.pv-item').first()
     test.skip(!(await firstFlag.count()), 'No pending flags to decide')

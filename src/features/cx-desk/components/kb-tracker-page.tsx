@@ -141,11 +141,13 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
   return (
     <section className="page dk" aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {route.title}
-        </h1>
-        <p className="page-purpose">{route.purpose}</p>
-        {aside}
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-purpose">{route.purpose}</p>
+        </div>
+        {aside ? <div className="page-actions">{aside}</div> : null}
       </header>
       {children}
     </section>
@@ -153,11 +155,7 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
 }
 
 function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return (
-    <span className="dk-badge" data-tone={tone}>
-      {children}
-    </span>
-  )
+  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
 }
 
 function ErrMsg({ message }: { message: string }) {
@@ -268,7 +266,7 @@ function KbForm({ row, onSaved, onCancel }: { row: Partial<KbRow>; onSaved: (r: 
 
 const ROUTE = {
   title: 'KB tracker',
-  purpose: 'Knowledge-base updates: when each was asked for, when it was done, and whether it was accurate.',
+  purpose: 'KB articles requested, done and checked for accuracy.',
 }
 
 export default function KbTrackerPage() {
@@ -326,6 +324,7 @@ export default function KbTrackerPage() {
       </div>
       {editing ? <KbForm row={editing} onSaved={onSaved} onCancel={() => setEditing(null)} /> : null}
       {data.rows.length ? (
+        <div className="card card-pad">
         <ul className="dk-list">
           {data.rows.map((r) => (
             <li key={r.id}>
@@ -356,8 +355,13 @@ export default function KbTrackerPage() {
             </li>
           ))}
         </ul>
+        </div>
       ) : (
-        <p className="dk-none">No KB updates yet. Add the first one when an article is requested.</p>
+        <div className="card">
+          <div className="empty">
+            <div className="s">No KB updates yet. Add the first one when an article is requested.</div>
+          </div>
+        </div>
       )}
     </Shell>
   )

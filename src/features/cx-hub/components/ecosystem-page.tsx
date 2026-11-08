@@ -2656,7 +2656,7 @@ export function EcosystemPage() {
     [i, s] = useState('')
   return useEffect(() => {
     const r = document.title
-    return document.title = 'Ecosystem, CX Helm', () => {
+    return document.title = 'Ecosystem, Dabdoob CX', () => {
       document.title = r
     }
   }, []), !e || !t ? <div className="eco3-page"><div className="eco3-page-msg"><p>The ecosystem map is for team leads and admins.</p><a href={Lr('overview')}>Go to Hub home</a></div></div> : <Jb boot={e} msg={i} setMsg={s} />

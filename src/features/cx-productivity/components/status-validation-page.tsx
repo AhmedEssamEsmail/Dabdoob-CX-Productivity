@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import {
   Chip,
   LinesSkeleton,
   LoadError,
-  PageHead,
   Section,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
@@ -13,6 +12,7 @@ import { Button, Seg, Select, Textarea } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import {
   CasesLine,
+  CHANNEL_LABELS,
   DecisionChip,
   Ea,
   fe,
@@ -91,7 +91,15 @@ export function Page({
 }) {
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!d && !error}>
-      <PageHead title={route.title} sub={sub} aside={aside} />
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-sub">{sub}</p>
+        </div>
+        {aside ? <div className="page-actions">{aside}</div> : null}
+      </header>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!d && !error ? <LinesSkeleton lines={6} /> : d ? children : null}
     </section>
@@ -147,72 +155,102 @@ function FlagDetail({
   }
 
   return (
-    <div className="pv-detail">
-      <header className="pv-detail__head">
-        <strong>{f.agentName}</strong>
-        <span className="cx-muted">
-          {re(f.intervalStart)}, {fe(f)}
-        </span>
+    <div className="pv-detail card">
+      <div className="card-head">
+        <div>
+          <div className="card-title">
+            {f.agentName} — {re(f.intervalStart)}, {fe(f)}
+          </div>
+          <div className="card-hint">
+            {G(f.flaggedMin)} flagged of {G(f.intervalMin)} {f.rawStatus}
+          </div>
+        </div>
         <DecisionChip d={f.decision} />
-      </header>
-      <FlagStrip f={f} />
-      <CasesLine f={f} ticketUrl={ticketUrl} />
-      {f.decision !== 'pending' ? (
-        <p className="cx-muted">
-          Decided by {f.decidedBy} {f.decidedAt ? `on ${f.decidedAt.slice(0, 10)}` : ''}
-          {f.reason ? `: ${f.reason}` : '.'}
-        </p>
-      ) : (
-        <form
-          className="pv-form"
-          onSubmit={(e: FormEvent) => {
-            e.preventDefault()
-            decide('accept')
-          }}
-        >
-          <fieldset className="pv-fieldset">
-            <legend className="cx-label">The flagged {G(f.flaggedMin)} count as</legend>
-            <Seg
-              name={`st-${flagId}`}
-              className="pv-seg"
-              value={v}
-              onChange={setPicked}
-              options={statuses.map((s) => ({
-                value: s,
-                label: (
-                  <>
-                    {s}
-                    {s === f.suggestedStatus ? ' (suggested)' : ''}
-                  </>
-                ),
-              }))}
-            />
-          </fieldset>
-          <div className="cx-field">
-            <label className="cx-label" htmlFor={`rs-${flagId}`}>
-              Reason {y ? `(needed for ${v} and for revert)` : '(needed to revert)'}
-            </label>
-            <Textarea
-              id={`rs-${flagId}`}
-              value={reason}
-              onInput={(e) => setReason(e.currentTarget.value)}
-            />
+      </div>
+      <div className="card-pad">
+        <FlagStrip f={f} />
+        <div className="card" style={{ boxShadow: 'none', marginBlockEnd: '1rem' }}>
+          <div className="card-head">
+            <div className="card-title">Inside the window</div>
           </div>
-          {formError ? (
-            <p className="cx-error" role="alert">
-              {formError}
-            </p>
-          ) : null}
-          <div className="pv-actions">
-            <Button type="submit" variant="primary" disabled={saving}>
-              {saving ? 'Saving…' : `Accept as ${v}`}
-            </Button>
-            <Button disabled={saving} onClick={() => decide('revert')}>
-              Revert to {f.rawStatus}
-            </Button>
-          </div>
-        </form>
-      )}
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th scope="col">Case</th>
+                <th scope="col">Channel</th>
+              </tr>
+            </thead>
+            <tbody>
+              {f.cases.map((c) => (
+                <tr key={c.id}>
+                  <td className="rowlink">
+                    <a href={ticketUrl + c.id} target="_blank" rel="noopener noreferrer">
+                      #{c.id}
+                    </a>
+                  </td>
+                  <td>{CHANNEL_LABELS[c.channel] ?? c.channel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {f.decision !== 'pending' ? (
+          <p className="cx-muted">
+            Decided by {f.decidedBy} {f.decidedAt ? `on ${f.decidedAt.slice(0, 10)}` : ''}
+            {f.reason ? `: ${f.reason}` : '.'}
+          </p>
+        ) : (
+          <form
+            className="pv-form"
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault()
+              decide('accept')
+            }}
+          >
+            <fieldset className="pv-fieldset">
+              <legend className="cx-label">The flagged {G(f.flaggedMin)} count as</legend>
+              <Seg
+                name={`st-${flagId}`}
+                className="pv-seg"
+                value={v}
+                onChange={setPicked}
+                options={statuses.map((s) => ({
+                  value: s,
+                  label: (
+                    <>
+                      {s}
+                      {s === f.suggestedStatus ? ' (suggested)' : ''}
+                    </>
+                  ),
+                }))}
+              />
+            </fieldset>
+            <div className="cx-field">
+              <label className="cx-label" htmlFor={`rs-${flagId}`}>
+                Reason {y ? `(needed for ${v} and for revert)` : '(needed to revert)'}
+              </label>
+              <Textarea
+                id={`rs-${flagId}`}
+                value={reason}
+                onInput={(e) => setReason(e.currentTarget.value)}
+              />
+            </div>
+            {formError ? (
+              <p className="cx-error" role="alert">
+                {formError}
+              </p>
+            ) : null}
+            <div className="pv-actions">
+              <Button type="submit" variant="primary" disabled={saving}>
+                {saving ? 'Saving…' : `Accept as ${v}`}
+              </Button>
+              <Button disabled={saving} onClick={() => decide('revert')}>
+                Revert to {f.rawStatus}
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   )
 }
@@ -346,9 +384,23 @@ function DataSource({ d }: { d: ReviewPage }) {
 
 const ROUTE = { title: 'Status validation' }
 
+const WI_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.9rem',
+  inlineSize: '100%',
+  padding: '0.8rem 1.25rem',
+  border: 0,
+  borderBottom: '1px solid var(--cx-line)',
+  borderRadius: 0,
+  background: 'transparent',
+  textAlign: 'start',
+}
+
 export function StatusValidationPage() {
   const { data: n, error, reload } = useSe<ReviewPage>(ce.reviewPage)
   const [selected, setSelected] = useState('')
+  const [agentFilter, setAgentFilter] = useState('')
   const done = () => {
     setSelected('')
     reload()
@@ -372,45 +424,78 @@ export function StatusValidationPage() {
             title={n.pending.length ? `${n.pending.length} to review` : 'Nothing to review'}
             hint="Open each flag to decide it"
           >
-            <div className={selected ? 'cx-grid-2 pv-review' : 'pv-review'}>
-              <ul className="pv-list" aria-label="Flags to review">
-                {n.pending.map((f) => {
-                  const h = Ea(f.dueDate, n.today)
-                  return (
-                    <li key={f.flagId}>
-                      <Button
-                        className="pv-item"
-                        aria-pressed={selected === f.flagId}
-                        onClick={() => setSelected(f.flagId)}
-                      >
-                        <span className="pv-item__who">
-                          <strong>{f.agentName}</strong>{' '}
-                          <span className="cx-muted">
-                            {re(f.intervalStart)}, {fe(f)}
-                          </span>
-                        </span>
-                        <span className="pv-item__what">
-                          {G(f.flaggedMin)} {f.rawStatus}, {f.distinctCases} cases, suggested{' '}
-                          {f.suggestedStatus}
-                        </span>
-                        <Chip status={h <= 1 ? 'bad' : h <= 3 ? 'warn' : 'neutral'}>
-                          {h <= 0 ? 'auto-accepts today' : `${h} ${h === 1 ? 'day' : 'days'} left`}
-                        </Chip>
-                      </Button>
-                    </li>
-                  )
-                })}
-              </ul>
-              {selected ? (
-                <div className="cx-panel cx-panel--pad" key={selected}>
-                  <FlagDetail
-                    flagId={selected}
-                    statuses={n.statuses}
-                    reasonStatuses={n.reasonStatuses}
-                    ticketUrl={n.ticketUrl}
-                    onDone={done}
+            <div className="md">
+              <section className="card">
+                <div className="card-head">
+                  <div className="card-title">Flags</div>
+                  <input
+                    className="input"
+                    type="search"
+                    placeholder="Agent…"
+                    aria-label="Filter flags by agent"
+                    value={agentFilter}
+                    onChange={(e) => setAgentFilter(e.currentTarget.value)}
                   />
                 </div>
+                <div className="worklist">
+                  {n.pending
+                    .filter(
+                      (f) =>
+                        !agentFilter.trim() ||
+                        f.agentName.toLowerCase().includes(agentFilter.trim().toLowerCase()),
+                    )
+                    .map((f, i, rows) => {
+                      const h = Ea(f.dueDate, n.today)
+                      const sel = selected === f.flagId
+                      return (
+                        <Button
+                          key={f.flagId}
+                          className="workitem pv-item"
+                          aria-pressed={sel}
+                          style={
+                            sel || i === rows.length - 1
+                              ? {
+                                  ...WI_ROW,
+                                  ...(sel ? { background: 'var(--cx-accent-soft)' } : {}),
+                                  ...(i === rows.length - 1 ? { borderBottom: 0 } : {}),
+                                }
+                              : WI_ROW
+                          }
+                          onClick={() => setSelected(f.flagId)}
+                        >
+                          <span className="wi-main">
+                            <span className="wi-t pv-item__who">
+                              <strong>{f.agentName}</strong>{' '}
+                              <span className="cx-muted">
+                                {re(f.intervalStart)}, {fe(f)}
+                              </span>
+                            </span>
+                            <span className="wi-s pv-item__what">
+                              {G(f.flaggedMin)} {f.rawStatus}, {f.distinctCases} cases, suggested{' '}
+                              {f.suggestedStatus}
+                            </span>
+                          </span>
+                          <span className="wi-side">
+                            <Chip status={h <= 1 ? 'bad' : h <= 3 ? 'warn' : 'neutral'}>
+                              {h <= 0
+                                ? 'auto-accepts today'
+                                : `${h} ${h === 1 ? 'day' : 'days'} left`}
+                            </Chip>
+                          </span>
+                        </Button>
+                      )
+                    })}
+                </div>
+              </section>
+              {selected ? (
+                <FlagDetail
+                  key={selected}
+                  flagId={selected}
+                  statuses={n.statuses}
+                  reasonStatuses={n.reasonStatuses}
+                  ticketUrl={n.ticketUrl}
+                  onDone={done}
+                />
               ) : null}
             </div>
           </Section>
@@ -439,7 +524,7 @@ export function StatusValidationPage() {
           ) : null}
           {n.decided.length ? (
             <Section id="pv-h" title="Decided, last 30 days">
-              <div className="cx-panel cx-tablewrap">
+              <div className="card cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>

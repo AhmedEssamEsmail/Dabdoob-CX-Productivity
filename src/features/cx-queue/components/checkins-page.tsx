@@ -109,7 +109,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!a || !cur ? <><Skeleton tall lines={2} /><Skeleton lines={10} /></> : (
         <>
-          <section className="cx-panel" aria-label="Today's check-ins">
+          <section className="card" aria-label="Today's check-ins">
             <DayRail slots={a.slots} now={a.now} />
           </section>
           {missed.length ? (
@@ -121,7 +121,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
             </div>
           ) : null}
           <div className="cx-split cx-split--narrow">
-            <form className="cx-panel" onSubmit={submit} noValidate>
+            <form className="card" onSubmit={submit} noValidate>
               <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)', borderBlockEnd: '1px solid var(--cx-line)' }}>
                 {notOpen ? (
                   <div className="cx-note" data-status="neutral"><div><strong>The {cur.slot} check-in opens at {hm(cur.opensAt)}.</strong> The numbers below are live and will change.</div></div>
@@ -144,7 +144,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                     <div className="cx-readout">
                       <span className="cx-queuerow__name">
                         {k.queue}
-                        {k.stale ? <span className="cx-chip" data-status="warn">Stale: not refreshed since the daily report</span> : null}
+                        {k.stale ? <span className="pill warn">Stale: not refreshed since the daily report</span> : null}
                         {byStatusLine(k.byStatus) ? <span className="dq-statusline">{byStatusLine(k.byStatus)}</span> : null}
                       </span>
                       <span><b className="cx-num">{k.open}</b> open</span>
@@ -194,26 +194,33 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
               </div>
             </form>
             <div style={{ display: 'grid', gap: 'var(--cx-space-4)', alignContent: 'start' }}>
-              {a.earlier.map((k: any) => (
-                <section key={(k.date ?? '') + k.slot} className="cx-section">
-                  <div className="cx-section__head">
-                    <h2 className="cx-section__title">{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
-                    <span className="cx-section__hint">{String(k.by).split('@')[0]}{k.late ? ' (late)' : ''}</span>
+              {a.earlier.length ? a.earlier.map((k: any) => (
+                <section key={(k.date ?? '') + k.slot} className="card">
+                  <div className="card-head">
+                    <h2 className="card-title" style={{ margin: 0 }}>{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
+                    <span className="card-hint">{String(k.by).split('@')[0]}{k.late ? ' (late)' : ''}</span>
                   </div>
-                  {k.helpNeeded ? <p className="cx-note" data-status="bad"><span><strong>Asked Mohamed for help:</strong> {k.helpNote || 'no note'}</span></p> : null}
-                  {k.generalNote ? <p className="cx-note" data-status="info"><span><strong>Handoff note:</strong> {k.generalNote}</span></p> : null}
-                  <div className="cx-panel cx-tablewrap">
-                    <table className="cx-table">
-                      <thead><tr><th scope="col">Queue</th><th scope="col" className="cx-num-col">Agents</th><th scope="col">Status given</th></tr></thead>
-                      <tbody>
-                        {(k.queues || []).map((A: any) => (
-                          <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td><span className="cx-chip" data-status={A.status === 'On track' ? 'ok' : 'warn'}>{A.status}</span>{A.note ? <span className="dq-statusline">{A.note}</span> : null}</td></tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="card-pad" style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+                    {k.helpNeeded ? <p className="cx-note" data-status="bad"><span><strong>Asked Mohamed for help:</strong> {k.helpNote || 'no note'}</span></p> : null}
+                    {k.generalNote ? <p className="cx-note" data-status="info"><span><strong>Handoff note:</strong> {k.generalNote}</span></p> : null}
+                    <div className="cx-tablewrap">
+                      <table className="cx-table">
+                        <thead><tr><th scope="col">Queue</th><th scope="col" className="cx-num-col">Agents</th><th scope="col">Status given</th></tr></thead>
+                        <tbody>
+                          {(k.queues || []).map((A: any) => (
+                            <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td><span className={A.status === 'On track' ? 'pill ok' : 'pill warn'}>{A.status}</span>{A.note ? <span className="dq-statusline">{A.note}</span> : null}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </section>
-              ))}
+              )) : (
+                <div className="empty">
+                  <div className="t">No earlier check-ins yet.</div>
+                  <div className="s">Submitted check-ins from earlier slots today and last night show up here.</div>
+                </div>
+              )}
               <div className="cx-note" data-status="neutral"><div><strong>If a check-in is missed</strong><br />The team lead gets an email and a pop-up 30 minutes after the slot. Mohamed sees the slot marked missed on Home.</div></div>
             </div>
           </div>

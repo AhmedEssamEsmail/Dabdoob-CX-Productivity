@@ -194,7 +194,7 @@ function RankPanel({
   const d = t.rows[0]?.[1] || 1
   const u = t.inOne ? 'channel' : 'country'
   return (
-    <section className="cx-panel cx-panel--pad dq-rank cc-chart" ref={p} aria-labelledby="rank-h">
+    <section className="card card-pad dq-rank cc-chart" ref={p} aria-labelledby="rank-h">
       <div className="dq-rank__head">
         <h2 className="cx-section__title" id="rank-h" ref={r} tabIndex={-1}>
           {l ? (
@@ -257,7 +257,9 @@ function RankPanel({
           })}
         </ol>
       ) : (
-        <p className="cx-muted">No contacts in this {n}. Press another bar, or clear the {n}.</p>
+        <div className="empty">
+          <div className="s">No contacts in this {n}. Press another bar, or clear the {n}.</div>
+        </div>
       )}
     </section>
   )
@@ -351,7 +353,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
             </fieldset>
           </div>
           {f ? (
-            <section className="dq-headline cc-chart" ref={b} aria-label={o ? 'Pressed period' : 'Latest complete period'}>
+            <section className="card card-pad dq-headline cc-chart" ref={b} aria-label={o ? 'Pressed period' : 'Latest complete period'}>
               <p className="dq-headline__num cx-num">
                 <Count value={f.now} format={fmt} />
               </p>
@@ -378,7 +380,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
             </section>
           ) : null}
           {g ? <RankPanel ranked={g} grain={l} period={f!.p} picked={!!o} country={g.inOne ? [...i][0] : ''} headRef={u} onDrill={m} onClearPick={() => d(null)} /> : null}
-          <section className="cx-panel cx-panel--pad" aria-labelledby="chart-h">
+          <section className="card card-pad" aria-labelledby="chart-h">
             <h2 className="cx-sr" id="chart-h">
               Inflow chart
             </h2>
@@ -388,7 +390,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
               notification-only groups).
             </p>
           </section>
-          <details className="cx-panel dq-details">
+          <details className="card dq-details">
             <summary>Show the numbers as a table</summary>
             <div className="cx-tablewrap">
               <table className="cx-table">

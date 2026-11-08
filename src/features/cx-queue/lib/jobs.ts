@@ -280,7 +280,7 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
       )
       if (on) await sendMail(
         { to: email, subject: title,
-          htmlBody: '<p>The ' + escapeHtml(cp.name) + ' check-in (' + cp.slot + ' Kuwait, ' + cp.date + ') has not been submitted. Open CX Helm, Check-ins, and submit it.</p>' },
+          htmlBody: '<p>The ' + escapeHtml(cp.name) + ' check-in (' + cp.slot + ' Kuwait, ' + cp.date + ') has not been submitted. Open Dabdoob CX, Check-ins, and submit it.</p>' },
         'system:job'
       )
     }

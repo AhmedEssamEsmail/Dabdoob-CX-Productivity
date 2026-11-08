@@ -9,7 +9,6 @@ import {
   PwLate,
   PwSkel,
   PwErr,
-  PwBadge,
   PwCombo,
   useBusy,
   dayLabel,
@@ -342,16 +341,16 @@ function MeetingAction({ actionId, title, due }: { actionId: string; title: stri
   const [posted, setPosted] = useState(false)
   const busy = useBusy()
   return (
-    <li className="pw-row">
-      <div>
-        <div className="pw-row-title">{title}</div>
-        <div className="pw-row-meta">
-          Due {dayLabel(due)}{' '}
-          {due < today() ? <PwBadge tone="bad">Overdue</PwBadge> : null}
+    <div className="workitem">
+      <div className="wi-main">
+        <div className="wi-t">{title}</div>
+        <div className="wi-s">
+          Due {dayLabel(due)} {due < today() ? <span className="pill bad">Overdue</span> : null}
         </div>
       </div>
       <Input
         className="input"
+        style={{ flex: 1 }}
         aria-label={`Where "${title}" stands`}
         placeholder="Where it stands"
         value={note}
@@ -374,11 +373,11 @@ function MeetingAction({ actionId, title, due }: { actionId: string; title: stri
         </Button>
       </div>
       {busy.error ? (
-        <div className="pw-row-wide">
+        <div style={{ flexBasis: '100%' }}>
           <PwErr message={busy.error} />
         </div>
       ) : null}
-    </li>
+    </div>
   )
 }
 
@@ -460,23 +459,27 @@ function SeriesView({
         Past meetings
       </h3>
       {series.meetings?.filter((m: any) => m.status === 'closed').length ? (
-        <ul className="pw-rows">
+        <div className="worklist">
           {series.meetings
             .filter((m: any) => m.status === 'closed')
             .map((m: any) => (
-              <li key={m.meetingId} className="pw-row">
-                <span className="pw-row-title pw-num">{dayTime(m.heldAt)}</span>
-                <span className="pw-row-meta">{m.decisions ? m.decisions.split('\n')[0] : 'No decisions logged'}</span>
-                <span className="pw-row-actions">
+              <div key={m.meetingId} className="workitem">
+                <div className="wi-main">
+                  <div className="wi-t">{dayTime(m.heldAt)}</div>
+                  <div className="wi-s">{m.decisions ? m.decisions.split('\n')[0] : 'No decisions logged'}</div>
+                </div>
+                <div className="wi-side">
                   <Button size="sm" disabled={busy} onClick={() => onOpen(m.meetingId)}>
                     Read
                   </Button>
-                </span>
-              </li>
+                </div>
+              </div>
             ))}
-        </ul>
+        </div>
       ) : (
-        <p className="pw-empty">None yet.</p>
+        <div className="empty">
+          <div className="s">None yet.</div>
+        </div>
       )}
     </section>
   )
@@ -508,14 +511,14 @@ function CarriedReview({
           <div key={a.actionId} className="pw-carry">
             <div>
               <div className="pw-row-title">
-                {a.title} {a.sourceDeleted ? <PwBadge tone="warn">Created in a deleted 1:1</PwBadge> : null}
+                {a.title} {a.sourceDeleted ? <span className="pill warn">Created in a deleted 1:1</span> : null}
               </div>
               <div className="pw-row-meta">
-                {a.ownerName}, due {dayLabel(a.dueDate)} {overdue ? <PwBadge tone="bad">Overdue</PwBadge> : null}{' '}
+                {a.ownerName}, due {dayLabel(a.dueDate)} {overdue ? <span className="pill bad">Overdue</span> : null}{' '}
                 {a.carryCount >= 3 ? (
-                  <PwBadge tone="bad">Carried {a.carryCount} times: escalate, reassign or drop</PwBadge>
+                  <span className="pill bad">Carried {a.carryCount} times: escalate, reassign or drop</span>
                 ) : a.carryCount ? (
-                  <PwBadge tone="warn">Carried {a.carryCount}×</PwBadge>
+                  <span className="pill warn">Carried {a.carryCount}×</span>
                 ) : null}
               </div>
               {a.latestUpdate ? (
@@ -659,7 +662,9 @@ function MeetingView({
             ) : null}
           </div>
         ) : (
-          <p className="pw-empty">Nothing carried from earlier meetings.</p>
+          <div className="empty">
+            <div className="s">Nothing carried from earlier meetings.</div>
+          </div>
         )}
       </div>
       <div className="pw-section pw-panel" style={{ display: 'grid', gap: 14 }}>
@@ -701,17 +706,19 @@ function MeetingView({
           New actions
         </h3>
         {view.newActions.length ? (
-          <ul className="pw-rows" style={{ marginBottom: 12 }}>
+          <div className="worklist" style={{ marginBottom: 12 }}>
             {view.newActions.map((a: any) => (
-              <li key={a.actionId} className="pw-row">
-                <span className="pw-row-title">{a.title}</span>
-                <span className="pw-row-meta">
-                  {a.ownerName}, due {dayLabel(a.dueDate)}
-                </span>
-                <span>{a.trackAsTask ? <PwBadge>Task</PwBadge> : null}</span>
-              </li>
+              <div key={a.actionId} className="workitem">
+                <div className="wi-main">
+                  <div className="wi-t">{a.title}</div>
+                  <div className="wi-s">
+                    {a.ownerName}, due {dayLabel(a.dueDate)}
+                  </div>
+                </div>
+                <div className="wi-side">{a.trackAsTask ? <span className="pill">Task</span> : null}</div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : null}
         {canEdit ? (
           <div className="pw-panel">
@@ -931,14 +938,18 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
           ) : null}
           <LogBrActions data={data} onLogged={() => void reload()} />
           {data.myActions.length ? (
-            <section className="pw-section">
-              <h2 className="pw-h2">Your open actions from meetings</h2>
-              <p className="pw-sub">Post where each one stands before the next meeting. Your note fills in the review.</p>
-              <ul className="pw-rows">
+            <section className="card" aria-labelledby="meet-actions-h">
+              <div className="card-head">
+                <h2 id="meet-actions-h" className="card-title" style={{ margin: 0 }}>
+                  Your open actions from meetings
+                </h2>
+                <div className="card-hint">Post where each one stands before the next meeting — your note fills in the review.</div>
+              </div>
+              <div className="worklist">
                 {data.myActions.map((a: any) => (
                   <MeetingAction key={a.actionId} actionId={a.actionId} title={a.title} due={a.dueDate} />
                 ))}
-              </ul>
+              </div>
             </section>
           ) : null}
           {data.series.length ? (
@@ -959,7 +970,7 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
                     </div>
                     {s.openActions ? (
                       <div style={{ marginTop: 4 }}>
-                        <PwBadge tone="warn">{s.openActions} open</PwBadge>
+                        <span className="pill warn">{s.openActions} open</span>
                       </div>
                     ) : null}
                   </button>
@@ -983,7 +994,9 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
               </div>
             </div>
           ) : (
-            <p className="pw-empty">No meeting series yet. Set one up to start keeping notes and actions.</p>
+            <div className="empty">
+              <div className="s">No meeting series yet. Set one up to start keeping notes and actions.</div>
+            </div>
           )}
         </>
       ) : (

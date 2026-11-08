@@ -3,7 +3,8 @@
 /* verbatim port of the legacy Agent performance (scorecard) page
  * (agents.closure.js symbols hl/cl/ft/ml/ue/ol/pl). */
 import { useEffect, useMemo, useState } from 'react'
-import { AsOfHint, Head, LoadError, fetchJson, useSe } from './shared'
+import { AsOfHint, LoadError, fetchJson, useSe } from './shared'
+import { D } from '@/features/shared/shell/i18n'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
 import { Button, Input, Seg, Select } from '@/features/shared/components/ui'
 import { useBoot } from '@/features/shared/shell/context'
@@ -78,32 +79,32 @@ function ScoreCells({ t }: { t: any }) {
         : 'clear'
   return (
     <>
-      <td>
+      <td className="num">
         <Val v={t.inbProd} sub={`${t.inbAchieved} / ${t.inbTarget}`} />
       </td>
-      <td>
+      <td className="num">
         <Val v={t.txtProd} sub={`${t.txtAchieved} / ${t.txtTarget}`} />
       </td>
-      <td>
+      <td className="num">
         <Val v={t.waProd} sub={`${t.waAchieved} / ${t.waTarget}`} />
       </td>
-      <td>
+      <td className="num">
         <Val v={t.prod} sub={`${t.totalAchieved} / ${t.totalTarget}`} />
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'prod')}</span>
       </td>
-      <td>
+      <td className="num">
         <Val v={t.qual} sub={`${t.audits} ${t.audits === 1 ? 'audit' : 'audits'}`} />
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'qual')}</span>
       </td>
-      <td>
+      <td className="num">
         <Val v={t.fcr} sub={`${t.fcrPassed} / ${scored} scored${t.fcrExcluded ? ` · ${t.fcrExcluded} excl` : ''}`} />
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'fcr')}</span>
       </td>
-      <td>
+      <td className="num">
         <Val v={t.behavior} sub={behaviorSub} />
         <span className="cx-hint dq-sub">{payLine(t.kpi, 'behavior')}</span>
       </td>
-      <td>
+      <td className="num">
         <strong>
           <Val v={t.overall} sub={kpiSub(t.kpi)} />
         </strong>
@@ -283,19 +284,7 @@ function ScorecardAdmin() {
   return (
     <div className="block">
       <h2 className="block-title">Productivity workbook per month</h2>
-      <p className="block-text">
-        The Agent performance page reads each month&apos;s workbook (tabs{' '}
-        {data?.tabs.join(', ') ?? 'Productivity Matrix, FCR, Business Behavior'}) into V2 once, overnight for the current
-        month and whenever Refresh is pressed. It assumes the same tab layout every month. A month with no workbook of
-        its own uses the fallback
-        {data ? (
-          <>
-            {' '}
-            (<code>{data.fallbackId.slice(0, 8)}…</code>)
-          </>
-        ) : null}
-        , which only works while the fallback holds that month&apos;s rows.
-      </p>
+      <p className="card-hint">{D("Reads each month's workbook into V2; months without one use the fallback.")}</p>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
@@ -525,21 +514,107 @@ export function AgentsPage({ route }: { route: { title: string } }) {
   const hiddenDays = (detail?.days.length ?? 0) - activeDays.length
   const teamView = data ? data.scope !== 'agent' : true
   const boot = useBoot()
+  const scoredAgents = agents.filter((a: any) => typeof a.overall === 'number')
+  const teamScore = scoredAgents.length
+    ? Math.round((scoredAgents.reduce((s: number, a: any) => s + a.overall, 0) / scoredAgents.length) * 10) / 10
+    : null
+  const atOrAbove95 = scoredAgents.filter((a: any) => a.overall >= 95).length
+  const below75 = scoredAgents.filter((a: any) => a.overall < 75).length
+  const agentDays = agents.reduce((s: number, a: any) => s + (a.days || 0), 0)
+  const spanDays = data ? Math.max(1, Math.round((Date.parse(data.to) - Date.parse(data.from)) / 864e5) + 1) : 0
+  const coverage = agents.length ? Math.min(100, Math.round((agentDays / (agents.length * spanDays)) * 100)) : null
+  const vsTeamDelta = (a: any) => {
+    if (typeof a.overall !== 'number' || teamScore === null || scoredAgents.length <= 1) return null
+    return Math.round((a.overall - teamScore) * 10) / 10
+  }
+  const bandPill = (a: any) => {
+    const k = a.kpi
+    if (typeof a.overall !== 'number' || !k) return null
+    if (k.ineligible) return { cls: 'bad', text: 'Not eligible' }
+    if (k.olDeduction) return { cls: 'bad', text: 'OL x50%' }
+    if (k.probationMonth) return { cls: 'info', text: 'Probation' }
+    if (k.incomplete) return { cls: 'warn', text: 'Incomplete' }
+    return { cls: 'ok', text: 'Full pay' }
+  }
 
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!data && !error}>
-      <Head
-        title={route.title}
-        sub={
-          teamView
-            ? 'Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.'
-            : 'Your scorecard from the monthly productivity workbook.'
-        }
-        aside={data ? <AsOfHint iso={data.dataAsOf} what="Workbook" /> : null}
-      />
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          {data ? (
+            <p className="page-sub">
+              {teamView
+                ? D('Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.')
+                : D('Your scorecard from the monthly productivity workbook.')}
+            </p>
+          ) : null}
+        </div>
+        {data ? (
+          <div className="page-actions">
+            <Input
+              id="sc-from"
+              type="date"
+              aria-label={D('From')}
+              value={from}
+              onInput={(e) => setFrom(e.currentTarget.value)}
+            />
+            <span className="faint small">{D('to')}</span>
+            <Input
+              id="sc-to"
+              type="date"
+              aria-label={D('To')}
+              value={to}
+              onInput={(e) => setTo(e.currentTarget.value)}
+            />
+            <Button variant="primary" onClick={() => apply(from, to)}>
+              {D('Apply')}
+            </Button>
+            <Button onClick={() => apply(addDays(todayStr, -30), todayStr)}>{D('30 days')}</Button>
+            <Button onClick={() => apply(monthStart(lastMonthEnd), lastMonthEnd)}>{D('Last month')}</Button>
+            <Button onClick={() => apply(monthStart(todayStr), todayStr)}>{D('This month')}</Button>
+            {data.canRefresh ? (
+              <Button variant="quiet" onClick={refreshNow} disabled={refreshing}>
+                {refreshing ? D('Reading the workbook…') : D('Refresh')}
+              </Button>
+            ) : null}
+            <AsOfHint iso={data.dataAsOf} what={D('Workbook')} />
+          </div>
+        ) : null}
+      </header>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
+          {agents.length ? (
+            <div className="grid grid-4 mb-3">
+              {teamScore !== null ? (
+                <div className="stat">
+                  <span className="stat-l">{D('Team KPI score')}</span>
+                  <span className="stat-v num">{teamScore}</span>
+                  <span className="stat-d">{D('{n} agents scored', { n: String(scoredAgents.length) })}</span>
+                </div>
+              ) : null}
+              <div className="stat" data-tone="ok">
+                <span className="stat-l">{D('Agents at/above 95')}</span>
+                <span className="stat-v num">{atOrAbove95}</span>
+                <span className="stat-d">{D('of {n} scored', { n: String(scoredAgents.length) })}</span>
+              </div>
+              <div className="stat" data-tone="warn">
+                <span className="stat-l">{D('Below 75 band')}</span>
+                <span className="stat-v num">{below75}</span>
+                <span className="stat-d">{D('Pay impact · see detail')}</span>
+              </div>
+              {coverage !== null ? (
+                <div className="stat">
+                  <span className="stat-l">{D('Data coverage')}</span>
+                  <span className="stat-v num">{coverage}%</span>
+                  <span className="stat-d">{D('{n} agent-days read', { n: String(agentDays) })}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <section className="cx-section" aria-labelledby="sc-period">
             <div className="cx-section__head">
               <h2 className="cx-section__title" id="sc-period">
@@ -548,37 +623,6 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               <span className="cx-section__hint">
                 {data.from} to {data.to}
               </span>
-            </div>
-            <div className="cx-filters">
-              <div className="cx-field">
-                <label className="cx-label" htmlFor="sc-from">
-                  From
-                </label>
-                <Input id="sc-from" type="date" value={from} onInput={(e) => setFrom(e.currentTarget.value)} />
-              </div>
-              <div className="cx-field">
-                <label className="cx-label" htmlFor="sc-to">
-                  To
-                </label>
-                <Input id="sc-to" type="date" value={to} onInput={(e) => setTo(e.currentTarget.value)} />
-              </div>
-              <Button variant="primary" onClick={() => apply(from, to)}>
-                Apply
-              </Button>
-              <Button onClick={() => apply(addDays(todayStr, -30), todayStr)}>
-                Last 30 Days
-              </Button>
-              <Button onClick={() => apply(monthStart(lastMonthEnd), lastMonthEnd)}>
-                Last Month
-              </Button>
-              <Button onClick={() => apply(monthStart(todayStr), todayStr)}>
-                This Month
-              </Button>
-              {data.canRefresh ? (
-                <Button variant="quiet" onClick={refreshNow} disabled={refreshing}>
-                  {refreshing ? 'Reading the workbook…' : 'Refresh now'}
-                </Button>
-              ) : null}
             </div>
             <p className="cx-hint">
               KPI score: each KPI&apos;s raw % falls in a payout band (productivity 80 / 86 / 95 pay 50 / 75 / 100%;
@@ -610,7 +654,6 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               {data.scope === 'tl' && view === 'rank' ? (
                 <label className="cx-switch">
                   <span>My team only</span>
-                  {/* eslint-disable-next-line -- kept raw: native checkbox inside .cx-switch label (track span is CSS) */}
                   <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.currentTarget.checked)} />
                   <span className="cx-switch__track" aria-hidden="true" />
                 </label>
@@ -618,24 +661,25 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             </div>
           ) : null}
           {view === 'rank' || !teamView ? (
-            <section className="cx-section" aria-labelledby="sc-rank">
-              <div className="cx-section__head">
-                <h2 className="cx-section__title" id="sc-rank">
+            <section className="card" aria-labelledby="sc-rank">
+              <div className="card-head">
+                <h2 className="card-title" id="sc-rank">
                   {teamView ? 'Stack Ranking' : 'Your scorecard'}
                 </h2>
-                <span className="cx-section__hint">
+                <span className="card-hint">
                   {agents.length} agent{agents.length === 1 ? '' : 's'}
                 </span>
               </div>
-              <div className="cx-panel cx-tablewrap">
-                <table className="cx-table cx-table--nowrap">
+              <div className="cx-tablewrap">
+                <table className="tbl">
                   <thead>
                     <tr>
-                      <th scope="col" className="cx-num-col">
+                      <th scope="col" className="num">
                         #
                       </th>
                       <th scope="col">Agent</th>
-                      <th scope="col" className="cx-num-col">
+                      <th scope="col">{D('Team lead')}</th>
+                      <th scope="col" className="num">
                         Days
                       </th>
                       {COLUMNS.map((c) => (
@@ -643,35 +687,58 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                           {c}
                         </th>
                       ))}
+                      <th scope="col" className="num">
+                        {D('vs team')}
+                      </th>
+                      <th scope="col"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {agents.map((a: any) => (
                       <tr key={a.email}>
-                        <td className="cx-num-col cx-num">{a.rank ?? '–'}</td>
-                        <th scope="row" className="dq-rowhead">
-                          {teamView ? (
-                            <Button
-                              variant="quiet"
-                              onClick={() => {
-                                setAgent(a.email)
-                                setView('detail')
-                              }}
-                            >
-                              {a.name}
-                            </Button>
-                          ) : (
-                            a.name
-                          )}
-                          {a.tlName ? <span className="cx-faint dq-sub">reports to {a.tlName}</span> : null}
+                        <td className="num">{a.rank ?? '–'}</td>
+                        <th scope="row">
+                          <span className="lead">
+                            {teamView ? (
+                              <Button
+                                variant="quiet"
+                                onClick={() => {
+                                  setAgent(a.email)
+                                  setView('detail')
+                                }}
+                              >
+                                {a.name}
+                              </Button>
+                            ) : (
+                              a.name
+                            )}
+                          </span>
                         </th>
-                        <td className="cx-num-col cx-num">{a.days}</td>
+                        <td className="sub">{a.tlName || '–'}</td>
+                        <td className="num">{a.days}</td>
                         <ScoreCells t={a} />
+                        <td className="num">
+                          {(() => {
+                            const d = vsTeamDelta(a)
+                            if (d === null) return '–'
+                            return (
+                              <span className={`delta ${d > 0 ? 'up' : d < 0 ? 'down' : 'flat'}`}>
+                                {d > 0 ? `+${d}` : d}
+                              </span>
+                            )
+                          })()}
+                        </td>
+                        <td className="num">
+                          {(() => {
+                            const p = bandPill(a)
+                            return p ? <span className={`pill ${p.cls}`}>{p.text}</span> : '–'
+                          })()}
+                        </td>
                       </tr>
                     ))}
                     {agents.length ? null : (
                       <tr>
-                        <td colSpan={11}>No data in this period.</td>
+                        <td colSpan={14}>No data in this period.</td>
                       </tr>
                     )}
                   </tbody>

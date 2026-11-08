@@ -130,7 +130,7 @@ export async function runMissedOneOnOneCheck_(nowMs?: number) {
         '<p>Please do one of these today:</p><ul>' +
         '<li><b>Held it?</b> Submit the record from One-to-ones.</li>' +
         '<li><b>Didn\'t hold it?</b> Mark it not held, with the reason and a new date.</li></ul>' +
-        '<p>Items still open after 2 working days are copied to Mohamed.</p><p>CX Helm</p>'
+        '<p>Items still open after 2 working days are copied to Mohamed.</p><p>Dabdoob CX</p>'
       const st = await pwSendOnce_(sent, 'missed:' + mgr + ':' + today, {
         to: mgr, kind: 'missed_1on1', ref: first.schedule_id,
         subject: '1:1 record needed: ' + dir.name(first.report_email) + ', ' + pwKwDate_(first.scheduled_at),
@@ -154,7 +154,7 @@ export async function runMissedOneOnOneCheck_(nowMs?: number) {
               htmlBody:
                 '<p>Hi ' + escapeHtml(pwFirstName_(dir, mgr)) + ',</p><p>This has been outstanding since ' +
                 pwKwDate_(late[0].scheduled_at) + ':</p>' + list(late) +
-                '<p>Submit each record, or mark it not held with a new date.</p><p>CX Helm</p>',
+                '<p>Submit each record, or mark it not held with a new date.</p><p>Dabdoob CX</p>',
             },
             JOB_ACTOR,
           )
@@ -252,7 +252,7 @@ export async function runTaskReminders_(nowMs?: number) {
         '<p>Hi ' + escapeHtml(pwFirstName_(dir, email)) + ',</p><ul>' +
         it.lines.map((l) => '<li>' + escapeHtml(l) + '</li>').join('') +
         '</ul>' + (it.escalate ? '<p>Mohamed is copied because at least one item is 2 or more working days late.</p>' : '') +
-        '<p>CX Helm</p>',
+        '<p>Dabdoob CX</p>',
     }, JOB_ACTOR)
     if (st !== 'skipped') emailed++
   }
@@ -292,7 +292,7 @@ export async function runMeetingActionReminders_(nowMs?: number) {
             byOwner[owner]
               .map((a) => '<li>' + escapeHtml(a.title) + ', due ' + pwDateOnly_(a.due_date) + '</li>')
               .join('') +
-            '</ul><p>CX Helm</p>',
+            '</ul><p>Dabdoob CX</p>',
         }, JOB_ACTOR)
         if (st !== 'skipped') emailed++
       }
@@ -314,7 +314,7 @@ export async function runMeetingActionReminders_(nowMs?: number) {
         subject: 'Pre-read: ' + title + ' today',
         htmlBody:
           '<p>Open actions for today\'s ' + escapeHtml(title) + ':</p><table border="1" cellpadding="4" cellspacing="0">' +
-          '<tr><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr>' + rows + '</table><p>CX Helm</p>',
+          '<tr><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr>' + rows + '</table><p>Dabdoob CX</p>',
       }, JOB_ACTOR)
       if (st2 !== 'skipped') emailed++
     }

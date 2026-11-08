@@ -40,13 +40,23 @@ test.describe('Authentication Flow', () => {
   test('session persists across page reloads', async ({ page }) => {
     // Desktop viewport: the rail nav is display:none <=820px (behind Menu)
     await page.setViewportSize({ width: 1280, height: 720 })
-    await login(page, E2E_USERS.admin)
-    await expect(page).toHaveURL('/')
-
-    // Reload page
-    await page.reload()
+    // Parallel projects share the e2e.admin identity — a sibling context's
+    // refresh-token rotation can poison this session, so a reload can bounce
+    // to /auth/login (same transient login() retries for). Re-login for a
+    // fresh session and retry; a real session regression fails every attempt.
+    test.setTimeout(60000)
+    const nav = page.locator('#nav')
+    for (let i = 0; i < 4; i++) {
+      await login(page, E2E_USERS.admin)
+      await expect(page).toHaveURL('/')
+      await page.reload()
+      const ok = await nav
+        .waitFor({ state: 'visible', timeout: 8000 })
+        .then(() => true, () => false)
+      if (ok) break
+    }
 
     // Should still be logged in (#nav — the dev error overlay also renders nav)
-    await expect(page.locator('#nav')).toBeVisible()
+    await expect(nav).toBeVisible()
   })
 })

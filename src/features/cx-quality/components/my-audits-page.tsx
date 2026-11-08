@@ -38,7 +38,7 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
   }
   const d = a.ctl
   return (
-    <article className="cx-panel cx-panel--pad qa-card">
+    <article className="card card-pad qa-card">
       <header className="qa-card__head">
         <ScoreChip
           score={a.status === 'rescored' ? a.finalScore : a.score}
@@ -135,7 +135,7 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
       d={n}
       error={a}
       reload={s}
-      sub="Your quality audits and what lost marks. Your team lead goes through each audit under 100% with you (CTL); then confirm here that it was done, or deny it."
+      sub="Your quality audits and what lost marks; confirm the CTLs your team lead closed with you."
     >
       {n ? (
         <>
@@ -148,7 +148,9 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
               {i.length ? (
                 i.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
               ) : (
-                <p className="cx-muted">Nothing to confirm.</p>
+                <div className="empty">
+                  <div className="s">Nothing to confirm.</div>
+                </div>
               )}
             </div>
           </QaSection>
@@ -165,7 +167,9 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
             {c.length ? (
               c.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
             ) : (
-              <p className="cx-muted">No other audits.</p>
+              <div className="empty">
+                <div className="s">No other audits.</div>
+              </div>
             )}
           </div>
         </>

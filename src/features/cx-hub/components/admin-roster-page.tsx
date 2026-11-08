@@ -101,17 +101,15 @@ export function AdminRosterPage() {
   return (
     <section className="page" aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          Roster
-        </h1>
-        <p className="page-purpose">
-          Who is on the CX roster, their role, team lead and whether they are active.
-        </p>
-      </header>
-
-      <section className="cx-section">
-        <div className="cx-section__head">
-          <h2 className="cx-section__title">Users</h2>
+        <div>
+          <h1 id="page-title" className="page-title">
+            Roster
+          </h1>
+          <p className="page-purpose">
+            Roles, team leads and active status for the CX roster.
+          </p>
+        </div>
+        <div className="page-actions">
           <Button
             variant={showAddForm ? 'quiet' : 'primary'}
             onClick={() => setShowAddForm(!showAddForm)}
@@ -119,9 +117,17 @@ export function AdminRosterPage() {
             {showAddForm ? 'Cancel' : 'Add user'}
           </Button>
         </div>
+      </header>
 
-        {showAddForm && (
-          <div className="cx-panel cx-panel--pad">
+      {showAddForm ? (
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <div className="card-title">Add user</div>
+                <div className="card-hint">New roster member</div>
+              </div>
+            </div>
+            <div className="card-pad">
             <div className="cx-grid-2">
               <div className="field">
                 <label className="field-label" htmlFor="nu-email">Email</label>
@@ -194,10 +200,24 @@ export function AdminRosterPage() {
                 Cancel
               </Button>
             </p>
-          </div>
-        )}
+            </div>
+          </section>
+        ) : null}
 
-        <div className="cx-panel cx-panel--pad">
+        <section className="card">
+          <div className="card-head">
+            <div>
+              <div className="card-title">Users</div>
+              <div className="card-hint">{roster.length} people</div>
+            </div>
+          </div>
+          {roster.length === 0 ? (
+            <div className="empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+              <div className="t">No users yet</div>
+              <div className="s">Add the first roster member.</div>
+            </div>
+          ) : (
           <div className="cx-tablewrap">
             <table className="cx-table">
               <thead>
@@ -226,7 +246,7 @@ export function AdminRosterPage() {
                       )}
                     </td>
                     <td>
-                      <span className="cx-chip" data-status={ROLE_STATUS[user.role] || 'neutral'}>
+                      <span className={`pill ${ROLE_STATUS[user.role] || 'neutral'}`}>
                         {user.role}
                       </span>
                     </td>
@@ -251,7 +271,7 @@ export function AdminRosterPage() {
                       )}
                     </td>
                     <td>
-                      <span className="cx-chip" data-status={user.active ? 'ok' : 'bad'}>
+                      <span className={user.active ? 'pill ok' : 'pill bad'}>
                         {user.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -276,8 +296,8 @@ export function AdminRosterPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      </section>
+          )}
+        </section>
     </section>
   )
 }

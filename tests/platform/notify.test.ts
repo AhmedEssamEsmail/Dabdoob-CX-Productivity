@@ -24,7 +24,7 @@ describe('notifyHtml (notifyHtml_)', () => {
     expect(html).toContain('You &lt;b&gt;missed&lt;/b&gt; it')
     expect(html).toContain('2026-10-08 &amp; noon')
     expect(html).not.toContain('Empty')
-    expect(html).toContain('Open CX Helm (https://app/exec), then People &gt; 1:1s.')
+    expect(html).toContain('Open Dabdoob CX (https://app/exec), then People &gt; 1:1s.')
   })
 
   it('escapeHtml covers the five entities', () => {

@@ -279,18 +279,24 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
       {t ? sh({ message: t, onRetry: i }) : null}
       {e ? (
         <Ft>
-          <section className="cx-section" aria-labelledby="ppl-h">
-            <div className="cx-section__head">
-              <h2 className="cx-section__title" id="ppl-h">
-                People
-              </h2>
+          <section className="card" aria-labelledby="ppl-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="ppl-h">
+                  People
+                </div>
+                <div className="card-hint">
+                  Roles, who each person reports to, where they are based, and their days off.
+                </div>
+              </div>
               <label className="cx-toggle">
                 {/* eslint-disable-next-line -- kept raw: cx-toggle CSS hides the native checkbox */}
                 <input type="checkbox" checked={y} onChange={(S) => v(S.currentTarget.checked)} />
                 <span>Show people who left</span>
               </label>
             </div>
-            <div className="cx-panel cx-tablewrap">
+            {b.length ? (
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -344,9 +350,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                           {S.tlEmail ? (
                             w(S.tlEmail)
                           ) : e.lastSync?.unresolved.some((_: Q) => _.email === S.email) ? (
-                            <span className="cx-chip" data-status="warn">
-                              Not found in the HCT
-                            </span>
+                            <span className="pill warn">Not found in the HCT</span>
                           ) : (
                             '–'
                           )}
@@ -360,8 +364,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                         <td>
                           {S.basedInCountry || (
                             <span
-                              className="cx-chip"
-                              data-status="warn"
+                              className="pill warn"
                               title="Public holidays are not excused for this person until you set it"
                             >
                               Not set
@@ -390,17 +393,26 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 </tbody>
               </table>
             </div>
+            ) : (
+              <div className="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                <div className="t">No people to show</div>
+                <div className="s">Tick &quot;Show people who left&quot; to include people who have left.</div>
+              </div>
+            )}
           </section>
-          <section className="cx-section" aria-labelledby="hol-h">
-            <div className="cx-section__head">
-              <h2 className="cx-section__title" id="hol-h">
-                Public holidays
-              </h2>
-              <span className="cx-section__hint">
-                A 1:1 due on a holiday in the person&apos;s country is never counted as missed.
-              </span>
+          <section className="card" aria-labelledby="hol-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="hol-h">
+                  Public holidays
+                </div>
+                <div className="card-hint">
+                  A 1:1 due on a holiday in the person&apos;s country is never counted as missed.
+                </div>
+              </div>
             </div>
-            <form className="cx-panel cx-panel--pad dq-holform" onSubmit={E} noValidate={!0}>
+            <form className="card-pad dq-holform" onSubmit={E} noValidate={!0}>
               <Oo listKey={Ff} label="Country" value={o.country} onChange={(S) => c((_) => ({ ..._, country: S }))} />
               <div className="cx-field">
                 <label className="cx-label" htmlFor="hol-date">
@@ -442,7 +454,8 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 </p>
               ) : null}
             </form>
-            <div className="cx-panel cx-tablewrap">
+            {e.holidays.length ? (
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -469,14 +482,16 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                       </td>
                     </tr>
                   ))}
-                  {e.holidays.length ? null : (
-                    <tr>
-                      <td colSpan={5}>No holidays yet. Add each country&apos;s public holidays above.</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
+            ) : (
+              <div className="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                <div className="t">No holidays yet</div>
+                <div className="s">Add each country&apos;s public holidays above.</div>
+              </div>
+            )}
           </section>
         </Ft>
       ) : (

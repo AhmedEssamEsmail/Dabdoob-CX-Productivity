@@ -8,7 +8,6 @@
  *   P.submitCtl / P.resendAuditMail / P.ctlPage.
  */
 import { useRef, useState } from 'react'
-import { Chip } from '@/features/shared/components/shell/ui'
 import {
   AuditFails,
   ListSelect,
@@ -16,15 +15,28 @@ import {
   Q,
   QA_STATUS,
   QaPage,
-  QaSection,
-  ScoreChip,
-  StatusChip,
   TicketRef,
+  qaBand,
   qaPct,
   qaTicketLabel,
   useSe,
 } from './qa-shared'
 import { Button, Input, Seg, Textarea } from '@/features/shared/components/ui'
+
+const pillCls = (t?: string | null) => `pill${t && t !== 'neutral' ? ` ${t}` : ''}`
+
+function StatusPill({ s }: { s: string }) {
+  const t = QA_STATUS[s]
+  return <span className={pillCls(t?.[1])}>{t?.[0] ?? s}</span>
+}
+
+function ScorePill({ score, fatal }: { score: number | null; fatal?: boolean | null }) {
+  return (
+    <span className={pillCls(qaBand(score, !!fatal))}>
+      {score === null ? '–' : `${score}%${fatal ? ', critical' : ''}`}
+    </span>
+  )
+}
 
 /* --- Ds — find my open CTLs matching a ticket number or audit/CTL id --------- */
 function findOpenCtls(t: any[], n: string): any[] {
@@ -54,11 +66,11 @@ function CtlAuditSide({ c, ticketUrl }: { c: any; ticketUrl: string }) {
   return (
     <div className="qa-ctlside__body">
       <div className="qa-card__head">
-        {a ? <ScoreChip score={a.finalScore} fatal={a.fatal} /> : null}
+        {a ? <ScorePill score={a.finalScore} fatal={a.fatal} /> : null}
         <strong>{c.agentName}</strong>
-        <Chip status={c.overdue ? 'bad' : c.dueToday ? 'warn' : 'neutral'}>
+        <span className={pillCls(c.overdue ? 'bad' : c.dueToday ? 'warn' : 'neutral')}>
           {c.overdue ? `Overdue since ${c.dueDate}` : c.dueToday ? 'Due today' : `Due ${c.dueDate}`}
-        </Chip>
+        </span>
       </div>
       {a ? (
         <>
@@ -129,7 +141,7 @@ function CtlForm({
   return (
     <div className="qa-ctl">
       <form
-        className="cx-panel cx-panel--pad qa-ctlform"
+        className="qa-ctlform"
         onSubmit={(k) => {
           k.preventDefault()
           if (!y)
@@ -264,7 +276,7 @@ function CtlForm({
           <span className="cx-faint">The date and time are recorded when you submit.</span>
         </div>
       </form>
-      <aside className="cx-panel cx-panel--pad qa-ctlside" aria-label="The audit">
+      <aside className="card card-pad qa-ctlside" aria-label="The audit">
         <CtlAuditSide c={y} ticketUrl={ticketUrl} />
       </aside>
     </div>
@@ -326,56 +338,77 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
       d={n}
       error={a}
       reload={s}
-      sub="Every audit under 100% opens a CTL. Your agents' CTLs, and those that opened while you were on shift: whoever is on shift may close one. Go through it with the agent within 2 working days (3 when a day off falls in between) and submit the outcome; the agent then confirms or denies it."
+      sub="Every audit under 100% opens a CTL — whoever is on shift may close it and submit the outcome."
     >
       {n ? (
         <>
           <div ref={l}>
-            <QaSection id="ctlf-h" title="Submit a CTL">
-              <CtlForm
-                rows={n.rows}
-                ticketUrl={n.ticketUrl}
-                picked={i}
-                onPick={c}
-                onDone={s}
-              />
-            </QaSection>
+            <section className="card" aria-labelledby="ctlf-h">
+              <div className="card-head">
+                <div>
+                  <div className="card-title" id="ctlf-h">
+                    Submit a CTL
+                  </div>
+                </div>
+              </div>
+              <div className="card-pad">
+                <CtlForm
+                  rows={n.rows}
+                  ticketUrl={n.ticketUrl}
+                  picked={i}
+                  onPick={c}
+                  onDone={s}
+                />
+              </div>
+            </section>
           </div>
-          <QaSection id="ctl-h" title={p.length ? `${p.length} open` : 'CTLs'}>
-            <div className="qa-cards">
+          <section className="card" aria-labelledby="ctl-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="ctl-h">
+                  {p.length ? `${p.length} open` : 'CTLs'}
+                </div>
+              </div>
+            </div>
+            <div className="card-pad">
               {n.rows.length ? (
-                n.rows.map((r: any) => (
-                  <article
-                    className="cx-panel cx-panel--pad qa-card"
-                    data-late={r.overdue ? 'true' : undefined}
-                    data-picked={i.ctlId === r.ctlId ? 'true' : undefined}
-                    key={r.ctlId}
-                  >
-                    <header className="qa-card__head">
-                      {r.audit ? <ScoreChip score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
-                      <strong>{r.agentName}</strong>
-                      {r.audit ? (
-                        <span className="cx-muted">
-                          ticket <TicketRef url={n.ticketUrl} id={r.audit.ticketId} />, {r.audit.channel}
-                        </span>
-                      ) : null}
-                      <StatusChip s={r.status} />
-                      {r.status === 'open' ? (
-                        <Chip status={r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral'}>
-                          {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
-                        </Chip>
-                      ) : r.slaMet !== null ? (
-                        <Chip status={r.slaMet ? 'ok' : 'bad'}>
-                          {r.slaMet ? 'On time' : 'Late'}
-                        </Chip>
-                      ) : null}
-                      {r.outcome ? (
-                        <Chip status={r.outcome === 'dispute' ? 'warn' : 'ok'}>
-                          {r.outcome === 'dispute' ? 'Outcome: dispute' : 'Outcome: acknowledged'}
-                        </Chip>
-                      ) : null}
-                      {r.reopenCount ? <Chip status="bad">Reopened by the agent</Chip> : null}
-                    </header>
+                <div className="grid">
+                  {n.rows.map((r: any) => (
+                    <article
+                      className="card card-pad qa-card"
+                      data-late={r.overdue ? 'true' : undefined}
+                      data-picked={i.ctlId === r.ctlId ? 'true' : undefined}
+                      key={r.ctlId}
+                    >
+                      <header className="qa-card__head">
+                        {r.audit ? <ScorePill score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
+                        <strong>{r.agentName}</strong>
+                        {r.audit ? (
+                          <span className="cx-muted">
+                            ticket <TicketRef url={n.ticketUrl} id={r.audit.ticketId} />, {r.audit.channel}
+                          </span>
+                        ) : null}
+                        <StatusPill s={r.status} />
+                        {r.status === 'open' ? (
+                          <span
+                            className={pillCls(
+                              r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral'
+                            )}
+                          >
+                            {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
+                          </span>
+                        ) : r.slaMet !== null ? (
+                          <span className={pillCls(r.slaMet ? 'ok' : 'bad')}>
+                            {r.slaMet ? 'On time' : 'Late'}
+                          </span>
+                        ) : null}
+                        {r.outcome ? (
+                          <span className={pillCls(r.outcome === 'dispute' ? 'warn' : 'ok')}>
+                            {r.outcome === 'dispute' ? 'Outcome: dispute' : 'Outcome: acknowledged'}
+                          </span>
+                        ) : null}
+                        {r.reopenCount ? <span className="pill bad">Reopened by the agent</span> : null}
+                      </header>
                     <p className="cx-faint qa-owner">
                       {r.own
                         ? 'Your agent'
@@ -405,16 +438,26 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                       </div>
                     ) : null}
                   </article>
-                ))
+                  ))}
+                </div>
               ) : (
-                <p className="cx-muted">
-                  No CTLs. One opens when an audit of your agent loses marks.
-                </p>
+                <div className="empty">
+                  <div className="s">
+                    No CTLs. One opens when an audit of your agent loses marks.
+                  </div>
+                </div>
               )}
             </div>
-          </QaSection>
-          <QaSection id="sla-h" title={`CTL SLA, ${n.month}`}>
-            <div className="cx-panel cx-tablewrap">
+          </section>
+          <section className="card" aria-labelledby="sla-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="sla-h">
+                  {`CTL SLA, ${n.month}`}
+                </div>
+              </div>
+            </div>
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -433,13 +476,17 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                         <td className="cx-num">{r.due}</td>
                         <td className="cx-num">{r.onTime}</td>
                         <td>
-                          <Chip
-                            status={
-                              r.slaPct === null ? 'neutral' : r.slaPct >= n.slaTarget ? 'ok' : 'bad'
-                            }
+                          <span
+                            className={pillCls(
+                              r.slaPct === null
+                                ? 'neutral'
+                                : r.slaPct >= n.slaTarget
+                                  ? 'ok'
+                                  : 'bad'
+                            )}
                           >
                             {qaPct(r.slaPct)}
-                          </Chip>
+                          </span>
                         </td>
                         <td className="cx-num">
                           {r.done} of {r.total} ({qaPct(r.donePct)})
@@ -454,7 +501,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                 </tbody>
               </table>
             </div>
-          </QaSection>
+          </section>
         </>
       ) : null}
     </QaPage>

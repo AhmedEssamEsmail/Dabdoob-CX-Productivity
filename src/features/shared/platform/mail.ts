@@ -203,7 +203,7 @@ export async function sendMail(msg: MailMessage, actor: string): Promise<SendRes
       status = 'dry_run' // no SMTP creds: nothing ever leaves the building
     } else {
       try {
-        const opts: NormalizedMail = { to, subject: msg.subject, htmlBody: msg.htmlBody || '', name: 'CX Helm' }
+        const opts: NormalizedMail = { to, subject: msg.subject, htmlBody: msg.htmlBody || '', name: 'Dabdoob CX' }
         if (cc) opts.cc = cc
         const replyTo = String((await getConfig('mail_reply_to', '')) || '')
         if (replyTo) opts.replyTo = replyTo

@@ -494,7 +494,7 @@ export async function meetingsSendSummary(meetingId: string) {
         '</ul>'
       : '') +
     (view.meeting.nextMeetingAt ? '<p>Next meeting: ' + pwKwDate_(view.meeting.nextMeetingAt) + ' ' + pwKwTime_(view.meeting.nextMeetingAt) + '</p>' : '') +
-    '<p>CX Helm</p>'
+    '<p>Dabdoob CX</p>'
   const res = await sendMail(
     {
       to, subject: 'Summary: ' + String(view.series.title) + ', ' + pwKwDate_(view.meeting.heldAt),

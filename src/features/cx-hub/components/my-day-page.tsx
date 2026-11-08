@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Button, Input } from '@/features/shared/components/ui'
+import { D } from '@/features/shared/shell/i18n'
 import { Df, Ft, Fs, If, Nf, useTh } from './hub-shared'
 
 type Q = Record<string, any>
@@ -138,7 +139,9 @@ function Gr({ section: n, empty: e }: { section: Section; empty: string }) {
   return n ? (
     n.ok ? (
       n.data.length ? null : (
-        <p className="md-empty">{e}</p>
+        <div className="empty">
+          <div className="s">{e}</div>
+        </div>
       )
     ) : (
       <p className="md-err">Could not load this part: {n.error}</p>
@@ -279,16 +282,18 @@ function Zl({ label: n, tone: e, items: t, open: i }: { label: string; tone: str
         {n}
         <span className="md-mailcount">{t.length}</span>
       </summary>
-      <ul className="md-list">
+      <ul className="worklist">
         {t.map((s) => (
-          <li key={s.id}>
-            <a className="md-item" href={s.url} target="_blank" rel="noopener">
-              {s.subject}
-            </a>
-            <span className="md-owner">
-              {s.from}, {s.hoursWaiting} h
-              {s.starred && s.unread ? ', also unread' : e === 'results' ? (s.starred ? ', starred' : s.unread ? ', unread' : '') : ''}
-            </span>
+          <li key={s.id} className="workitem">
+            <div className="wi-main">
+              <a className="wi-t" href={s.url} target="_blank" rel="noopener">
+                {s.subject}
+              </a>
+              <div className="wi-s">
+                {s.from}, {s.hoursWaiting} h
+                {s.starred && s.unread ? ', also unread' : e === 'results' ? (s.starred ? ', starred' : s.unread ? ', unread' : '') : ''}
+              </div>
+            </div>
           </li>
         ))}
       </ul>
@@ -337,22 +342,26 @@ function Tg() {
 
 function MailCard({ section: n, hours: e }: { section: Section; hours: number }) {
   return (
-    <section className="md-card" aria-labelledby="md-mail">
-      <h2 id="md-mail" className="md-h2">
-        Waiting for your reply
-      </h2>
-      <p className="md-sub">Unread or starred in your inbox for more than {e} hours.</p>
-      <Tg />
-      <Gr section={n} empty="Nothing is waiting on you." />
-      {n?.ok && n.data.length ? (
-        <Ft>
-          <Zl label="Starred" tone="starred" items={n.data.filter((t: Q) => t.starred)} />
-          <Zl label="Unread" tone="unread" items={n.data.filter((t: Q) => t.unread && !t.starred)} />
-          {n.data.some((t: Q) => t.unread && !t.starred) ? null : (
-            <p className="md-empty">No unread mail waiting more than {e} hours.</p>
-          )}
-        </Ft>
-      ) : null}
+    <section className="card" aria-labelledby="md-mail">
+      <div className="card-head">
+        <div className="card-title" id="md-mail">
+          Waiting for your reply
+        </div>
+        <div className="card-hint">Unread or starred in your inbox for more than {e} hours.</div>
+      </div>
+      <div className="card-pad">
+        <Tg />
+        <Gr section={n} empty="Nothing is waiting on you." />
+        {n?.ok && n.data.length ? (
+          <Ft>
+            <Zl label="Starred" tone="starred" items={n.data.filter((t: Q) => t.starred)} />
+            <Zl label="Unread" tone="unread" items={n.data.filter((t: Q) => t.unread && !t.starred)} />
+            {n.data.some((t: Q) => t.unread && !t.starred) ? null : (
+              <p className="md-empty">No unread mail waiting more than {e} hours.</p>
+            )}
+          </Ft>
+        ) : null}
+      </div>
     </section>
   )
 }
@@ -365,13 +374,12 @@ function ih({ id: n, label: e, count: t, open: i, onToggle: s }: {
   onToggle: () => void
 }) {
   return (
-    <h2 id={n} className="md-h2">
-      {/* eslint-disable-next-line -- kept raw: md-cardtoggle uses all:unset disclosure styling */}
+    <div className="card-head" id={n}>
       <button type="button" className="md-cardtoggle" aria-expanded={i} aria-controls={`${n}-body`} onClick={s}>
-        {e}
-        {!i && t ? <span className="md-mailcount">{t}</span> : null}
+        <span className="card-title">{e}</span>
+        {!i && t ? <span className="pill">{t}</span> : null}
       </button>
-    </h2>
+    </div>
   )
 }
 
@@ -401,28 +409,30 @@ function useNh(n: string): [boolean, () => void] {
 function FilesCard({ section: n }: { section: Section }) {
   const [e, t] = useNh('files')
   return (
-    <section className="md-card" aria-labelledby="md-files">
+    <section className="card" aria-labelledby="md-files">
       {ih({ id: 'md-files', label: 'Recent files', count: n?.ok ? n.data.length : 0, open: e, onToggle: t })}
       {e ? (
-        <div id="md-files-body">
+        <div className="card-pad" id="md-files-body">
           <Gr section={n} empty="No files changed recently." />
           {n?.ok && n.data.length ? (
-            <ul className="md-list">
+            <ul className="worklist">
               {n.data.map((i: Q) => (
-                <li key={i.id}>
-                  <a className="md-item" href={i.url} target="_blank" rel="noopener">
-                    {i.name}
-                  </a>
-                  <span className="md-owner">
-                    {wo(new Date(i.updatedAt))
-                      ? new Date(i.updatedAt).toLocaleString('en-GB', {
-                          weekday: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          timeZone: bo,
-                        })
-                      : ''}
-                  </span>
+                <li key={i.id} className="workitem">
+                  <div className="wi-main">
+                    <a className="wi-t" href={i.url} target="_blank" rel="noopener">
+                      {i.name}
+                    </a>
+                    <div className="wi-s">
+                      {wo(new Date(i.updatedAt))
+                        ? new Date(i.updatedAt).toLocaleString('en-GB', {
+                            weekday: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            timeZone: bo,
+                          })
+                        : ''}
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -436,18 +446,26 @@ function FilesCard({ section: n }: { section: Section }) {
 function DeadlinesCard({ section: n }: { section: Section }) {
   const [e, t] = useNh('deadlines')
   return (
-    <section className="md-card" aria-labelledby="md-dl">
+    <section className="card" aria-labelledby="md-dl">
       {ih({ id: 'md-dl', label: 'Deadlines this week', count: n?.ok ? n.data.length : 0, open: e, onToggle: t })}
       {e ? (
-        <div id="md-dl-body">
+        <div className="card-pad" id="md-dl-body">
           <Gr section={n} empty="Nothing due in the next 7 days." />
           {n?.ok && n.data.length ? (
-            <ul className="md-list">
+            <ul className="worklist">
               {n.data.map((i: Q) => (
-                <li key={i.id} className={i.overdue ? 'is-overdue' : ''}>
-                  <span className="md-due">{i.overdue ? `Overdue, ${co(i.due)}` : co(i.due)}</span>
-                  <span className="md-item">{i.title}</span>
-                  <span className="md-owner">{i.mine ? 'You' : `Assigned to ${String(i.owner || '').split('@')[0]}`}</span>
+                <li key={i.id} className="workitem">
+                  <div className="wi-main">
+                    <div className="wi-t">{i.title}</div>
+                    <div className="wi-s">
+                      {co(i.due)} · {i.mine ? 'You' : `Assigned to ${String(i.owner || '').split('@')[0]}`}
+                    </div>
+                  </div>
+                  {i.overdue ? (
+                    <div className="wi-side">
+                      <span className="pill bad">Overdue</span>
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -479,10 +497,10 @@ function FollowUpsCard({ section: n }: { section: Section }) {
   }
   const h = n?.ok ? { ...n, data: c } : n
   return (
-    <section className="md-card" aria-labelledby="md-followups">
+    <section className="card" aria-labelledby="md-followups">
       {ih({ id: 'md-followups', label: 'Team lead follow-ups', count: c.length, open: e, onToggle: t })}
       {e ? (
-        <div id="md-followups-body">
+        <div className="card-pad" id="md-followups-body">
           <p className="md-sub">Mails from your team leads to your manager that have no reply yet.</p>
           <Gr section={h} empty="No team lead mail is waiting on a reply." />
           {r ? (
@@ -491,19 +509,23 @@ function FollowUpsCard({ section: n }: { section: Section }) {
             </p>
           ) : null}
           {c.length ? (
-            <ul className="md-list">
+            <ul className="worklist">
               {c.map((u: Q) => (
-                <li key={u.id} className={u.hoursWaiting >= 48 ? 'md-late' : u.hoursWaiting >= 24 ? 'md-warn' : ''}>
-                  <a className="md-item" href={u.url} target="_blank" rel="noopener">
-                    {u.subject}
-                  </a>
-                  <span className="md-owner">
-                    {u.from}, {u.hoursWaiting} h without a reply{' '}
-                    {/* eslint-disable-next-line -- kept raw: md-link is an inline link-styled action */}
-                    <button type="button" className="md-link" onClick={() => l(u)}>
+                <li key={u.id} className={`workitem ${u.hoursWaiting >= 48 ? 'md-late' : u.hoursWaiting >= 24 ? 'md-warn' : ''}`}>
+                  <div className="wi-main">
+                    <a className="wi-t" href={u.url} target="_blank" rel="noopener">
+                      {u.subject}
+                    </a>
+                    <div className="wi-s">
+                      {u.from}, {u.hoursWaiting} h without a reply
+                    </div>
+                  </div>
+                  <div className="wi-side">
+                    <div className="t">{u.hoursWaiting} h</div>
+                    <Button type="button" className="btn btn-quiet" onClick={() => l(u)}>
                       Done
-                    </button>
-                  </span>
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -546,47 +568,332 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
     }
   }
   return (
-    <details className="md-card md-settings">
-      <summary className="md-h2">Settings and morning email</summary>
-      <form onSubmit={(g) => void d(g)} className="md-settings-form">
-        <label className="field-label" htmlFor="md-h">
-          Mail counts as waiting after (hours)
-        </label>
-        <Input id="md-h" className="input" type="number" min={1} max={720} value={t} onInput={(g) => i((g.currentTarget as HTMLInputElement).value)} />
-        <label className="field-label" htmlFor="md-w">
-          Working hours, Kuwait time
-        </label>
-        <Input id="md-w" className="input" pattern="\d{1,2}:\d{2}-\d{1,2}:\d{2}" value={s} onInput={(g) => r((g.currentTarget as HTMLInputElement).value)} />
-        <label className="field-label" htmlFor="md-m">
-          Shortest focus block (minutes)
-        </label>
-        <Input id="md-m" className="input" type="number" min={15} max={240} value={a} onInput={(g) => o((g.currentTarget as HTMLInputElement).value)} />
-        <Button type="submit" className="btn btn-primary">
-          Save settings
-        </Button>
-      </form>
-      <p className="md-sub">
-        {n.digestInstalled
-          ? 'The morning email is scheduled for about 07:30 Kuwait time.'
-          : 'A summary of this page can be emailed to you at about 07:30 Kuwait time. It follows the email test-mode setting in Admin.'}
-      </p>
-      {n.digestInstalled ? null : (
-        <Button type="button" className="btn btn-quiet" onClick={() => void p()}>
-          Schedule the morning email
-        </Button>
-      )}
-      {c ? (
-        <p className="md-ok" role="status">
-          {c}
+    <details className="card">
+      <summary>
+        <div className="card-head">
+          <div className="card-title">Settings and morning email</div>
+        </div>
+      </summary>
+      <div className="card-pad">
+        <form onSubmit={(g) => void d(g)} className="md-settings-form">
+          <label className="field-label" htmlFor="md-h">
+            Mail counts as waiting after (hours)
+          </label>
+          <Input id="md-h" className="input" type="number" min={1} max={720} value={t} onInput={(g) => i((g.currentTarget as HTMLInputElement).value)} />
+          <label className="field-label" htmlFor="md-w">
+            Working hours, Kuwait time
+          </label>
+          <Input id="md-w" className="input" pattern="\d{1,2}:\d{2}-\d{1,2}:\d{2}" value={s} onInput={(g) => r((g.currentTarget as HTMLInputElement).value)} />
+          <label className="field-label" htmlFor="md-m">
+            Shortest focus block (minutes)
+          </label>
+          <Input id="md-m" className="input" type="number" min={15} max={240} value={a} onInput={(g) => o((g.currentTarget as HTMLInputElement).value)} />
+          <Button type="submit" className="btn btn-primary">
+            Save settings
+          </Button>
+        </form>
+        <p className="md-sub">
+          {n.digestInstalled
+            ? 'The morning email is scheduled for about 07:30 Kuwait time.'
+            : 'A summary of this page can be emailed to you at about 07:30 Kuwait time. It follows the email test-mode setting in Admin.'}
         </p>
-      ) : null}
-      {h ? <p className="field-error">{h}</p> : null}
+        {n.digestInstalled ? null : (
+          <Button type="button" className="btn btn-quiet" onClick={() => void p()}>
+            Schedule the morning email
+          </Button>
+        )}
+        {c ? (
+          <p className="md-ok" role="status">
+            {c}
+          </p>
+        ) : null}
+        {h ? <p className="field-error">{h}</p> : null}
+      </div>
     </details>
+  )
+}
+
+function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' | 'tomorrow'; nowMs: number }) {
+  const rows: { key: string; sort: number; time: string; title: string; sub: string; now: boolean }[] = []
+  if (day) {
+    const section = day.events?.[dayKey]
+    if (section?.ok)
+      section.data
+        .filter((ev: Q) => !ev.allDay)
+        .forEach((ev: Q) => {
+          const s = Date.parse(ev.start)
+          const e2 = Date.parse(ev.end)
+          rows.push({
+            key: 'ev-' + String(ev.id ?? ev.start),
+            sort: s,
+            time: Wn(ev.start),
+            title: String(ev.title || ''),
+            sub: [
+              ev.meeting?.kind === 'one_on_one'
+                ? `1:1 with ${ev.meeting.person || 'your report'}`
+                : ev.location,
+              ev.guests ? `${ev.guests} guest${ev.guests === 1 ? '' : 's'}` : '',
+            ]
+              .filter(Boolean)
+              .join(' · '),
+            now: isFinite(s) && s <= nowMs && nowMs < e2,
+          })
+        })
+    const date = String(day[dayKey] || '')
+    if (day.focus?.ok)
+      day.focus.data
+        .filter((g: Q) => Gm(g.start) === date)
+        .forEach((g: Q) => {
+          const s = Date.parse(g.start)
+          const e2 = Date.parse(g.end)
+          rows.push({
+            key: 'gap-' + String(g.start),
+            sort: s,
+            time: Wn(g.start),
+            title: 'Focus window',
+            sub: `Free for ${g.minutes} minutes — book as focus time`,
+            now: isFinite(s) && s <= nowMs && nowMs < e2,
+          })
+        })
+    if (day.deadlines?.ok)
+      day.deadlines.data
+        .filter((d: Q) => String(d.due || '').slice(0, 10) === date)
+        .forEach((d: Q) => {
+          rows.push({
+            key: 'dl-' + String(d.id),
+            sort: Number.MAX_SAFE_INTEGER,
+            time: 'Due',
+            title: String(d.title || ''),
+            sub: `Deadline · ${d.mine ? 'assigned to you' : `assigned to ${String(d.owner || '').split('@')[0]}`}`,
+            now: false,
+          })
+        })
+  }
+  rows.sort((a, b) => a.sort - b.sort)
+  return (
+    <section className="card" aria-labelledby="md-timeline">
+      <div className="card-head">
+        <div className="card-title" id="md-timeline">
+          {D('Timeline')}
+        </div>
+        <div className="card-hint">Kuwait time{isFinite(nowMs) ? ` · now ${Wn(nowMs)}` : ''}</div>
+      </div>
+      <div className="card-pad agenda">
+        {rows.length ? (
+          rows.map((r) => (
+            <div className="ag-row" key={r.key}>
+              <div className="ag-t">{r.time}</div>
+              <div className={`ag-item${r.now ? ' now' : ''}`}>
+                <div className="t">{r.title}</div>
+                <div className="s">{r.sub}</div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="md-empty">Nothing scheduled.</p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function WaitingCard({ mail, followups }: { mail: Section; followups: Section }) {
+  const items: {
+    key: string
+    href: string
+    ico: 'mail' | 'flag'
+    tone: string
+    title: string
+    sub: string
+    waited: number
+    kind: 'mail' | 'followup'
+  }[] = []
+  if (mail?.ok)
+    mail.data.forEach((m: Q) => {
+      const h = Number(m.hoursWaiting) || 0
+      items.push({
+        key: `mail-${m.id}`,
+        href: String(m.url || '#'),
+        ico: 'mail',
+        tone: h >= 48 ? 'bad' : h >= 24 ? 'warn' : 'info',
+        title: String(m.subject || ''),
+        sub: [m.from, `${h} h waiting`, m.starred ? 'starred' : '', m.unread ? 'unread' : '']
+          .filter(Boolean)
+          .join(' · '),
+        waited: h,
+        kind: 'mail',
+      })
+    })
+  if (followups?.ok)
+    followups.data.forEach((f: Q) => {
+      const h = Number(f.hoursWaiting) || 0
+      items.push({
+        key: `fu-${f.id}`,
+        href: String(f.url || '#'),
+        ico: 'flag',
+        tone: h >= 48 ? 'bad' : h >= 24 ? 'warn' : 'info',
+        title: String(f.subject || ''),
+        sub: [f.from, `${h} h without a reply`].filter(Boolean).join(' · '),
+        waited: h,
+        kind: 'followup',
+      })
+    })
+  items.sort((a, b) => b.waited - a.waited)
+  const loading = !mail && !followups
+  return (
+    <section className="card" aria-labelledby="md-waiting">
+      <div className="card-head">
+        <div className="card-title" id="md-waiting">
+          {D('Waiting on you')}
+        </div>
+        <div className="card-hint">{D('From other people')}</div>
+      </div>
+      {loading ? (
+        <div className="card-pad">
+          <div className="md-skel" aria-hidden="true" />
+        </div>
+      ) : items.length ? (
+        <div className="worklist">
+          {items.map((it) => (
+            <a key={it.key} className="workitem" href={it.href} target="_blank" rel="noopener">
+              <span className={`wi-ico ${it.tone}`} aria-hidden="true">
+                {it.ico === 'mail' ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  >
+                    <path d="M4 21V4" />
+                    <path d="M4 4h13l-2.5 4L17 12H4" />
+                  </svg>
+                )}
+              </span>
+              <div className="wi-main">
+                <div className="wi-t">{it.title}</div>
+                <div className="wi-s">{it.sub}</div>
+              </div>
+              <div className="wi-side">
+                <div className="t">{it.waited} h</div>
+                <div className="s">{it.kind === 'mail' ? D('waiting') : D('no reply')}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div className="card-pad">
+          <div className="empty">
+            <div className="s">{D('Nothing is waiting on you.')}</div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
+  day: Q | null
+  dayKey: 'today' | 'tomorrow'
+  nowMs: number
+  onBooked: () => void
+}) {
+  const [busy, setBusy] = useState('')
+  const [err, setErr] = useState('')
+  const [done, setDone] = useState<Record<string, boolean>>({})
+  const date = String(day?.[dayKey] || '')
+  const raw: Q[] = day?.focus?.ok ? day.focus.data.filter((g: Q) => Gm(g.start) === date) : []
+  const gaps = raw
+    .map((g) => ({ g, s: Date.parse(g.start), e: Date.parse(g.end) }))
+    .sort((a, b) => a.s - b.s)
+  async function book(key: string, g: Q) {
+    setBusy(key)
+    setErr('')
+    try {
+      await Fs.createFocusBlock(g.start, g.end, 'Focus time')
+      setDone((d) => ({ ...d, [key]: !0 }))
+      onBooked()
+    } catch (l) {
+      setErr((l as Error).message)
+    } finally {
+      setBusy('')
+    }
+  }
+  return (
+    <section className="card" aria-labelledby="md-focus">
+      <div className="card-head">
+        <div className="card-title" id="md-focus">
+          {D('Focus blocks')}
+        </div>
+        <div className="card-hint">
+          {gaps.length} {D('free')}
+        </div>
+      </div>
+      <div className="card-pad">
+        {!day ? (
+          <div className="md-skel" aria-hidden="true" />
+        ) : gaps.length ? (
+          gaps.map(({ g, s, e }, idx) => {
+            const key = String(g.start)
+            const isNow = isFinite(s) && s <= nowMs && nowMs < e
+            return (
+              <div key={key}>
+                {idx ? <hr className="hr" style={{ margin: '.7rem 0' }} /> : null}
+                <div className="between small">
+                  <span>
+                    <b>
+                      {Wn(g.start)}–{Wn(g.end)}
+                    </b>{' '}
+                    · {D('Focus window')}
+                    {g.minutes ? ` · ${g.minutes} min` : ''}
+                  </span>
+                  <span className="flex">
+                    {done[key] ? (
+                      <span className="pill ok">{D('booked')}</span>
+                    ) : isNow ? (
+                      <span className="pill acc">{D('now')}</span>
+                    ) : (
+                      <span className="pill">{D('free')}</span>
+                    )}
+                    {done[key] ? null : (
+                      <Button
+                        type="button"
+                        className="btn btn-quiet"
+                        onClick={() => void book(key, g)}
+                        disabled={busy === key}
+                      >
+                        {busy === key ? D('Booking…') : D('Book')}
+                      </Button>
+                    )}
+                  </span>
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="empty">
+            <div className="s">{D('No free focus windows.')}</div>
+          </div>
+        )}
+        {err ? <p className="field-error">{err}</p> : null}
+      </div>
+    </section>
   )
 }
 
 /* ------------------------------------------------------------------- Zm */
 export function MyDayPage({ route: n }: { route: { title: string } }) {
+  const [pd, setPd] = useState<'today' | 'tomorrow'>('today')
   const [e, t] = useState<Q | null>(null)
   const [i, s] = useState<Section>(void 0)
   const [r, a] = useState<Section>(void 0)
@@ -663,13 +970,31 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
     <section className="page md-page" aria-labelledby="page-title">
       <header className="page-head md-head">
         <div>
-          <p className="md-date">{w ? Hm(w.today) : ' '}</p>
+          <p className="kicker">{w ? Hm(w.today) : ' '}</p>
           <h1 id="page-title" className="page-title">
             {n.title}
           </h1>
-          {w ? <p className="md-summary">{$m(w, _)}</p> : null}
+          {w ? <p className="page-sub">{$m(w, _)}</p> : null}
         </div>
-        <div className="md-head-actions">
+        <div className="page-actions md-head-actions">
+          <div className="seg" role="group" aria-label={D('Agenda range')}>
+            <button
+              type="button"
+              className={pd === 'today' ? 'on' : ''}
+              aria-pressed={pd === 'today'}
+              onClick={() => setPd('today')}
+            >
+              {D('Today')}
+            </button>
+            <button
+              type="button"
+              className={pd === 'tomorrow' ? 'on' : ''}
+              aria-pressed={pd === 'tomorrow'}
+              onClick={() => setPd('tomorrow')}
+            >
+              {D('Tomorrow')}
+            </button>
+          </div>
           {w?.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
           {T ? <If item={T} /> : null}
           {S ? (
@@ -695,6 +1020,7 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
       ) : null}
       <div className="md-layout">
         <div className="md-main">
+          {w ? <TimelineCard day={w} dayKey={pd} nowMs={_} /> : null}
           {T ? <Nf item={T} /> : null}
           <DaySection title="Today" section={w?.events.today} gaps={w ? R(w.today) : []} onBooked={() => void C("core", !0)} />
           <DaySection
@@ -706,6 +1032,8 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           />
         </div>
         <aside className="md-side">
+          <WaitingCard mail={i} followups={o} />
+          <FocusBlocksCard day={w} dayKey={pd} nowMs={_} onBooked={() => void C('core', !0)} />
           <DeadlinesCard section={w?.deadlines} />
           <FollowUpsCard section={o} />
           <MailCard section={i} hours={Number(w?.settings.assistant_reply_after_hours ?? 24)} />

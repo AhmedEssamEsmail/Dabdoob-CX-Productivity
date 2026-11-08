@@ -3,8 +3,8 @@
 /* verbatim port of the legacy Coaching signals page (coaching.closure.js symbol xa).
  * Send-to-TL form plus the "Sent" history table. */
 import { useState } from 'react'
-import { Head, LoadError, fetchJson, useSe } from './shared'
-import { LinesSkeleton } from '@/features/shared/components/shell/ui'
+import { fetchJson, useSe } from './shared'
+import { PwShell, PwLate, PwSkel, PwErr, routeOf } from './pw'
 import { Button, Select, Textarea } from '@/features/shared/components/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
@@ -18,14 +18,14 @@ const api = {
 /* $e */
 function Chip({ status, children }: { status?: string; children?: React.ReactNode }) {
   return (
-    <span className="cx-chip" data-status={status}>
+    <span className={`pill${status && status !== 'neutral' ? ` ${status}` : ''}`} data-status={status}>
       {children}
     </span>
   )
 }
 
 /* xa */
-export function CoachingPage({ route }: { route: { title: string } }) {
+export function CoachingPage({ route }: { route: { title: string; purpose?: string } }) {
   const { data, error, reload } = useSe('people.coaching', () => api.coachingPage())
   const [person, setPerson] = useState('')
   const [topic, setTopic] = useState('quality')
@@ -52,15 +52,16 @@ export function CoachingPage({ route }: { route: { title: string } }) {
   }
 
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!data && !error}>
-      <Head
-        title={route.title}
-        sub="Saw something a team lead should raise, such as a QA finding? Send it here. It becomes a suggested topic in that person's next 1:1, and the TL cannot skip it without a reason."
-      />
-      {error ? <LoadError message={error} onRetry={reload} /> : null}
+    <PwShell route={routeOf('coaching', route)}>
+      <p className="pw-sub">
+        {
+          "Saw something a team lead should raise, such as a QA finding? Send it here. It becomes a suggested topic in that person's next 1:1, and the TL cannot skip it without a reason."
+        }
+      </p>
+      {error ? <PwLate message={error} retry={reload} /> : null}
       {data ? (
         <>
-          <form className="cx-panel cx-panel--pad" onSubmit={submit} style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+          <form className="card card-pad" onSubmit={submit} style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
             <div className="cx-field">
               <label className="cx-label" htmlFor="cs-p">
                 Person
@@ -98,35 +99,31 @@ export function CoachingPage({ route }: { route: { title: string } }) {
                 placeholder="For example: QA audit A-1234 scored 62% on refunds; refunded without approval twice."
               />
             </div>
-            {formError ? (
-              <p className="cx-error" role="alert">
-                {formError}
-              </p>
-            ) : null}
+            {formError ? <PwErr message={formError} /> : null}
             <Button type="submit" variant="primary" disabled={busy} style={{ justifySelf: 'start' }}>
               {busy ? 'Sending…' : 'Send to their team lead'}
             </Button>
           </form>
-          <section className="cx-section" aria-labelledby="cs-h">
-            <div className="cx-section__head">
-              <h2 className="cx-section__title" id="cs-h">
+          <section className="card" aria-labelledby="cs-h">
+            <div className="card-head">
+              <h2 className="card-title" id="cs-h">
                 Sent
               </h2>
             </div>
-            <div className="cx-panel cx-tablewrap">
-              <table className="cx-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Person</th>
-                    <th scope="col">Topic</th>
-                    <th scope="col">What you saw</th>
-                    <th scope="col">In a 1:1?</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.signals.length ? (
-                    data.signals.map((s: any) => (
+            {data.signals.length ? (
+              <div className="cx-tablewrap">
+                <table className="cx-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Date</th>
+                      <th scope="col">Person</th>
+                      <th scope="col">Topic</th>
+                      <th scope="col">What you saw</th>
+                      <th scope="col">In a 1:1?</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.signals.map((s: any) => (
                       <tr key={s.signalId}>
                         <td className="cx-num">{s.date}</td>
                         <td>{s.name}</td>
@@ -140,20 +137,21 @@ export function CoachingPage({ route }: { route: { title: string } }) {
                           )}
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5}>Nothing sent yet.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="empty">
+                <div className="t">Nothing sent yet.</div>
+                <div className="s">Coaching signals you send show up here, with whether a 1:1 has raised them.</div>
+              </div>
+            )}
           </section>
         </>
       ) : (
-        <LinesSkeleton lines={6} />
+        <PwSkel lines={6} />
       )}
-    </section>
+    </PwShell>
   )
 }

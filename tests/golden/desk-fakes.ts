@@ -333,12 +333,45 @@ export async function portCall(fn: () => unknown | Promise<unknown>) {
   }
 }
 
+/** D-BRAND (documented divergence): frozen _archive MailDesk.js:146 signs
+ * "(via CX Helm)"; the rebranded port emits "(via Dabdoob CX)" (maildesk.ts:267).
+ * Rewrites that exact suffix inside LEGACY oracle output only; all other
+ * bytes must still match. Remove if _archive is regenerated post-rebrand. */
+export function normLegacyBrand<T>(v: T): T {
+  if (typeof v === 'string') {
+    let s = v.replace(/\(via CX Helm\)/g, '(via Dabdoob CX)')
+    // The signature also hides INSIDE base64 MIME bodies (mdReplyMime_ encodes
+    // the whole body, wrapped at 76 on both sides): decode -> rewrite ->
+    // re-encode at the same wrap so every other byte still compares.
+    const m = s.match(/\r\n\r\n|\n\n/)
+    if (m && /content-transfer-encoding:\s*base64/i.test(s.slice(0, m.index))) {
+      const head = s.slice(0, m.index! + m[0].length)
+      const compact = s.slice(m.index! + m[0].length).replace(/\r?\n/g, '')
+      if (/^[A-Za-z0-9+/]*={0,2}$/.test(compact) && compact.length % 4 === 0) {
+        const dec = Buffer.from(compact, 'base64').toString('utf8')
+        if (dec.includes('(via CX Helm)')) {
+          const re = Buffer.from(dec.replace(/\(via CX Helm\)/g, '(via Dabdoob CX)'), 'utf8').toString('base64')
+          s = head + (re.match(/.{1,76}/g) || []).join('\r\n')
+        }
+      }
+    }
+    return s as T
+  }
+  if (Array.isArray(v)) return v.map(normLegacyBrand) as T
+  if (v && typeof v === 'object') {
+    const o: Record<string, unknown> = {}
+    for (const k of Object.keys(v)) o[k] = normLegacyBrand((v as Record<string, unknown>)[k])
+    return o as T
+  }
+  return v
+}
+
 /** One call: legacy fn vs port thunk on the same desk fixtures. */
 export async function deskSame(fn: string, args: unknown[], fx: DeskFx, portFn: () => unknown | Promise<unknown>, label?: string) {
   const fixture = deskInstall(fx)
   const legacyRes = deskCall(fn, args, fixture)
   const portRes = await portCall(portFn)
-  expectSame(portRes, legacyRes, label || fn)
+  expectSame(portRes, normLegacyBrand(legacyRes), label || fn)
   return { legacy: legacyRes, port: portRes }
 }
 

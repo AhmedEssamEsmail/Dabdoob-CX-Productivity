@@ -749,7 +749,7 @@ export async function createFocusBlock(startIso: string, endIso: string, title?:
   const clash = (await g.calendarEvents(new Date(start), new Date(end))).filter((e) => !e.allDay)
   if (clash.length) throw new Error('That time is no longer free ("' + clash[0].title + '"). Refresh My day.')
   const name = String(title || 'Focus time').replace(/\s+/g, ' ').trim().slice(0, 100) || 'Focus time'
-  const ev = await g.createEvent(name, new Date(start), new Date(end), { description: 'Blocked from CX Helm, My day.' })
+  const ev = await g.createEvent(name, new Date(start), new Date(end), { description: 'Blocked from Dabdoob CX, My day.' })
   cacheRemove(AS_CACHE_PREFIX + 'core')
   return { id: String(ev.id), title: name, start: new Date(start).toISOString(), end: new Date(end).toISOString() }
 }

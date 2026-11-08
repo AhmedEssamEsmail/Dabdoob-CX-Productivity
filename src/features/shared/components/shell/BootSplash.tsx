@@ -58,11 +58,11 @@ export default function BootSplash() {
           </div>
         </div>
       <span id="boot-text" suppressHydrationWarning>
-        Loading CX Productivity…
+        Loading Dabdoob CX…
       </span>
       <script
         dangerouslySetInnerHTML={{
-          __html: `if(document.documentElement.lang==='ar')document.getElementById('boot-text').textContent='جارٍ تحميل CX Productivity…'`,
+          __html: `if(document.documentElement.lang==='ar')document.getElementById('boot-text').textContent='جارٍ تحميل Dabdoob CX…'`,
         }}
       />
     </div>

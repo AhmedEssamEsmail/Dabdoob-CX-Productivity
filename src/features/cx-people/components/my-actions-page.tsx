@@ -29,11 +29,7 @@ const SOURCE_LABELS: Record<string, string> = {
 
 /* $e */
 function Chip({ status, children }: { status?: string; children?: React.ReactNode }) {
-  return (
-    <span className="cx-chip" data-status={status}>
-      {children}
-    </span>
-  )
+  return <span className={status ? `pill ${status}` : 'pill'}>{children}</span>
 }
 
 /* _a — one action card. */
@@ -60,11 +56,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
   }
   const id = `act-${a.actionId}`
   return (
-    <article
-      className="cx-panel cx-panel--pad"
-      style={{ display: 'grid', gap: 'var(--cx-space-2)' }}
-      aria-labelledby={`${id}-t`}
-    >
+    <article className="card card-pad" style={{ display: 'grid', gap: 'var(--cx-space-2)' }} aria-labelledby={`${id}-t`}>
       <h3 className="cx-section__title" id={`${id}-t`}>
         {a.title}
       </h3>
@@ -140,19 +132,21 @@ export function MyActionsPage({ route }: { route: { title: string } }) {
   const { data, error, reload } = useSe('people.myactions', () => api.actionsMine())
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!data && !error}>
-      <Head title={route.title} sub="What you agreed to in 1:1s and meetings. Post where each stands before it is reviewed." />
+      <Head title={route.title} sub="What you agreed to in 1:1s and meetings — post where each stands before it is reviewed." />
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         data.length ? (
-          <div style={{ display: 'grid', gap: 'var(--cx-space-4)' }}>
+          <div className="grid">
             {data.map((a: any) => (
               <ActionCard key={a.actionId} a={a} onChange={reload} />
             ))}
           </div>
         ) : (
-          <p className="cx-note" data-status="ok">
-            <span>You have no open actions.</span>
-          </p>
+          <div className="card">
+            <div className="empty">
+              <div className="s">You have no open actions.</div>
+            </div>
+          </div>
         )
       ) : (
         <LinesSkeleton lines={6} />

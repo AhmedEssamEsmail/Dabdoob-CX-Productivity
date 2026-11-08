@@ -324,7 +324,7 @@ export async function tasksCreate(input: Record<string, any>) {
           ' assigned you <b>' + escapeHtml(row.title) + '</b>.</p><ul><li>Deadline: ' + pwKwDate_(w.endMs) + ' ' +
           pwKwTime_(w.endMs) + '</li><li>Estimate: ' + est + ' h</li><li>Task hours free in the window: ' + h.free +
           ' of ' + h.available + ' (' + String(h.fitStatus).replace(/_/g, ' ') + ')</li>' +
-          (expectation ? '<li>Expectation: ' + escapeHtml(expectation) + '</li>' : '') + '</ul><p>CX Helm</p>',
+          (expectation ? '<li>Expectation: ' + escapeHtml(expectation) + '</li>' : '') + '</ul><p>Dabdoob CX</p>',
       },
       user.email,
     )
@@ -632,7 +632,7 @@ export async function tasksEditDetails(actionId: string, input: Record<string, a
         htmlBody:
           '<p>' + escapeHtml(dir.name(user.email)) + ' handed you <b>' + escapeHtml(act.title || a.title) + '</b> (was ' +
           escapeHtml(dir.name(owner)) + '). Deadline ' + pwKwDate_(w.endMs) + ' ' + pwKwTime_(w.endMs) + ', estimate ' +
-          est + ' h.</p><p>CX Helm</p>',
+          est + ' h.</p><p>Dabdoob CX</p>',
       },
       user.email,
     )

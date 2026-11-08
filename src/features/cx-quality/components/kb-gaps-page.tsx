@@ -62,7 +62,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
             </p>
           ) : n.canAdd ? (
             <form
-              className="cx-panel cx-panel--pad qa-grid"
+              className="card card-pad qa-grid"
               onSubmit={(g) => {
                 g.preventDefault()
                 d(true)
@@ -142,22 +142,22 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
             title="Gaps"
             hint={`${n.gaps.filter((g: any) => g.status !== 'added').length} not yet in the KB`}
           >
-            <div className="cx-panel cx-tablewrap">
-              <table className="cx-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Logged</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Gap</th>
-                    <th scope="col">Ticket</th>
-                    <th scope="col">Auditor</th>
-                    <th scope="col">Same day</th>
-                    <th scope="col">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {n.gaps.length ? (
-                    n.gaps.map((g: any) => (
+            <div className="card">
+              {n.gaps.length ? (
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">Logged</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Gap</th>
+                      <th scope="col">Ticket</th>
+                      <th scope="col">Auditor</th>
+                      <th scope="col">Same day</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {n.gaps.map((g: any) => (
                       <tr key={g.gapId}>
                         <td className="cx-num">{g.createdDate}</td>
                         <td>{g.topic}</td>
@@ -198,14 +198,14 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                           )}
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7}>No gaps logged yet.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty">
+                  <div className="s">No gaps logged yet.</div>
+                </div>
+              )}
             </div>
           </QaSection>
         </>

@@ -193,6 +193,13 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
           </div>
         ))}
       </dl>
+      {l.length === 0 ? (
+        <div className="empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          <div className="t">No settings found</div>
+          <div className="s">Try a different search.</div>
+        </div>
+      ) : null}
     </Ft>
   )
 }
@@ -200,14 +207,14 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
 /* Im — Connected apps. */
 const Hr = 'hub'
 const APPS: Record<string, { title: string }> = {
-  hub: { title: 'CX Helm' },
-  quality: { title: 'CX Helm Quality' },
-  productivity: { title: 'CX Helm Productivity' },
-  desk: { title: 'CX Helm Desk' },
-  people: { title: 'CX Helm People' },
-  operations: { title: 'CX Helm Operations' },
-  queue: { title: 'CX Helm Queue' },
-  fcr: { title: 'CX Helm FCR' },
+  hub: { title: 'Dabdoob CX' },
+  quality: { title: 'Dabdoob CX Quality' },
+  productivity: { title: 'Dabdoob CX Productivity' },
+  desk: { title: 'Dabdoob CX Desk' },
+  people: { title: 'Dabdoob CX People' },
+  operations: { title: 'Dabdoob CX Operations' },
+  queue: { title: 'Dabdoob CX Queue' },
+  fcr: { title: 'Dabdoob CX FCR' },
 }
 const Lm = Object.keys(APPS)
 
@@ -221,12 +228,17 @@ function Im() {
   const n = Pr()
   const e = n?.appUrls ?? {}
   return (
-    <div className="block">
-      <h2 className="block-title">Connected apps</h2>
-      <p className="block-text">
-        Each system opens inside this one app now, so there are no web app URLs to connect.
-        The retired Apps Script addresses stay on record here, read-only.
-      </p>
+    <section className="card">
+      <div className="card-head">
+        <div>
+          <div className="card-title">Connected apps</div>
+          <div className="card-hint">
+            Each system opens inside this one app now, so there are no web app URLs to connect.
+            The retired Apps Script addresses stay on record here, read-only.
+          </div>
+        </div>
+      </div>
+      <div className="card-pad">
       <div className="form-grid">
         {Lm.map((h) => {
           const u = `app-url-${h}`
@@ -252,7 +264,8 @@ function Im() {
           )
         })}
       </div>
-    </div>
+      </div>
+    </section>
   )
 }
 
@@ -261,10 +274,12 @@ function Pf({ route: n, narrow: e, children: t }: { route: { title: string; purp
   return (
     <section className={e ? 'page page-narrow' : 'page'} aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {n.title}
-        </h1>
-        <p className="page-purpose">{n.purpose}</p>
+        <div>
+          <h1 id="page-title" className="page-title">
+            {n.title}
+          </h1>
+          <p className="page-purpose">{n.purpose}</p>
+        </div>
       </header>
       <div className="pending">
         <p className="pending-line">
@@ -373,12 +388,21 @@ function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: Confi
   const row = rows?.find((x) => x.key === 'reminders_enabled')
   const on = row ? row.value === true : true
   return (
-    <div className="block">
-      <h2 className="block-title">Reminders</h2>
-      <p className="block-text">
-        Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
-      </p>
-      <p className="block-text">{rows === null ? 'Loading…' : `Reminders are ${on ? 'on' : 'off'}`}</p>
+    <section className="card">
+      <div className="card-head">
+        <div>
+          <div className="card-title">Reminders</div>
+          <div className="card-hint">
+            Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
+          </div>
+        </div>
+        {rows === null ? (
+          <span className="pill">loading</span>
+        ) : (
+          <span className={on ? 'pill ok' : 'pill'}>{on ? 'on' : 'off'}</span>
+        )}
+      </div>
+      <div className="card-pad">
       <Button
         type="button"
         className="btn btn-quiet btn-small"
@@ -400,7 +424,8 @@ function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: Confi
       >
         {busy ? 'Saving…' : on ? 'Turn off' : 'Turn on'}
       </Button>
-    </div>
+      </div>
+    </section>
   )
 }
 
@@ -415,12 +440,17 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
   }, [])
   return (
     <Pf route={n} narrow={!0}>
-      <div className="block">
-        <h2 className="block-title">Dropdown choices</h2>
-        <p className="block-text">
-          Every dropdown ends with Other. A value typed there is added to that dropdown for everyone.
-          Try it below.
-        </p>
+      <section className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">Dropdown choices</div>
+            <div className="card-hint">
+              Every dropdown ends with Other. A value typed there is added to that dropdown for everyone.
+              Try it below.
+            </div>
+          </div>
+        </div>
+        <div className="card-pad">
         <div className="form-grid">
           <Oo
             listKey="one_on_one.topic"
@@ -433,25 +463,34 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
           />
           <Oo listKey="queue.channel" label="Channel" value={i} onChange={s} />
         </div>
-      </div>
+        </div>
+      </section>
       <Im />
       <Rb rows={r} onSaved={a} />
-      <div className="block">
-        <h2 className="block-title">Appearance</h2>
-        <Tm />
-      </div>
-      <div className="block">
-        <h2 className="block-title">Settings</h2>
-        {o ? (
-          <p className="field-error" role="alert">
-            Settings did not load: {o}
-          </p>
-        ) : r ? (
-          <Dm rows={r} onSaved={a} />
-        ) : (
-          <p className="block-text">Loading settings…</p>
-        )}
-      </div>
+      <section className="card">
+        <div className="card-head">
+          <div className="card-title">Appearance</div>
+        </div>
+        <div className="card-pad">
+          <Tm />
+        </div>
+      </section>
+      <section className="card">
+        <div className="card-head">
+          <div className="card-title">Settings</div>
+        </div>
+        <div className="card-pad">
+          {o ? (
+            <p className="field-error" role="alert">
+              Settings did not load: {o}
+            </p>
+          ) : r ? (
+            <Dm rows={r} onSaved={a} />
+          ) : (
+            <p className="card-hint">Loading settings…</p>
+          )}
+        </div>
+      </section>
     </Pf>
   )
 }

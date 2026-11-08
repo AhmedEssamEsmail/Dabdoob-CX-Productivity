@@ -7,20 +7,33 @@
  *   P.disputesPage / P.decideDispute.
  */
 import { useState } from 'react'
-import { Chip } from '@/features/shared/components/shell/ui'
 import { Button, Input, Seg, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   P,
   Q,
+  QA_STATUS,
   QaPage,
-  QaSection,
-  ScoreChip,
-  StatusChip,
   TicketRef,
+  qaBand,
   qaPct,
   useSe,
 } from './qa-shared'
+
+const pillCls = (t?: string | null) => `pill${t && t !== 'neutral' ? ` ${t}` : ''}`
+
+function StatusPill({ s }: { s: string }) {
+  const t = QA_STATUS[s]
+  return <span className={pillCls(t?.[1])}>{t?.[0] ?? s}</span>
+}
+
+function ScorePill({ score, fatal }: { score: number | null; fatal?: boolean | null }) {
+  return (
+    <span className={pillCls(qaBand(score, !!fatal))}>
+      {score === null ? '–' : `${score}%${fatal ? ', critical' : ''}`}
+    </span>
+  )
+}
 
 /* --- Bs — the meeting-decision form ------------------------------------------ */
 function DecisionForm({
@@ -132,25 +145,34 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
       d={n}
       error={a}
       reload={s}
-      sub={`Disputes team leads raise at the CTL, with the agent's case. Record the weekly Quality and team-lead meeting outcome: aligned, the decision; not aligned, escalate to ${n?.ownerName || 'the dispute owner'}. A disputed audit counts in no score until it is decided.`}
+      sub={`Disputes raised at the CTL with the agent's case — record the meeting outcome; not aligned escalates to ${n?.ownerName || 'the dispute owner'}.`}
     >
       {n ? (
         <>
-          <QaSection id="dsp-h" title={i.length ? `${i.length} to decide` : 'Nothing to decide'}>
-            <div className="qa-cards">
-              {i.map((l: any) => (
-                <article className="cx-panel cx-panel--pad qa-card" key={l.disputeId}>
-                  <header className="qa-card__head">
-                    <ScoreChip score={l.oldScore} fatal={l.audit?.fatal} />
-                    <strong>{l.agentName}</strong>
-                    {l.audit ? (
-                      <span className="cx-muted">
-                        ticket <TicketRef url={n.ticketUrl} id={l.audit.ticketId} />, audited by{' '}
-                        {l.auditorName} on {l.audit.auditDate}
-                      </span>
-                    ) : null}
-                    <StatusChip s={l.status} />
-                  </header>
+          <section className="card" aria-labelledby="dsp-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="dsp-h">
+                  {i.length ? `${i.length} to decide` : 'Nothing to decide'}
+                </div>
+              </div>
+            </div>
+            <div className="card-pad">
+              {i.length ? (
+                <div className="grid">
+                  {i.map((l: any) => (
+                    <article className="card card-pad qa-card" key={l.disputeId}>
+                      <header className="qa-card__head">
+                        <ScorePill score={l.oldScore} fatal={l.audit?.fatal} />
+                        <strong>{l.agentName}</strong>
+                        {l.audit ? (
+                          <span className="cx-muted">
+                            ticket <TicketRef url={n.ticketUrl} id={l.audit.ticketId} />, audited by{' '}
+                            {l.auditorName} on {l.audit.auditDate}
+                          </span>
+                        ) : null}
+                        <StatusPill s={l.status} />
+                      </header>
                   <p className="qa-reason">
                     <strong>Agent&apos;s case</strong>{' '}
                     <span className="cx-faint">
@@ -179,12 +201,25 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                       onDone={s}
                     />
                   )}
-                </article>
-              ))}
+                  </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty">
+                  <div className="s">No disputes waiting for a meeting decision.</div>
+                </div>
+              )}
             </div>
-          </QaSection>
-          <QaSection id="dspa-h" title={`Disputes per auditor, ${n.month}`}>
-            <div className="cx-panel cx-tablewrap">
+          </section>
+          <section className="card" aria-labelledby="dspa-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="dspa-h">
+                  {`Disputes per auditor, ${n.month}`}
+                </div>
+              </div>
+            </div>
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -207,17 +242,17 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                         </td>
                         <td className="cx-num">{l.upheld}</td>
                         <td>
-                          <Chip
-                            status={
+                          <span
+                            className={pillCls(
                               l.disputePct === null
                                 ? 'neutral'
                                 : l.disputePct < n.target
                                   ? 'ok'
                                   : 'bad'
-                            }
+                            )}
                           >
                             {qaPct(l.disputePct)}
-                          </Chip>
+                          </span>
                         </td>
                       </tr>
                     ))
@@ -229,10 +264,17 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                 </tbody>
               </table>
             </div>
-          </QaSection>
+          </section>
           {c.length ? (
-            <QaSection id="dspc-h" title="Decided, last 60 days">
-              <div className="cx-panel cx-tablewrap">
+            <section className="card" aria-labelledby="dspc-h">
+              <div className="card-head">
+                <div>
+                  <div className="card-title" id="dspc-h">
+                    Decided, last 60 days
+                  </div>
+                </div>
+              </div>
+              <div className="cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -250,7 +292,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                         <td>{l.agentName}</td>
                         <td>{l.auditorName}</td>
                         <td>
-                          <StatusChip s={l.status} />
+                          <StatusPill s={l.status} />
                         </td>
                         <td className="cx-num">
                           {l.decision === 'void'
@@ -271,7 +313,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                   </tbody>
                 </table>
               </div>
-            </QaSection>
+            </section>
           ) : null}
         </>
       ) : null}

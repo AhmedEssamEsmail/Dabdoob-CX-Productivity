@@ -83,6 +83,7 @@ import {
   deskProps,
   deskOracle,
   portCall,
+  normLegacyBrand,
   type DeskFx,
 } from './desk-fakes'
 import { expectSame, json } from './helpers-oracle'
@@ -423,7 +424,7 @@ describe('mdDecisionBody_ / mdHeaderValue_ / mdReplyMime_ / mdReplyAddresses_ / 
     }
   })
   it('full RFC 2822 reply mime', async () => {
-    const r = { to: 'decisions@vendor.com', cc: ['team@vendor.com', 'finance@dabdoob.com'], subject: 'Operational loss - 0507654321 - ORD-201 - spare parts', inReplyTo: '<rfc-t7m1@mail>', body: 'Approved.\n\nProceed with the write-off.\n\nAdmin Person (via CX Helm)' }
+    const r = { to: 'decisions@vendor.com', cc: ['team@vendor.com', 'finance@dabdoob.com'], subject: 'Operational loss - 0507654321 - ORD-201 - spare parts', inReplyTo: '<rfc-t7m1@mail>', body: 'Approved.\n\nProceed with the write-off.\n\nAdmin Person (via Dabdoob CX)' }
     await deskSame('mdReplyMime_', [r], fx(), () => mdReplyMime_(r))
     await deskSame('mdReplyMime_', [{ to: 'x@y.z', subject: 'Re: already', body: 'hi' }], fx(), () =>
       mdReplyMime_({ to: 'x@y.z', subject: 'Re: already', body: 'hi' }),
@@ -1929,7 +1930,7 @@ describe('mailApprovalDecide real-send path (wave-2 extension)', () => {
       expect(sentBodies.length).toBe(1)
       expect(sentBodies[0].threadId).toBe('t7')
       const legacyMime = Buffer.from(String(legacySent[0].raw).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')
-      expect(legacyMime).toBe(sentBodies[0].raw)
+      expect(normLegacyBrand(legacyMime)).toBe(sentBodies[0].raw)
     } finally {
       vi.unstubAllEnvs()
       vi.unstubAllGlobals()

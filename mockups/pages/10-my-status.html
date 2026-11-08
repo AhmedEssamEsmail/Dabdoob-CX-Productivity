@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My status · CX Helm</title>
+<link rel="stylesheet" href="../assets/mock.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 19V9M10 19V5M15 19v-7M20 19v-3"/></svg></div>
+      <div><div class="brand-name">CX Helm</div><div class="brand-sub">Operations console</div></div>
+    </div>
+    <div class="rail-search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search or jump to… <kbd>⌘K</kbd></div>
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Hub</div>
+        <a class="nav-link" href="02-home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Home</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Productivity</div>
+        <a class="nav-link active" href="10-my-status.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>My status</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Quality</div>
+        <a class="nav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>My audits</a>
+        <a class="nav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg>KB gaps</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">People</div>
+        <a class="nav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>My actions</a>
+      </div>
+    </nav>
+    <div class="rail-foot">
+      <div class="avatar">MH</div>
+      <div class="rail-who"><div class="who-name">M. Haddad</div><div class="who-role">Agent · TL: S. Omar</div></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs">Productivity / <b>My status</b></div>
+      <div class="topbar-right"><span class="small faint">Week of 2–8 Nov</span></div>
+    </div>
+
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">My status</h1>
+        <p class="page-sub">Your flagged IDLE time and what each review changed in your productivity.</p>
+      </div>
+    </header>
+
+    <div class="grid grid-4 mb-3">
+      <div class="stat"><span class="stat-l">Productivity (raw)</span><span class="stat-v num">81.4%</span><span class="stat-d muted">before reviews</span></div>
+      <div class="stat" data-tone="ok"><span class="stat-l">After reviews</span><span class="stat-v num">84.0%</span><span class="stat-d"><span class="delta up good">▲ 2.6</span> accepted flags</span></div>
+      <div class="stat" data-tone="warn"><span class="stat-l">Flags waiting</span><span class="stat-v num">2</span><span class="stat-d">under review now</span></div>
+      <div class="stat"><span class="stat-l">Disputes</span><span class="stat-v num">1</span><span class="stat-d">with your TL, open</span></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.5fr 1fr;align-items:start">
+      <section class="card">
+        <div class="card-head"><div class="card-title">Your flags</div><div class="card-hint">dispute window: 3 days</div></div>
+        <div class="worklist">
+          <div class="workitem">
+            <div class="wi-ico warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg></div>
+            <div class="wi-main"><div class="wi-t">Thu 14:20 → 15:05 · 45m IDLE</div><div class="wi-s">Suggested: case work · 3 cases inside · +2.1% if accepted</div></div>
+            <div class="wi-side"><span class="pill warn">under review</span><div class="s mt-1">by S. Omar</div></div>
+          </div>
+          <div class="workitem">
+            <div class="wi-ico warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 21V4"/><path d="M4 4h13l-2.5 4L17 12H4"/></svg></div>
+            <div class="wi-main"><div class="wi-t">Fri 21:15 → 21:50 · 35m IDLE</div><div class="wi-s">Suggested: break · 1 case inside · dispute by Tue</div></div>
+            <div class="wi-side"><span class="pill warn">under review</span><div class="s mt-1">by S. Omar</div></div>
+          </div>
+          <div class="workitem">
+            <div class="wi-ico ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <div class="wi-main"><div class="wi-t">Wed 16:40 → 17:10 · 30m IDLE</div><div class="wi-s">Accepted as case work · productivity +1.4%</div></div>
+            <div class="wi-side"><span class="pill ok">accepted</span><div class="s mt-1">Thu</div></div>
+          </div>
+          <div class="workitem">
+            <div class="wi-ico bad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M16 3h5v5M8 21H3v-5M21 3l-7 7M3 21l7-7"/></svg></div>
+            <div class="wi-main"><div class="wi-t">Mon 11:00 → 11:25 · 25m IDLE</div><div class="wi-s">You disputed: "Maqsam stuck on ACW" · TL replies Tue</div></div>
+            <div class="wi-side"><span class="pill bad">disputed</span><div class="s mt-1">open</div></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid" style="align-content:start">
+        <section class="card">
+          <div class="card-head"><div class="card-title">Before vs after</div><div class="card-hint">this week</div></div>
+          <div class="card-pad">
+            <div class="hbar-row"><span class="small">Raw</span><div class="bar warn"><i style="width:81%"></i></div><b class="num small">81.4%</b></div>
+            <div class="hbar-row"><span class="small">Reviewed</span><div class="bar"><i style="width:84%"></i></div><b class="num small">84.0%</b></div>
+            <hr class="hr" style="margin:.8rem 0">
+            <div class="small faint">How flags moved your score</div>
+            <div class="spark mt-1" style="height:3rem"><i style="height:50%"></i><i style="height:62%"></i><i style="height:58%"></i><i style="height:70%"></i><i style="height:84%"></i></div>
+            <div class="small faint mt-1">Mon → Sun</div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-head"><div class="card-title">What you can do</div></div>
+          <div class="card-pad small muted" style="display:flex;flex-direction:column;gap:.55rem">
+            <div>· Check each flag: the cases listed are what the system saw inside your IDLE window.</div>
+            <div>· Disagree? Hit <b>dispute</b> and say why — your TL sees it with your note.</div>
+            <div>· Accepted flags raise your score if the time really was case work.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

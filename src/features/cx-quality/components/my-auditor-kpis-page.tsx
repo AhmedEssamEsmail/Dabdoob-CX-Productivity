@@ -27,7 +27,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
       d={a}
       error={s}
       reload={i}
-      sub="Your own auditor KPIs for the month, from your audits, the disputes raised against them, your calibrations and your KB gaps; then the audits you did."
+      sub="Your auditor KPIs for the month — audits, disputes, calibrations and KB gaps — and the audits you did."
     >
       {a ? (
         <>
@@ -53,7 +53,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
             </div>
           </div>
           <QaSection id="mak-h" title={`${a.name}, ${a.month}`}>
-            <div className="cx-panel cx-tablewrap">
+            <div className="card cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -107,7 +107,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
             title="Audits you did"
             hint={`Last 90 days, and any older audit with an undecided dispute. ${a.myAudits.filter((l: any) => l.dispute && (l.dispute.status === 'open' || l.dispute.status === 'escalated')).length} with a dispute waiting.`}
           >
-            <div className="cx-panel cx-tablewrap">
+            <div className="card cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>

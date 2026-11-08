@@ -133,7 +133,7 @@ export async function runOneOnOneReminders_(nowMs?: number) {
         (d.email === d.b.m
           ? '<p>Open actions from earlier 1:1s come first; the record is due by ' + cutoff + ' Kuwait.</p>'
           : '<p>Bring where your open actions stand.</p>') +
-        (link ? '<p>Open CX Helm: ' + link + '</p>' : ''),
+        (link ? '<p>Open Dabdoob CX: ' + link + '</p>' : ''),
     }, actor)
     emailed++
   }

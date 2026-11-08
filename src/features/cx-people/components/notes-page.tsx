@@ -141,7 +141,7 @@ function NoteRow({
   }
 
   return (
-    <li className="nt-item" data-status={note.status}>
+    <li className="nt-item card" data-status={note.status}>
       {editing ? (
         <Textarea
           className="input nt-edit"
@@ -311,9 +311,12 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
               ))}
             </ol>
           ) : (
-            <p className="pw-empty">
-              {notes.length ? 'No note matches that search.' : 'Nothing here yet. Write the first thought in the box above.'}
-            </p>
+            <div className="empty">
+              <div className="t">
+                {notes.length ? 'No note matches that search.' : 'Nothing here yet.'}
+              </div>
+              {!notes.length ? <div className="s">Write the first thought in the box above.</div> : null}
+            </div>
           )}
         </>
       ) : (

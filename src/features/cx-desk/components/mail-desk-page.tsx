@@ -106,6 +106,14 @@ const STATUS_LABEL: Record<string, string> = {
   replied: 'Replied',
   answered_in_gmail: 'Answered in Gmail',
 }
+const STATUS_TONE: Record<string, string> = {
+  pending: 'warn',
+  sending: 'warn',
+  approved: 'ok',
+  rejected: 'bad',
+  replied: 'info',
+  answered_in_gmail: 'info',
+}
 
 /* Toasts come from the shared shell emitter (the legacy `ne`). */
 
@@ -134,11 +142,13 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
   return (
     <section className="page dk" aria-labelledby="page-title">
       <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {route.title}
-        </h1>
-        <p className="page-purpose">{route.purpose}</p>
-        {aside}
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-purpose">{route.purpose}</p>
+        </div>
+        {aside ? <div className="page-actions">{aside}</div> : null}
       </header>
       {children}
     </section>
@@ -146,11 +156,7 @@ function Shell({ route, aside, children }: { route: { title: string; purpose: st
 }
 
 function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return (
-    <span className="dk-badge" data-tone={tone}>
-      {children}
-    </span>
-  )
+  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
 }
 
 function ErrMsg({ message }: { message: string }) {
@@ -438,15 +444,20 @@ export default function MailDeskPage() {
               ))}
             </div>
           ) : (
-            <p className="dk-none">No approval mails waiting.</p>
+            <div className="card">
+              <div className="empty">
+                <div className="s">No approval mails waiting.</div>
+              </div>
+            </div>
           )}
           {decided.length ? (
+            <div className="card card-pad">
             <details className="md-decided">
               <summary>Decided in the last 14 days, {decided.length}</summary>
               <ul>
                 {decided.map((a) => (
                   <li key={a.threadId}>
-                    <b>{STATUS_LABEL[a.status]}</b> {TYPE_LABEL[a.type]}, order {a.orderId}, by{' '}
+                    <Badge tone={STATUS_TONE[a.status]}>{STATUS_LABEL[a.status]}</Badge> {TYPE_LABEL[a.type]}, order {a.orderId}, by{' '}
                     {a.decidedBy || 'unknown'} {V(a.decidedAt)}
                     {a.sentStatus === 'dry_run' ? ' (not sent, dry run)' : ''}
                     {a.decisionText ? `: ${a.decisionText}` : ''}
@@ -454,6 +465,7 @@ export default function MailDeskPage() {
                 ))}
               </ul>
             </details>
+            </div>
           ) : null}
         </section>
       ) : null}
@@ -480,6 +492,7 @@ export default function MailDeskPage() {
           ))}
         </div>
         {rows.length ? (
+          <div className="card card-pad">
           <div className="dk-scroll">
             <table className="dk-table md-table">
               <thead>
@@ -500,8 +513,13 @@ export default function MailDeskPage() {
               </tbody>
             </table>
           </div>
+          </div>
         ) : (
-          <p className="dk-none">Nothing here for this filter.</p>
+          <div className="card">
+            <div className="empty">
+              <div className="s">Nothing here for this filter.</div>
+            </div>
+          </div>
         )}
       </section>
     </Shell>

@@ -169,44 +169,62 @@ function SideBars({ d }: { d: any }) {
   const n = ['agent', 'process', 'product', 'kb'].filter((s) => d.reasons[s])
   const a = n.reduce((s, i) => s + d.reasons[i], 0)
   return (
-    <section className="cx-section qs-side" aria-labelledby="qs-why-h">
-      <div className="cx-panel">
-        <h2 className="cx-section__title" id="qs-why-h">
-          Why points were lost
-        </h2>
-        {a ? (
-          <ul className="qs-bars">
-            {n.map((s) => (
-              <li key={s}>
-                <span>{QA_REASON_LABELS[s]}</span>
-                <span className="qs-track" aria-hidden="true">
-                  <i style={{ inlineSize: `${(d.reasons[s] / a) * 100}%` }} />
-                </span>
-                <span className="cx-num">
-                  {Math.round((d.reasons[s] / a) * 100)}%{' '}
-                  <span className="cx-faint">({d.reasons[s]})</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="cx-faint">No tagged fails in these dates.</p>
-        )}
+    <section className="qs-side" aria-labelledby="qs-why-h">
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title" id="qs-why-h">
+              Why points were lost
+            </div>
+          </div>
+        </div>
+        <div className="card-pad">
+          {a ? (
+            <ul className="qs-bars">
+              {n.map((s) => (
+                <li key={s}>
+                  <span>{QA_REASON_LABELS[s]}</span>
+                  <span className="qs-track" aria-hidden="true">
+                    <i style={{ inlineSize: `${(d.reasons[s] / a) * 100}%` }} />
+                  </span>
+                  <span className="cx-num">
+                    {Math.round((d.reasons[s] / a) * 100)}%{' '}
+                    <span className="cx-faint">({d.reasons[s]})</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="empty">
+              <div className="s">No tagged fails in these dates.</div>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="cx-panel">
-        <h2 className="cx-section__title">Not in the score</h2>
-        {d.others.length ? (
-          <ul className="qs-others">
-            {d.others.map((s: any) => (
-              <li key={s.basis}>
-                {QA_BASIS_LABELS[s.basis]}: n={s.audits}, average {qaPct(s.avg)}
-                {s.critical ? `, ${s.critical} critical` : ''}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="cx-faint">Every audit in these dates is from the random sample.</p>
-        )}
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="card-title">Not in the score</div>
+          </div>
+        </div>
+        <div className="card-pad">
+          {d.others.length ? (
+            <ul className="qs-others">
+              {d.others.map((s: any) => (
+                <li key={s.basis}>
+                  {QA_BASIS_LABELS[s.basis]}: n={s.audits}, average {qaPct(s.avg)}
+                  {s.critical ? `, ${s.critical} critical` : ''}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="empty">
+              <div className="s">
+                Every audit in these dates is from the random sample.
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )
@@ -228,7 +246,7 @@ function ScoreCell({ r, minN }: { r: any; minN: number }) {
         {r.lowSample ? (
           <>
             {' '}
-            <span className="qs-tag" title={`Under ${minN} audits: read with care`}>
+            <span className="pill warn" title={`Under ${minN} audits: read with care`}>
               low sample
             </span>
           </>
@@ -277,11 +295,13 @@ function BreakdownTable({
   const p = s.by === 'agent' ? d.minN : 10
   const m = s.by === 'agent'
   return (
-    <section className="cx-section" aria-labelledby="qs-tbl-h">
-      <div className="cx-section__head">
-        <h2 className="cx-section__title" id="qs-tbl-h">
-          Who is behind the score
-        </h2>
+    <section className="card" aria-labelledby="qs-tbl-h">
+      <div className="card-head">
+        <div>
+          <div className="card-title" id="qs-tbl-h">
+            Who is behind the score
+          </div>
+        </div>
         <Seg
           name="qs-level"
           value={s.by}
@@ -297,7 +317,7 @@ function BreakdownTable({
           <span aria-current="page">{l}</span>
         </nav>
       ) : null}
-      <div className="cx-panel cx-tablewrap">
+      <div className="cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -447,7 +467,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
       d={i}
       error={c}
       reload={l}
-      sub="How the team scores for the dates you pick. The team score uses the random daily sample; every agent, lead and channel row counts all their audits."
+      sub="How the team scores for the dates you pick: the team score uses the random daily sample, every row counts all audits."
     >
       {i && f ? (
         <>
@@ -508,11 +528,16 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               ? ' Older audits get theirs once backfillQaInteractionDates has run.'
               : ''}
           </p>
-          <section className="cx-panel qs-hero" aria-labelledby="qs-team-h">
+          <section className="card" aria-labelledby="qs-team-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="qs-team-h">
+                  Team score, random sample
+                </div>
+              </div>
+            </div>
+            <div className="qs-hero">
             <div>
-              <h2 className="cx-section__title" id="qs-team-h">
-                Team score, random sample
-              </h2>
               {f.score === null ? (
                 <p className="qs-big cx-faint">–</p>
               ) : (
@@ -572,8 +597,23 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                 </dd>
               </div>
             </dl>
+            </div>
           </section>
-          <TrendChart d={i} compare={p} />
+          <section className="card" aria-labelledby="qs-trend-h">
+            <div className="card-head">
+              <div>
+                <div className="card-title" id="qs-trend-h">
+                  Score trend
+                </div>
+                <div className="card-hint">
+                  Random daily sample only; the band is the 95% range.
+                </div>
+              </div>
+            </div>
+            <div className="card-pad">
+              <TrendChart d={i} compare={p} />
+            </div>
+          </section>
           {n.agent ? (
             <DrillSection
               scope={{

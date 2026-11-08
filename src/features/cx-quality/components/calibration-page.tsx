@@ -49,7 +49,11 @@ function TrendChart({ trend: t }: { trend: any[] }) {
   const i = [...new Set(t.map((f: any) => f.month))].sort()
   const c = [...new Set(t.map((f: any) => f.auditorName))]
   if (!i.length)
-    return <p className="cx-muted">No finished calibrations yet.</p>
+    return (
+      <div className="empty">
+        <div className="s">No finished calibrations yet.</div>
+      </div>
+    )
   const l = 560,
     p = 200,
     m = 36,
@@ -197,7 +201,7 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
 
   return (
     <form
-      className="cx-panel cx-panel--pad qa-grid"
+      className="card card-pad qa-grid"
       onSubmit={(g) => {
         g.preventDefault()
         h(true)
@@ -326,7 +330,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
           ) : null}
           {l.length ? (
             <QaSection id="calm-h" title="Your calibration audits">
-              <ul className="cx-list">
+              <ul className="card cx-list">
                 {l.map((u: any) => (
                   <li className="cx-list__row qa-row" key={u.calibrationId}>
                     <span>
@@ -348,7 +352,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
             </QaSection>
           ) : null}
           <QaSection id="calt-h" title="Alignment by month">
-            <div className="cx-panel cx-panel--pad">
+            <div className="card card-pad">
               <TrendChart trend={n.trend} />
             </div>
           </QaSection>
@@ -362,21 +366,21 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
             title="Results"
             hint={m.length ? `${m.length} waiting for one or both audits` : undefined}
           >
-            <div className="cx-panel cx-tablewrap">
-              <table className="cx-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Month</th>
-                    <th scope="col">Ticket</th>
-                    <th scope="col">Auditor</th>
-                    <th scope="col">Reference</th>
-                    <th scope="col">Alignment</th>
-                    <th scope="col">Where they differ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {p.length ? (
-                    p.map((u: any) => (
+            <div className="card">
+              {p.length ? (
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">Month</th>
+                      <th scope="col">Ticket</th>
+                      <th scope="col">Auditor</th>
+                      <th scope="col">Reference</th>
+                      <th scope="col">Alignment</th>
+                      <th scope="col">Where they differ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {p.map((u: any) => (
                       <tr key={u.calibrationId}>
                         <td className="cx-num">{u.month}</td>
                         <td>
@@ -401,14 +405,14 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
                           <DiffList c={u} />
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6}>No finished calibrations yet.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty">
+                  <div className="s">No finished calibrations yet.</div>
+                </div>
+              )}
             </div>
           </QaSection>
         </>

@@ -48,6 +48,7 @@ import ErrorBoundary from '@/features/shared/components/shell/ErrorBoundary'
 import { Button } from '@/features/shared/components/ui'
 import { ViewAsBanner, ViewAsPicker } from '@/features/shared/components/shell/ViewAs'
 import Popups from '@/features/shared/components/shell/Popups'
+import CommandPalette from '@/features/shared/components/shell/CommandPalette'
 
 /**
  * ys — the application shell: brand + rail nav (with the sliding .nav-ind
@@ -90,11 +91,13 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   const [bootError, setBootError] = useState('')
   const [navOpen, setNavOpen] = useState(false)
   const [railOff, setRailOff] = useState(readRailOff)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
   const navRef = useRef<HTMLElement>(null)
   const indRef = useRef<HTMLSpanElement>(null)
+  const railSearchRef = useRef<HTMLButtonElement>(null)
   const reposition = useRef<() => void>(() => {})
   useLang()
 
@@ -162,6 +165,25 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     else document.documentElement.dataset.entry = 'calm'
   }, [path])
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== 'k') return
+      const target = event.target
+      if (target instanceof HTMLElement) {
+        const editable =
+          target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT'
+        if (editable && !target.classList.contains('cpk-input')) return
+      }
+      event.preventDefault()
+      setPaletteOpen((open) => !open)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   /* Legacy k/A/V: a requested page that cannot render in this app (external
      or not permitted) redirects to the fallback page, carrying ?from=<path>
      so the cx-note can render above it. */
@@ -210,6 +232,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   if (prevRoutePath !== route.path) {
     setPrevRoutePath(route.path)
     setNavOpen(false)
+    setPaletteOpen(false)
   }
 
   /* SPA navigation wrapped in a view transition when the browser allows it. */
@@ -256,6 +279,11 @@ export default function AppShell({ children }: { children?: ReactNode }) {
 
   const { user } = boot
   const viewingAs = !!boot.viewAs?.target
+  const whoParts = user.name.trim().split(/\s+/).filter(Boolean)
+  const initials = (
+    (whoParts[0]?.[0] ?? '') +
+    (whoParts.length > 1 ? whoParts[whoParts.length - 1][0] : '')
+  ).toUpperCase()
 
   if (user.role === 'unknown') {
     if (viewingAs) {
@@ -362,8 +390,25 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               href={hubLink.missing ? pageHref('overview') : hubLink.href}
               target={hubLink.missing ? undefined : '_top'}
             >
-              <span className="brand-mark" aria-hidden="true" />
-              <span className="brand-name">{ctxTitle}</span>
+              <span className="brand-mark" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M5 19V9M10 19V5M15 19v-7M20 19v-3" />
+                </svg>
+              </span>
+              <div>
+                <div className="brand-name">Dabdoob CX</div>
+                <div className="brand-sub">Operations console</div>
+              </div>
             </a>
             <Button
               className="nav-toggle"
@@ -374,6 +419,31 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               {D(navOpen ? 'Close' : 'Menu')}
             </Button>
           </div>
+          <button
+            type="button"
+            className="rail-search"
+            ref={railSearchRef}
+            aria-haspopup="dialog"
+            aria-expanded={paletteOpen}
+            onClick={() => setPaletteOpen(true)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="15"
+              height="15"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            {D('Search or jump to…')}
+            <kbd>⌘K</kbd>
+          </button>
           <nav id="nav" className="nav" aria-label={D('Main')} ref={navRef}>
             <span className="nav-ind" ref={indRef} aria-hidden="true" hidden />
             {GROUP_ORDER.map((group) => {
@@ -466,9 +536,12 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             </div>
           ) : null}
           <div className="rail-foot">
+            <div className="avatar" aria-hidden="true">
+              {initials}
+            </div>
             <div className="rail-who">
-              <p className="who">{user.name}</p>
-              <p className="who-meta">
+              <p className="who who-name">{user.name}</p>
+              <p className="who-meta who-role">
                 {viewingAs
                   ? D('{role}, viewed by you', { role: displayRole(user) })
                   : D(WHO_ROLE_LABELS[user.role] ?? user.role)}
@@ -523,6 +596,16 @@ export default function AppShell({ children }: { children?: ReactNode }) {
           </ErrorBoundary>
         </main>
         <Popups popups={boot.popups} />
+        {paletteOpen ? (
+          <CommandPalette
+            boot={boot}
+            ctxApp={ctxApp}
+            onClose={() => {
+              setPaletteOpen(false)
+              railSearchRef.current?.focus()
+            }}
+          />
+        ) : null}
       </div>
     </BootProvider>
   )

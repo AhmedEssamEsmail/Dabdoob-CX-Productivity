@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · CX Helm</title>
+<link rel="stylesheet" href="../assets/mock.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+<main class="login-wrap">
+  <div class="login-card">
+    <div class="brand-row">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 19V9M10 19V5M15 19v-7M20 19v-3"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">CX Helm</div>
+        <div class="brand-sub">dabdoob operations console</div>
+      </div>
+    </div>
+
+    <h1 class="login-title">Sign in</h1>
+    <p class="login-sub">Use your dabdoob.com work account to continue.</p>
+
+    <!-- error state (hidden until a failed attempt) -->
+    <div class="login-error" style="display:none" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      That email and password don't match. Try again.
+    </div>
+
+    <form>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input class="input" id="email" type="email" autocomplete="username" placeholder="name@dabdoob.com" style="height:2.5rem">
+      </div>
+      <div class="field">
+        <div class="between">
+          <label for="pw">Password</label>
+          <a href="#" class="small" style="color:var(--accent);font-weight:600">Forgot password?</a>
+        </div>
+        <input class="input" id="pw" type="password" autocomplete="current-password" style="height:2.5rem">
+      </div>
+      <button class="btn btn-primary" type="submit">Sign in
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+
+    <div class="login-foot">
+      <span class="flex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Restricted to CX Helm team members
+      </span>
+      <span>v2.4</span>
+    </div>
+  </div>
+</main>
+</body>
+</html>

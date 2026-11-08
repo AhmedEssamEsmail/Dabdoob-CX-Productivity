@@ -17,9 +17,10 @@ import { getBoot } from '@/features/shared/shell/context'
 import { Button, Input, Select } from '@/features/shared/components/ui'
 import {
   AuditForm,
+  LinesSkeleton,
+  LoadError,
   P,
   Q,
-  QaPage,
   QaSection,
   SortTh,
   StatusChip,
@@ -1499,6 +1500,46 @@ function AccessPanel() {
 }
 
 /* --- As — the Audit Desk page ---------------------------------------------- */
+/* --- mock-06 worklist pieces -------------------------------------------- */
+/** Channel → wi-ico glyph (phone / chat / ticket, as in the mock). */
+function WiIco({ channel, tone }: { channel: string; tone: string }) {
+  const c = String(channel || '').toLowerCase()
+  const kind = /call|phone|voice/.test(c)
+    ? 'call'
+    : /chat|whats|mail|email|social|sms/.test(c)
+      ? 'chat'
+      : 'ticket'
+  return (
+    <span className={`wi-ico${tone ? ` ${tone}` : ''}`} aria-hidden="true">
+      {kind === 'call' ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z" />
+        </svg>
+      ) : kind === 'chat' ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M4 4h16v12H8l-4 4z" />
+        </svg>
+      )}
+    </span>
+  )
+}
+
+/** wi-ico tone + pill for a queue row / request. */
+function wiTone(w: any): string {
+  if (w.status === 'done') return 'ok'
+  if (w.status === 'in_progress') return 'info'
+  return w.requested ? 'warn' : ''
+}
+function wiPill(w: any): { cls: string; label: string } {
+  if (w.status === 'done') return { cls: 'ok', label: 'done' }
+  if (w.status === 'in_progress') return { cls: 'warn', label: 'in progress' }
+  return w.requested ? { cls: 'warn', label: 'requested' } : { cls: '', label: 'queued' }
+}
+
 function AuditQueuePage({
   route,
   who,
@@ -1514,6 +1555,7 @@ function AuditQueuePage({
   const [u, d] = useState(false)
   const [o, h] = useState('')
   const [b, x] = useState('')
+  const [seg, setSeg] = useState<'todo' | 'doing' | 'done'>('todo')
   const f = useQaSort(QUEUE_COLS)
   const g = useQaSort(PASSED_COLS)
   const y = (w: string) => {
@@ -1543,36 +1585,83 @@ function AuditQueuePage({
   const C = s ? s.rows.filter((w: any) => !w.auditType && w.source !== 'offqueue') : []
   const O = C.filter((w: any) => w.date === s.today && w.status !== 'passed')
   const v = O.filter((w: any) => w.status === 'done').length
+  /* mock-06 "Today's queue": open requests first, then today's sample rows. */
+  const wiAll = s
+    ? [
+        ...s.requests
+          .filter((r: any) => r.status === 'open' || r.status === 'in_progress')
+          .map((r: any) => ({ ...r, requested: true })),
+        ...O.map((w: any) => ({ ...w, requested: false })),
+      ]
+    : []
+  const wiCounts = {
+    todo: wiAll.filter((w: any) => w.status === 'open').length,
+    doing: wiAll.filter((w: any) => w.status === 'in_progress').length,
+    done: wiAll.filter((w: any) => w.status === 'done').length,
+  }
+  const wiList = wiAll.filter((w: any) =>
+    seg === 'todo' ? w.status === 'open' : seg === 'doing' ? w.status === 'in_progress' : w.status === 'done'
+  )
   return (
-    <QaPage
-      route={route}
-      d={s}
-      error={i}
-      reload={c}
-      sub="Tickets to audit today: audits team leads asked for first, then the daily sample of four per agent. Start audit opens the form with the ticket, agent and team lead filled in, and records when you started. Under 100% opens a CTL for the team lead."
-      aside={
-        s?.isAdmin ? (
-          <Button
-            disabled={u}
-            onClick={() => {
-              d(true)
-              P.importNow().then(
-                (w) => (d(false), Q(w.note || w.skipped || 'Imported.'), c()),
-                (w) => (d(false), Q(w.message, 'error'))
-              )
-            }}
-          >
-            {u
-              ? s?.engineLive
-                ? 'Building…'
-                : 'Importing…'
-              : s?.engineLive
-                ? 'Build the queue now'
-                : 'Import the queue now'}
-          </Button>
-        ) : null
-      }
-    >
+    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!s && !i}>
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {route.title}
+          </h1>
+          <p className="page-sub">
+            Tickets to audit today: audits team leads asked for first, then the
+            daily sample of four per agent. Start audit opens the form with the
+            ticket, agent and team lead filled in, and records when you started.
+            Under 100% opens a CTL for the team lead.
+          </p>
+        </div>
+        <div className="page-actions">
+          {s ? (
+            <div className="seg" role="group" aria-label="Audit status">
+              {(
+                [
+                  ['todo', `To do · ${wiCounts.todo}`],
+                  ['doing', `In progress · ${wiCounts.doing}`],
+                  ['done', `Done · ${wiCounts.done}`],
+                ] as const
+              ).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={seg === v ? 'on' : ''}
+                  aria-pressed={seg === v}
+                  onClick={() => setSeg(v)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {s?.isAdmin ? (
+            <Button
+              disabled={u}
+              onClick={() => {
+                d(true)
+                P.importNow().then(
+                  (w) => (d(false), Q(w.note || w.skipped || 'Imported.'), c()),
+                  (w) => (d(false), Q(w.message, 'error'))
+                )
+              }}
+            >
+              {u
+                ? s?.engineLive
+                  ? 'Building…'
+                  : 'Importing…'
+                : s?.engineLive
+                  ? 'Build the queue now'
+                  : 'Import the queue now'}
+            </Button>
+          ) : null}
+        </div>
+      </header>
+      {i ? <LoadError message={i} onRetry={c} /> : null}
+      {!s && !i ? <LinesSkeleton lines={6} /> : null}
       {s ? (
         <>
           <ViewingAs d={s} onPick={onPick} />
@@ -1587,107 +1676,6 @@ function AuditQueuePage({
                 This queue is still drawn by the old Quality Queue app and imported
                 here each morning. Set qa_engine_live in Hub Admin once the history is
                 migrated, and Quality draws it itself.
-              </span>
-            </p>
-          ) : null}
-          {_ && k ? (
-            <div id="qa-audit-open">
-              <AuditForm
-                form={k}
-                submitLabel="Submit audit"
-                askReasons
-                interactionAt={'interactionAt' in _ ? _.interactionAt : ''}
-                memory={s.failMemory?.[_.agentEmail.toLowerCase()]}
-                facts={
-                  <dl className="qa-facts">
-                    {T.auditType ? (
-                      <>
-                        <div>
-                          <dt>Audit type</dt>
-                          <dd>{T.auditType}</dd>
-                        </div>
-                        <div>
-                          <dt>Reference</dt>
-                          <dd className="qa-ref">{T.reference}</dd>
-                        </div>
-                      </>
-                    ) : (
-                      <div>
-                        <dt>Ticket</dt>
-                        <dd>
-                          <TicketRef url={s.ticketUrl} id={_.ticketId} />
-                        </dd>
-                      </div>
-                    )}
-                    <div>
-                      <dt>Agent</dt>
-                      <dd>{_.agentName}</dd>
-                    </div>
-                    <div>
-                      <dt>Team lead</dt>
-                      <dd>{_.tlName || '–'}</dd>
-                    </div>
-                    {T.auditType ? (
-                      T.note ? (
-                        <div>
-                          <dt>Note</dt>
-                          <dd>{T.note}</dd>
-                        </div>
-                      ) : null
-                    ) : (
-                      <>
-                        <div>
-                          <dt>Channel</dt>
-                          <dd>{_.channel}</dd>
-                        </div>
-                        <div>
-                          <dt>Contact type</dt>
-                          <dd>{_.contactType || '–'}</dd>
-                        </div>
-                      </>
-                    )}
-                    <div>
-                      <dt>Started</dt>
-                      <dd className="cx-num">
-                        {new Date(l!.startedAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </dd>
-                    </div>
-                  </dl>
-                }
-                backLabel="Back to the queue"
-                onCancel={() => {
-                  p(null)
-                  requestAnimationFrame(() =>
-                    document.getElementById('qq-h')?.scrollIntoView({ block: 'start' })
-                  )
-                }}
-                onSubmit={(w, A, S, R) =>
-                  P.submitAudit({
-                    queueId: _.queueId,
-                    formId: k.formId,
-                    formVersion: k.version,
-                    answers: w,
-                    reasons: S,
-                    comment: A,
-                    interactionAt: R,
-                  }).then((Z) => {
-                    Q(
-                      `Saved: ${Z.score}%. ${_.agentName} and their team lead were emailed; ${Z.ctlDue ? `CTL opened for the team lead, due ${Z.ctlDue}` : 'full marks, so it is settled with no CTL'}.`
-                    )
-                    p(null)
-                    c()
-                  })
-                }
-              />
-            </div>
-          ) : _ ? (
-            <p className="cx-note" role="alert" id="qa-audit-open">
-              <span>
-                {_.channel} has no active audit form. An admin adds one in Admin &gt;
-                Audit forms; until then this item cannot be audited.
               </span>
             </p>
           ) : null}
@@ -1714,6 +1702,182 @@ function AuditQueuePage({
               </Button>
             </p>
           ) : null}
+          <div className="md">
+            <section className="card" aria-labelledby="qa-today-h">
+              <div className="card-head">
+                <div>
+                  <div className="card-title" id="qa-today-h">
+                    Today&rsquo;s queue
+                  </div>
+                  <div className="card-hint">Requested first</div>
+                </div>
+              </div>
+              <div className="worklist">
+                {wiList.length ? (
+                  wiList.map((w: any, wi: number) => {
+                    const sel = l?.queueId === w.queueId
+                    const p = wiPill(w)
+                    const off = w.status === 'done' || w.takenByOther || !!s.readOnly
+                    return (
+                      <button
+                        key={w.queueId}
+                        type="button"
+                        className="workitem"
+                        aria-pressed={sel}
+                        disabled={off}
+                        onClick={() => y(w.queueId)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.9rem',
+                          inlineSize: '100%',
+                          padding: '0.8rem 1.25rem',
+                          border: 0,
+                          borderBottom:
+                            wi === wiList.length - 1 ? 0 : '1px solid var(--cx-line)',
+                          borderRadius: 0,
+                          background: sel ? 'var(--cx-accent-soft)' : 'transparent',
+                          font: 'inherit',
+                          color: 'inherit',
+                          textAlign: 'start',
+                          cursor: off ? 'default' : 'pointer',
+                        }}
+                      >
+                        <WiIco channel={w.channel} tone={wiTone(w)} />
+                        <div className="wi-main">
+                          <div className="wi-t">
+                            {w.channel || 'Ticket'} {qaTicketLabel(w.ticketId)}
+                          </div>
+                          <div className="wi-s">
+                            {w.agentName}
+                            {w.tlName ? ` · TL ${w.tlName}` : ''}
+                            {w.requested ? ` · requested by ${w.requestedByName}` : ''}
+                            {w.actionAt ? ` · ${w.actionAt}` : ''}
+                          </div>
+                        </div>
+                        <span className={`pill${p.cls ? ` ${p.cls}` : ''}`}>{p.label}</span>
+                      </button>
+                    )
+                  })
+                ) : (
+                  <div className="empty">
+                    <div className="s">
+                      Nothing{' '}
+                      {seg === 'todo' ? 'to do' : seg === 'doing' ? 'in progress' : 'done'}{' '}
+                      in today&rsquo;s queue.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+            {_ && k ? (
+              <div id="qa-audit-open">
+                <AuditForm
+                  form={k}
+                  submitLabel="Submit audit"
+                  askReasons
+                  interactionAt={'interactionAt' in _ ? _.interactionAt : ''}
+                  memory={s.failMemory?.[_.agentEmail.toLowerCase()]}
+                  facts={
+                    <dl className="qa-facts">
+                      {T.auditType ? (
+                        <>
+                          <div>
+                            <dt>Audit type</dt>
+                            <dd>{T.auditType}</dd>
+                          </div>
+                          <div>
+                            <dt>Reference</dt>
+                            <dd className="qa-ref">{T.reference}</dd>
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <dt>Ticket</dt>
+                          <dd>
+                            <TicketRef url={s.ticketUrl} id={_.ticketId} />
+                          </dd>
+                        </div>
+                      )}
+                      <div>
+                        <dt>Agent</dt>
+                        <dd>{_.agentName}</dd>
+                      </div>
+                      <div>
+                        <dt>Team lead</dt>
+                        <dd>{_.tlName || '–'}</dd>
+                      </div>
+                      {T.auditType ? (
+                        T.note ? (
+                          <div>
+                            <dt>Note</dt>
+                            <dd>{T.note}</dd>
+                          </div>
+                        ) : null
+                      ) : (
+                        <>
+                          <div>
+                            <dt>Channel</dt>
+                            <dd>{_.channel}</dd>
+                          </div>
+                          <div>
+                            <dt>Contact type</dt>
+                            <dd>{_.contactType || '–'}</dd>
+                          </div>
+                        </>
+                      )}
+                      <div>
+                        <dt>Started</dt>
+                        <dd className="cx-num">
+                          {new Date(l!.startedAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </dd>
+                      </div>
+                    </dl>
+                  }
+                  backLabel="Back to the queue"
+                  onCancel={() => {
+                    p(null)
+                    requestAnimationFrame(() =>
+                      document.getElementById('qq-h')?.scrollIntoView({ block: 'start' })
+                    )
+                  }}
+                  onSubmit={(w, A, S, R) =>
+                    P.submitAudit({
+                      queueId: _.queueId,
+                      formId: k.formId,
+                      formVersion: k.version,
+                      answers: w,
+                      reasons: S,
+                      comment: A,
+                      interactionAt: R,
+                    }).then((Z) => {
+                      Q(
+                        `Saved: ${Z.score}%. ${_.agentName} and their team lead were emailed; ${Z.ctlDue ? `CTL opened for the team lead, due ${Z.ctlDue}` : 'full marks, so it is settled with no CTL'}.`
+                      )
+                      p(null)
+                      c()
+                    })
+                  }
+                />
+              </div>
+            ) : _ ? (
+              <p className="cx-note" role="alert" id="qa-audit-open">
+                <span>
+                  {_.channel} has no active audit form. An admin adds one in Admin &gt;
+                  Audit forms; until then this item cannot be audited.
+                </span>
+              </p>
+            ) : (
+              <section className="card">
+                <div className="empty">
+                  <div className="s">Pick a queue item to start auditing.</div>
+                </div>
+              </section>
+            )}
+          </div>
           <RequestedAudits
             d={s}
             busyId={m}
@@ -1950,7 +2114,7 @@ function AuditQueuePage({
           ) : null}
         </>
       ) : null}
-    </QaPage>
+    </section>
   )
 }
 

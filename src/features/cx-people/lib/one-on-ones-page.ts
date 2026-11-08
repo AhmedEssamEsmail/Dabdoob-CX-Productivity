@@ -1101,7 +1101,7 @@ export async function pwRaiseEscalation_(
         to: admins, kind: 'escalation_1on1', ref: logId, subject: 'Escalated to you: 1:1 with ' + who,
         htmlBody:
           '<p>' + escapeHtml(user.name) + ' escalated a 1:1 with ' + escapeHtml(who) + ' to you (' +
-          escapeHtml(topicsText) + ').</p><p>Open 1:1s in the CX Helm to read the record.</p>',
+          escapeHtml(topicsText) + ').</p><p>Open 1:1s in Dabdoob CX to read the record.</p>',
       },
       user.email,
     )

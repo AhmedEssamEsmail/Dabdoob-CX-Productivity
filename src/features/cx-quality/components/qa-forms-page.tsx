@@ -5,7 +5,6 @@
  */
 import { useState } from 'react'
 import {
-  Chip,
   LinesSkeleton,
   ListSelect,
   LoadError,
@@ -399,7 +398,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
             >
               New form
             </Button>
-            <div className="cx-panel cx-tablewrap qa-gap">
+            <div className="card cx-tablewrap qa-gap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -414,43 +413,56 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {n.forms.map((l: any) => (
-                    <tr key={l.formId}>
-                      <td>{l.title}</td>
-                      <td>
-                        {l.channel === '*'
-                          ? 'Every channel without its own'
-                          : l.channel}
-                        {n.auditTypes?.includes(l.channel) ? (
-                          <span className="cx-faint qa-sub">
-                            Non-ticket audit type
+                  {n.forms.length ? (
+                    n.forms.map((l: any) => (
+                      <tr key={l.formId}>
+                        <td>{l.title}</td>
+                        <td>
+                          {l.channel === '*'
+                            ? 'Every channel without its own'
+                            : l.channel}
+                          {n.auditTypes?.includes(l.channel) ? (
+                            <span className="cx-faint qa-sub">
+                              Non-ticket audit type
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="cx-num">
+                          {l.sections.reduce(
+                            (p: number, m: any) => p + m.questions.length,
+                            0
+                          )}
+                        </td>
+                        <td className="cx-num">{l.version}</td>
+                        <td>
+                          {l.placeholder ? (
+                            <span className="pill warn">Placeholder</span>
+                          ) : null}{' '}
+                          <span className={`pill${l.active ? ' ok' : ''}`}>
+                            {l.active ? 'Active' : 'Off'}
                           </span>
-                        ) : null}
-                      </td>
-                      <td className="cx-num">
-                        {l.sections.reduce(
-                          (p: number, m: any) => p + m.questions.length,
-                          0
-                        )}
-                      </td>
-                      <td className="cx-num">{l.version}</td>
-                      <td>
-                        {l.placeholder ? (
-                          <Chip status="warn">Placeholder</Chip>
-                        ) : null}{' '}
-                        <Chip status={l.active ? 'ok' : 'neutral'}>
-                          {l.active ? 'Active' : 'Off'}
-                        </Chip>
-                      </td>
-                      <td>
-                        <Button
-                          onClick={() => c(fl(l, n.auditTypes ?? []))}
-                        >
-                          Edit
-                        </Button>
+                        </td>
+                        <td>
+                          <Button
+                            onClick={() => c(fl(l, n.auditTypes ?? []))}
+                          >
+                            Edit
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="empty">
+                          <div className="t">No forms yet.</div>
+                          <div className="s">
+                            Create the first audit form for a channel.
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

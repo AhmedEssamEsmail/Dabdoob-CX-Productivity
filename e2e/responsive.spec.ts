@@ -27,13 +27,15 @@ test.describe('Responsive Design', () => {
   })
 
   test('navigation adapts to screen size', async ({ page }) => {
+    test.setTimeout(45000) // login + remote ready-wait can exceed 30s under load
     await login(page, E2E_USERS.admin)
     await page.waitForURL('/')
 
-    // Desktop: the rail nav is always visible
+    // Desktop: the rail nav is always visible — the boot splash can hold
+    // it back >5s under parallel load, so allow the ready wait to breathe.
     await page.setViewportSize({ width: 1280, height: 720 })
     const desktopNav = page.locator('#nav')
-    await expect(desktopNav).toBeVisible()
+    await expect(desktopNav).toBeVisible({ timeout: 15000 })
 
     // Mobile (<=820px): the nav collapses behind the Menu toggle
     await page.setViewportSize({ width: 375, height: 667 })

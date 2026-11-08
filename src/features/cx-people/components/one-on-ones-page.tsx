@@ -9,7 +9,6 @@ import {
   PwLate,
   PwSkel,
   PwErr,
-  PwBadge,
   PwCombo,
   PwDialog,
   PwDelta,
@@ -339,7 +338,9 @@ function TeamBlock({ ctx, name }: { ctx: any; name: string }) {
               {team.slots.map((sl: any) => (
                 <li key={sl.slot}>
                   <span>{sl.slot}</span>
-                  <PwBadge tone={SLOT_TONES[sl.state]}>{SLOT_LABELS[sl.state] ?? sl.state}</PwBadge>
+                  <span className={SLOT_TONES[sl.state] ? `pill ${SLOT_TONES[sl.state]}` : 'pill'}>
+                    {SLOT_LABELS[sl.state] ?? sl.state}
+                  </span>
                   {sl.submittedBy ? <span className="oo-fine">{sl.submittedBy}</span> : null}
                 </li>
               ))}
@@ -1234,19 +1235,19 @@ function ProjectRow({ t, i, owners, onSaved }: { t: any; i: number; owners: any[
         <i className="cc-sweep-bar" style={{ width: `${Math.max(0, Math.min(100, t.percent))}%`, ...barDelay(i) }} />
       </div>
       <div className="oo-proj-meta">
-        <PwBadge>{t.priority}</PwBadge>
-        <PwBadge tone={t.overdue ? 'bad' : undefined}>
+        <span className="tag">{t.priority}</span>
+        <span className={t.overdue ? 'pill bad' : 'pill'}>
           {t.overdue ? 'Past deadline ' : 'Due '}
           {dayLabel(kwDate(t.deadlineAt))}
-        </PwBadge>
-        <PwBadge>{t.estHours} h</PwBadge>
-        {t.progressState === 'blocked' ? <PwBadge tone="bad">Blocked</PwBadge> : null}
+        </span>
+        <span className="tag">{t.estHours} h</span>
+        {t.progressState === 'blocked' ? <span className="pill bad">Blocked</span> : null}
         {t.status === 'done' ? (
-          <PwBadge tone="ok">Delivered</PwBadge>
+          <span className="pill ok">Delivered</span>
         ) : t.status === 'dropped' ? (
-          <PwBadge>Dropped</PwBadge>
+          <span className="pill">Dropped</span>
         ) : null}
-        {!closed && !t.overdue && t.riskReasons.length ? <PwBadge tone="warn">At risk</PwBadge> : null}
+        {!closed && !t.overdue && t.riskReasons.length ? <span className="pill warn">At risk</span> : null}
       </div>
       <p className="oo-fine">
         {t.blockedReason ? `Blocked: ${t.blockedReason}. ` : ''}
@@ -1634,14 +1635,14 @@ function CarriedReview({
           <div key={a.actionId} className="pw-carry">
             <div>
               <div className="pw-row-title">
-                {a.title} {a.sourceDeleted ? <PwBadge tone="warn">Created in a deleted 1:1</PwBadge> : null}
+                {a.title} {a.sourceDeleted ? <span className="pill warn">Created in a deleted 1:1</span> : null}
               </div>
               <div className="pw-row-meta">
-                {a.ownerName}, due {dayLabel(a.dueDate)} {overdue ? <PwBadge tone="bad">Overdue</PwBadge> : null}{' '}
+                {a.ownerName}, due {dayLabel(a.dueDate)} {overdue ? <span className="pill bad">Overdue</span> : null}{' '}
                 {a.carryCount >= 3 ? (
-                  <PwBadge tone="bad">Carried {a.carryCount} times: escalate, reassign or drop</PwBadge>
+                  <span className="pill bad">Carried {a.carryCount} times: escalate, reassign or drop</span>
                 ) : a.carryCount ? (
-                  <PwBadge tone="warn">Carried {a.carryCount}×</PwBadge>
+                  <span className="pill warn">Carried {a.carryCount}×</span>
                 ) : null}
               </div>
               {a.latestUpdate ? (
@@ -1784,7 +1785,9 @@ function LogForm({
               </div>
             </>
           ) : (
-            <p className="pw-empty">Nothing carried over. This 1:1 starts with the topics.</p>
+            <div className="empty">
+              <div className="s">Nothing carried over. This 1:1 starts with the topics.</div>
+            </div>
           )}
           {start.kind === 'agent' && start.tasks.length ? (
             <>
@@ -1794,16 +1797,16 @@ function LogForm({
               <div className="pw-panel">
                 {start.tasks.map((t: any) => (
                   <div key={t.actionId} style={{ padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
-                    <strong>{t.title}</strong> <PwBadge>{t.priority}</PwBadge>{' '}
-                    <PwBadge tone={t.overdue ? 'bad' : undefined}>{t.percent}% done</PwBadge>{' '}
-                    <PwBadge tone={t.overdue ? 'bad' : undefined}>
+                    <strong>{t.title}</strong> <span className="tag">{t.priority}</span>{' '}
+                    <span className={t.overdue ? 'pill bad' : 'pill'}>{t.percent}% done</span>{' '}
+                    <span className={t.overdue ? 'pill bad' : 'pill'}>
                       {t.overdue ? 'Past deadline ' : 'Due '}
                       {dayLabel(t.deadlineAt)}
-                    </PwBadge>
+                    </span>
                     {t.progressState === 'blocked' ? (
                       <>
                         {' '}
-                        <PwBadge tone="bad">Blocked</PwBadge>
+                        <span className="pill bad">Blocked</span>
                       </>
                     ) : null}
                     {t.riskReasons.length ? (
@@ -2057,7 +2060,7 @@ function DueRow({
     <li className="pw-row">
       <div>
         <div className="pw-row-title">
-          {p.name} {p.kind === 'tl' ? <PwBadge>Team lead</PwBadge> : null}
+          {p.name} {p.kind === 'tl' ? <span className="tag">Team lead</span> : null}
         </div>
         <div className="pw-row-meta">
           {p.lastHeld ? `Last held ${dayLabel(p.lastHeld)}` : 'No 1:1 on record'}, every {p.cadenceDays} days
@@ -2067,7 +2070,7 @@ function DueRow({
         {p.scheduled ? (
           <>Booked {dayTime(p.scheduled.scheduledAt)}</>
         ) : p.overdueUnscheduled ? (
-          <PwBadge tone="bad">Due since {dayLabel(p.nextDue)}, not booked</PwBadge>
+          <span className="pill bad">Due since {dayLabel(p.nextDue)}, not booked</span>
         ) : (
           <>Due by {dayLabel(p.nextDue)}</>
         )}
@@ -2224,7 +2227,7 @@ function BookedRow({
       <div>
         <div className="pw-row-title">
           {report ? `With your manager, ${row.managerName}` : holder ? row.reportName : `${row.managerName} with ${row.reportName}`}{' '}
-          {row.kind === 'tl' ? <PwBadge>Team lead</PwBadge> : null}
+          {row.kind === 'tl' ? <span className="tag">Team lead</span> : null}
         </div>
         <div className="pw-row-meta">
           {report
@@ -2232,7 +2235,7 @@ function BookedRow({
             : holder
               ? 'You hold this 1:1.'
               : 'Held by ' + row.managerName + '.'}{' '}
-          {started ? <PwBadge tone="warn">Started, not logged yet</PwBadge> : null}
+          {started ? <span className="pill warn">Started, not logged yet</span> : null}
         </div>
       </div>
       <div className="pw-row-actions">
@@ -2323,32 +2326,38 @@ function BookedSection({
     else days.push([d, [r]])
   })
   return (
-    <section className="pw-section" aria-labelledby="booked-h">
-      <h2 id="booked-h" className="pw-h2">
-        Booked 1:1s
-      </h2>
-      <p className="pw-sub">
-        {data.me.role === 'admin'
-          ? 'Every booked 1:1 on the team, soonest first.'
-          : 'The 1:1s you hold and the ones with your own manager, soonest first.'}{' '}
-        Times are Kuwait.
-      </p>
-      {data.upcoming.length ? (
-        days.map(([d, rows]) => (
-          <div key={d} className="pw-booked-day">
-            <h3 className="pw-booked-date">
-              {d === today() ? `Today, ${dayLabel(d)}` : d === addDays(today(), 1) ? `Tomorrow, ${dayLabel(d)}` : dayLabel(d)}
-            </h3>
-            <ul className="pw-rows">
-              {rows.map((r) => (
-                <BookedRow key={r.scheduleId} row={r} me={data.me} reload={reload} startLog={startLog} />
-              ))}
-            </ul>
+    <section className="card pw-section" aria-labelledby="booked-h">
+      <div className="card-head">
+        <div className="card-title" id="booked-h">
+          Booked 1:1s
+        </div>
+        <div className="card-hint">
+          {data.me.role === 'admin'
+            ? 'Every booked 1:1 on the team, soonest first.'
+            : 'The 1:1s you hold and the ones with your own manager, soonest first.'}{' '}
+          Times are Kuwait.
+        </div>
+      </div>
+      <div className="card-pad">
+        {data.upcoming.length ? (
+          days.map(([d, rows]) => (
+            <div key={d} className="pw-booked-day">
+              <h3 className="pw-booked-date">
+                {d === today() ? `Today, ${dayLabel(d)}` : d === addDays(today(), 1) ? `Tomorrow, ${dayLabel(d)}` : dayLabel(d)}
+              </h3>
+              <ul className="pw-rows">
+                {rows.map((r) => (
+                  <BookedRow key={r.scheduleId} row={r} me={data.me} reload={reload} startLog={startLog} />
+                ))}
+              </ul>
+            </div>
+          ))
+        ) : (
+          <div className="empty">
+            <div className="s">No 1:1 booked. Book one for each person under &quot;Who is due&quot;.</div>
           </div>
-        ))
-      ) : (
-        <p className="pw-empty">No 1:1 booked. Book one for each person under &quot;Who is due&quot;.</p>
-      )}
+        )}
+      </div>
     </section>
   )
 }
@@ -2366,35 +2375,45 @@ function BookedDue({
     <>
       <BookedSection data={data} reload={reload} startLog={startLog} />
       {data.missed.length ? (
-        <section className="pw-section" aria-labelledby="missed-h">
-          <h2 id="missed-h" className="pw-h2">
-            Not logged by {data.cutoff}
-          </h2>
-          <p className="pw-sub">
-            Each one stays on your login pop-up until you submit the record or mark it not held with a new date.
-          </p>
-          {data.missed.map((r: any) => (
-            <MissedRow key={r.scheduleId} row={r} reload={reload} startLog={startLog} />
-          ))}
+        <section className="card pw-section" aria-labelledby="missed-h">
+          <div className="card-head">
+            <div className="card-title" id="missed-h">
+              Not logged by {data.cutoff}
+            </div>
+            <div className="card-hint">
+              Each one stays on your login pop-up until you submit the record or mark it not held with a new date.
+            </div>
+          </div>
+          <div className="card-pad">
+            {data.missed.map((r: any) => (
+              <MissedRow key={r.scheduleId} row={r} reload={reload} startLog={startLog} />
+            ))}
+          </div>
         </section>
       ) : null}
-      <section className="pw-section" aria-labelledby="people-h">
-        <h2 id="people-h" className="pw-h2">
-          Who is due
-        </h2>
-        <p className="pw-sub">
-          Set the exact date and time for each 1:1. A 1:1 with no record by {data.cutoff} Kuwait time on its day counts as
-          missed.
-        </p>
-        {data.people.length ? (
-          <ul className="pw-rows">
-            {data.people.map((p: any) => (
-              <DueRow key={p.email} p={p} reload={reload} startLog={startLog} />
-            ))}
-          </ul>
-        ) : (
-          <p className="pw-empty">Nobody reports to you on the roster yet. Ask the CX admin to update it.</p>
-        )}
+      <section className="card pw-section" aria-labelledby="people-h">
+        <div className="card-head">
+          <div className="card-title" id="people-h">
+            Who is due
+          </div>
+          <div className="card-hint">
+            Set the exact date and time for each 1:1. A 1:1 with no record by {data.cutoff} Kuwait time on its day counts
+            as missed.
+          </div>
+        </div>
+        <div className="card-pad">
+          {data.people.length ? (
+            <ul className="pw-rows">
+              {data.people.map((p: any) => (
+                <DueRow key={p.email} p={p} reload={reload} startLog={startLog} />
+              ))}
+            </ul>
+          ) : (
+            <div className="empty">
+              <div className="s">Nobody reports to you on the roster yet. Ask the CX admin to update it.</div>
+            </div>
+          )}
+        </div>
       </section>
     </>
   )
@@ -2473,9 +2492,11 @@ function LogTab({ data, initial, onDone }: { data: any; initial: any; onDone: ()
           <PwSkel lines={4} />
         )
       ) : (
-        <p className="pw-empty">
-          Choose a person to open their 1:1. It starts with the actions still open from last time.
-        </p>
+        <div className="empty">
+          <div className="s">
+            Choose a person to open their 1:1. It starts with the actions still open from last time.
+          </div>
+        </div>
       )}
     </div>
   )
@@ -2529,15 +2550,17 @@ function Records({
   const shown = person ? logs.filter((l) => l.reportName === person) : logs
   const deletedSection =
     admin && deleted.length ? (
-      <section className="pw-section" aria-labelledby="deleted-h" style={{ marginTop: 32 }}>
-        <h2 id="deleted-h" className="pw-h2">
-          Deleted 1:1s
-        </h2>
-        <p className="pw-sub">
-          Hidden from every list and count. Restore puts back the record and what its delete undid.
-        </p>
+      <section className="card pw-section" aria-labelledby="deleted-h" style={{ marginTop: 32 }}>
+        <div className="card-head">
+          <div className="card-title" id="deleted-h">
+            Deleted 1:1s
+          </div>
+          <div className="card-hint">
+            Hidden from every list and count. Restore puts back the record and what its delete undid.
+          </div>
+        </div>
         <PwErr message={busy.error} />
-        <ul className="pw-rows">
+        <ul className="worklist" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {deleted.map((d: any) => (
             <li key={d.type + d.id} className="pw-row">
               <div>
@@ -2579,7 +2602,11 @@ function Records({
           ))}
         </Select>
       </label>
-      <ul className="pw-rows">
+      <section className="card pw-section" aria-label="1:1 records">
+        <div className="card-head">
+          <div className="card-title">1:1 records</div>
+        </div>
+        <ul className="worklist" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {shown.map((l: any) => (
           <li key={l.logId} className="pw-row">
             <div>
@@ -2589,9 +2616,9 @@ function Records({
               <div className="pw-row-meta">{l.topics.map((t: any) => t.topic.replace(/_/g, ' ')).join(', ')}</div>
             </div>
             <div className="pw-row-meta pw-num">
-              {dayTime(l.heldAt)} {l.onTime ? null : <PwBadge tone="warn">Logged late</PwBadge>}{' '}
+              {dayTime(l.heldAt)} {l.onTime ? null : <span className="pill warn">Logged late</span>}{' '}
               {l.topics.some((t: any) => t.outcome === 'Escalate to Mohamed') ? (
-                <PwBadge tone="bad">Escalated to Mohamed</PwBadge>
+                <span className="pill bad">Escalated to Mohamed</span>
               ) : null}
             </div>
             <div className="pw-row-actions">
@@ -2633,7 +2660,8 @@ function Records({
             ) : null}
           </li>
         ))}
-      </ul>
+        </ul>
+      </section>
       {deletedSection}
       {del ? (
         <PwDialog
@@ -2653,7 +2681,13 @@ function Records({
     </>
   ) : (
     <>
-      <p className="pw-empty">No 1:1 records yet. Log one from the Log a 1:1 tab.</p>
+      <section className="card pw-section">
+        <div className="card-pad">
+          <div className="empty">
+            <div className="s">No 1:1 records yet. Log one from the Log a 1:1 tab.</div>
+          </div>
+        </div>
+      </section>
       {deletedSection}
     </>
   )

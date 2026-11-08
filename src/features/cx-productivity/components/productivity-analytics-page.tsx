@@ -1,13 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
-import {
-  Chip,
-  LinesSkeleton,
-  LoadError,
-  PageHead,
-  Section,
-} from '@/features/shared/components/shell/ui'
+import { LinesSkeleton, LoadError, PageHead } from '@/features/shared/components/shell/ui'
 import { Button } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import {
@@ -114,14 +108,21 @@ export function ProductivityAnalyticsPage() {
       <PageHead
         title={ROUTE.title}
         aside={aside}
-        sub="Raw is the status as logged; after review is the suggested status until a team lead reviews, then the reviewed one. Reclassifying IDLE time adds it to the time Productivity % divides by, so % can go down."
+        sub="Raw vs reviewed status per agent; reclassifying IDLE time changes the Productivity % denominator."
       />
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!s && !error ? <LinesSkeleton lines={6} /> : null}
       {s ? (
         <Fragment>
-          <Section id="pa-a" title="Idle and productivity, as logged and after review">
-            <div className="cx-panel cx-tablewrap">
+          <section className="card" aria-labelledby="pa-a-h">
+            <div className="card-head">
+              <div>
+                <h2 id="pa-a-h" className="card-title" style={{ margin: 0 }}>
+                  Idle and productivity, as logged and after review
+                </h2>
+              </div>
+            </div>
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -152,7 +153,7 @@ export function ProductivityAnalyticsPage() {
                           {h.deltaPp === null ? '–' : `${h.deltaPp > 0 ? '+' : ''}${h.deltaPp} pp`}
                           {h.bandChange ? (
                             <span className="pv-sub">
-                              <Chip status="warn">{h.bandChange}</Chip>
+                              <span className="pill warn">{h.bandChange}</span>
                             </span>
                           ) : null}
                         </td>
@@ -166,13 +167,17 @@ export function ProductivityAnalyticsPage() {
                 </tbody>
               </table>
             </div>
-          </Section>
-          <Section
-            id="pa-t"
-            title="How flags were reviewed, by team lead"
-            hint="Flags raised in the week"
-          >
-            <div className="cx-panel cx-tablewrap">
+          </section>
+          <section className="card" aria-labelledby="pa-t-h">
+            <div className="card-head">
+              <div>
+                <h2 id="pa-t-h" className="card-title" style={{ margin: 0 }}>
+                  How flags were reviewed, by team lead
+                </h2>
+                <div className="card-hint">Flags raised in the week</div>
+              </div>
+            </div>
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -229,9 +234,16 @@ export function ProductivityAnalyticsPage() {
                 </tbody>
               </table>
             </div>
-          </Section>
-          <Section id="pa-d" title="Disputes, last 4 weeks">
-            <div className="cx-panel cx-tablewrap">
+          </section>
+          <section className="card" aria-labelledby="pa-d-h">
+            <div className="card-head">
+              <div>
+                <h2 id="pa-d-h" className="card-title" style={{ margin: 0 }}>
+                  Disputes, last 4 weeks
+                </h2>
+              </div>
+            </div>
+            <div className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -261,26 +273,45 @@ export function ProductivityAnalyticsPage() {
                 </tbody>
               </table>
             </div>
-          </Section>
-          <Section id="pa-w" title="Last 4 weeks">
-            <Tn points={s.trend} />
-          </Section>
+          </section>
+          <section className="card" aria-labelledby="pa-w-h">
+            <div className="card-head">
+              <div>
+                <h2 id="pa-w-h" className="card-title" style={{ margin: 0 }}>
+                  Last 4 weeks
+                </h2>
+              </div>
+            </div>
+            <div className="card-pad">
+              <Tn points={s.trend} />
+            </div>
+          </section>
           {s.heatmap ? (
-            <Section
-              id="pa-h"
-              title="Idle after review by hour and weekday"
-              hint="Quiet-hour idle is roster slack; busy-hour idle is behaviour"
-            >
+            <section className="card" aria-labelledby="pa-h-h">
+              <div className="card-head">
+                <div>
+                  <h2 id="pa-h-h" className="card-title" style={{ margin: 0 }}>
+                    Idle after review by hour and weekday
+                  </h2>
+                  <div className="card-hint">
+                    Quiet-hour idle is roster slack; busy-hour idle is behaviour
+                  </div>
+                </div>
+              </div>
               <HeatGrid grid={s.heatmap} />
-            </Section>
+            </section>
           ) : null}
           {s.calibration ? (
-            <Section
-              id="pa-c"
-              title={`Calibration of X (now ${s.rule.x} in ${s.rule.windowMin} minutes)`}
-            >
+            <section className="card" aria-labelledby="pa-c-h">
+              <div className="card-head">
+                <div>
+                  <h2 id="pa-c-h" className="card-title" style={{ margin: 0 }}>
+                    {`Calibration of X (now ${s.rule.x} in ${s.rule.windowMin} minutes)`}
+                  </h2>
+                </div>
+              </div>
               <CalibrationChart cal={s.calibration} windowMin={s.rule.windowMin} />
-            </Section>
+            </section>
           ) : null}
         </Fragment>
       ) : null}

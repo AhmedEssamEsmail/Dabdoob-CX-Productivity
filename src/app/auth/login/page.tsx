@@ -43,43 +43,122 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="state-screen">
-      <h1>CX Productivity</h1>
-      <p>Sign in with your work account to continue.</p>
-      <form onSubmit={handleLogin} style={{ display: 'contents' }}>
+    <main className="login-wrap">
+      <div className="login-card">
+        <div className="brand-row">
+          <span className="brand-mark" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M5 19V9M10 19V5M15 19v-7M20 19v-3" />
+            </svg>
+          </span>
+          <div>
+            <div className="brand-name">Dabdoob CX</div>
+            <div className="brand-sub">dabdoob operations console</div>
+          </div>
+        </div>
+
+        <h1 className="login-title">Sign in</h1>
+        <p className="login-sub">Use your dabdoob.com work account to continue.</p>
+
         {error && (
-          <p className="field-error" role="alert">
+          <div className="login-error" role="alert">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
             {error}
-          </p>
+          </div>
         )}
-        <Field label="Email address" className="field">
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@dabdoob.com"
-          />
-        </Field>
-        <Field label="Password" className="field">
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Field>
-        <Button type="submit" variant="primary" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in'}
-        </Button>
-      </form>
-      <p className="cx-muted">Secure access for CX Helm team members</p>
+
+        <form onSubmit={handleLogin}>
+          <Field label="Email address">
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@dabdoob.com"
+            />
+          </Field>
+          <Field
+            label={
+              <span className="between">
+                <span>Password</span>
+                <span
+                  className="small"
+                  style={{ color: 'var(--cx-accent-text)', fontWeight: 600 }}
+                >
+                  Forgot password?
+                </span>
+              </span>
+            }
+          >
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+          <Button type="submit" variant="primary" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </Button>
+        </form>
+
+        <div className="login-foot">
+          <span className="flex">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <rect x="4" y="10" width="16" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            Restricted to Dabdoob CX team members
+          </span>
+          <span>v2.4</span>
+        </div>
+      </div>
     </main>
   )
 }

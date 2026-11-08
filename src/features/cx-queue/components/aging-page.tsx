@@ -3,7 +3,8 @@
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
 import { Button, Field, Input, Select, Toggle } from '@/features/shared/components/ui'
-import { AgeChip, AgeLadder, AsOfHint, Head, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
+import { AgeChip, AgeLadder, AsOfHint, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
+import { D } from '@/features/shared/shell/i18n'
 
 const PAGE = 50
 
@@ -57,7 +58,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
   const [tl, setTl] = useState('')
   const [search, setSearch] = useState(params.get('ticket') ?? '')
   const [mine, setMine] = useState(params.get('mine') === '1')
-  const [unassigned, setUnassigned] = useState(params.get('unassigned') === '1')
+  const [assign, setAssign] = useState<'all' | 'ours' | 'unassigned'>(params.get('unassigned') === '1' ? 'unassigned' : 'all')
   const [flagged, setFlagged] = useState(params.get('flagged') === '1')
   const [shown, setShown] = useState(PAGE)
   const flags = useMemo(() => new Map((n?.flags ?? []).map((x: any) => [x.ticketId, x])), [n])
@@ -82,9 +83,9 @@ export function AgingPage({ route }: { route: { title: string } }) {
     if (!n) return []
     const x = search.trim()
     return n.tickets.filter(
-      (P: any[]) => (band === null ? P[6] >= S : P[6] === band) && (!queue || P[1] === queue) && (!tl || P[8] === tl) && (!mine || P[9]) && (!unassigned || !P[7]) && (!flagged || flags.has(P[0])) && (!x || String(P[0]).includes(x))
+      (P: any[]) => (band === null ? P[6] >= S : P[6] === band) && (!queue || P[1] === queue) && (!tl || P[8] === tl) && (!mine || P[9]) && (assign === 'all' || (assign === 'unassigned' ? !P[7] : !!P[7])) && (!flagged || flags.has(P[0])) && (!x || String(P[0]).includes(x))
     )
-  }, [n, band, S, queue, tl, mine, unassigned, flagged, flags, search])
+  }, [n, band, S, queue, tl, mine, assign, flagged, flags, search])
   const pick = (x: number | null, P = '') => {
     setBand(x)
     setQueue(P)
@@ -96,25 +97,56 @@ export function AgingPage({ route }: { route: { title: string } }) {
     setQueue('')
     setTl('')
     setSearch('')
-    setUnassigned(false)
+    setAssign('all')
     setFlagged(false)
     setShown(PAGE)
   }
   const title = n ? (band !== null ? n.bands.labels[band] : S >= T ? `Open ${bandTop(n.bands.edges[T - 1])} or more` : 'All open tickets') + (queue ? ` in ${queue}` : '') : ''
+  const topCount = counts[counts.length - 1] ?? 0
   return (
     <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!n && !error}>
-      <Head
-        title={n?.scope === 'agent' ? 'My aging cases' : route.title}
-        sub={n?.scope === 'agent' ? 'Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.' : 'Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.'}
-        aside={
-          n ? (
+      <header className="page-head">
+        <div>
+          <h1 id="page-title" className="page-title">
+            {n?.scope === 'agent' ? D('My aging cases') : route.title}
+          </h1>
+          <p className="page-sub">
+            {n?.scope === 'agent'
+              ? D('Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.')
+              : D('Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.')}
+          </p>
+        </div>
+        <div className="page-actions">
+          <div className="seg" role="group" aria-label={D('Assignment')}>
+            {(
+              [
+                ['all', D('All')],
+                ['ours', D('Ours')],
+                ['unassigned', D('Unassigned')],
+              ] as const
+            ).map(([v, label]) => (
+              <button
+                key={v}
+                type="button"
+                className={assign === v ? 'on' : ''}
+                aria-pressed={assign === v}
+                onClick={() => {
+                  setAssign(v)
+                  setShown(PAGE)
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {n ? (
             <>
               <AsOfHint iso={n.dataAsOf} />
               {n.scope !== 'agent' ? <RefreshNow onDone={reload} /> : null}
             </>
-          ) : null
-        }
-      />
+          ) : null}
+        </div>
+      </header>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {n?.scope === 'agent' ? (
         <p className="cx-hint">
@@ -125,6 +157,58 @@ export function AgingPage({ route }: { route: { title: string } }) {
       {!n && !error ? <><Skeleton tall lines={3} /><Skeleton lines={8} /></> : null}
       {n ? (
         <>
+          <section className="card mb-3" aria-labelledby="dist-h">
+            <div className="card-head">
+              <div>
+                <h2 id="dist-h" className="card-title" style={{ margin: 0 }}>
+                  {D('Wait-time distribution')}
+                </h2>
+                <div className="card-hint">{D('Select a band to filter the matrix below')}</div>
+              </div>
+            </div>
+            <div className="card-pad">
+              <div className="mixbar">
+                {(counts as number[]).map((c, i) => {
+                  const r = Number(ageRank(i, counts.length))
+                  return (
+                    <div
+                      key={i}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={band === i && !queue}
+                      aria-label={`${n.bands.labels[i]}: ${c} tickets`}
+                      style={{
+                        flex: Math.max(c, 0.5),
+                        background: `var(--cx-age-${r})`,
+                        color: `var(--cx-age-ink-${r})`,
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => pick(band === i && !queue ? null : i)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          pick(band === i && !queue ? null : i)
+                        }
+                      }}
+                    >
+                      <span>{c}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mixbar-legend">
+                {(counts as number[]).map((c, i) => {
+                  const r = Number(ageRank(i, counts.length))
+                  return (
+                    <span key={i}>
+                      <i style={{ background: `var(--cx-age-${r})` }} />
+                      {n.bands.labels[i]}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
           <section className="cx-section" aria-labelledby="ladder-h">
             <div className="cx-section__head">
               <h2 className="cx-section__title" id="ladder-h">How long open tickets have waited</h2>
@@ -132,45 +216,70 @@ export function AgingPage({ route }: { route: { title: string } }) {
             </div>
             <div className="cx-panel cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-4)' }}>
               <AgeLadder counts={counts as number[]} bands={n.bands} pressed={queue ? null : band} onPick={(x) => pick(x)} />
-              {grid.length > 1 ? (
-                <div className="cx-tablewrap">
-                  <table className="cx-agegrid">
+            </div>
+            {grid.length > 1 ? (
+              <div className="card">
+                <div className="card-head">
+                  <div>
+                    <div className="card-title">By queue × age</div>
+                    <div className="card-hint">Select a cell to list its tickets</div>
+                  </div>
+                  {topCount > 0 ? (
+                    <span className="pill bad">
+                      {fmt(topCount)} tickets &gt; {bandTop(n.bands.edges[T - 1])}
+                    </span>
+                  ) : null}
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="tbl" style={{ minWidth: '64rem' }}>
                     <thead>
                       <tr>
-                        <th></th>
+                        <th>Queue</th>
                         {n.bands.labels.map((x: string) => (
-                          <th key={x} scope="col">{x}</th>
+                          <th key={x} scope="col" className="num">{x}</th>
                         ))}
-                        <th scope="col" className="cx-total">All</th>
+                        <th scope="col" className="num">All</th>
                       </tr>
                     </thead>
                     <tbody>
                       {grid.map(([x, P]) => (
                         <tr key={x}>
-                          <th scope="row">{x}</th>
+                          <td className="lead">{x}</td>
                           {P.map((U, V) => (
-                            <td key={V}>
-                              {/* kept raw:cx-agegrid cell is a bespoke age-ramp button (data-age/data-zero), not a ui/Button */}
+                            <td key={V} className="num">
                               <button
                                 type="button"
+                                className="cx-agechip"
                                 data-age={ageRank(V, n.bands.labels.length)}
                                 data-zero={U === 0 ? 'true' : undefined}
                                 aria-pressed={band === V && queue === x}
                                 aria-label={`${x}, ${n.bands.labels[V]}: ${U} tickets`}
+                                style={{
+                                  border: 0,
+                                  cursor: 'pointer',
+                                  width: '100%',
+                                  justifyContent: 'center',
+                                  ...(U === 0
+                                    ? { background: 'var(--cx-surface-2)', color: 'var(--cx-ink-3)', fontWeight: 'var(--cx-weight-regular)' }
+                                    : {}),
+                                }}
                                 onClick={() => pick(V, x)}
                               >
                                 {U}
                               </button>
                             </td>
                           ))}
-                          <td className="cx-total cx-num">{P.reduce((U, V) => U + V, 0)}</td>
+                          <td className="num"><b>{P.reduce((U, V) => U + V, 0)}</b></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              ) : null}
-            </div>
+                <div className="card-pad small faint">
+                  Age counts from ticket creation to now. Colour goes grey → deep red as the wait grows. Source: Freshdesk; {n.excludedGroups.join(', ')} groups left out.
+                </div>
+              </div>
+            ) : null}
             <p className="cx-hint">
               Age counts from the time the ticket was created, to now. Colour goes from grey to deep red as the wait grows, and the stripe on each row gets thicker. {n.excludedGroups.join(', ')} are left out (documentation and notification-only groups). Chats are not on this board (they come from the daily report), so this total is lower than &quot;Open now&quot; on Queue health. A blue status is CX&apos;s to work; a grey one is waiting on another team or the customer.
               {n.capped ? ` Showing the oldest ${fmt(n.tickets.length)} of ${fmt(n.total)}.` : ''}
@@ -200,7 +309,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                 <Input id="f-s" type="search" inputMode="numeric" className="cx-num" value={search} onInput={(e) => setSearch((e.target as HTMLInputElement).value)} />
               </Field>
               {n.scope === 'tl' ? <Toggle checked={mine} onChange={setMine}>My team only</Toggle> : null}
-              {n.scope !== 'agent' ? <Toggle checked={unassigned} onChange={(v) => { setUnassigned(v); setShown(PAGE) }}>Not assigned only</Toggle> : null}
+              {n.scope !== 'agent' ? <Toggle checked={assign === 'unassigned'} onChange={(v) => { setAssign(v ? 'unassigned' : 'all'); setShown(PAGE) }}>Not assigned only</Toggle> : null}
               {n.flags?.length ? <Toggle checked={flagged} onChange={(v) => { setFlagged(v); setShown(PAGE) }}>Help asked ({n.flags.length})</Toggle> : null}
               <Button type="button" onClick={() => showAll(false)}>Show tickets open {bandTop(n.bands.edges[T - 1])} or more</Button>
               <Button variant="quiet" type="button" onClick={() => showAll(true)}>Show all open</Button>

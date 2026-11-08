@@ -402,7 +402,7 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
   }
   const y = t ? 'Save changes' : 'Add field'
   return (
-    <dialog ref={a} className="trk-dialog" aria-labelledby="trk-af" onClose={n} onCancel={n}>
+    <dialog ref={a} className="trk-dialog card" aria-labelledby="trk-af" onClose={n} onCancel={n}>
       <h2 id="trk-af" className="trk-form-title">{t ? `Edit ${t.label}` : `Add a field to ${e.tracker.name}`}</h2>
       <p className="field-hint">
         {t
@@ -574,7 +574,7 @@ function Xn({ data: e, me: t, onSaved: n }: { data: TrackerData; me: string; onS
   }
   const _ = e.fields.filter((l) => l.type !== 'computed')
   return (
-    <form className="trk-form" onSubmit={o} aria-labelledby="trk-new">
+    <form className="trk-form card" onSubmit={o} aria-labelledby="trk-new">
       <h2 id="trk-new" className="trk-form-title">New record</h2>
       <p className="trk-form-meta">Saved with your email: {t}</p>
       {_.map((l) => {
@@ -650,7 +650,7 @@ function Er({ onCancel: e, onCreated: t }: { onCancel: () => void; onCreated: (d
     }
   }
   return (
-    <div className="trk-create">
+    <div className="trk-create card">
       <div className="field">
         <label className="field-label" htmlFor="trk-name">Name of the new tracker</label>
         <Input id="trk-name" className="input" maxLength={60} value={n} onInput={(l) => s(l.currentTarget.value)} />
@@ -700,9 +700,12 @@ function Qn({ f: e, r: t }: { f: FieldOut; r: TrackerRow }) {
 /** zn: the records table (or its empty states). */
 function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; rows: TrackerRow[]; empty: boolean; onEdit?: (f: FieldOut | 'new') => void }) {
   return n ? (
-    <p className="trk-empty">No records yet. Add the first one with the form.</p>
+    <div className="trk-empty empty">
+      <div className="t">No records yet.</div>
+      <div className="s">Add the first one with the form.</div>
+    </div>
   ) : t.length ? (
-    <div className="trk-table-wrap" tabIndex={0} role="region" aria-label="Records">
+    <div className="trk-table-wrap card" tabIndex={0} role="region" aria-label="Records">
       <table className="trk-table">
         <thead>
           <tr>
@@ -729,7 +732,7 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
               ))}
               <td className="trk-by">
                 {a.outside ? (
-                  <span className="trk-outside">Entered in the sheet</span>
+                  <span className="trk-outside pill info" data-status="info">Entered in the sheet</span>
                 ) : (
                   <Fragment>
                     <span>{a.submittedBy}</span>
@@ -743,7 +746,10 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
       </table>
     </div>
   ) : (
-    <p className="trk-empty">Nothing matches that search.</p>
+    <div className="trk-empty empty">
+      <div className="t">Nothing matches that search.</div>
+      <div className="s">Try a different word, or clear the search box.</div>
+    </div>
   )
 }
 

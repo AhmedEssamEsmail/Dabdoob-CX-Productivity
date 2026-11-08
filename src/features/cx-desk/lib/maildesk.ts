@@ -264,7 +264,7 @@ export function mdParseApprovalSubject_(subject: unknown): { type: string; mobil
 export function mdDecisionBody_(decision: string, text: string, byName: string): string {
   const head = decision === 'approved' ? 'Approved.' : decision === 'rejected' ? 'Rejected.' : ''
   const body = [head, String(text || '').trim()].filter(String).join('\n\n')
-  return body + '\n\n' + byName + ' (via CX Helm)'
+  return body + '\n\n' + byName + ' (via Dabdoob CX)'
 }
 
 /** One header value with no line breaks (header injection), RFC 2047-encoded when not plain ASCII. */

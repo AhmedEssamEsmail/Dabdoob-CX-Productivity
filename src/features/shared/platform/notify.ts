@@ -104,7 +104,7 @@ export function notifyHtml(n: NotifyInput, appUrl = ''): string {
         '</td></tr>'
     )
     .join('')
-  const where = n.where ? 'Open CX Helm' + (appUrl ? ' (' + appUrl + ')' : '') + ', then ' + n.where + '.' : ''
+  const where = n.where ? 'Open Dabdoob CX' + (appUrl ? ' (' + appUrl + ')' : '') + ', then ' + n.where + '.' : ''
   return (
     '<div style="font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a">' +
     p(n.intro) +

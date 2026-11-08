@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import "./theme.css";
 import "./cx-kit.css";
+import "./refresh.css";
 import SiteChrome from "@/features/shared/components/layout/SiteChrome";
 import BootSplash from "@/features/shared/components/shell/BootSplash";
 
 export const metadata: Metadata = {
-  title: "CX Helm",
-  description: "CX Helm — the CX command center",
+  title: "Dabdoob CX",
+  description: "Dabdoob CX — the CX command center",
 };
 
 /**
