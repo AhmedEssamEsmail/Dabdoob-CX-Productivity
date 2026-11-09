@@ -514,6 +514,7 @@
 :root .login-card .brand-mark {
   width: 2.4rem; height: 2.4rem; border-radius: 10px;
 }
+:root .login-card .brand-logo { block-size: 2.8rem; inline-size: auto; }
 :root .login-title {
   font-size: 1.3rem; font-weight: var(--w-strong); letter-spacing: -.02em;
 }
@@ -546,6 +547,17 @@
   display: flex; gap: .5rem; align-items: center;
 }
 :root .login-error svg { width: .9rem; height: .9rem; flex: none; }
+:root .login-divider {
+  display: flex; align-items: center; gap: .8rem;
+  margin: 1.2rem 0; color: var(--cx-ink-3); font-size: .75rem;
+}
+:root .login-divider::before,
+:root .login-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--cx-line);
+}
+:root .login-google {
+  width: 100%; justify-content: center; gap: .5rem; height: 2.5rem;
+}
 
 /* shared legacy families (was per-app scoped) */
 :root .dq-totals__item dd { margin: 0; font-size: var(--cx-text-2xl); font-weight: var(--cx-weight-strong); line-height: 1.1; }

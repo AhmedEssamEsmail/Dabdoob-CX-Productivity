@@ -889,6 +889,11 @@
     linear-gradient(var(--cx-accent-ink), var(--cx-accent-ink)) 16px 10px / 2px 7px no-repeat,
     var(--cx-accent);
 }
+:root .brand-logo {
+  flex: none;
+  block-size: 2rem;
+  inline-size: auto;
+}
 :root .brand-name { overflow: hidden; text-overflow: ellipsis; }
 :root .brand > div { display: flex; flex-direction: column; min-width: 0; }
 

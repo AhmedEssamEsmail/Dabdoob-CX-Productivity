@@ -82,21 +82,12 @@ export default function LoginPage() {
     <main className="login-wrap">
       <div className="login-card">
         <div className="brand-row">
-          <span className="brand-mark" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="M5 19V9M10 19V5M15 19v-7M20 19v-3" />
-            </svg>
-          </span>
+          <img
+            className="brand-logo"
+            src="/assets/dabdoob-logo.png"
+            alt=""
+            aria-hidden="true"
+          />
           <div>
             <div className="brand-name">Dabdoob CX</div>
             <div className="brand-sub">dabdoob operations console</div>
