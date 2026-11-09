@@ -1075,7 +1075,8 @@
   :root .rail-off .brand-name, :root .rail-off .rail-who { display: none; }
 }
 
-:root .rail-collapse {
+:root .rail-collapse,
+:root .rail-signout {
   flex: none;
   display: inline-grid;
   place-items: center;
@@ -1089,8 +1090,10 @@
   cursor: pointer;
   transition: background-color var(--cx-dur) var(--cx-ease), color var(--cx-dur) var(--cx-ease), border-color var(--cx-dur) var(--cx-ease);
 }
-:root .rail-collapse svg { inline-size: 1rem; block-size: 1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-:root .rail-collapse:hover { background: var(--cx-surface-sunken); color: var(--cx-ink); border-color: var(--cx-line); }
+:root .rail-collapse svg,
+:root .rail-signout svg { inline-size: 1rem; block-size: 1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+:root .rail-collapse:hover,
+:root .rail-signout:hover { background: var(--cx-surface-sunken); color: var(--cx-ink); border-color: var(--cx-line); }
 
 /* mobile: single column, rail collapses to head + toggle, nav opens below */
 @media (max-width: 820px) {

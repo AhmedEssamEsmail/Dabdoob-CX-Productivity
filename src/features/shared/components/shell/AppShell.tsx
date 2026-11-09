@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   BootProvider,
@@ -601,6 +602,16 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                   : D(WHO_ROLE_LABELS[user.role] ?? user.role)}
               </p>
             </div>
+            <Link
+              className="rail-signout"
+              href="/auth/logout"
+              aria-label={D('Sign out')}
+              title={D('Sign out')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </Link>
             <Button
               className="rail-collapse"
               aria-label={D(railOff ? 'Show the menu' : 'Hide the menu')}
