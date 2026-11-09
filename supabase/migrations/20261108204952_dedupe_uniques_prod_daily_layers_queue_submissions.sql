@@ -7,7 +7,8 @@
 -- ---------- 1) dedupe prod_daily_layers on (date,email,layer) ----------
 -- Upsert key is hard-coded to (date,email,layer) in
 -- src/features/shared/jobs/env.ts ('prod_daily_layers' -> keys). Survivor
--- rule: keep the LOWEST id per key group (earliest-written row wins).
+-- rule: keep the HIGHEST id per key group (latest-written row wins —
+-- memoUpsert last-write-wins semantics make the freshest row authoritative).
 -- IS NOT DISTINCT FROM also collapses NULL-key groups so the unique index
 -- build below cannot fail on them.
 DELETE FROM public.prod_daily_layers a
@@ -15,7 +16,7 @@ USING public.prod_daily_layers b
 WHERE a.date IS NOT DISTINCT FROM b.date
   AND a.email IS NOT DISTINCT FROM b.email
   AND a.layer IS NOT DISTINCT FROM b.layer
-  AND a.id > b.id;
+  AND a.id < b.id;
 
 -- ---------- 2) dedupe queue_submissions on (slot_date,slot) ----------
 -- One row per check-in slot: submitCheckin (cx-queue/lib/pages.ts) updates the

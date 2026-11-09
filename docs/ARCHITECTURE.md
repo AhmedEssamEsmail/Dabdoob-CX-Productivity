@@ -31,11 +31,12 @@ or `MIGRATION_SECRET_KEY` for admin/migration endpoints).
 ## Cron jobs (`vercel.json`)
 
 Vercel invokes `src/app/api/cron/*` routes with a `CRON_SECRET` bearer token.
-12 unique paths are scheduled (`job-tph-hourly` has two entries per hour):
+11 unique paths are scheduled (`job-tph-hourly` has two entries per hour);
+`job-data-tick` is scheduled by pg_cron instead (see below):
 
 | Path                                   | Schedule                          |
 |----------------------------------------|-----------------------------------|
-| `/api/cron/job-data-tick`              | `0 5 * * *` (daily 05:00; Hobby plan caps at daily — intended */15 needs Pro) |
+| `/api/cron/job-data-tick`              | `*/15 * * * *` via pg_cron+pg_net (not Vercel; every 15 min) |
 | `/api/cron/oo-reminders`               | `15 7 * * *` (daily 07:15; Hobby plan caps at daily — intended */15 needs Pro) |
 | `/api/cron/task-reminders`             | `0 7 * * *` (daily 07:00)         |
 | `/api/cron/meeting-reminders`          | `30 7 * * *` (daily 07:30)        |
@@ -53,10 +54,13 @@ scheduled in `vercel.json` — they exist for manual/on-demand invocation or
 legacy parity, e.g. `job-qa-engine`, `scorecard-nightly`,
 `job-nightly-aggregates`, `job-tl-queue`.
 
-pg_cron (Supabase) is **installed but not scheduled** — Vercel owns
-scheduling; the pg_cron schedule draft in
-`supabase/migrations/012_pg_cron_schedule.sql` is blocked pending env setup
-and should not be applied.
+pg_cron (Supabase) now schedules **only** `job-data-tick`
+(`*/15 * * * *`, via pg_cron+pg_net); everything else remains
+Vercel-scheduled. A companion job `cxh-job-data-tick-health` (every 15 min,
+offset +7m) asserts the latest pg_net tick response is a clean 200; failures
+surface as `status='failed'` rows in `cron.job_run_details`. The rest of the
+pg_cron schedule draft in `supabase/migrations/012_pg_cron_schedule.sql` is
+still blocked pending env setup and should not be applied.
 
 ## Integrations
 

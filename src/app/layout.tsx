@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   description: "Dabdoob CX — the CX command center",
 };
 
+// Root layout awaits getAppBootstrap (per-request cookies()) below; opt the
+// whole app out of blocking-prerender/static-shell validation.
+export const instant = false;
+
 /**
  * index.html line 14 verbatim — stored appearance must hold before app JS
  * runs — plus the legacy `data-entry="first"` the bundle set at eval time.

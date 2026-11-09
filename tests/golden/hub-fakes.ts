@@ -263,8 +263,8 @@ const fakeAuthClient = async () => ({
  * The whole public surface of src/features/shared/lib/auth.ts — a vi.mock
  * factory replaces the module wholesale, so any export missing here becomes
  * `undefined` for consumers that still import from 'lib/auth' (the earlier
- * "requireRole is not a function" regression). getUser/requireAuth/
- * getViewAsUser mirror their real bodies; requireRole delegates to the single
+ * "requireRole is not a function" regression). getViewAsUser mirrors its real
+ * body; requireRole delegates to the single
  * real implementation in platform/identity.ts (the lazy import keeps it out of
  * the mock-factory cycle, and identity resolves createAuthClient + supabase
  * through these same fakes at call time).
@@ -272,19 +272,6 @@ const fakeAuthClient = async () => ({
 export function authModule() {
   return {
     createAuthClient: fakeAuthClient,
-    getUser: async () => {
-      const supabase = await fakeAuthClient()
-      const { data } = await supabase.auth.getClaims()
-      const email = data?.claims?.email
-      return email ? { email: String(email) } : null
-    },
-    requireAuth: async () => {
-      const supabase = await fakeAuthClient()
-      const { data } = await supabase.auth.getClaims()
-      const email = data?.claims?.email
-      if (!email) throw new Error('Unauthorized')
-      return { email: String(email) }
-    },
     requireRole: async (roles: string[]) =>
       (await import('@/features/shared/platform/identity')).requireRole(roles),
     getViewAsUser: async (userEmail: string) => {

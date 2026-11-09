@@ -137,3 +137,15 @@ describe('jobTphPastDays', () => {
     expect(env.refreshLog.some((x) => x.status === 'error' && x.job === 'prod_tph_calls')).toBe(true)
   })
 })
+
+describe('stub env composite upsert keys (data-5 regression)', () => {
+  it("('ab','c') and ('a','bc') do not collide: both rows survive", () => {
+    const env = stubEnv({ tables: { t: [{ a: 'ab', b: 'c', v: 'old' }] } })
+    env.upsert('t', ['a', 'b'], [{ a: 'a', b: 'bc', v: 'new' }], null)
+    expect(env.tables.t).toHaveLength(2)
+    env.upsertIn('t', ['a', 'b'], [{ a: 'ab', b: 'c', v: 'upd' }], null)
+    expect(env.tables.t).toHaveLength(2)
+    expect(env.tables.t.find((r) => r.a === 'ab' && r.b === 'c')!.v).toBe('upd')
+    expect(env.tables.t.find((r) => r.a === 'a' && r.b === 'bc')!.v).toBe('new')
+  })
+})

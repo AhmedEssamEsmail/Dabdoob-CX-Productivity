@@ -1,0 +1,6 @@
+# FIX-02a result
+- Status: done (file only — remote apply pending approval).
+- File: supabase/migrations/20261108231643_job_data_tick_pg_cron.sql (65 lines, CLI-generated name).
+- Content: pg_cron+pg_net `CREATE EXTENSION IF NOT EXISTS`; unschedule guard on `cxh-job-data-tick`; `cron.schedule` `*/15 * * * *` running one `net.http_get` to `app.settings.app_url` + `/api/cron/job-data-tick` with Bearer `app.settings.cron_secret`, 60s timeout; both read via `current_setting(...,true)` at run time (vault optional swap — GUC chosen: zero extra extension precondition). RAISE guard makes unprovisioned config fail loudly in job_run_details.
+- Checks: `supabase migration list` registers 20261108231643 (remote empty = pending); grep `https://|http://|{{` -> 0 hits; `*/15` schedule present; idempotent re-apply via guard. No local stack (status: no container); no MCP server configured -> advisors N/A (no tables/RLS/views touched).
+- Handoff: provision `ALTER DATABASE postgres SET "app.settings.app_url"/"app.settings.cron_secret"` first. NEEDS_APPROVAL: apply supabase/migrations/20261108231643_job_data_tick_pg_cron.sql (schedules pg_cron job; destructive? n) — must precede FIX-02b vercel.json deploy.

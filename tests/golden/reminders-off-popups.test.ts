@@ -11,8 +11,8 @@ vi.mock('@/features/shared/lib/supabase', async () => (await import('./hub-fakes
 vi.mock('@/features/shared/lib/auth', async () => (await import('./hub-fakes')).authModule())
 
 import { hubDb, hubDbReset, hubSetTables, hubSetUser } from './hub-fakes'
-import { cacheClear } from '@/features/shared/platform/repo'
-import { pendingPopupsFor, popupsPoll, raisePopup } from '@/features/shared/platform/popups'
+import { cacheClear, cacheGet } from '@/features/shared/platform/repo'
+import { pendingPopupsFor, popupsPoll, raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 
 const TL = 'tl@dabdoob.com'
 
@@ -81,5 +81,18 @@ describe('reminders_enabled master switch (popups)', () => {
     const res = await raisePopup({ recipient: TL, kind: 'missed_1on1', title: 'x', ref: 'r2' }, 'system:test')
     expect(res.skipped).toBeUndefined()
     expect(hubDb.tables.popups.length).toBe(2)
+  })
+
+  it('poll cache key is normalized: mixed-case email caches and invalidates under lowercase', async () => {
+    hubDb.tables.config.find((r) => r.key === 'reminders_enabled')!.value = 'true'
+    cacheClear()
+
+    const key = 'pop:poll:' + TL.toLowerCase()
+    const res = await popupsPoll(TL.toUpperCase())
+    expect(res.popups.length).toBe(1)
+    expect(cacheGet(key)).toBeTruthy()
+
+    await resolvePopups('missed_1on1', '2026-10-15|14:00', 'system:test')
+    expect(cacheGet(key)).toBeNull()
   })
 })

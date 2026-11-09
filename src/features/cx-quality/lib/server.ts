@@ -91,6 +91,26 @@ async function qaRows_(name: string): Promise<Row[]> {
   }
 }
 
+/** qaRowsWhere_ verbatim: qaRows_ narrowed by server-side predicates; [] when the table is absent. */
+async function qaRowsWhere_(name: string, filter: { eq?: Record<string, unknown>; in?: Record<string, unknown[]>; is?: Record<string, null>; gte?: Record<string, unknown> }): Promise<Row[]> {
+  try {
+    const f = filter || {}
+    for (const list of Object.values(f.in || {})) if (!list.length) return []
+    let q = db().from(name).select('*')
+    for (const [k, v] of Object.entries(f.eq || {})) q = q.eq(k, v as string)
+    for (const [k, list] of Object.entries(f.in || {})) q = q.in(k, list)
+    for (const k of Object.keys(f.is || {})) q = q.is(k, null)
+    for (const [k, v] of Object.entries(f.gte || {})) q = q.gte(k, v as string)
+    const { data, error } = await q
+    if (error) throw error
+    return (data || []) as Row[]
+  } catch (e) {
+    const err = e as { code?: string; status?: number }
+    if (err.code === '42P01' || err.status === 404) return []
+    throw e
+  }
+}
+
 /** qaRowBy_ verbatim: one row by a single-column equality; null when absent or on error (missingOk). */
 async function qaRowBy_(name: string, col: string, value: unknown, extra?: [string, unknown][]): Promise<Row | null> {
   try {
@@ -618,7 +638,7 @@ async function qaQueuePageFor_(user: QaUser, dir: Directory): Promise<Row> {
   const S = await qeSettings_()
   const weekStart = String(qeWeekKeyFor_(new Date(), S)).slice(1)
   const agents = await qaQuotaAgents_(dir, S)
-  const audits = await qaRows_('qa_audits')
+  const audits = await qaRowsWhere_('qa_audits', { gte: { audit_date: dqAddDays_(today, -90) } })
   const quotaWeeks: { weekStart: string; rows: Row[] }[] = []
   for (let wk = 0; wk < 8; wk++) {
     const ws = dqAddDays_(weekStart, -7 * wk)
@@ -897,7 +917,7 @@ async function qaTicketTarget_(input: Row, dir: Directory): Promise<{ ticket: st
 
 /** qaTicketClash_ verbatim: refuses a ticket already audited or open in the queue. */
 async function qaTicketClash_(ticket: string, dir: Directory): Promise<void> {
-  const done = (await qaRows_('qa_audits')).filter((a) => String(a.ticket_id) === ticket && a.kind !== 'calibration')[0]
+  const done = (await qaRowsWhere_('qa_audits', { eq: { ticket_id: ticket } })).filter((a) => String(a.ticket_id) === ticket && a.kind !== 'calibration')[0]
   if (done) throw new Error('Ticket #' + ticket + ' was audited already, on ' + String(done.audit_date).slice(0, 10) + ' by ' + dir.name(String(done.auditor_email)) + '.')
   const open = (await qaRows_('qa_queue')).filter((q) => String(q.ticket_id) === ticket && QA_REQUEST_OPEN.indexOf(String(q.status)) !== -1)[0]
   if (open && open.source === 'request') throw new Error('Ticket #' + ticket + ' was already requested by ' + dir.name(String(open.requested_by)) + ' on ' + String(open.requested_at).slice(0, 10) + '.')
@@ -1005,7 +1025,7 @@ export async function getQaMyAuditsPage(): Promise<Row> {
   ctls.forEach((c) => {
     if (c.status !== 'cancelled' || !ctlBy[String(c.audit_id)]) ctlBy[String(c.audit_id)] = c
   })
-  const audits = (await qaRows_('qa_audits'))
+  const audits = (await qaRowsWhere_('qa_audits', { eq: { kind: 'audit', agent_email: user.email } }))
     .filter((a) => a.kind === 'audit' && normEmail(a.agent_email) === user.email)
     .sort((a, b) => String(b.submitted_at).localeCompare(String(a.submitted_at)))
     .slice(0, 80)
@@ -1105,16 +1125,16 @@ export async function getQaCtlPage(): Promise<Row> {
   const dir = await pwDirectory()
   const forms = qaForms_(await qaRows_('qa_forms'))
   const today = qaToday_()
+  const all = await qaRows_('qa_ctls')
+  const mine = all.filter((c) => qaCtlVisibleTo_(c, user))
   const auditsBy: Record<string, Row> = {}
-  ;(await qaRows_('qa_audits')).forEach((a) => {
+  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: mine.map((c) => String(c.audit_id)) } })).forEach((a) => {
     auditsBy[String(a.audit_id)] = a
   })
   const disputesBy: Record<string, Row> = {}
   ;(await qaRows_('qa_disputes')).forEach((d) => {
     disputesBy[String(d.dispute_id)] = d
   })
-  const all = await qaRows_('qa_ctls')
-  const mine = all.filter((c) => qaCtlVisibleTo_(c, user))
   const rows = mine
     .filter((c) => c.status !== 'cancelled' && (c.status === 'open' || c.status === 'on_hold' || String(c.opened_date) >= dqAddDays_(today, -45)))
     .map((c) => {
@@ -1159,15 +1179,18 @@ export async function submitQaCtl(input: Row): Promise<Row> {
   const onShift = user.role === 'tl' ? await qaOnShiftNow_() : []
   const res = await qaTx_(async () => {
     const ctls = await qaRows_('qa_ctls')
-    const auditsBy: Record<string, Row> = {}
-    ;(await qaRows_('qa_audits')).forEach((a) => {
-      auditsBy[String(a.audit_id)] = a
-    })
-    let row: Row
+    const auditIds = ctls.filter((r) => r.status === 'open').map((r) => String(r.audit_id))
+    let row: Row | undefined
     if (input.ctlId) {
       row = ctls.filter((r) => r.ctl_id === String(input.ctlId))[0]
       if (!row) throw new Error('That CTL was not found.')
-    } else {
+      auditIds.push(String(row.audit_id))
+    }
+    const auditsBy: Record<string, Row> = {}
+    ;(await qaRowsWhere_('qa_audits', { in: { audit_id: auditIds } })).forEach((a) => {
+      auditsBy[String(a.audit_id)] = a
+    })
+    if (!row) {
       const hits = qaFindOpenCtls_(ctls, auditsBy, input.ref, user, onShift)
       if (!hits.length) throw new Error('No open CTL of yours for "' + String(input.ref || '').trim() + '". Check the ticket number or audit ID.')
       if (hits.length > 1) throw new Error('Ticket ' + String(input.ref).trim() + ' has ' + hits.length + ' open CTLs: choose one in the list.')
@@ -1278,16 +1301,17 @@ export async function getQaDisputesPage(): Promise<Row> {
   const acc = await qaDisputeAccess_()
   const dir = await pwDirectory()
   const forms = qaForms_(await qaRows_('qa_forms'))
-  const audits = await qaRows_('qa_audits')
   const disputes = await qaRows_('qa_disputes')
+  const since = dqAddDays_(qaToday_(), -60)
+  const shown = disputes.filter((d) => d.status === 'open' || d.status === 'escalated' || String(d.decided_at).slice(0, 10) >= since)
   const auditsBy: Record<string, Row> = {}
-  audits.forEach((a) => {
+  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: shown.map((d) => String(d.audit_id)) } })).forEach((a) => {
     auditsBy[String(a.audit_id)] = a
   })
-  const since = dqAddDays_(qaToday_(), -60)
+  const month = qaToday_().slice(0, 7)
+  const monthAudits = await qaRowsWhere_('qa_audits', { gte: { audit_date: month + '-01' } })
   const who = (e: unknown) => (e ? dir.name(String(e)) : '')
-  const rows = disputes
-    .filter((d) => d.status === 'open' || d.status === 'escalated' || String(d.decided_at).slice(0, 10) >= since)
+  const rows = shown
     .map((d) => {
       const a = auditsBy[String(d.audit_id)]
       const view = a ? qaAuditView_(a, forms, dir as never) : null
@@ -1305,8 +1329,7 @@ export async function getQaDisputesPage(): Promise<Row> {
       const w = (r: { status: string }) => (r.status === 'escalated' ? 2 : r.status === 'open' ? 1 : 0)
       return w(y) - w(x) || String(y.raisedAt).localeCompare(String(x.raisedAt))
     })
-  const month = qaToday_().slice(0, 7)
-  const stats = qaDisputeStats_(audits, disputes, month) as Record<string, { audits: number; disputes: number; upheld: number; open: number; disputePct?: number | null }>
+  const stats = qaDisputeStats_(monthAudits, disputes, month) as Record<string, { audits: number; disputes: number; upheld: number; open: number; disputePct?: number | null }>
   return {
     rows, month, target: Number(await qaSetting_('qa_dispute_pass_target')), ticketUrl: await qaTicketUrl_(),
     isOwner: acc.isOwner, ownerName: dir.name(acc.owner),
@@ -1428,7 +1451,7 @@ export async function getQaCalibrationPage(): Promise<Row> {
   const forms = qaForms_(await qaRows_('qa_forms'))
   const cals = await qaRows_('qa_calibrations')
   const auditsBy: Record<string, Row> = {}
-  ;(await qaRows_('qa_audits')).forEach((a) => {
+  ;(await qaRowsWhere_('qa_audits', { eq: { kind: 'calibration' } })).forEach((a) => {
     if (a.kind === 'calibration') auditsBy[String(a.audit_id)] = a
   })
   const view = (c: Row): Row => {

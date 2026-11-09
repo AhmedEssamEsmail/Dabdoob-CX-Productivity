@@ -217,6 +217,7 @@ export async function updateRows(
   })
   const out: (Record<string, unknown> | null)[] = []
   const mergedByKey = new Map<unknown, Record<string, unknown>>()
+  const patchByKey = new Map<unknown, Record<string, unknown>>()
   for (const u of updates) {
     const data = sanitizeInput(u.patch)
     delete data[keyField]
@@ -232,17 +233,29 @@ export async function updateRows(
     }
     const merged = { ...current, ...data }
     mergedByKey.set(u.key, merged)
+    patchByKey.set(u.key, { ...patchByKey.get(u.key), [keyField]: u.key, ...data })
     out.push(merged)
   }
-  if (!mergedByKey.size) return out
-  const { error } = await db()
-    .from(table)
-    .upsert([...mergedByKey.values()], { onConflict: keyField })
-  if (error) {
-    if (/constraint|conflict|42P10/i.test(error.message)) {
+  if (!patchByKey.size) return out
+  const groups = new Map<string, Record<string, unknown>[]>()
+  for (const patch of patchByKey.values()) {
+    const signature = JSON.stringify(Object.keys(patch).sort())
+    const group = groups.get(signature)
+    if (group) group.push(patch)
+    else groups.set(signature, [patch])
+  }
+  try {
+    for (const rows of groups.values()) {
+      const { error } = await db()
+        .from(table)
+        .upsert(rows, { onConflict: keyField })
+      if (error) throw new Error(error.message)
+    }
+  } catch (err) {
+    if (err instanceof Error && /constraint|conflict|42P10/i.test(err.message)) {
       return updateRowsOneByOne(table, keyField, updates, opts)
     }
-    throw new Error(error.message)
+    throw err
   }
   return out
 }

@@ -23,19 +23,6 @@ export async function createAuthClient() {
   )
 }
 
-export async function getUser() {
-  const supabase = await createAuthClient()
-  const { data } = await supabase.auth.getClaims()
-  const email = data?.claims?.email
-  return email ? { email: String(email) } : null
-}
-
-export async function requireAuth() {
-  const user = await getUser()
-  if (!user) throw new Error('Unauthorized')
-  return user
-}
-
 /**
  * requireRole — the single role gate (legacy requireRole_, Auth.js:80-86).
  * The one implementation lives in platform/identity.ts (currentUser —

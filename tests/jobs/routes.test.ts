@@ -15,6 +15,8 @@ import * as routeDaily from '@/app/api/cron/job-productivity-daily/route'
 import * as routeHourly from '@/app/api/cron/job-tph-hourly/route'
 import * as routePastDays from '@/app/api/cron/job-tph-past-days/route'
 import * as routeQuarterly from '@/app/api/cron/job-quarterly-report/route'
+import * as routeNightly from '@/app/api/cron/job-nightly-aggregates/route'
+import * as routeGmail from '@/app/api/integrations/gmail/route'
 
 const ROUTES: Record<string, { GET: (req: Request) => Promise<Response> }> = {
   '/api/cron/job-productivity-daily': routeDaily,
@@ -80,6 +82,30 @@ describe('cron routes', () => {
     expect(res.status).toBe(200)
     const out = await res.json()
     expect(out).toHaveProperty('note')
+  })
+
+  it('job-nightly-aggregates fails closed with no CRON_SECRET in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('CRON_SECRET', '')
+    const res = await routeNightly.GET(new Request('http://localhost/api/cron/job-nightly-aggregates') as never)
+    expect(res.status).toBe(401)
+    vi.unstubAllEnvs()
+  })
+
+  it('fails closed with no CRON_SECRET in production: Bearer undefined rejected on cron GET and integration POST', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('CRON_SECRET', '')
+    const hourly = await routeHourly.GET(
+      new Request('http://localhost/x', { headers: { authorization: 'Bearer undefined' } }) as never,
+    )
+    expect(hourly.status).toBe(401)
+    const gmail = await routeGmail.POST(
+      new Request('http://localhost/x', { method: 'POST', headers: { authorization: 'Bearer undefined' } }) as never,
+    )
+    expect(gmail.status).toBe(401)
+    const noAuth = await routeHourly.GET(new Request('http://localhost/x') as never)
+    expect(noAuth.status).toBe(401)
+    vi.unstubAllEnvs()
   })
 
   it('job-quarterly-report skips cleanly with no recipients configured', async () => {

@@ -1,6 +1,6 @@
 /**
  * auth.ts unit tests against the real module: createAuthClient's cookie
- * adapter, getUser, requireAuth's 'Unauthorized' gate, getViewAsUser's
+ * adapter, getViewAsUser's
  * view_as query. External seams (@supabase/ssr, next/headers, the shared
  * createClient, platform/identity's requireRole) are mocked via hoisted spies.
  */
@@ -48,8 +48,6 @@ vi.mock('@/features/shared/platform/identity', () => ({ requireRole: vi.fn() }))
 
 import {
   createAuthClient,
-  getUser,
-  requireAuth,
   getViewAsUser,
   requireRole,
 } from './auth'
@@ -87,34 +85,6 @@ describe('createAuthClient', () => {
     await createAuthClient()
     const adapter = h.createServerClient.mock.calls[0][2].cookies
     expect(() => adapter.setAll([{ name: 'x', value: 'y', options: {} }])).not.toThrow()
-  })
-})
-
-describe('getUser', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('returns the email claims when signed in', async () => {
-    h.getClaims.mockResolvedValue({ data: { claims: { email: 'agent@dabdoob.com' } } })
-    await expect(getUser()).resolves.toEqual({ email: 'agent@dabdoob.com' })
-  })
-
-  it('returns null when there is no session', async () => {
-    h.getClaims.mockResolvedValue({ data: null })
-    await expect(getUser()).resolves.toBeNull()
-  })
-})
-
-describe('requireAuth', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('returns the claims email when authenticated', async () => {
-    h.getClaims.mockResolvedValue({ data: { claims: { email: 'tl@dabdoob.com' } } })
-    await expect(requireAuth()).resolves.toEqual({ email: 'tl@dabdoob.com' })
-  })
-
-  it("throws 'Unauthorized' when no user is signed in", async () => {
-    h.getClaims.mockResolvedValue({ data: null })
-    await expect(requireAuth()).rejects.toThrow('Unauthorized')
   })
 })
 

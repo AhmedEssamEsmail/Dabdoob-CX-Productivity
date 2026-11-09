@@ -15,6 +15,8 @@ export async function GET(req: Request) {
 
     if (date) {
       query = query.eq('date', date)
+    } else {
+      query = query.gte('date', new Date(Date.now() - 31 * 864e5).toISOString().slice(0, 10))
     }
     if (agentEmail) {
       query = query.eq('email', agentEmail)
@@ -23,7 +25,7 @@ export async function GET(req: Request) {
       query = query.eq('layer', layer)
     }
 
-    const { data, error } = await query.order('date', { ascending: false })
+    const { data, error } = await query.order('date', { ascending: false }).limit(5000)
 
     if (error) return dbErr('prod_daily_layers', error)
 

@@ -14,12 +14,14 @@ export async function GET(req: Request) {
 
     if (date) {
       query = query.eq('date', date)
+    } else {
+      query = query.gte('date', new Date(Date.now() - 31 * 864e5).toISOString().slice(0, 10))
     }
     if (agentEmail) {
       query = query.eq('agent_email', agentEmail)
     }
 
-    const { data, error } = await query.order('start_at', { ascending: true })
+    const { data, error } = await query.order('start_at', { ascending: true }).limit(5000)
 
     if (error) return dbErr('prod_intervals', error)
 

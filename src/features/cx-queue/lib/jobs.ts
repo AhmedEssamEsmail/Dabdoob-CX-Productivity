@@ -22,7 +22,7 @@ import {
   dqPeopleIndex_, dqRollupInflow_, dqSubmissionsFor_, dqTickState_,
   DQ_SNAPSHOT_HEADERS,
 } from './index'
-import { dqAddDays_, dqDateKey_, dqRosterPeople_, dqSetting_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import { dqAddDays_, dqDateKey_, dqRosterPeople_, dqSetting_, dqWallToUtc_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { dqSyncedTo_, fdSyncIncremental_, hasFreshdeskKey } from '@/features/shared/jobs/freshdesk'
 import { DQ_QUEUE_SUBMISSIONS_TABLE } from './server'
 
@@ -82,6 +82,33 @@ async function rosterPeople_(): Promise<ReturnType<typeof dqPeopleIndex_>> {
   return dqPeopleIndex_(headcount, await cfg_())
 }
 
+/** perf-2: PostgREST `or` bound for the tickets read — one `status.ilike.*v*`
+ * term per configured open status. ilike covers every case form and the `*`
+ * wildcards cover surrounding whitespace, i.e. everything dqBuildAging_'
+ * trim().toLowerCase() check accepts; the substring over-match is a safe
+ * superset since the in-memory filter still applies. Plus rows created or
+ * resolved inside the today-window counters' range, widened by a 1-day margin. */
+function dqTicketsReadOr_(opts: Record<string, unknown>, now: Date): string {
+  const raw = Array.isArray(opts.open) ? opts.open : String(opts.open || '').split(',')
+  const seen = new Set<string>()
+  const vals: string[] = []
+  raw.forEach((s) => {
+    // Strip pattern meta chars so a configured status cannot inject
+    // wildcards or break the quoted or-term.
+    const v = String(s).trim().replace(/["*%]/g, '')
+    if (!v || seen.has(v)) return
+    seen.add(v)
+    vals.push(v)
+  })
+  const bizTz = String(opts.bizTz || 'UTC')
+  const bp = dqAddDays_(dqDateKey_(now, bizTz), -1).split('-')
+  const bound = dqWallToUtc_(+bp[0], +bp[1], +bp[2], 0, 0, 0, bizTz).toISOString()
+  const parts: string[] = []
+  vals.forEach((v) => parts.push('status.ilike."*' + v + '*"'))
+  parts.push('created_at.gte.' + bound, 'resolved_at.gte.' + bound)
+  return parts.join(',')
+}
+
 // ---------------------------------------------------------------- buildQueueAggregates_ (Aggregates.js:155)
 
 export async function buildQueueAggregates_(now?: Date): Promise<Record<string, unknown>> {
@@ -94,6 +121,7 @@ export async function buildQueueAggregates_(now?: Date): Promise<Record<string, 
   const { data: tickets, error } = await db()
     .from('tickets')
     .select('ticket_id,status,group_name,responder_id,created_at,resolved_at,country,channel,contact_type_1')
+    .or(dqTicketsReadOr_(opts, now))
   if (error) throw described(error, { table: 'tickets' })
   const res = dqBuildAging_(tickets as Record<string, unknown>[], now, opts, await rosterPeople_())
   const syncedTo = await dqSyncedTo_()
@@ -223,7 +251,7 @@ export async function buildAgentAggregates_(): Promise<void> {
   const started = Date.now()
   const cfg = await cfg_()
   const today = dqDateKey_(new Date(), cfg)
-  const { data } = await db().from('prod_daily_layers').select('*')
+  const { data } = await db().from('prod_daily_layers').select('*').gte('date', dqAddDays_(today, -45))
   const rows = (data as Record<string, unknown>[]) || []
   if (Number(today.slice(5, 7)) <= 2) {
     // Last year's rows share the same store; nothing extra to read in Postgres.

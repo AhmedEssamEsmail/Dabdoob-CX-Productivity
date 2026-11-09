@@ -199,6 +199,86 @@ describe('updateRows (batched upsert)', () => {
     expect(up?.args[0]).toHaveLength(2)
   })
 
+  it('upsert sends key + patch + stamps only, not unpatched current columns', async () => {
+    const wideRows = [
+      { id: 'a', name: 'A', status: 'open', submitted_by: 'orig@x.com', submitted_at: 't0' },
+      { id: 'b', name: 'B', status: 'open', submitted_by: 'orig@x.com', submitted_at: 't0' },
+    ]
+    const db = fakeDb([{ data: wideRows }, { data: null, error: null }])
+    supa.from = db.from
+    const out = await updateRows(
+      'things', 'id',
+      [
+        { key: 'a', patch: { status: 'closed' } },
+        { key: 'b', patch: { status: 'done' } },
+      ],
+      opts
+    )
+    expect(out[0]).toMatchObject({ id: 'a', name: 'A', status: 'closed' })
+    const up = db.calls.find((c) => c.m === 'upsert')
+    const payload = up?.args[0] as Record<string, unknown>[]
+    expect(payload).toHaveLength(2)
+    for (const p of payload) {
+      expect(Object.keys(p).sort()).toEqual(['id', 'status', 'updated_at', 'updated_by'])
+    }
+    expect(payload.find((p) => p.id === 'a')).toMatchObject({ status: 'closed', updated_by: 'agent@x.com' })
+  })
+
+  it('groups heterogeneous patch key-sets into separate homogeneous upserts', async () => {
+    const wideRows = [
+      { id: 'a', name: 'A', status: 'open' },
+      { id: 'b', name: 'B', status: 'open' },
+    ]
+    const db = fakeDb([{ data: wideRows }, { data: null, error: null }, { data: null, error: null }])
+    supa.from = db.from
+    await updateRows(
+      'things', 'id',
+      [
+        { key: 'a', patch: { name: 'A2' } },
+        { key: 'b', patch: { status: 'closed' } },
+      ],
+      opts
+    )
+    const upserts = db.calls.filter((c) => c.m === 'upsert')
+    expect(upserts).toHaveLength(2)
+    const signatures = upserts.map((up) => {
+      const payload = up.args[0] as Record<string, unknown>[]
+      expect(payload).toHaveLength(1)
+      expect(up.args[1]).toEqual({ onConflict: 'id' })
+      return Object.keys(payload[0]).sort()
+    })
+    expect(signatures).toContainEqual(['id', 'name', 'updated_at', 'updated_by'])
+    expect(signatures).toContainEqual(['id', 'status', 'updated_at', 'updated_by'])
+    const payloadA = (upserts[0].args[0] as Record<string, unknown>[])[0]
+    const payloadB = (upserts[1].args[0] as Record<string, unknown>[])[0]
+    expect(payloadA.id === 'a' ? 'name' in payloadA : 'status' in payloadA).toBe(true)
+    expect(payloadB.id === 'b' ? 'status' in payloadB : 'name' in payloadB).toBe(true)
+  })
+
+  it('colliding join("") signatures still split into separate upserts', async () => {
+    const wideRows = [
+      { id: 'a', name: 'A', status: 'open' },
+      { id: 'b', name: 'B', status: 'open' },
+    ]
+    const db = fakeDb([{ data: wideRows }, { data: null, error: null }, { data: null, error: null }])
+    supa.from = db.from
+    await updateRows(
+      'things', 'id',
+      [
+        { key: 'a', patch: { a: 1, bc: 2 } },
+        { key: 'b', patch: { ab: 1, c: 2 } },
+      ],
+      opts
+    )
+    const upserts = db.calls.filter((c) => c.m === 'upsert')
+    expect(upserts).toHaveLength(2)
+    const signatures = upserts.map((up) =>
+      Object.keys((up.args[0] as Record<string, unknown>[])[0]).sort()
+    )
+    expect(signatures).toContainEqual(['a', 'bc', 'id', 'updated_at', 'updated_by'])
+    expect(signatures).toContainEqual(['ab', 'c', 'id', 'updated_at', 'updated_by'])
+  })
+
   it('a guard throw aborts before any upsert', async () => {
     const db = fakeDb([{ data: rows }])
     supa.from = db.from

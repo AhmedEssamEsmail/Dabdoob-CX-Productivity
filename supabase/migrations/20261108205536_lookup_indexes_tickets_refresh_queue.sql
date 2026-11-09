@@ -20,10 +20,12 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tickets_group_name
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tickets_created_at
   ON public.tickets (created_at);
 
--- refresh_log(job,finished_at): last-finished-run-per-job lookups
--- (dqLastRun pattern); tail reads at cx-productivity/lib/tph/page.ts:140.
-CREATE INDEX IF NOT EXISTS idx_refresh_log_job_finished_at
-  ON public.refresh_log (job, finished_at);
+-- refresh_log(started_at): the only reader is an unfiltered
+-- `ORDER BY started_at DESC LIMIT 300` tail read at
+-- src/features/cx-productivity/lib/tph/page.ts:148 — no job predicate, so a
+-- job-leading index is unusable. Plain btree scans DESC natively.
+CREATE INDEX IF NOT EXISTS idx_refresh_log_started_at
+  ON public.refresh_log (started_at);
 
 -- queue_submissions(slot_date): per-day check-in reads. (slot_date,slot)_uidx
 -- already covers equality via leftmost prefix; PLAN #7 lists this standalone

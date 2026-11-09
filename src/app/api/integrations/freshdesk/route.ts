@@ -3,7 +3,13 @@ import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET
+  if (!secret) {
+    // fail-closed in production; dev/no-secret mode still lets requireJobCaller gate the caller
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  } else if (authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

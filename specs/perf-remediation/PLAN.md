@@ -38,9 +38,11 @@ exposure (RLS enabled but `app_all` = `using(true)` on every table).
    (replace `app_all` policies). Browser anon used for Auth only (verified:
    no client-side PostgREST table queries — all `.from(` hits are
    `Array.from`). `npm run test:security` + app flows pass.
-9. `vercel.json` schedules `job-data-tick` (*/15) + reminder crons
-   (oo-reminders, task-reminders, meeting-reminders, missed-1on1-check);
-   `job-tph-past-days` internal budget ≤60s or self-chunked per day.
+9. `job-data-tick` scheduled `*/15` via pg_cron+pg_net (Vercel Hobby rejects
+   sub-daily crons; user-approved 2026-11-09, QA finding qa-2); `vercel.json`
+   keeps reminder crons (oo-reminders, task-reminders, meeting-reminders,
+   missed-1on1-check); `job-tph-past-days` internal budget ≤60s or
+   self-chunked per day.
 10. my-day section cache shared across function instances (Supabase table
     or equivalent), replacing instance-local Map.
 11. Gates: `npx tsc --noEmit`, `npx eslint .`, `npx vitest run`,
@@ -54,7 +56,8 @@ Out: Supabase Realtime push (deferred), per-user RLS policies (rejected:
 app does authz in code + view-as needs cross-user reads; service-role
 model chosen), Vercel Pro upgrade, three.js/bundle work, new npm deps,
 Freshdesk API changes, Auth session-expiry + region checks (user actions,
-documented in report), pg_cron cutover (installed but stays unused).
+documented in report), pg_cron cutover beyond `job-data-tick` scheduling
+(exception approved 2026-11-09 for qa-2; pg_cron/pg_net stay unused elsewhere).
 
 ## Risk flags (y/n)
 arch n · db y · data y · auth y · external-api y · ui n · perf y · deps n ·

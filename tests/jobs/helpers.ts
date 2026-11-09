@@ -55,7 +55,7 @@ export function stubEnv(opts: StubEnvOpts = {}): StubEnv {
   const rosterRows = (opts.rosterRows || []) as never
   const roster = dqRosterPeople_(rosterRows) as HeadcountRow[] | null
 
-  const keyOf = (keys: string[]) => (r: Row) => keys.map((k) => String(r[k])).join('')
+  const keyOf = (keys: string[]) => (r: Row) => JSON.stringify(keys.map((k) => r[k] ?? null))
   const upsert = (table: string, cols: string[], rows: Row[]) => {
     const memo = (tables[table] = tables[table] || [])
     const key = keyOf(cols)

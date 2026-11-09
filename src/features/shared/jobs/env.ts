@@ -289,7 +289,7 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
   let activityMemo: unknown[][] | null = null
   let headcount: JobEnv['headcount'] = roster || []
 
-  const keyOf = (keys: string[]) => (r: Row) => keys.map((k) => String(r[k])).join('')
+  const keyOf = (keys: string[]) => (r: Row) => JSON.stringify(keys.map((k) => r[k] ?? null))
   /** dqUpsert_ on the in-memory memo: matching key rows are replaced, the rest appended. */
   const memoUpsert = (table: string, keys: string[], rows: Row[]) => {
     const out = (tables[table] || []).slice()

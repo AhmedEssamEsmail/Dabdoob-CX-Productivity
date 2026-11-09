@@ -79,6 +79,7 @@ export async function GET() {
     if (teamEmails.length) scope.push(`agent_email.in.(${teamEmails.join(',')})`)
     flagsQuery = flagsQuery.or(scope.join(','))
   }
+  flagsQuery = flagsQuery.or(`decision.eq.pending,date.gte.${decidedFrom}`)
 
   const { data: flagRows, error: flagsError } = await flagsQuery
   if (flagsError) return NextResponse.json({ error: flagsError.message }, { status: 500 })

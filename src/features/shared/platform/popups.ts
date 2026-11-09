@@ -127,7 +127,7 @@ export async function popupsPoll(email: string): Promise<{ popups: PendingPopup[
     .select('popup_id', { count: 'exact', head: true })
   if (error) return { popups: [] }
   const stamp = count ?? 0
-  const key = POPUPS_POLL_KEY + email
+  const key = POPUPS_POLL_KEY + normEmail(email)
   const hit = cacheGet(key)
   if (hit) {
     try {

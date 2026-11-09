@@ -115,10 +115,12 @@ export const alertsApi = {
     alerts: OneOnOneAlert[]
     now: string
   }> => {
-    const data = await getJson<{ popups: ShellPopup[]; alerts: OneOnOneAlert[] }>(
-      '/api/popups'
-    )
-    return { ...data, now: new Date().toISOString() }
+    const data = await getJson<{
+      popups: ShellPopup[]
+      alerts: OneOnOneAlert[]
+      now?: string
+    }>('/api/popups')
+    return { ...data, now: data.now ?? new Date().toISOString() }
   },
 }
 

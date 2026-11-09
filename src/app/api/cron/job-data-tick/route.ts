@@ -1,5 +1,6 @@
 /**
- * Cron: jobDataTick (Aggregates.js) — every 15 min. Freshdesk delta sync,
+ * Cron: jobDataTick (Aggregates.js) — every 15 min via Supabase
+ * pg_cron+pg_net (not Vercel). Freshdesk delta sync,
  * queue + aging rebuild, hourly inflow, check-in snapshots.
  * Auth matches the other cron routes: Bearer CRON_SECRET, no session, or an admin.
  */
@@ -9,7 +10,7 @@ import { jobDataTick } from '@/features/cx-queue/lib/jobs'
 
 function cronOk(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return true // dev/no-secret mode: requireJobCaller still gates the caller
+  if (!secret) return process.env.NODE_ENV !== 'production' // fail-closed in production; dev/no-secret mode still lets requireJobCaller gate the caller
   return req.headers.get('authorization') === 'Bearer ' + secret
 }
 
