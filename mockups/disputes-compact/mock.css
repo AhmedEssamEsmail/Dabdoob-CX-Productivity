@@ -1,0 +1,73 @@
+/* Disputes compact+collapsible mockups — reuses the CTL mock shell/item CSS. */
+@import url("../ctl-compact/mock.css");
+
+/* ---------- collapsible mechanics (real <details>, no JS) ---------- */
+.mk-item > summary { list-style: none; cursor: pointer; }
+.mk-item > summary::-webkit-details-marker { display: none; }
+.chev {
+  inline-size: .9rem; block-size: .9rem; flex: none;
+  color: var(--cx-ink-3); transition: transform .15s;
+}
+.mk-item[open] > summary .chev { transform: rotate(90deg); }
+.mk-item > summary:hover .chev { color: var(--cx-ink); }
+
+/* expanded detail */
+.dsp-detail {
+  display: grid; gap: .6rem;
+  border-top: 1px solid var(--cx-line);
+  margin-top: .5rem; padding: .6rem .85rem .75rem;
+}
+.dsp-detail .qa-reason { margin: 0; }
+.dsp-detail .qa-fails ul { list-style: disc; }
+.dsp-detail .qa-fails li { font-size: var(--cx-text-sm); }
+.dsp-detail .fails-cap {
+  font-size: .68rem; font-weight: 650; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--cx-ink-3); margin-bottom: .15rem;
+}
+.dsp-detail .qa-ctlform { gap: .55rem; }
+.dsp-detail .dec-cap {
+  font-size: .68rem; font-weight: 650; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--cx-ink-3);
+}
+
+/* A — strip: summary is the one-line row; detail full width */
+.da-item > summary { display: flex; align-items: center; gap: .55rem; padding: .4rem .75rem; }
+.da-item .meta {
+  display: flex; align-items: center; gap: .4rem; min-width: 0; flex: 1;
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3); white-space: nowrap; overflow: hidden;
+}
+.da-item .meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.da-item .meta .sep { opacity: .55; flex: none; }
+.da-item .dsp-detail { margin-top: 0; }
+@media (max-width: 64rem) {
+  .da-item > summary { flex-wrap: wrap; }
+  .da-item .meta { flex-basis: 100%; order: 5; }
+}
+
+/* B — header + meta line */
+.db-item > summary { display: grid; gap: .3rem; padding: .5rem .85rem; }
+.db-top { display: flex; align-items: center; gap: .55rem; min-width: 0; }
+.db-top .ticket {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.db-top .raised { margin-inline-start: auto; flex: none; font-size: var(--cx-text-xs); color: var(--cx-ink-3); }
+.db-sub {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.db-sub b { color: var(--cx-ink-2); font-weight: 600; }
+.mk-item[open].db-item > summary .db-sub .preview { display: none; }
+.mk-item[open].db-item > summary .db-sub .open-hint { display: none; }
+
+/* C — mini cards: open card spans both columns */
+.dc-item > summary { display: grid; gap: .35rem; padding: .6rem .85rem; }
+.dc-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; min-width: 0; }
+.dc-sub {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dc-foot { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.dc-foot .ctl-who { flex: 1; }
+.dc-foot .expand-hint { flex: none; font-size: var(--cx-text-xs); color: var(--cx-ink-3); display: inline-flex; align-items: center; gap: .3rem; }
+.vc-grid .dc-item[open] { grid-column: 1 / -1; }

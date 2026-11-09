@@ -210,3 +210,31 @@
 [data-app="quality"] .qs-track i { display:block;block-size:100%;background:var(--cx-accent) }
 [data-app="quality"] .qs-tag { display:inline-block;font-size:var(--cx-text-xs);line-height:1.4;padding:0 var(--cx-space-2);border:1px solid var(--cx-line);border-radius:999px;color:var(--cx-ink-2);background:var(--cx-surface-2, transparent) }
 [data-app="quality"] .qs-all { margin:0 0 var(--cx-space-2);font-size:var(--cx-text-sm);color:var(--cx-ink-2) }
+
+/* ============================ compact strip cards (Option A) ============================
+   .qa-card--strip = single-line strip rows; <details> variant collapses to a
+   summary row plus a .qa-detail expansion. Colors/spacing are --cx-* tokens only. */
+[data-app="quality"] .qa-list { display:grid;gap:var(--cx-space-2) }
+[data-app="quality"] .qa-card--strip, [data-app="quality"] .qa-card--strip>summary { display:flex;align-items:center;gap:var(--cx-space-2);padding:var(--cx-space-1) var(--cx-space-3) }
+[data-app="quality"] .qa-card--strip { background:var(--cx-surface);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object) }
+[data-app="quality"] details.qa-card--strip { display:block;padding:0 }
+[data-app="quality"] .qa-card--strip>summary { list-style:none;cursor:pointer }
+[data-app="quality"] .qa-card--strip>summary::-webkit-details-marker { display:none }
+[data-app="quality"] .qa-chev { inline-size:.9rem;block-size:.9rem;flex:none;color:var(--cx-ink-3);transition:transform .15s }
+[data-app="quality"] details.qa-card--strip[open]>summary .qa-chev { transform:rotate(90deg) }
+[data-app="quality"] .qa-card--strip>summary:hover .qa-chev { color:var(--cx-ink) }
+[data-app="quality"] .qa-card--strip .qa-name { font-weight:var(--cx-weight-strong);white-space:nowrap }
+[data-app="quality"] .qa-card--strip .qa-name, [data-app="quality"] .qa-card--strip .pill, [data-app="quality"] .qa-card--strip .cx-chip, [data-app="quality"] .qa-card--strip .qa-acts { flex:none }
+[data-app="quality"] .qa-card--strip .qa-meta { display:flex;align-items:center;gap:var(--cx-space-1);min-width:0;flex:1;font-size:var(--cx-text-xs);color:var(--cx-ink-3);white-space:nowrap;overflow:hidden }
+[data-app="quality"] .qa-card--strip .qa-meta>span { min-width:0;overflow:hidden;text-overflow:ellipsis }
+[data-app="quality"] .qa-card--strip .qa-meta .qa-sep { opacity:.55;flex:none }
+[data-app="quality"] .qa-card--strip .qa-note-txt { font-size:var(--cx-text-xs);color:var(--cx-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 }
+[data-app="quality"] .qa-card--strip .qa-acts { display:flex;gap:var(--cx-space-2);flex:none;margin-inline-start:auto }
+[data-app="quality"] .qa-card--strip .qa-detail { display:grid;gap:var(--cx-space-2);border-top:1px solid var(--cx-line);padding:var(--cx-space-2) var(--cx-space-3) var(--cx-space-3) }
+[data-app="quality"] .qa-card--strip .qa-detail .qa-reason { margin:0 }
+[data-app="quality"] .qa-card--strip .qa-detail .qa-ctlform { gap:var(--cx-space-2) }
+[data-app="quality"] .qa-cap { font-size:var(--cx-text-xs);font-weight:var(--cx-weight-strong);letter-spacing:.05em;text-transform:uppercase;color:var(--cx-ink-3) }
+@media(max-width:64rem) {
+  [data-app="quality"] .qa-card--strip, [data-app="quality"] .qa-card--strip>summary { flex-wrap:wrap }
+  [data-app="quality"] .qa-card--strip .qa-meta { flex-basis:100%;order:5 }
+}

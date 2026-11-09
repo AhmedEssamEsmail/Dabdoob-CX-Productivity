@@ -38,19 +38,35 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
   }
   const d = a.ctl
   return (
-    <article className="card card-pad qa-card">
-      <header className="qa-card__head">
+    <details className="qa-card qa-card--strip">
+      <summary>
+        <svg
+          className="qa-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.4}
+          strokeLinecap="round"
+        >
+          <path d="m9 6 6 6-6 6" />
+        </svg>
         <ScoreChip
           score={a.status === 'rescored' ? a.finalScore : a.score}
           fatal={a.fatal}
         />
-        <strong>{qaIsNum(a.ticketId) ? `Ticket #${a.ticketId}` : a.ticketId}</strong>
-        <span className="cx-muted">
-          {a.channel}, audited {a.auditDate} by {a.auditorName}
+        <strong className="qa-name">
+          {qaIsNum(a.ticketId) ? `Ticket #${a.ticketId}` : a.ticketId}
+        </strong>
+        <span className="qa-meta">
+          <span>
+            {a.channel}, audited {a.auditDate} by {a.auditorName}
+          </span>
         </span>
         <StatusChip s={a.status} />
-      </header>
-      <AuditFails a={a} />
+      </summary>
+      <div className="qa-detail">
+        <div className="qa-cap">Lost marks on</div>
+        <AuditFails a={a} />
       {d && d.status === 'submitted' ? (
         <div className="qa-ctlbox">
           <p>
@@ -120,7 +136,8 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
           {m}
         </p>
       ) : null}
-    </article>
+      </div>
+    </details>
   )
 }
 
@@ -144,7 +161,7 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
             title={i.length ? `To confirm, ${i.length}` : 'To confirm'}
             hint="CTLs your team lead closed with you. Denying one tells Mohamed and the team leads."
           >
-            <div className="qa-cards">
+            <div className="qa-list">
               {i.length ? (
                 i.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
               ) : (
@@ -163,7 +180,7 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
               over your counted audits (disputed ones are left out until decided)
             </span>
           </p>
-          <div className="qa-cards">
+          <div className="qa-list">
             {c.length ? (
               c.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
             ) : (

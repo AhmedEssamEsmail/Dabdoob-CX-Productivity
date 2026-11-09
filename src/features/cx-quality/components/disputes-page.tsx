@@ -159,20 +159,30 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
             </div>
             <div className="card-pad">
               {i.length ? (
-                <div className="grid">
+                <div className="qa-list">
                   {i.map((l: any) => (
-                    <article className="card card-pad qa-card" key={l.disputeId}>
-                      <header className="qa-card__head">
+                    <details className="qa-card qa-card--strip" key={l.disputeId}>
+                      <summary>
+                        <svg className="qa-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="m9 6 6 6-6 6" /></svg>
                         <ScorePill score={l.oldScore} fatal={l.audit?.fatal} />
-                        <strong>{l.agentName}</strong>
-                        {l.audit ? (
-                          <span className="cx-muted">
-                            ticket <TicketRef url={n.ticketUrl} id={l.audit.ticketId} />, audited by{' '}
-                            {l.auditorName} on {l.audit.auditDate}
+                        <strong className="qa-name">{l.agentName}</strong>
+                        <span className="qa-meta">
+                          {l.audit ? (
+                            <span>
+                              ticket <TicketRef url={n.ticketUrl} id={l.audit.ticketId} />, audited by{' '}
+                              {l.auditorName} on {l.audit.auditDate}
+                            </span>
+                          ) : null}
+                          <span className="qa-sep">·</span>
+                          <span>
+                            {l.status === 'escalated'
+                              ? `escalated by ${l.escalatedByName}, ${l.escalatedAt.slice(0, 10)}`
+                              : `raised by ${l.raisedByName}, ${l.raisedAt.slice(0, 10)}`}
                           </span>
-                        ) : null}
+                        </span>
                         <StatusPill s={l.status} />
-                      </header>
+                      </summary>
+                      <div className="qa-detail">
                   <p className="qa-reason">
                     <strong>Agent&apos;s case</strong>{' '}
                     <span className="cx-faint">
@@ -180,7 +190,12 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                     </span>
                     : {l.reason}
                   </p>
-                  {l.audit ? <AuditFails a={l.audit} /> : null}
+                  {l.audit ? (
+                    <>
+                      <div className="qa-cap">Lost marks on</div>
+                      <AuditFails a={l.audit} />
+                    </>
+                  ) : null}
                   {l.status === 'escalated' ? (
                     <p className="qa-reason">
                       <strong>Not aligned</strong>{' '}
@@ -193,15 +208,19 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                   {l.status === 'escalated' && !n.isOwner ? (
                     <p className="cx-muted">Waiting for {n.ownerName} to decide.</p>
                   ) : (
-                    <DecisionForm
-                      disputeId={l.disputeId}
-                      oldScore={l.oldScore}
-                      canEscalate={!n.isOwner && l.status === 'open'}
-                      ownerName={n.ownerName}
-                      onDone={s}
-                    />
+                    <>
+                      <div className="qa-cap">Meeting outcome</div>
+                      <DecisionForm
+                        disputeId={l.disputeId}
+                        oldScore={l.oldScore}
+                        canEscalate={!n.isOwner && l.status === 'open'}
+                        ownerName={n.ownerName}
+                        onDone={s}
+                      />
+                    </>
                   )}
-                  </article>
+                      </div>
+                    </details>
                   ))}
                 </div>
               ) : (

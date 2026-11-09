@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disputes compact + collapsible — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/app/theme.css">
+<link rel="stylesheet" href="../../src/app/cx-kit.css">
+<link rel="stylesheet" href="../../src/app/refresh.css">
+<link rel="stylesheet" href="mock.css">
+<style>
+  body { background: var(--cx-bg); color: var(--cx-ink); font: 400 .875rem/1.5 var(--cx-font); margin: 0; }
+</style>
+</head>
+<body>
+<main class="mk-idx">
+  <div>
+    <div style="font-size:.7rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--cx-accent)">Design proposal · not production code</div>
+    <h1 class="page-title" style="margin-top:.3rem">Disputes — compact + collapsible options</h1>
+    <p class="page-purpose">Three collapsed layouts for the “to decide” list; every row expands in place to show the agent's case, lost marks, escalation trail and the meeting-decision form. Rendered with the app's real stylesheets in dark theme — the rows really collapse, click them.</p>
+  </div>
+
+  <a class="mk-opt" href="a.html">
+    <span class="k">A</span>
+    <span><b>Expandable strip</b><span>One line per dispute — chevron, score, agent, ticket/auditor/raised-by (truncates), status. Expansion drops a detail sheet under the row. Matches CTL option A.</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="mk-opt" href="b.html">
+    <span class="k">B</span>
+    <span><b>Header + case preview</b><span>Two lines per dispute: identity + status on top, a one-line preview of the agent's case below. Expand for the full case, lost marks and decision form. Matches CTL option B.</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="mk-opt" href="c.html">
+    <span class="k">C</span>
+    <span><b>Expandable mini cards</b><span>2-column compact cards; opening one spans the full row width for details. Best scannability, slightly taller collapsed. Matches CTL option C.</span></span>
+    <span class="go">Open →</span>
+  </a>
+
+  <p class="cx-faint" style="font-size:.78rem">Files: <code>mockups/disputes-compact/{a,b,c}.html</code> — scaffolding in <code>mock.css</code> (imports <code>../ctl-compact/mock.css</code>). CTL options live at <a href="../ctl-compact/index.html" style="color:var(--cx-accent);font-weight:600">mockups/ctl-compact/</a>.</p>
+</main>
+</body>
+</html>

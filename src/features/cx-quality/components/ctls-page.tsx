@@ -315,7 +315,7 @@ function ResendMail({ auditId, ticketId }: { auditId: string; ticketId: string }
     )
   }
   return (
-    <Button disabled={a} onClick={() => i(false)}>
+    <Button size="sm" disabled={a} onClick={() => i(false)}>
       {a ? 'Sending…' : 'Resend result email'}
     </Button>
   )
@@ -372,72 +372,69 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
             </div>
             <div className="card-pad">
               {n.rows.length ? (
-                <div className="grid">
+                <div className="qa-list">
                   {n.rows.map((r: any) => (
                     <article
-                      className="card card-pad qa-card"
+                      className="qa-card qa-card--strip"
                       data-late={r.overdue ? 'true' : undefined}
                       data-picked={i.ctlId === r.ctlId ? 'true' : undefined}
                       key={r.ctlId}
                     >
-                      <header className="qa-card__head">
-                        {r.audit ? <ScorePill score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
-                        <strong>{r.agentName}</strong>
-                        {r.audit ? (
-                          <span className="cx-muted">
-                            ticket <TicketRef url={n.ticketUrl} id={r.audit.ticketId} />, {r.audit.channel}
+                      {r.audit ? <ScorePill score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
+                      <strong className="qa-name">{r.agentName}</strong>
+                      {r.status === 'open' || !r.notes ? (
+                        <span className="qa-meta">
+                          {r.audit ? (
+                            <span>
+                              ticket <TicketRef url={n.ticketUrl} id={r.audit.ticketId} />, {r.audit.channel}
+                            </span>
+                          ) : null}
+                          {r.audit ? <span className="qa-sep">·</span> : null}
+                          <span>
+                            {r.own
+                              ? 'Your agent'
+                              : `Owner ${r.tlName}; shown to you because you were on shift when it opened`}
+                            {r.closedBy && r.closedBy !== r.tlName
+                              ? `. Owner ${r.tlName}, closed by ${r.closedBy}`
+                              : ''}
                           </span>
-                        ) : null}
-                        <StatusPill s={r.status} />
+                        </span>
+                      ) : (
+                        <span className="qa-note-txt">
+                          {r.action}: {r.notes}
+                          {r.agentNote ? ` Agent: “${r.agentNote}”` : ''}
+                          {r.closedBy && r.closedBy !== r.tlName
+                            ? `. Owner ${r.tlName}, closed by ${r.closedBy}`
+                            : ''}
+                        </span>
+                      )}
+                      <StatusPill s={r.status} />
+                      {r.status === 'open' ? (
+                        <span className={pillCls(r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral')}>
+                          {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
+                        </span>
+                      ) : r.slaMet !== null ? (
+                        <span className={pillCls(r.slaMet ? 'ok' : 'bad')}>
+                          {r.slaMet ? 'On time' : 'Late'}
+                        </span>
+                      ) : null}
+                      {r.outcome ? (
+                        <span className={pillCls(r.outcome === 'dispute' ? 'warn' : 'ok')}>
+                          {r.outcome === 'dispute' ? 'Outcome: dispute' : 'Outcome: acknowledged'}
+                        </span>
+                      ) : null}
+                      {r.reopenCount ? <span className="pill bad">Reopened by the agent</span> : null}
+                      <span className="qa-acts">
                         {r.status === 'open' ? (
-                          <span
-                            className={pillCls(
-                              r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral'
-                            )}
-                          >
-                            {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
-                          </span>
-                        ) : r.slaMet !== null ? (
-                          <span className={pillCls(r.slaMet ? 'ok' : 'bad')}>
-                            {r.slaMet ? 'On time' : 'Late'}
-                          </span>
+                          <Button size="sm" variant="primary" onClick={() => m(r)}>
+                            Open in the form
+                          </Button>
                         ) : null}
-                        {r.outcome ? (
-                          <span className={pillCls(r.outcome === 'dispute' ? 'warn' : 'ok')}>
-                            {r.outcome === 'dispute' ? 'Outcome: dispute' : 'Outcome: acknowledged'}
-                          </span>
+                        {n.isAdmin && r.audit ? (
+                          <ResendMail auditId={r.auditId} ticketId={r.audit.ticketId} />
                         ) : null}
-                        {r.reopenCount ? <span className="pill bad">Reopened by the agent</span> : null}
-                      </header>
-                    <p className="cx-faint qa-owner">
-                      {r.own
-                        ? 'Your agent'
-                        : `Owner ${r.tlName}; shown to you because you were on shift when it opened`}
-                      {r.closedBy && r.closedBy !== r.tlName
-                        ? `. Owner ${r.tlName}, closed by ${r.closedBy}`
-                        : ''}
-                    </p>
-                    {r.status === 'open' ? (
-                      <div className="qa-actions">
-                        <Button
-                          variant="primary"
-                          onClick={() => m(r)}
-                        >
-                          Open in the form
-                        </Button>
-                      </div>
-                    ) : r.notes ? (
-                      <p className="cx-muted">
-                        {r.action}: {r.notes}
-                        {r.agentNote ? ` Agent: “${r.agentNote}”` : ''}
-                      </p>
-                    ) : null}
-                    {n.isAdmin && r.audit ? (
-                      <div className="qa-actions">
-                        <ResendMail auditId={r.auditId} ticketId={r.audit.ticketId} />
-                      </div>
-                    ) : null}
-                  </article>
+                      </span>
+                    </article>
                   ))}
                 </div>
               ) : (
