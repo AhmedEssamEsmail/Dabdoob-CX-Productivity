@@ -15,6 +15,8 @@ browser request
 under `src/app/api/` authenticate themselves (session, `CRON_SECRET` bearer,
 or `MIGRATION_SECRET_KEY` for admin/migration endpoints).
 
+Google OAuth setup: see `docs/GOOGLE_SIGNIN_SETUP.md`.
+
 ## Feature modules (`src/features/`)
 
 | Module            | Purpose                                                        |

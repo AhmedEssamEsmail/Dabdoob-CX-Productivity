@@ -1,8 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Field, Input } from '@/features/shared/components/ui'
+
+function UrlErrorNotice({ onError }: { onError: (message: string) => void }) {
+  const params = useSearchParams()
+
+  useEffect(() => {
+    const code = params.get('error')
+    if (!code) return
+    onError(
+      code === 'denied'
+        ? "That Google account isn't authorised for the CX Hub. Ask the CX admin to add you to the roster."
+        : 'Google sign-in failed. Try again or use email and password.'
+    )
+  }, [params, onError])
+
+  return null
+}
 
 /**
  * Legacy state-screen chrome around the sign-in form — same centred panel the
@@ -13,6 +29,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleBusy, setGoogleBusy] = useState(false)
   const [error, setError] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -42,6 +59,25 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogle = async () => {
+    setGoogleBusy(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/auth/google', { method: 'POST' })
+      const data = await response.json()
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Unable to start Google sign-in')
+      }
+
+      window.location.href = data.url
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unable to start Google sign-in')
+      setGoogleBusy(false)
+    }
+  }
+
   return (
     <main className="login-wrap">
       <div className="login-card">
@@ -66,6 +102,10 @@ export default function LoginPage() {
             <div className="brand-sub">dabdoob operations console</div>
           </div>
         </div>
+
+        <Suspense fallback={null}>
+          <UrlErrorNotice onError={setError} />
+        </Suspense>
 
         <h1 className="login-title">Sign in</h1>
         <p className="login-sub">Use your dabdoob.com work account to continue.</p>
@@ -123,7 +163,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
-          <Button type="submit" variant="primary" disabled={loading}>
+          <Button type="submit" variant="primary" disabled={loading || googleBusy}>
             {loading ? 'Signing in…' : 'Sign in'}
             <svg
               viewBox="0 0 24 24"
@@ -139,6 +179,19 @@ export default function LoginPage() {
             </svg>
           </Button>
         </form>
+
+        <div className="login-divider">
+          <span>or</span>
+        </div>
+        <Button
+          type="button"
+          variant="quiet"
+          className="login-google"
+          onClick={handleGoogle}
+          disabled={loading || googleBusy}
+        >
+          {googleBusy ? 'Redirecting…' : 'Continue with Google'}
+        </Button>
 
         <div className="login-foot">
           <span className="flex">

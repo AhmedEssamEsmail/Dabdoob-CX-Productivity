@@ -60,3 +60,39 @@ test.describe('Authentication Flow', () => {
     await expect(nav).toBeVisible()
   })
 })
+
+test.describe('Google sign-in', () => {
+  test('Continue with Google button is visible on the login page', async ({ page }) => {
+    await page.goto('/auth/login')
+
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible()
+  })
+
+  test('?error=denied shows the roster denial banner', async ({ page }) => {
+    await page.goto('/auth/login?error=denied')
+
+    // .login-error — Next dev also renders #__next-route-announcer__[role=alert]
+    await expect(page.locator('.login-error[role="alert"]')).toContainText(
+      'authorised for the CX Hub'
+    )
+  })
+
+  test('clicking Continue with Google fires POST /api/auth/google', async ({ page }) => {
+    // Mock the kickoff endpoint; the OAuth consent leg never leaves the test.
+    await page.route('**/api/auth/google', (route) =>
+      route.fulfill({
+        json: { url: 'https://accounts.google.com/o/oauth2/v2/auth?x=1' },
+      })
+    )
+    // Block the real external navigation after kickoff — no real network.
+    await page.route('https://accounts.google.com/**', (route) => route.abort())
+
+    await page.goto('/auth/login')
+    // Wait out hydration so the onClick handler is attached before clicking.
+    await page.waitForLoadState('networkidle')
+    const kickoff = page.waitForRequest('**/api/auth/google')
+    await page.getByRole('button', { name: 'Continue with Google' }).click()
+
+    await kickoff
+  })
+})

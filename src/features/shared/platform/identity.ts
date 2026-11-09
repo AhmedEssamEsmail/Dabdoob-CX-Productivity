@@ -75,7 +75,15 @@ export interface PlatformUser {
  * the active flag, specialist -> agent-level.
  */
 export const currentUser = cache(async (): Promise<PlatformUser> => {
-  const email = await currentEmail()
+  return roleForEmail(await currentEmail())
+})
+
+/**
+ * The sign-in verdict for one email — domain check, admin_emails, roster join,
+ * the active flag, specialist -> agent-level. Shared by currentUser and the
+ * OAuth callback, which already holds the email.
+ */
+export async function roleForEmail(email: string): Promise<PlatformUser> {
   const domain = String((await getConfig('allowed_domain', 'dabdoob.com')) || '').toLowerCase()
   if (email.split('@')[1] !== domain) {
     return { email, name: email, role: 'unknown', tlEmail: null }
@@ -108,7 +116,7 @@ export const currentUser = cache(async (): Promise<PlatformUser> => {
     }
   }
   return { email, name: row ? String(row.name || email) : email, role: 'unknown', tlEmail: null }
-})
+}
 
 /**
  * Throws unless the caller has one of the given roles (requireRole_,
