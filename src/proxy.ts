@@ -3,6 +3,15 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
+  // Supabase falls back to Site URL + ?code when redirectTo isn't allow-listed;
+  // forward the code to the callback that exchanges it.
+  const code = request.nextUrl.searchParams.get('code')
+  if (code && request.nextUrl.pathname !== '/auth/callback') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({ request })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
