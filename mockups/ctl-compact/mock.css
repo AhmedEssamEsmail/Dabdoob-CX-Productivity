@@ -1,0 +1,155 @@
+/* CTLs compact-box mockups — shell recreation + per-variant layouts.
+   Loads after the app's real stylesheets; only adds mock scaffolding and
+   the candidate CTL item layouts. */
+
+/* ---------- fake app shell (static, matches production rail) ---------- */
+.mk-shell { display: grid; grid-template-columns: 15rem 1fr; min-height: 100vh; }
+.mk-rail {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  background: var(--cx-surface);
+  border-inline-end: 1px solid var(--cx-line);
+  display: flex; flex-direction: column;
+  font-size: var(--cx-text-sm);
+}
+.mk-brand {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .9rem 1rem .8rem; border-bottom: 1px solid var(--cx-line);
+}
+.mk-logo {
+  inline-size: 1.9rem; block-size: 1.9rem; border-radius: 7px; flex: none;
+  background: var(--pine-2, #1f6b57);
+  display: grid; place-items: center; color: #fff; font-size: .9rem;
+}
+.mk-brand b { display: block; font-size: .85rem; line-height: 1.2; }
+.mk-brand span.s { font-size: .68rem; color: var(--cx-ink-3); }
+.mk-search {
+  margin: .7rem .9rem .3rem; padding: .4rem .6rem;
+  border: 1px solid var(--cx-line); border-radius: 8px;
+  color: var(--cx-ink-3); font-size: .78rem;
+  display: flex; align-items: center; gap: .45rem;
+}
+.mk-search kbd {
+  margin-inline-start: auto; font: 500 .65rem var(--cx-font);
+  border: 1px solid var(--cx-line); border-radius: 4px; padding: .05rem .3rem;
+}
+.mk-nav { flex: 1; padding: .4rem .7rem 1rem; }
+.mk-grp {
+  font-size: .63rem; font-weight: 650; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--cx-ink-3);
+  padding: .8rem .5rem .3rem;
+}
+.mk-nav a {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .34rem .5rem; border-radius: 7px;
+  color: var(--cx-ink-2); font-weight: 500;
+}
+.mk-nav a svg { inline-size: .95rem; block-size: .95rem; opacity: .7; flex: none; }
+.mk-nav a.on {
+  background: var(--cx-accent-soft); color: var(--cx-accent);
+  font-weight: 650;
+}
+.mk-main { min-width: 0; padding: 1.4rem clamp(1.25rem, 3vw, 2.2rem) 3rem; }
+.mk-main .cxp { max-width: 72rem; }
+
+/* ---------- shared CTL item bits ---------- */
+.ctl-list { display: grid; gap: .5rem; }
+.cxp > .card, .ctl-list > *, .vc-grid > * { min-width: 0; }
+.ctl-name { font-weight: var(--cx-weight-strong); white-space: nowrap; }
+.ctl-who {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.ctl-acts { display: flex; gap: .4rem; flex: none; }
+.mk-item {
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-line); border-radius: 10px;
+}
+.mk-item[data-late] { border-inline-start: 3px solid var(--cx-status-bad-edge); }
+.mk-item[data-picked] { outline: 2px solid var(--cx-accent); outline-offset: -2px; }
+.mk-tag {
+  position: sticky; top: .5rem; z-index: 2;
+  justify-self: start;
+  font-size: .7rem; font-weight: 650; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--cx-accent); background: var(--cx-accent-soft);
+  border-radius: 999px; padding: .2rem .7rem; margin-bottom: .25rem;
+}
+
+/* ============ VARIANT A — single-line strip ============ */
+.va-item {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .4rem .75rem;
+}
+.va-item .meta {
+  display: flex; align-items: center; gap: .4rem; min-width: 0; flex: 1;
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden;
+}
+.va-item .meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.va-item .meta .sep { opacity: .55; flex: none; }
+.va-item .ctl-name, .va-item .pill, .va-item .ctl-acts { flex: none; }
+.va-item .ctl-who { flex: 0 1 auto; }
+.va-item .ctl-acts { margin-inline-start: auto; }
+.va-item .closed-note {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;
+}
+@media (max-width: 64rem) {
+  .va-item { flex-wrap: wrap; }
+  .va-item .meta { flex-basis: 100%; order: 5; }
+}
+
+/* ============ VARIANT B — header line + meta line ============ */
+.vb-item { display: grid; gap: .3rem; padding: .5rem .85rem; }
+.vb-top {
+  display: flex; align-items: center; gap: .55rem; min-width: 0;
+}
+.vb-top .ticket {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.vb-top .ctl-acts { margin-inline-start: auto; }
+.vb-sub {
+  display: flex; align-items: baseline; gap: .5rem; min-width: 0;
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+}
+.vb-sub .note-txt { color: var(--cx-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+@media (max-width: 60rem) {
+  .vb-top { flex-wrap: wrap; }
+  .vb-top .ctl-acts { flex-basis: 100%; }
+}
+
+/* ============ VARIANT C — 2-col mini cards, action footer ============ */
+.vc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+.vc-item { display: grid; gap: .35rem; padding: .6rem .85rem; align-content: start; }
+.vc-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; min-width: 0; }
+.vc-sub {
+  font-size: var(--cx-text-xs); color: var(--cx-ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vc-foot {
+  display: flex; align-items: center; gap: .5rem; min-width: 0;
+  border-top: 1px dashed var(--cx-line); padding-top: .45rem;
+}
+.vc-foot .ctl-who { flex: 1; }
+.vc-foot .closed-note {
+  flex: 1; font-size: var(--cx-text-xs); color: var(--cx-ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+@media (max-width: 56rem) { .vc-grid { grid-template-columns: 1fr; } }
+
+/* ---------- index page ---------- */
+.mk-idx { max-width: 60rem; margin: 0 auto; padding: 3rem 2rem; display: grid; gap: 1rem; }
+.mk-opt {
+  display: flex; align-items: center; gap: 1rem;
+  border: 1px solid var(--cx-line); border-radius: 12px;
+  padding: 1rem 1.25rem; background: var(--cx-surface);
+}
+.mk-opt:hover { border-color: var(--cx-accent); }
+.mk-opt .k {
+  inline-size: 2rem; block-size: 2rem; border-radius: 8px; flex: none;
+  display: grid; place-items: center;
+  background: var(--cx-accent-soft); color: var(--cx-accent); font-weight: 700;
+}
+.mk-opt b { display: block; }
+.mk-opt span { font-size: var(--cx-text-sm); color: var(--cx-ink-2); }
+.mk-opt .go { margin-inline-start: auto; color: var(--cx-ink-3); }

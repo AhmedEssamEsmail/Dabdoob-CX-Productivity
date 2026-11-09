@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTLs compact boxes — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/app/theme.css">
+<link rel="stylesheet" href="../../src/app/cx-kit.css">
+<link rel="stylesheet" href="../../src/app/refresh.css">
+<link rel="stylesheet" href="mock.css">
+<style>
+  body { background: var(--cx-bg); color: var(--cx-ink); font: 400 .875rem/1.5 var(--cx-font); margin: 0; }
+</style>
+</head>
+<body>
+<main class="mk-idx">
+  <div>
+    <div style="font-size:.7rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--cx-accent)">Design proposal · not production code</div>
+    <h1 class="page-title" style="margin-top:.3rem">CTLs — compact box options</h1>
+    <p class="page-purpose">Three layouts for the CTL list: compact boxes with all actions on one line. Rendered with the app's real stylesheets in dark theme — open a frame to view full-size.</p>
+  </div>
+
+  <a class="mk-opt" href="a.html">
+    <span class="k">A</span>
+    <span><b>Single-line strip</b><span>Everything on one row — score, name, ticket, owner, status pills, then buttons at the right edge. Densest option; long ticket refs truncate.</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="mk-opt" href="b.html">
+    <span class="k">B</span>
+    <span><b>Header + meta line</b><span>Two lines per box: identity, pills and buttons share the top line; owner context sits on a quiet second line. Balanced density and readability.</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="mk-opt" href="c.html">
+    <span class="k">C</span>
+    <span><b>2-col mini cards</b><span>Small cards in a two-column grid — pills on top, ticket line, and a footer row holding owner text plus buttons on the same line.</span></span>
+    <span class="go">Open →</span>
+  </a>
+
+  <p class="cx-faint" style="font-size:.78rem">Files: <code>mockups/ctl-compact/{a,b,c}.html</code> — shared scaffolding in <code>mock.css</code>. Real styles come from <code>src/app/{theme,cx-kit,refresh}.css</code> + <code>styles/quality.css</code>.</p>
+</main>
+</body>
+</html>

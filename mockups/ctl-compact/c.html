@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTLs · Option C — 2-col mini cards</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../src/app/theme.css">
+<link rel="stylesheet" href="../../src/app/cx-kit.css">
+<link rel="stylesheet" href="../../src/app/refresh.css">
+<link rel="stylesheet" href="../../src/app/styles/quality.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<div class="mk-shell">
+  <aside class="mk-rail">
+    <div class="mk-brand"><span class="mk-logo">▦</span><div><b>Databook CX</b><span class="s">Operational console</span></div></div>
+    <div class="mk-search">Search or jump to… <kbd>Ctrl K</kbd></div>
+    <nav class="mk-nav">
+      <div class="mk-grp">Hub</div>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 8h5M18.5 5.5v5"/></svg>People &amp; holidays</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>Admin</a>
+      <div class="mk-grp">Quality</div>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Team scores</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>Audit Desk</a>
+      <a class="on" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg>CTLs</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 3h5v5M8 21H3v-5M21 3l-7 7M3 21l7-7"/></svg>Disputes</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Calibration</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg>KB gaps</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>My auditor work</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m7 14 4-4 3 3 5-6"/></svg>Quality analytics</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Audit forms</a>
+      <div class="mk-grp">Productivity</div>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Queue &amp; workforce</a>
+      <div class="mk-grp">People &amp; performance</div>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>My status</a>
+    </nav>
+  </aside>
+
+  <main class="mk-main" data-app="quality">
+    <section class="cxp dq-page">
+      <header class="dq-head">
+        <div>
+          <h1 id="page-title" class="page-title">CTLs</h1>
+          <p class="page-purpose">Every audit under 100% opens a CTL — whoever is on shift may close it and submit the outcome.</p>
+        </div>
+      </header>
+
+      <section class="card" aria-label="Submit a CTL">
+        <div class="card-head"><div class="card-title">Submit a CTL</div><div class="card-hint">mock: form collapsed</div></div>
+        <div class="card-pad" style="display:flex;gap:.75rem;align-items:end">
+          <div class="cx-field" style="flex:1;max-width:22rem">
+            <label class="cx-label" for="ctl-ref">Ticket number or audit ID</label>
+            <input class="cx-input" id="ctl-ref" placeholder="e.g. 701234 or QA-…">
+          </div>
+          <span class="cx-faint" style="font-size:.75rem">The audit opens beside the form with only the questions that lost marks.</span>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Open CTLs">
+        <div class="card-head"><div class="card-title">29 open</div><div class="card-hint">Option C · 2-col mini cards</div></div>
+        <div class="card-pad">
+          <div class="vc-grid">
+
+            <article class="mk-item vc-item" data-late>
+              <div class="vc-head">
+                <span class="pill warn">80%</span>
+                <span class="ctl-name">Omar Ahmed Ahmed Hassan</span>
+                <span class="pill">Open</span>
+                <span class="pill bad">Overdue 2026-10-29</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">Cash refund: KW86DBYN00000000000211527001</a>, Cash refund</div>
+              <div class="vc-foot">
+                <span class="ctl-who">Owner Ahmed Naguib — you were on shift</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--primary cx-btn--small">Open in the form</button>
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+            <article class="mk-item vc-item" data-late>
+              <div class="vc-head">
+                <span class="pill bad">0%, critical</span>
+                <span class="ctl-name">Nada Alamshani</span>
+                <span class="pill">Open</span>
+                <span class="pill bad">Overdue 2026-11-01</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">#340640</a>, Inbound Calls</div>
+              <div class="vc-foot">
+                <span class="ctl-who">Owner Noha Hassan Foaad Qandil — you were on shift</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--primary cx-btn--small">Open in the form</button>
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+            <article class="mk-item vc-item" data-late>
+              <div class="vc-head">
+                <span class="pill warn">50%</span>
+                <span class="ctl-name">Nada Alamshani</span>
+                <span class="pill">Open</span>
+                <span class="pill bad">Overdue 2026-11-01</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">#340666</a>, Inbound Calls</div>
+              <div class="vc-foot">
+                <span class="ctl-who">Owner Noha Hassan Foaad Qandil — you were on shift</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--primary cx-btn--small">Open in the form</button>
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+            <article class="mk-item vc-item" data-late>
+              <div class="vc-head">
+                <span class="pill bad">0%, critical</span>
+                <span class="ctl-name">Nada Alamshani</span>
+                <span class="pill">Open</span>
+                <span class="pill bad">Overdue 2026-11-02</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">#341684</a>, Inbound Calls</div>
+              <div class="vc-foot">
+                <span class="ctl-who">Owner Noha Hassan Foaad Qandil — you were on shift</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--primary cx-btn--small">Open in the form</button>
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+            <article class="mk-item vc-item">
+              <div class="vc-head">
+                <span class="pill warn">72%</span>
+                <span class="ctl-name">Mariam El-Sayed</span>
+                <span class="pill">Open</span>
+                <span class="pill">Due 2026-11-12</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">#342100</a>, Chat</div>
+              <div class="vc-foot">
+                <span class="ctl-who">Your agent</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--primary cx-btn--small">Open in the form</button>
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+            <article class="mk-item vc-item">
+              <div class="vc-head">
+                <span class="pill bad">64%</span>
+                <span class="ctl-name">Omar Ahmed Ahmed Hassan</span>
+                <span class="pill ok">On time</span>
+                <span class="pill ok">Acknowledged</span>
+              </div>
+              <div class="vc-sub">ticket <a href="#">#339950</a>, Inbound Calls</div>
+              <div class="vc-foot">
+                <span class="closed-note">Coaching call — refund policy; agent will confirm timelines.</span>
+                <span class="ctl-acts">
+                  <button class="cx-btn cx-btn--small">Resend email</button>
+                </span>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="CTL SLA">
+        <div class="card-head"><div class="card-title">CTL SLA, November 2026</div></div>
+        <div class="cx-tablewrap">
+          <table class="cx-table">
+            <thead><tr><th>Team lead</th><th>Due so far</th><th>On time</th><th>SLA</th><th>Done</th></tr></thead>
+            <tbody>
+              <tr><td>Ahmed Naguib</td><td class="cx-num">9</td><td class="cx-num">7</td><td><span class="pill warn">78%</span></td><td class="cx-num">10 of 14 (71%)</td></tr>
+              <tr><td>Noha Hassan Foaad Qandil</td><td class="cx-num">14</td><td class="cx-num">11</td><td><span class="pill warn">79%</span></td><td class="cx-num">15 of 21 (71%)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+</body>
+</html>
