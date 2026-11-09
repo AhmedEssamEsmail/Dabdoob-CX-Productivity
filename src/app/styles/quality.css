@@ -46,6 +46,7 @@
   [data-app="quality"] .qa-ctl { grid-template-columns:minmax(0,3fr) minmax(0,2fr) }
   [data-app="quality"] .qa-ctlside { position:sticky;inset-block-start:var(--cx-space-3) }
 }
+[data-app="quality"] .card:has(.qa-ctl) { max-inline-size:72rem }
 [data-app="quality"] .qa-ctl .qa-ctlform { max-inline-size:none }
 [data-app="quality"] .qa-ctlside { border-inline-start:3px solid var(--cx-accent);min-inline-size:0 }
 [data-app="quality"] .qa-ctlside__body { display:grid;gap:var(--cx-space-3) }
@@ -214,7 +215,7 @@
 /* ============================ compact strip cards (Option A) ============================
    .qa-card--strip = single-line strip rows; <details> variant collapses to a
    summary row plus a .qa-detail expansion. Colors/spacing are --cx-* tokens only. */
-[data-app="quality"] .qa-list { display:grid;gap:var(--cx-space-2) }
+[data-app="quality"] .qa-list { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--cx-space-2) }
 [data-app="quality"] .qa-card--strip, [data-app="quality"] .qa-card--strip>summary { display:flex;align-items:center;gap:var(--cx-space-2);padding:var(--cx-space-1) var(--cx-space-3) }
 [data-app="quality"] .qa-card--strip { background:var(--cx-surface);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object) }
 [data-app="quality"] details.qa-card--strip { display:block;padding:0 }
@@ -223,8 +224,8 @@
 [data-app="quality"] .qa-chev { inline-size:.9rem;block-size:.9rem;flex:none;color:var(--cx-ink-3);transition:transform .15s }
 [data-app="quality"] details.qa-card--strip[open]>summary .qa-chev { transform:rotate(90deg) }
 [data-app="quality"] .qa-card--strip>summary:hover .qa-chev { color:var(--cx-ink) }
-[data-app="quality"] .qa-card--strip .qa-name { font-weight:var(--cx-weight-strong);white-space:nowrap }
-[data-app="quality"] .qa-card--strip .qa-name, [data-app="quality"] .qa-card--strip .pill, [data-app="quality"] .qa-card--strip .cx-chip, [data-app="quality"] .qa-card--strip .qa-acts { flex:none }
+[data-app="quality"] .qa-card--strip .qa-name { font-weight:var(--cx-weight-strong);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto }
+[data-app="quality"] .qa-card--strip .pill, [data-app="quality"] .qa-card--strip .cx-chip, [data-app="quality"] .qa-card--strip .qa-acts { flex:none }
 [data-app="quality"] .qa-card--strip .qa-meta { display:flex;align-items:center;gap:var(--cx-space-1);min-width:0;flex:1;font-size:var(--cx-text-xs);color:var(--cx-ink-3);white-space:nowrap;overflow:hidden }
 [data-app="quality"] .qa-card--strip .qa-meta>span { min-width:0;overflow:hidden;text-overflow:ellipsis }
 [data-app="quality"] .qa-card--strip .qa-meta .qa-sep { opacity:.55;flex:none }
