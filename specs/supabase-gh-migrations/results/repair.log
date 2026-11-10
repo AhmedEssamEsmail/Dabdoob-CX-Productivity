@@ -1,0 +1,272 @@
+=== applied 20261030163812 ===
+Repaired migration history: [20261030163812] => applied (initial test call)
+=== applied 20261031193119 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261031193119] => applied
+{"versions":["20261031193119"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261031193219 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261031193219] => applied
+{"versions":["20261031193219"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261101175759 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261101175759] => applied
+{"versions":["20261101175759"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105171948 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105171948] => applied
+{"versions":["20261105171948"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105172048 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105172048] => applied
+{"versions":["20261105172048"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105172148 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105172148] => applied
+{"versions":["20261105172148"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105172248 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105172248] => applied
+{"versions":["20261105172248"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105172348 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105172348] => applied
+{"versions":["20261105172348"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261105172448 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261105172448] => applied
+{"versions":["20261105172448"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261106151132 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106151132] => applied
+{"versions":["20261106151132"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261106201210 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106201210] => applied
+{"versions":["20261106201210"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261106202413 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106202413] => applied
+{"versions":["20261106202413"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== applied 20261106202513 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as applied on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106202513] => applied
+{"versions":["20261106202513"],"status":"applied","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160403 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160403] => reverted
+{"versions":["20261030160403"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160406 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160406] => reverted
+{"versions":["20261030160406"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160410 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160410] => reverted
+{"versions":["20261030160410"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160941 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160941] => reverted
+{"versions":["20261030160941"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160944 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160944] => reverted
+{"versions":["20261030160944"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160955 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160955] => reverted
+{"versions":["20261030160955"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030160958 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030160958] => reverted
+{"versions":["20261030160958"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030161006 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030161006] => reverted
+{"versions":["20261030161006"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030161012 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030161012] => reverted
+{"versions":["20261030161012"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030161018 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030161018] => reverted
+{"versions":["20261030161018"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261030161025 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261030161025] => reverted
+{"versions":["20261030161025"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261031135657 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261031135657] => reverted
+{"versions":["20261031135657"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261031135702 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261031135702] => reverted
+{"versions":["20261031135702"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261031135745 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261031135745] => reverted
+{"versions":["20261031135745"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130507 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130507] => reverted
+{"versions":["20261106130507"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130528 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130528] => reverted
+{"versions":["20261106130528"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130557 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130557] => reverted
+{"versions":["20261106130557"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130716 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130716] => reverted
+{"versions":["20261106130716"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130722 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130722] => reverted
+{"versions":["20261106130722"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130812 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130812] => reverted
+{"versions":["20261106130812"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130831 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130831] => reverted
+{"versions":["20261106130831"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130842 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130842] => reverted
+{"versions":["20261106130842"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130915 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130915] => reverted
+{"versions":["20261106130915"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106130944 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106130944] => reverted
+{"versions":["20261106130944"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106131001 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106131001] => reverted
+{"versions":["20261106131001"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106131009 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106131009] => reverted
+{"versions":["20261106131009"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106131030 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106131030] => reverted
+{"versions":["20261106131030"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106134818 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106134818] => reverted
+{"versions":["20261106134818"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106190239 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106190239] => reverted
+{"versions":["20261106190239"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261106190259 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261106190259] => reverted
+{"versions":["20261106190259"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261109093321 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261109093321] => reverted
+{"versions":["20261109093321"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
+=== reverted 20261109093328 ===
+Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Initialising login role...
+Confirmed by --yes: Mark 1 migration as reverted on project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
+Repaired migration history: [20261109093328] => reverted
+{"versions":["20261109093328"],"status":"reverted","repairAll":false,"message":"Migration history repaired","target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"}}
