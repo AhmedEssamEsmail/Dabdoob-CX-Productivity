@@ -159,5 +159,6 @@ export const MAPPINGS: TableMapping[] = [
   {
     spreadsheet: 'quality', sheet: 'qa_volume', table: 'qa_volume',
     columns: ['date', 'channel', 'contact_type', 'tickets', 'updated_at'],
+    upsertOn: 'date,channel,contact_type',
   },
 ]

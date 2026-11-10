@@ -356,6 +356,8 @@ export const NULL_AS_EMPTY: Record<string, string[]> = {
   sc_daily: ['name'],
   sc_months: ['error', 'fcr_note', 'behaviour_note'],
   sc_behaviour: ['date'],
+  // ops-tabs AUXex/WA transforms emit submitted_by = '' on tracker_records rows.
+  tracker_records: ['submitted_by'],
 }
 
 /**

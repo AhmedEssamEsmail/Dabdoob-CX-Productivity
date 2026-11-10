@@ -14,6 +14,12 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { MAPPINGS as QQ_MAPPINGS, ROW_TRANSFORMS as QQ_TRANSFORMS, SUGGESTED_INT_COLS as QQ_INT, SUGGESTED_NUM_COLS as QQ_NUM, SUGGESTED_JSON_COLS as QQ_JSON, DECISIONS as QQ_DECISIONS } from './mappings/queue-quality'
 import { MAPPINGS as PC_MAPPINGS } from './mappings/people-core'
 import { MAPPINGS as DO_MAPPINGS, ROW_TRANSFORMS as DO_TRANSFORMS, NULL_AS_EMPTY, SUGGESTED_INT_COLS as DO_INT, SUGGESTED_NUM_COLS as DO_NUM, SUGGESTED_JSON_COLS as DO_JSON, TRACKER_RECORD_BACKFILLS, DECISIONS as DO_DECISIONS } from './mappings/desk-operations'
+import { MAPPINGS as HCT_MAPPINGS, DECISIONS as HCT_DECISIONS } from './mappings/hct'
+import { MAPPINGS as V1_MAPPINGS, ROW_TRANSFORMS as V1_TRANSFORMS, DECISIONS as V1_DECISIONS } from './mappings/v1-ops'
+import { MAPPINGS as V1S_MAPPINGS, ROW_TRANSFORMS as V1S_TRANSFORMS, DECISIONS as V1S_DECISIONS } from './mappings/v1-ops-sched'
+import { MAPPINGS as V1P_MAPPINGS, ROW_TRANSFORMS as V1P_TRANSFORMS, DECISIONS as V1P_DECISIONS } from './mappings/v1-ops-people'
+import { MAPPINGS as V1M_MAPPINGS, DECISIONS as V1M_DECISIONS } from './mappings/v1-ops-misc'
+import { MAPPINGS as OT_MAPPINGS, ROW_TRANSFORMS as OT_TRANSFORMS, DECISIONS as OT_DECISIONS } from './mappings/ops-tabs'
 
 export interface TableMapping {
   spreadsheet: string
@@ -32,6 +38,10 @@ export const SPREADSHEETS: Record<string, string> = {
   live: '1u_EU-LxMYzDmulIWz1cgseDaOkd8C4wXc17BFXVfNF4', // ss_live_id — CC2 Live
   data_2026: '1BVJFMtQMSF2-zS89A-4oxoSuw0LunqAp_YQVwl0fR-I', // ss_data_2026_id — CC2 Data 2026
   quality: '1sOFoYdrbKorQ0WOA6bgJT1ROpzPxq2N-7oWnjhsxm3w', // ss_quality_id — CC2 Quality
+  hct: '1LtUZbF4fdlLIaQMCMgrY7xZbs2C4zAfLAqlEWbKvNEw', // roster_hct_ss_id — HCT Sheet1
+  v1_ops: '1hul-T8Tc2h1nmk_9wM9bj8HmWM-_2ZeVIu_kOYpicyA', // V1 ops — Tasks
+  oct_workbook: '1I29yjZ2XaX5yJnnHgKLxthBsKfSgBrK7aCRfafniuVI', // oct_workbook_ss_id — Oct workbook
+  daily_report: '1Ll5BxooiYJhKooIr88p_g-ePRo9WI9lvLkWDXdju7V4', // daily_report_ss_id — daily report
 }
 
 const JSON_COLS = new Set([
@@ -75,15 +85,15 @@ const INT_COLS_BY_TABLE: Record<string, Set<string>> = {
 }
 type TransformCtx = { spreadsheet: string; table: string; index: number }
 const ROW_TRANSFORMS: Record<string, (row: Record<string, unknown>, ctx: TransformCtx) => void> = {
-  ...QQ_TRANSFORMS, ...DO_TRANSFORMS,
+  ...QQ_TRANSFORMS, ...DO_TRANSFORMS, ...V1_TRANSFORMS, ...V1S_TRANSFORMS, ...V1P_TRANSFORMS, ...OT_TRANSFORMS,
 }
 const NULL_AS_EMPTY_MAP: Record<string, Set<string>> = {}
 Object.entries(NULL_AS_EMPTY).forEach(([t, cols]) => { NULL_AS_EMPTY_MAP[t] = new Set(cols) })
 
 /** The route's original 16 entries live in route.ts (kept inline there — they
  * predate the module split); everything wave-3 produced is in ./mappings/. */
-export const MODULE_MAPPINGS: TableMapping[] = [...QQ_MAPPINGS, ...PC_MAPPINGS, ...DO_MAPPINGS]
-export const MAPPING_DECISIONS = [...QQ_DECISIONS, ...DO_DECISIONS]
+export const MODULE_MAPPINGS: TableMapping[] = [...QQ_MAPPINGS, ...PC_MAPPINGS, ...DO_MAPPINGS, ...HCT_MAPPINGS, ...V1_MAPPINGS, ...V1S_MAPPINGS, ...V1P_MAPPINGS, ...V1M_MAPPINGS, ...OT_MAPPINGS]
+export const MAPPING_DECISIONS = [...QQ_DECISIONS, ...DO_DECISIONS, ...HCT_DECISIONS, ...V1_DECISIONS, ...V1S_DECISIONS, ...V1P_DECISIONS, ...V1M_DECISIONS, ...OT_DECISIONS]
 
 let sheetsClient: ReturnType<typeof google.sheets> | null = null
 function getSheetsClient() {
@@ -128,18 +138,43 @@ async function readSheetRaw(spreadsheetId: string, sheetName: string): Promise<u
   throw new Error(`Sheet '${sheetName}': unreachable after retries`)
 }
 
+/** Positional + duplicate-safe header keys (S07-01): blank headers become
+ * `col_<a1-letter>` of their index (0->a … 25->z, 26->aa); a repeated
+ * trimmed-lowercased name keeps `h` on first use, later occurrences become
+ * `h#2`, `h#3`, … Every previously-meaningful key keeps its meaning EXCEPT a
+ * duplicated header, which now resolves to the FIRST occurrence (previously
+ * last) — mapping authors needing a later occurrence must name `h#N`;
+ * unlabeled cells are reachable only via `col_<letter>`. */
+export function headerKeys(rawHeader: unknown[]): string[] {
+  const counts = new Map<string, number>()
+  return rawHeader.map((cell, i) => {
+    const h = String(cell ?? '').trim().toLowerCase()
+    let letter = ''
+    for (let n = i; n >= 0; n = Math.floor(n / 26) - 1) letter = String.fromCharCode(97 + (n % 26)) + letter
+    const base = h || `col_${letter}`
+    const n = (counts.get(base) ?? 0) + 1
+    counts.set(base, n)
+    return n === 1 ? base : `${base}#${n}`
+  })
+}
+
 export async function readSheet(spreadsheetId: string, sheetName: string) {
   const rows = await readSheetRaw(spreadsheetId, sheetName)
   if (rows.length < 2) return []
-  const headers = (rows[0] as string[]).map((h) => String(h).trim().toLowerCase())
+  // Sheets trims trailing blank header cells, so rows[0] can be shorter than
+  // data rows — size keys off the widest row so col_<letter> keys still emit
+  // for unlabeled trailing cells (e.g. FD_AUX E..G).
+  let width = rows[0]?.length ?? 0
+  for (const r of rows) if (r.length > width) width = r.length
+  const keys = headerKeys(Array.from({ length: width }, (_, i) => rows[0][i]))
   return rows.slice(1).map((row) => {
     const obj: Record<string, unknown> = {}
-    headers.forEach((header, i) => {
+    keys.forEach((key, i) => {
       // Verbatim cells, '' included (legacy route behaviour — dry-run B1):
       // nulling '' here would hide empty cells from mapRow's ''-branch, so
       // NULL_AS_EMPTY and the created_at/updated_at/computed_at fallback
       // could only ever fire on absent headers, never empty cells.
-      obj[header] = row[i]
+      obj[key] = row[i]
     })
     return obj
   })
@@ -177,7 +212,15 @@ function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<str
   return out
 }
 
-export interface TableResult { read?: number; migrated: number; skipped?: number; errors?: string[] }
+/** PostgREST interpolates `onConflict` verbatim — every key must be a
+ * double-quoted identifier or reserved words (e.g. mail_log's `to`) 42601.
+ * Uniform quoting covers all current and future keys; the in-memory seen-map
+ * still splits the RAW upsertOn for r[k] lookups. */
+export function conflictTarget(upsertOn: string): string {
+  return upsertOn.split(',').map((k) => `"${k.trim()}"`).join(',')
+}
+
+export interface TableResult { read?: number; migrated: number; skipped?: number; dupSkipped?: number; errors?: string[] }
 
 export async function migrateTable(supabase: SupabaseClient, mapping: TableMapping): Promise<TableResult> {
   const errors: string[] = []
@@ -205,12 +248,17 @@ export async function migrateTable(supabase: SupabaseClient, mapping: TableMappi
   let mapped = rows
     .map((r) => mapRow(r, mapping))
     .filter((r) => !(mapping.require || []).some((col) => r[col] === null || r[col] === undefined))
-  const skipped = rows.length - mapped.length
+  const requireDropped = rows.length - mapped.length
 
+  // upsertOn collapses duplicate conflict-keys in-memory (last wins). Those
+  // rows are never written, so they count as skipped — tracked separately as
+  // dupSkipped and folded into skipped so read = migrated + skipped holds.
+  let dupSkipped = 0
   if (mapping.upsertOn) {
     const keys = mapping.upsertOn.split(',')
     const seen = new Map<string, Record<string, unknown>>()
     for (const r of mapped) seen.set(keys.map((k) => String(r[k])).join('|'), r)
+    dupSkipped = mapped.length - seen.size
     mapped = Array.from(seen.values())
   } else if (mapping.table === 'view_as') {
     await supabase.from('view_as').delete().not('id', 'is', null)
@@ -221,13 +269,13 @@ export async function migrateTable(supabase: SupabaseClient, mapping: TableMappi
   for (let i = 0; i < mapped.length; i += batchSize) {
     const batch = mapped.slice(i, i + batchSize)
     const query = mapping.upsertOn
-      ? supabase.from(mapping.table).upsert(batch, { onConflict: mapping.upsertOn })
+      ? supabase.from(mapping.table).upsert(batch, { onConflict: conflictTarget(mapping.upsertOn) })
       : supabase.from(mapping.table).insert(batch)
     const { error } = await query
     if (error) errors.push(`Rows ${i}-${i + batch.length}: ${error.message}`)
     else migrated += batch.length
   }
-  return { read: rows.length, migrated, skipped, errors }
+  return { read: rows.length, migrated, skipped: requireDropped + dupSkipped, dupSkipped, errors }
 }
 
 /**

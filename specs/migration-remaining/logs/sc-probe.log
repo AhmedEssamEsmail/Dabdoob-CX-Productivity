@@ -1,0 +1,4 @@
+◇ injected env (11) from .env.local
+sc-refresh --probe (read-only)
+productivity_files months: 2026-09
+2026-09  workbook=1I29yjZ2XaX5yJnnHgKLxthBsKfSgBrK7aCRfafniuVI  fallback=false  sc_months: ok title="Productivity (Sep-2026)" rows=480 refreshed_at=2026-10-06T07:44:27.093+00:00

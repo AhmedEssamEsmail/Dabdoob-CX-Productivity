@@ -157,12 +157,14 @@ export const MAPPINGS: TableMapping[] = [
     columns: ['log_id', 'topic', 'position', 'raised_by', 'suggested', 'skipped_reason',
       'outcome', 'confidential', 'answers_json', 'fields_json', 'evidence_json',
       'submitted_by', 'submitted_at'],
+    upsertOn: 'log_id,position',
     require: ['log_id'],
   },
   {
     // insert-only: BIGSERIAL id, no unique conflict target — re-run duplicates
     spreadsheet: 'core', sheet: 'one_on_one_private_notes', table: 'one_on_one_private_notes',
     columns: ['log_id', 'kind', 'author_email', 'note', 'submitted_by', 'submitted_at'],
+    upsertOn: 'log_id,author_email,kind',
     require: ['log_id'],
   },
 
@@ -178,6 +180,7 @@ export const MAPPINGS: TableMapping[] = [
     // insert-only: BIGSERIAL id, no unique conflict target — re-run duplicates
     spreadsheet: 'core', sheet: 'meeting_series_members', table: 'meeting_series_members',
     columns: ['series_id', 'email', 'role', 'submitted_by', 'submitted_at'],
+    upsertOn: 'series_id,email',
     require: ['series_id'],
   },
   {
@@ -193,6 +196,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'core', sheet: 'meeting_attendees', table: 'meeting_attendees',
     columns: ['meeting_id', 'email', 'role', 'attended',
       'submitted_by', 'submitted_at', 'updated_by', 'updated_at'],
+    upsertOn: 'meeting_id,email',
     require: ['meeting_id'],
   },
 
@@ -225,6 +229,7 @@ export const MAPPINGS: TableMapping[] = [
     // a usable ON CONFLICT target — re-run duplicates
     spreadsheet: 'core', sheet: 'Options', table: 'options',
     columns: ['list_key', 'value', 'sort', 'active', 'submitted_by', 'submitted_at'],
+    upsertOn: 'list_key,value',
     require: ['list_key', 'value'],
   },
   {
@@ -239,6 +244,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'core', sheet: 'MailLog', table: 'mail_log',
     columns: ['sent_at', 'to', 'cc', 'subject', 'kind', 'ref', 'status', 'error',
       'quota_left', 'submitted_by', 'submitted_at'],
+    upsertOn: 'sent_at,to,subject',
     require: ['sent_at'],
   },
   {
@@ -259,6 +265,7 @@ export const MAPPINGS: TableMapping[] = [
     // columns first, then extend this list.
     spreadsheet: 'core', sheet: 'holidays', table: 'holidays',
     columns: ['country', 'date', 'name', 'deleted_at', 'submitted_by', 'submitted_at'],
+    upsertOn: 'country,date,name',
     require: ['country', 'date'],
   },
   {
@@ -266,6 +273,7 @@ export const MAPPINGS: TableMapping[] = [
     // Assistant.js AS_FOLLOWUP_TABLE 'FollowUpDone' (hub app, CC2 Core).
     spreadsheet: 'core', sheet: 'FollowUpDone', table: 'follow_up_done',
     columns: ['thread_id', 'last_at_ms', 'done_at', 'submitted_by', 'submitted_at'],
+    upsertOn: 'thread_id,done_at',
     require: ['thread_id'],
   },
 
@@ -284,6 +292,7 @@ export const MAPPINGS: TableMapping[] = [
     // `date` is legitimately empty on undated behaviour cases (Scorecard.js:256+).
     spreadsheet: 'data_2026', sheet: 'sc_behaviour', table: 'sc_behaviour',
     columns: ['month', 'date', 'email', 'note'],
+    upsertOn: 'month,date,email,note',
     require: ['month', 'email'],
   },
   {
@@ -303,6 +312,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'live', sheet: 'kpi_behaviour_log', table: 'kpi_behaviour_log',
     columns: ['log_id', 'email', 'date', 'note', 'logged_by', 'logged_at',
       'removed_by', 'removed_at'],
+    upsertOn: 'log_id',
     require: ['log_id'],
   },
   {
@@ -311,6 +321,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'live', sheet: 'kpi_leave_log', table: 'kpi_leave_log',
     columns: ['log_id', 'email', 'from_date', 'to_date', 'type', 'note', 'logged_by',
       'logged_at', 'removed_by', 'removed_at'],
+    upsertOn: 'log_id',
     require: ['log_id'],
   },
   {

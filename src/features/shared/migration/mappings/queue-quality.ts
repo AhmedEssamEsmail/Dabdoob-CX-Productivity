@@ -38,6 +38,16 @@
  */
 
 import 'server-only'
+import { createHash } from 'node:crypto'
+
+const sha1 = (s: string) => createHash('sha1').update(s).digest('hex')
+
+/** S09-01: content-hash dedupe keys — 'mig-'+sha1(identity cells joined '|').
+ *  Returns the positional fallback when every identity cell is empty. */
+const dedupeKey_ = (prefix: string, index: number, cells: unknown[]): string => {
+  if (cells.every((v) => String(v ?? '') === '')) return prefix + index
+  return prefix + sha1(cells.map((v) => String(v ?? '')).join('|'))
+}
 
 export const SPREADSHEETS = {
   core: process.env.GOOGLE_SHEET_ID!,
@@ -88,6 +98,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'live', sheet: 'aging_open_tickets', table: 'aging_open_tickets',
     columns: ['ticket_id', 'queue', 'group_name', 'status', 'actionable', 'country', 'channel', 'contact_type_1',
       'created_at', 'age_h', 'band', 'agent_email', 'agent_name', 'tl_email', 'tl_name', 'refreshed_at'],
+    upsertOn: 'ticket_id',
     require: ['ticket_id'],
   },
   {
@@ -95,6 +106,7 @@ export const MAPPINGS: TableMapping[] = [
     spreadsheet: 'live', sheet: 'agg_queue_now', table: 'agg_queue_now',
     columns: ['queue', 'kind', 'open', 'actionable', 'unassigned', 'oldest_h',
       'over_top', 'created_today', 'resolved_today', 'as_of', 'source_as_of', 'stale', 'by_status_json', 'bands_json'],
+    upsertOn: 'queue,kind',
     require: ['queue'],
   },
   {
@@ -108,12 +120,14 @@ export const MAPPINGS: TableMapping[] = [
     // DQ_INFLOW_ROLLUP_HEADERS — dqRewrite_ store (no UNIQUE in DDL).
     spreadsheet: 'live', sheet: 'agg_inflow_weekly', table: 'agg_inflow_weekly',
     columns: ['period', 'channel', 'country', 'inflow', 'days', 'partial', 'updated_at'],
+    upsertOn: 'period,channel,country',
     require: ['period'],
   },
   {
     // DQ_INFLOW_ROLLUP_HEADERS — dqRewrite_ store (no UNIQUE in DDL).
     spreadsheet: 'live', sheet: 'agg_inflow_monthly', table: 'agg_inflow_monthly',
     columns: ['period', 'channel', 'country', 'inflow', 'days', 'partial', 'updated_at'],
+    upsertOn: 'period,channel,country',
     require: ['period'],
   },
   {
@@ -122,12 +136,14 @@ export const MAPPINGS: TableMapping[] = [
     columns: ['email', 'name', 'tl_email', 'tl_name', 'period', 'from_date', 'to_date', 'days', 'overall_pct',
       'inbound_pct', 'texting_pct', 'wa_pct', 'inbound_achieved', 'inbound_missed', 'texting_achieved', 'wa_achieved',
       'productive_min', 'idle_min', 'audits', 'avg_score'],
+    upsertOn: 'email,period',
     require: ['email', 'period'],
   },
   {
     // DQ_AGENT_DAILY_HEADERS — dqRewrite_ store.
     spreadsheet: 'live', sheet: 'agg_agent_daily', table: 'agg_agent_daily',
     columns: ['date', 'email', 'overall_pct', 'inbound_achieved', 'texting_achieved', 'wa_achieved'],
+    upsertOn: 'date,email',
     require: ['date', 'email'],
   },
   {
@@ -137,6 +153,7 @@ export const MAPPINGS: TableMapping[] = [
     columns: ['snapshot_key', 'slot_date', 'slot', 'captured_at', 'data_as_of', 'late', 'queue',
       'open', 'actionable', 'unassigned', 'oldest_h', 'over_top', 'created_today', 'resolved_today',
       'stale', 'by_status_json', 'bands_json', 'year'],
+    upsertOn: 'snapshot_key',
     require: ['snapshot_key', 'queue'],
   },
   {
@@ -148,6 +165,7 @@ export const MAPPINGS: TableMapping[] = [
     columns: ['job', 'started_at', 'finished_at', 'rows_in', 'rows_out', 'source_cursor',
       'status', 'error', 'note', 'type', 'log_id'],
     sheetToDb: { type: 'job' },
+    upsertOn: 'log_id',
     require: ['job'],
   },
 
@@ -243,24 +261,29 @@ export const MAPPINGS: TableMapping[] = [
     // tasks -> db: month,tl_email,date,shift,"from","to",wfh,segments_json,
     // variant, submitted_*, imported_by. TRANSFORM: rebuilds segments_json from
     // start + queue_h/people_h/task_h (approximation — DECISION, the sheet never
-    // stored true segments; wfh/variant land null). The port deletes per month
-    // before writing — plain insert, re-run duplicates (decision: delete by
-    // month first or accept).
+    // stored true segments; wfh/variant land null). dedupe_key is minted by
+    // ROW_TRANSFORMS ('mig-'+sha1(month|tl_email|date|shift|variant)) — S02-03:
+    // no natural key holds, so the UNIQUE sits on dedupe_key and re-runs
+    // upsert instead of duplicating; S09-01 content-hash kills positional keys.
     spreadsheet: 'core', sheet: 'sched_plan', table: 'sched_plan',
     columns: ['month', 'tl_email', 'date', 'shift', 'from', 'to', 'wfh',
-      'segments_json', 'variant', 'submitted_by', 'submitted_at', 'imported_by'],
+      'segments_json', 'variant', 'submitted_by', 'submitted_at', 'imported_by',
+      'dedupe_key'],
     sheetToDb: { from: 'start', to: 'end' },
+    upsertOn: 'dedupe_key',
     require: ['tl_email', 'date'],
   },
   {
     // Quality.js QA_ACCESS_LOG_HEADERS — "the Core tab QaAccessLog" (line ~655,
     // ensureTable_ -> dataSpreadsheet_ = CC2 Core, NOT the quality store).
     // Remote table absent (dry-run §3 B3) — created by
-    // 014_migration_hardening.sql in this exact shape. Insert-only audit log:
-    // no natural unique, a re-run duplicates (one-shot table list in
-    // migration-report.md).
+    // 014_migration_hardening.sql in this exact shape. All key columns are
+    // nullable, so S02-02 put UNIQUE on a minted `dedupe_key` column —
+    // ROW_TRANSFORMS fills 'mig-'+sha1(email|action|submitted_by|submitted_at)
+    // and upsertOn makes re-runs idempotent.
     spreadsheet: 'core', sheet: 'QaAccessLog', table: 'qa_access_log',
-    columns: ['email', 'action', 'submitted_by', 'submitted_at'],
+    columns: ['email', 'action', 'submitted_by', 'submitted_at', 'dedupe_key'],
+    upsertOn: 'dedupe_key',
   },
 
   // ---------------------------------------------------------------- data store (ss_data_{year}_id — 2026 only today)
@@ -407,10 +430,12 @@ export const MAPPINGS: TableMapping[] = [
     require: ['queued_date', 'ran_at'],
   },
   {
-    // 'Build Log' -> qe_builds (append-only, no UNIQUE — plain insert).
+    // 'Build Log' -> qe_builds. S02-02 gave it UNIQUE(ran_at) — upsertOn set
+    // so re-runs are idempotent (was append-only plain insert).
     spreadsheet: 'quality', sheet: 'Build Log', table: 'qe_builds',
     columns: ['ran_at', 'by', 'mode', 'agents', 'queued', 'pool', 'eligible', 'notes'],
     sheetToDb: { ran_at: 'ran at' },
+    upsertOn: 'ran_at',
     require: ['ran_at'],
   },
   {
@@ -491,8 +516,14 @@ export const ROW_TRANSFORMS: Record<string, RowTransform> = {
     if (y !== undefined && (row.year === undefined || row.year === null || row.year === '')) row.year = y
   },
   // Pre-004 refresh_log had log_id/type NOT NULL; the sheet rows carry neither.
+  // S10-01: log_id = 'mig-'+ctx.index (positional). The live table holds 8,197
+  // WP-51 rows keyed this way and the pending UNIQUE(log_id) DDL has no
+  // refresh_log backfill — a sha1 mint would match nothing and duplicate ~9k
+  // rows (finding data-1). The source sheet is append-only, so position is
+  // stable and needs no empty-identity branch.
   refresh_log: (row, ctx) => {
-    if (row.log_id === undefined || row.log_id === null || row.log_id === '') row.log_id = 'mig-' + ctx.index
+    if (row.log_id === undefined || row.log_id === null || row.log_id === '')
+      row.log_id = 'mig-' + ctx.index
   },
   // sheet email -> tl_email (via sheetToDb); dates pack into extra_json per the port.
   sched_team: (row) => {
@@ -529,7 +560,7 @@ export const ROW_TRANSFORMS: Record<string, RowTransform> = {
   // Approximate the ported timeline segments from the budget columns
   // (start hour + queue_h/people_h/task_h, sequential). Enough for
   // tlqShiftsFromTimeline_'s queue windows — flagged in DECISIONS.
-  sched_plan: (row) => {
+  sched_plan: (row, ctx) => {
     const num = (v: unknown) => { const n = Number(v); return isFinite(n) ? n : 0 }
     let h = num(row.start)
     const segs: { kind: string; from: number; to: number }[] = []
@@ -541,6 +572,22 @@ export const ROW_TRANSFORMS: Record<string, RowTransform> = {
     push('task', num(row.task_h))
     if (segs.length) row.segments_json = JSON.stringify(segs)
     if (row.wfh === undefined || row.wfh === null || row.wfh === '') row.wfh = false
+    // S09-01: dedupe_key = 'mig-'+sha1(month|tl_email|date|shift|variant) —
+    // MUST match the DDL dedupe group; positional fallback when all empty.
+    if (row.dedupe_key === undefined || row.dedupe_key === null || row.dedupe_key === '')
+      row.dedupe_key = dedupeKey_('mig-', ctx.index, [
+        row.month, row.tl_email, row.date, row.shift, row.variant,
+      ])
+  },
+  // S02-02: all qa_access_log key cols are nullable -> UNIQUE sits on a
+  // minted dedupe_key. S09-01: 'mig-'+sha1(email|action|submitted_by|
+  // submitted_at) matching the DDL dedupe group; positional fallback when
+  // all identity cells are empty.
+  QaAccessLog: (row, ctx) => {
+    if (row.dedupe_key === undefined || row.dedupe_key === null || row.dedupe_key === '')
+      row.dedupe_key = dedupeKey_('mig-', ctx.index, [
+        row.email, row.action, row.submitted_by, row.submitted_at,
+      ])
   },
 }
 
@@ -591,7 +638,8 @@ export const SUGGESTED_JSON_COLS = [
  *    engine's `|| ''` reads treat null and '' alike.
  */
 export const DECISIONS: string[] = [
-  'qe_fd_cache / qa_access_log absent remotely (dry-run B3) — 014_migration_hardening.sql creates them in the mapping shapes (qe_fd_cache.id PRIMARY KEY -> upsertOn id; qa_access_log stays insert-only)',
+  'qe_fd_cache / qa_access_log absent remotely (dry-run B3) — 014_migration_hardening.sql creates them in the mapping shapes (qe_fd_cache.id PRIMARY KEY -> upsertOn id; qa_access_log UNIQUE on minted dedupe_key -> upsertOn dedupe_key + ROW_TRANSFORMS)',
+  'sched_plan + qa_access_log have no usable natural key (S02-02/S02-03) — UNIQUE on dedupe_key, minted as \'mig-\'+sha1(identity cells) by ROW_TRANSFORMS (S09-01 content hash, positional fallback when all identity cells empty); re-runs upsert idempotently',
   '014 adds UNIQUE(submission_id) on queue_submissions and UNIQUE(flag_id) on dq_aging_flags — upsertOn now set on both mappings; re-runs idempotent',
   'dqRewrite_-style stores insert full snapshots — truncate/pre-delete before a second run',
   'sched_plan.segments_json is reconstructed from queue_h/people_h/task_h budgets, not original segments',

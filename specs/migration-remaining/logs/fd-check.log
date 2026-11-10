@@ -1,0 +1,4 @@
+◇ injected env (11) from .env.local
+mode=check workbook=1Fc6VCk8bLmy8ZUMCeBDPHvu7dMWDtONn6CRd9H_aHzM activity_local_tz=Asia/Kuwait
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+fd-check sheet_rows=208706 expected=208684 unparseable=0 remote=207811 delta=873 remote_max_ts_ms=2026-11-09T05:49:49.000Z verdict=gap:873

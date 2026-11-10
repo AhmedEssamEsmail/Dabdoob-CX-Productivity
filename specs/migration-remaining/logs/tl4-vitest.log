@@ -1,0 +1,75 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [32m✓[39m tests/golden/kpi.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 149[2mms[22m[39m
+ [32m✓[39m tests/performance/api.spec.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-aggregates.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 139[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-my-day.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m tests/golden/quality.test.ts [2m([22m[2m64 tests[22m[2m)[22m[32m 207[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-checkin.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 169[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-people-holidays.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-overview.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 132[2mms[22m[39m
+ [32m✓[39m tests/golden/people-jobs.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 392[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-scheduler.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m tests/golden/queue.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 599[2mms[22m[39m
+ [32m✓[39m tests/golden/people.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 128[2mms[22m[39m
+ [32m✓[39m tests/golden/scorecard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 414[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-admin.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m tests/golden/desk.test.ts [2m([22m[2m160 tests[22m[2m)[22m[33m 617[2mms[22m[39m
+ [32m✓[39m tests/golden/operations.test.ts [2m([22m[2m188 tests[22m[2m)[22m[33m 672[2mms[22m[39m
+ [32m✓[39m tests/jobs/tph-jobs.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/jobs/mirrors.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/golden/tph.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 835[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-heatmap.test.ts [2m([22m[2m47 tests[22m[2m)[22m[33m 544[2mms[22m[39m
+ [32m✓[39m tests/jobs/quarterly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/features/cx-productivity/lib/prod-validation.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/golden/prod-validation.test.ts [2m([22m[2m25 tests[22m[2m)[22m[33m 1018[2mms[22m[39m
+   [32m✓[39m cases + spans [2m(3)[22m
+     [33m[2m✓[22m[39m prodCasesFromActivityRows_ / prodCasesByEmail_ (150 sets)[33m 496[2mms[22m[39m
+ [32m✓[39m tests/platform/settings.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m tests/jobs/vendor-apis.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/jobs/queue-tickets-read.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/jobs/routes.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/platform/repo.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-tlqueue.test.ts [2m([22m[2m50 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/queue.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m tests/jobs/productivity-snapshot.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/jobs/grid-slots.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m tests/jobs/run-step-errors.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m tests/jobs/backfill.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-qa.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/auth/google-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/app/api/__tests__/integration.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-popups.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/platform/health.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/security/security.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/platform/time.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/golden/productivity.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1417[2mms[22m[39m
+   [32m✓[39m adapters: time + keys [2m(3)[22m
+     [33m[2m✓[22m[39m dqWallToUtc_ / dqTzOffsetMin_ / dqDateKey_ / dqAddDays_ / prodDateKey_ / normEmail_ — 150 vectors[33m 391[2mms[22m[39m
+ [32m✓[39m tests/auth/callback-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/features/shared/lib/auth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-missed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/lib/accent-contract.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-alerts.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-sendonce.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/lib/errors.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-dq.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/platform/signin-verdict.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/platform/calendar.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/shell/command-palette.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/platform/notify.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/fragments.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/platform/options.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/kpi.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/lib/migration-conflict-target.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/golden/viewas-sweep.test.ts [2m([22m[2m65 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m59 passed[39m[22m[90m (59)[39m
+[2m      Tests [22m [1m[32m1148 passed[39m[22m[90m (1148)[39m
+[2m   Start at [22m 17:17:37
+[2m   Duration [22m 2.94s[2m (import 48%, tests 41%, transform 8%, worker 2%)[22m
+
+[2m    Isolate [22m [33m59 workers spawned[39m[2m · ~228ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~479ms faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

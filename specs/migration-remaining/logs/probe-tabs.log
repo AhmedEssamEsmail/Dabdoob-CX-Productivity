@@ -1,0 +1,233 @@
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+
+## hct "Egypt Operations HCT" tabs=3
+TAB Sheet1 | grid=1001 | hdr=["Sr.","Code","Employee Name","Arabic Name","Hiring Date","Position","Department","Section","Gender","Contact Number","Email","Direct Repporter","Batch","Status","LWD","Level","Fresh desk ID","Freshdesk Name","Maqsam Name"]
+  r2=["1","7015","Belal Mohamed Hafiz Mohamed","بلال محمد حافظ محمد ","11/28/2024","Data Entry Specialist","Operations","Data Entry","Male","201019150015","belal@dabdoob.com","Nader Mohamed Mohamed Abdelhamid","","Current","","","-","-","","","","User ID","Name","Email"]
+  colA_rows=54
+TAB Sheet3 | grid=1000 | hdr=["","Agent name."]
+  r2=["mariam.mohamed@dabdoob.com","Mariam Mohamed Mostafa Mohamed"]
+TAB Sheet2 | grid=1000 | hdr=["Sr.","Code","Employee Name","Arabic Name","Hiring Date","Position","Department","Section","Gender","Contact Number","Email","Batch","Status","Extension","User #","Reviewed?"]
+  r2=["1","7015","Belal Mohamed Hafiz Mohamed","بلال محمد حافظ محمد ","28-Nov-24","Data Entry Specialist","Operations","Data Entry","Male","201019150015","belal@dabdoob.com"]
+
+## v1_ops "Dabdoob CX Operations — Database" tabs=19
+TAB Tickets | grid=1000 | hdr=["id","cust","ch","tl","days","cat","status","action","added"]
+TAB IdentityPins | grid=1000 | hdr=["kind","key","pin","note"]
+  r2=["tl","Ahmed Nagieb","","ahmedmohamed@dabdoob.com"]
+TAB ProductivitySources | grid=998 | hdr=["month","spreadsheetId","note"]
+  r2=["2026-08","10rpLZciaa40AaZpxr6b-2wslaZ3w8YMCKY87vbWQGrg","Productivity (August-2026)"]
+TAB TaskOccurrences | grid=1000 | hdr=["id","taskId","dueDate","status","doneAt","note","updatedBy","updatedAt"]
+  r2=["OC17881846716291000","K1783346495888","2026-06-02","Pending","","","","2026-08-31T13:57:51.629Z"]
+  colA_rows=353
+TAB ShiftPlan | grid=1000 | hdr=["month","date","tl","shift","role","start","end","queueH","peopleH","taskH","tasks","savedAt"]
+  r2=["2026-9","2026-09-26","Ahmed Nagieb","AM","primary","10:00","19:00","7","1","1","","2026-09-03T10:56:42.832Z"]
+TAB ShiftOverrides | grid=127 | hdr=["date","tl","shift","wfh","reason","setBy","setAt"]
+  r2=["2026-08-16","Menna Mekkawy","PM","","","mohamed.nabil@dabdoob.com","2026-08-16T13:13:01.427Z"]
+TAB TeamLeads | grid=992 | hdr=["name","email","startDate","endDate","note"]
+  r2=["Heba Khaled","heba@dabdoob.com","2025-09-01","2026-09-01"]
+  colA_rows=6
+TAB RoadmapVisibility | grid=1000 | hdr=["taskId","tl","sharedBy","sharedAt"]
+TAB HourOverrides | grid=999 | hdr=["date","tl","hour","kind","label","setBy","setAt"]
+TAB TLOffDays | grid=991 | hdr=["tl","offDays","note","setBy","setAt","month"]
+  r2=["Heba Khaled","5,6","","mohamed.nabil@dabdoob.com","2026-08-16T13:40:35.196Z","2026-08"]
+TAB ShiftRequests | grid=1000 | hdr=["id","tl","type","subtype","dateFrom","dateTo","shift","withTl","withShift","reason","status","requestedAt","decidedBy","decidedAt","note","peerStatus","peerAt"]
+  r2=["R1786886125694","Menna Mekkawy","wfh","Annual","2026-08-16","2026-08-16","PM","Heba Khaled","","","Pending","2026-08-16T13:15:25.695Z"]
+TAB Agents | grid=1000 | hdr=["email","name","tl"]
+TAB AgentOneOnOnes | grid=998 | hdr=["id","agentName","agentEmail","tl","date","wins","coaching","concerns","nextSteps","rating","savedAt","challenges","projects","taskReview","assignedTasks"]
+  r2=["AO1787490854851","Adel Sharif Shorhabil Ahmed","adel@dabdoob.com","Menna Mekkawy","2026-08-23","Good potential","","",".","","2026-08-23T13:14:14.851Z","Mobile application navigation > Trained\nTexting > working hard on it to achieve target",".","Reviewed and agreed\nExplained how to use AUX corre
+TAB Tasks | grid=996 | hdr=["id","desc","who","pri","due","status","notes","assigned","recurrence","lastDoneAt","roadmapId","source","deliveredAt","estHours","comments","recurDay"]
+  r2=["K1783346495888","Heatmap for CX","Ahmed Ismail","High","","In Progress","Every Month before month ending by 1 week","2026-07-06T14:01:35.888Z","monthly","2026-08-15T14:57:47.865Z"]
+  colA_rows=19
+TAB HardCases | grid=1000 | hdr=["id","tl","ch","sum","pri","dec","stake","logged","status","resolvedDate","resolution"]
+TAB Standups | grid=1000 | hdr=["date","savedAt","sd1","sd2","sd3","sd4","sd5","sd6","sd7"]
+TAB OneOnOnes | grid=1000 | hdr=["id","tl","date","agenda","morale","wins","prev","obs","coaching","concerns","tlActions","mgrActions","rating","savedAt","challenges","projects","taskReview","assignedTasks"]
+  r2=["O1786538617864","Ahmed Ismail","2026-08-12","","","","","","","","","","","2026-08-12T12:43:37.864Z","","Document for all tasks Ismail is working on\nTime study for TLs"]
+TAB KPI | grid=999 | hdr=["name","tl","prod","qual","overall","adh","added"]
+TAB Settings | grid=1000 | hdr=["key","value"]
+  r2=["admin_email","mohamed.nabil@dabdoob.com"]
+
+## oct_workbook "Productivity (Oct-2026)" tabs=25
+TAB 📋 How to Update | grid=1000 | hdr=["HOW TO UPDATE THIS FILE"]
+  r2=[]
+TAB Productivity Computed | grid=1000 | hdr=["agentName","date","email","inboundAvailMin","inboundTarget","inboundAchieved","inboundMissed","inboundProdPct","inboundGap","textingAvailMin","textingTarget","textingAchieved","textingProdPct","textingGap","waAvailMin","waTarget","waAchieved","waProdPct","waGap","overallProdPct","totalAudits","avgScore","productiveMinAux","productiveMinResolution","idleMin","computedAt"]
+  r2=["Alhassan Effat Hamed Mahmoud","2026-07-11","alhassan.effat@dabdoob.com","0","0","0","0","","","375.1","0","0","","","0","0","0","","","0","0","","375.1","0","104.9","7/12/2026 20:43:37"]
+TAB Assumptions | grid=1001 | hdr=["ASSUMPTIONS  —  Edit the blue cells to update all calculations"]
+  r2=["Parameter","Value","Notes"]
+TAB Productivity Matrix | grid=1494 | hdr=["T1","","","📞 INBOUND CALLS  (AHT = 4 min)","","","","","","💬 TEXTING  (AHT = 3.5 min)","","","","","📋 WAITING ADDRESS  (AHT = 2 min)","","","","","⭐ OVERALL","Quality","","⏳ Time measurement"]
+  r2=["Agent","Date","Email","Avail Time\n(min)","Daily\nTarget","Achieved\nCalls","Number of missed calls","Call\nProd %","vs Target\nGap","Avail Time\n(min)","Daily\nTarget","Achieved\nTexts","Text\nProd %","vs Target\nGap","Avail Time\n(min)","Daily\nTarget","Achieved\nWA Tasks","WA\nProd %","vs Targe
+  colA_rows=1106
+TAB Gateways | grid=1000 | hdr=[]
+TAB Agent Summary | grid=24 | hdr=["","AGENT PERFORMANCE SUMMARY  —  All Dates  (formulas reference Productivity Matrix)"]
+  r2=["Agent","Email","Direct Reporter","Days\nWorked","Time in calls","Calls Target","Calls Achieved","Missed Calls","Calls Prod %","Time in texting","Texting target","Texting Achieved","Texting Prod%","Time in WA","WA Target","WA Achieved","WA Prod.%","Avg Overall\nProd %","IDLE","Overall Prod%","Overa
+TAB Stackranking | grid=18 | hdr=[]
+  r2=["Rank","Agent","Email","Direct Reporter","Days\nWorked","Time in calls","Calls Target","Calls Achieved","Missed Calls","Calls Prod %","Time in texting","Texting target","Texting Achieved","Texting Prod%","Time in WA","WA Target","WA Achieved","WA Prod.%","Productive Time in days","IDLE","Overall Pr
+TAB Probabtion period | grid=1000 | hdr=["Probation Period (First 3 months)"]
+  r2=[]
+TAB Sheet21 | grid=15 | hdr=["Agent","Email","Direct Reporter","Direct Reporter"]
+  r2=["Maria Mamdouh Youssif Hanna","maria.mamdouh@dabdoob.com","Ahmed Naguib","Ahmed Ismail"]
+TAB AUXes Exceptions | grid=1007 | hdr=["Agent Mail","Date","AUX","Duration"]
+  r2=["aya.mohamed@dabdoob.com","2-September","Chats","56"]
+TAB KPIs Payout | grid=16 | hdr=["11/9/2026","Agent","Email","Skill","Hiring Date","Months Since hiring","KPI value in USD","Productivity","","","","","Quality","","","","","FCR","","","","","Business behavior","","","","","Total Value","","Reason For Deduction"]
+  r2=["","","","","","","","Score","Payout %","Payout Value","Deduction %","Deduction Value","Score","Payout %","Payout Value","Deduction %","Deduction Value","Score","Payout %","Payout Value","Deduction %","Deduction Value","Number of cases","Payout %","Payout Value","Deduction %","Deduction Value","Pay
+TAB Business Behavior | grid=1000 | hdr=["Agent Email","Date of Incident","Case details"]
+  r2=["shorouk.ehab@dabdoob.com","8/28/2026","Atitude with colleagues and team lead on the floor"]
+  colA_rows=2
+TAB Quality score weekly | grid=1000 | hdr=["","","","","","","","","","","","","","","","Flag","Flag","Improving but keep under watch","Good path"]
+  r2=["","Week Number","Week","shorouk.ehab@dabdoob.com","ziad@dabdoob.com","adel@dabdoob.com","shirin.abuagla@dabdoob.com","maria.mamdouh@dabdoob.com","yasser.anwar@dabdoob.com","m.khaled@dabdoob.com","hadeer.medhat@dabdoob.com","alhassan.effat@dabdoob.com","abdelsamad.mohamed@dabdoob.com","nada.atef@da
+TAB CX Performance | grid=1000 | hdr=["Date","Headcount","Calls","","","","Texting","","","","Waiting Address","","","","Overall","","","IDLE Time","","11/1/2026"]
+  r2=["","","Time in Calls","Target","Achieved","Calls Productivity","Time in texting","Target","Achieved","Texting Productivity","Time in WA","Target","Achieved","WA Productivity","Target","Achieved","Productivity"]
+TAB Tickets History | grid=102333 | hdr=["RAW DATA — Freshdesk Tickets History — Paste new data below row 2 (keep headers in row 2)"]
+  r2=["","","","","","","","","","-","-","-","-","-"]
+TAB FD_AUX | grid=14329 | hdr=["Agent name","Status name","Start time","End time"]
+  r2=["Abdelsamad Mohamed","Available","2026-10-07 13:11:39","2026-10-07 13:14:35","abdelsamad.mohamed@dabdoob.com","2.93","7-Oct"]
+TAB Maqsam Calls | grid=176955 | hdr=["RAW DATA — Maqsam Calls Raw Data — Date column (col L) is auto-added — Paste new data below row 2 (keep headers in row 2)"]
+  r2=["Call ID","Caller","Callee","Start time","End time","Call duration","Agent email","Call state","Call direction","Total handling time","Date","Handling time in numbers","Call Duration"]
+  colA_rows=176955
+TAB Data Import Tickets | grid=75207 | hdr=["Ticket ID","Contact Type","Contact Type 2","Contact Type 3","Channel","Source","Group name","Calculated Status 1","Calculated Status 2"]
+  r2=["281545","","","","Avaya Calls","Phone","Inbound Calls Documentation","Phone","No Match"]
+  colA_rows=75033
+TAB Quality | grid=19617 | hdr=["Agent Email","Call Date","Final Score","Timestamp","Week","Month"]
+  r2=["abdelsamad.mohamed@dabdoob.com","1-Jun","100.00%","2-Jun","31-May","1-Jun"]
+TAB Quality Numbers | grid=38 | hdr=["AVERAGE of Final Score","Week"]
+  r2=["Agent Email","31-May","7-Jun","14-Jun","21-Jun","28-Jun","5-Jul","12-Jul","19-Jul","26-Jul","2-Aug","9-Aug","16-Aug","23-Aug","30-Aug","6-Sep","13-Sep","20-Sep","27-Sep","4-Oct","11-Oct","18-Oct","25-Oct","1-Nov","Grand Total"]
+TAB Pivot Table 1 | grid=1000 | hdr=["Agent Email","AVERAGE of Final Score"]
+  r2=["abdelsamad.mohamed@dabdoob.com","93.10%"]
+TAB FCR | grid=28447 | hdr=["Ticket ID","Subject","Agent","Created time","Contact Type 3","Mobile Number","Exclude","Next Time Call","Time Gap","FCR","Inbound/Outbound","Agent Email","Team Lead","Transcript Helper","Transcript Helper2","Transcript Helper3","Transcript","IVR Input","Exclude?","Country","Month","Date"]
+  r2=["265801","Inbound call with 966563653763","Rawda Atwa Ibrahim Atwa","7/26/2026 10:00:18","Wrong Phone Number","966563653763","Good","-","-","Passed","Inbound","rawda.atwa@dabdoob.com","Ahmed Ismail","966563653763-46229-10-0","966563653763-46229-10-1","966563653763-46229-10--1","-","-","good","Good"
+  colA_rows=28447
+TAB Transcript | grid=5607 | hdr=["Incoming Instance","Call ID","IVR inputs","Caller","Start time","Call Transcription","Helper","Correct Date Time"]
+  r2=["360345884","360345884","Arabic › الطلبات › اضافة تغليف","96566124533","01-09-2026 10:00:16","agent: معاكي روضة اقدر اساعدك ازاي\ncustomer: الو السلام عليكم\nagent: عليكم السلام اتفضلي\ncustomer: حبيبتي انا سويت الطلب بس ما كتبت كرت ابي احط كرت\nagent: طيب حضرتك سويتي الطلب على نفس هذا الرقم صحيح\n
+TAB Ecxclud Contacts | grid=6 | hdr=["Contact Type 3","Exclude"]
+  r2=[]
+TAB Headcount | grid=1518 | hdr=["Employee ID","Employee Name","Hiring Date","Email","Freshdesk User","Freshdesk Name","Direct Reporter","Direct Reporter Mail","Hiring Month"]
+  r2=["7054","Shorouk Ehab Abdo Abdelrahman","9/20/2025","shorouk.ehab@dabdoob.com","501006365519","Shorouk Ehab","Menna Mekkawy","ahmed.ismail@dabdoob.com","10/1/2025"]
+
+## voice "Voice QA Form V1 (Responses)" tabs=5
+TAB Form Responses 1 | grid=9231 | hdr=["Timestamp","Score","Agent Email","Extension Number ","Call ID","Call Date","Call Type","Opening:  Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards? ","If No, please explain the markdown","Entity Name :  Did the agent mention the name of the company?","If No, please explain the markdown","Did the agent offered to Assist the customer?","If No, please explain the markdown","Did the agent answer the call and start the opening within 5 seconds of the call connecting? ","If No, please explain the markdown","Opening:  Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards? ","If No, please explain the markdown","Did the agent asked the customer if the time of the call is suitable?","If No, please explain the markdown","Entity Name :  Did the agent mention the name of the company?","If No, please explain the markdown","Acknowledgement:  Did the agent acknowledge and cover all customer's concerns during the call?","If No, please explain the markdown","Did the customer avoid repeating their questions or not correct the agent?  ","If Yes, please explain the markdown","Did the agent avoid asking unnecessary questions during the interaction? ","If Yes, please explain the markdown","Is the solution communicated does follow documented logic for the correct issue?","If No, please explain the markdown","Did the agent communicate a logical and comple
+  r2=["11/28/2025 11:06:01","1510 / 1720","nourelhouda@dabdoob.com","4114","175690","11/27/2025","Inbound","Yes","","Yes","","Yes","","Yes","","","","","","","","Yes","","Yes","","Yes","","Yes","","No","You apologized to the customer direct apology without knowing the issue the customer's faced (في البدا
+  colA_rows=9231
+TAB Sheet6 | grid=1000 | hdr=["Agent_Email","Total Audits","Final Score"]
+  r2=["shorouk.ehab@dabdoob.com","16","91%"]
+TAB Voice Quality ScoreCard | grid=1002 | hdr=["Users","Sep-2025","Oct-2025","Nov-2025","Dec-2025","Jan-2026","Feb-2026","Mar-2026","Apr-2026","May-2026","Jun-2026","Jul-2026","Aug-2026","Sep-2026","Oct-2026","Nov-2026","Dec-2026","","Question","Markdown Rate","Column 1","Question","Markdown Rate"]
+  r2=["belal@dabdoob.com","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","","Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?","20%","","- Did the agent send the opening (within 5 secs) when the chat/comment came
+TAB HCT | grid=1000 | hdr=["#REF!","belal@dabdoob.com"]
+  r2=["","dalia@dabdoob.com"]
+TAB Quality ScoreCard | FAIL Quota exceeded for quota metric 'Read requests' and limit 'Read requests per minute per user' of service 'sheets.googleapis.com' for consumer 'project_number:465961358586'.
+
+## text "Texting QA Form V1 (Responses)" tabs=2
+TAB Form Responses 1 | grid=4039 | hdr=["Timestamp","Score","Agent Name","Agent Email","Chat ID","Chat Date","Chat Time","Modality","Channel","Did the agent send the opening (within 5 secs) when the chat/comment came in?","If No (please explain the markdown)","Did the agent start the chat/comment by greeting the customer by name and identifying self?","If No (please explain the markdown)","Dabdoob Branding - Did the agent mention the name of the entity?","If No (please explain the markdown)","Did the agent offered to Assist the customer?","If No (please explain the markdown)","In outbound call, Did the agent ask the customer if the time of the call is suitable?","If No (please explain the markdown)","Did the agent acknowledge and cover all customer's concerns?","If No (please explain the markdown)","Did the agent ask only the necessary questions? ","If No (please explain the markdown)","Did the customer ask each question only once and not need to correct the agent?  ","If No (please explain the markdown)","Is the solution communicated follow documented logic for the correct issue?","If No (please explain the markdown)","Was the solution communicated logical and complete? ","If No (please choose from the below)","Did the agent shared documented up-to-date logic?","If No (please explain the markdown)","Is the contact type selected is correct?","If No (please explain the markdown)","Did the agent took the right Internal actions (Creating Ticket/Sending Emails/Account actions)","If No (please explain the markdown)","D
+  r2=["11/24/2025 18:35:37","1180 / 1590","NourElhouda Amir","nourelhouda@dabdoob.com","21541","11/24/2025","8:26 PM","Chat","Instgram","Yes","","Yes","","Yes","","Yes","","Yes","","Yes","","Yes","","Yes","","No","You should have sent to the customer the full reply mentioned in the KB (Do you have any of
+  colA_rows=3038
+TAB Quality ScoreCard | grid=1004 | hdr=["","","","","","","","","","","","","","","","","","","","","Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?","20%","Greeting"]
+  r2=["","","","","","","","","","","","","","","","","","","","","Entity Name : Did the agent mention the name of the company?","20%","Greeting"]
+
+## daily_report "New Daily Report" tabs=13
+TAB Normal Queues | grid=27 | hdr=["11/9/2026","Customer Support - Internal","","","","","","","Emails","","","","","","Kuwait - Customer Support - Internal","","","","","","","Internal Tickets - KSA","","","","","","","Emails - Kuwait","","","","","","Out of Stock","","","","","","Out of Stock - KSA","","","","","","Out of Stock - Kuwait"]
+  r2=["","Created Hour","Inflows","Resolved","Pending on OPS","Pending on CX","Pending on 3PL","","Created Hour","Inflows","Resolved","Pending on OPS","Waiting on Customer","","Created Hour","Inflows","Resolved","Pending on OPS","Pending on CX","Pending on 3PL","","Created Hour","Inflows","Resolved","Pen
+  colA_rows=1
+TAB Critical Queues | grid=44 | hdr=["11/9"]
+  r2=["","Waiting Address"]
+  colA_rows=1
+TAB Maqsam Dashboard | grid=95 | hdr=[]
+  r2=["Kuwait"]
+  colA_rows=95
+TAB Maqsam | grid=15412 | hdr=["Call ID","Caller","Callee","Start time","End time","Call state","Call direction","Call duration including ringing time","Total time in queue"," ","Country","Date","Call duration including ringing time","Total time in queue","Total handling time","Interval"]
+  r2=["334352045","96522209284","96590051230","9/4/2026 11:26:54","","busy","outbound","0:00:00","","","Kuwait","4-Sep","0:00:51","0:00:00","0:00:00","11 AM"]
+  colA_rows=15412
+TAB Freshchat | grid=1743 | hdr=["","Status","Interaction Id","Updated at","Resolved At","Channel","Conversation id","Initiated Hour","Updated Hour","Initiated Date","Updated Date","Age"]
+  r2=["","","","","","","","0","0","30-Dec","30-Dec","#VALUE!"]
+  colA_rows=1742
+TAB Freshdesk | grid=56616 | hdr=["Ticket ID","Source","Status","Group name","Contact Type","Contact Type 2","Contact Type 3","Country","Warehouse","Created date","Last updated date","Resolved date","Closed date","Channel","Order ID","Parcel ID","Contacts Mobile Number","Created date","Last updated date","Resolved date","Closed date","Created Hour","Last updated Hour","Resolved Hour","Closed Hour","Age"]
+  r2=["299159","Phone","Closed","Inbound Calls Documentation","","","","","NA","2026-09-01 1:10:19 AM","2026-09-02 1:59:46 AM","2026-09-02 1:01:48 AM","2026-09-02 1:59:46 AM","Avaya Calls","","","","9/1/2026","9/2/2026","9/2/2026","9/2/2026","1","1","1","1","FALSE","30-Aug"]
+TAB WA | grid=224 | hdr=["Parcel ID","Country","Creation Date","Warehouse","Order ID","3PL_status","whatsapp_status","Invoice_Id","Link","Code","Trailed?","Confirmed?","Date_Only"]
+  r2=["2294432","Kuwait","Sep 24, 2026, 8:17:44 PM","3PL Aramex Kuwait Warehouse","WMA141089","","","","http://panel.primary.dabdoob.net/SA/orders/2322977","KW","0","1","24-Sep"]
+TAB Country Code | grid=6 | hdr=["Country"]
+  r2=["Kingdom of Saudi Arabia","SA"]
+TAB CTL & Quality | grid=1922 | hdr=["Agent Email","Call Date","Final Score","Audit Date","Call Type","Call ID","Coached?","Age","Date Only (CTL)","CTL Date","","","","Timestamp","Agent Email","Audit Date","Call/ Text Date","Ticket Number"]
+  r2=["m.khaled@dabdoob.com","11/6/2025","0%","11/28/2025 20:41:19","Email","14112","Pending","346","11/28/2025","-","","","","2/13/2026 20:33:29","adel@dabdoob.com","2/12/2026","2/10/2026","60638"]
+TAB Sheet36 | grid=1000 | hdr=["324313","10/10/2026 14:12:41"]
+  r2=["324877","10/7/2026 18:24:21"]
+TAB WA Monitoring | grid=521 | hdr=["11/9","","","","","","","","","","KSA","","","Kuwait","","","Qatar","","","UAE","","","Bahrain"]
+  r2=["","Waiting Address","","","","","","","","","Order ID","Number Of trials","","Order ID","Number Of trials","","Order ID","Number Of trials","","Order ID","Number Of trials","","Order ID","Number Of trials"]
+TAB Avaya | grid=709 | hdr=["Call","Call Direction","Call Duration","Start Time","End Time","Dialed Number","Internal Party","External Party","Initial Group","Talking Duration","Date","Hour","Talk Time Value","Call Duration Value","Avg Speed to Answer"]
+  r2=["#REF!","","","","","","","","","","12/30/1899","12 AM","0:00:00","0:00:00","0:00:00"]
+TAB Tickets | grid=34023 | hdr=["id","source","status","group_name","custom_fields.cf_contact_type_1","custom_fields.cf_contact_type_2","custom_fields.cf_contact_type_3","custom_fields.cf_country","custom_fields.cf_warehouse","created_at","updated_at"]
+  r2=["149","Phone","Closed","Customer Support - Email","Orders","Delivery Issue","Wrong Address","Bahrain","Bahrain Warehouse","2025-10-01 8:54:57","2025-10-02 13:35:49"]
+
+## fd_activity "Freshdesk Status Activity Log — Database" tabs=4
+TAB Report | grid=44 | hdr=["Set filters below, then run Freshdesk Report > Generate Report from the menu"]
+  r2=["Date (MM-dd-yyyy, blank = all days):","2026-11-09"]
+TAB Missing Tickets | grid=17 | hdr=["Last checked: 11/9/2026, 12:02:53 PM — tickets updated since 11/9/2026, 5:47:41 AM"]
+  r2=[]
+TAB Blad2 | grid=15 | hdr=[]
+  r2=["166129"]
+TAB Activities | grid=208679 | hdr=["Performed At","Ticket ID","Performer Name","Performer Type","Activity Type","Field Changed","New Value","Source","Group","Date"]
+  r2=["2026-07-02T16:45:40Z","234285","Ahmed Ismail","Agent","Status Change","status","Resolved","Portal","Refunds - CX Group"]
+  colA_rows=208679
+
+## fc_messages "Freshchat Detailed Msgs" tabs=3
+TAB Sheet1 | grid=1000 | hdr=[]
+  colA_rows=0
+TAB Freshchat Messages (auto) | grid=73537 | hdr=["_day","_key","conversation_id","conversation_url","interaction_raw_id","message_id","message_type","message_parts","created_time","message_source","actor_id","actor_type","actor_sub_entity","actor_email","actor_phone","actor_first_name","actor_last_name","reference_id","channel_id","channel_name","detailed_message_type","customer_id"]
+  r2=["2026-10-01","id:9da7d726-7094-4150-ade9-a057f81eb6ef","575a6028-149f-4323-bad3-bb135ec6bfae","https://dabdoobapp-c5944f25bcb8b3a17584888.freshchat.com/a/1047325896481385/inbox/open/0/conversation/1179849090247208","1179849090247208-1790804294283","9da7d726-7094-4150-ade9-a057f81eb6ef","system","[]
+  colA_rows=73537
+TAB Freshchat Messages | grid=9270 | hdr=["conversation_id","conversation_url","interaction_raw_id","message_id","message_type","message_parts","created_time","message_source","actor_id","actor_type","actor_sub_entity","actor_email","actor_phone","actor_first_name","actor_last_name","reference_id","channel_id","channel_name","detailed_message_type","customer_id"]
+  r2=["33f2eccd-ef58-4a54-95c5-52335a97bf17","https://dabdoobapp-c5944f25bcb8b3a17584888.freshchat.com/a/1047325896481385/inbox/open/0/conversation/1178071349757767","1178071349757767-1790370275591","84359bce-e2cd-4af5-a8db-d259da5b7b31","normal","[{\"text\":{\"content\":\"لم يتم الاستيراد\"}}]","2026-09
+  colA_rows=9270
+
+## touch_archive "Archive of Freshdesk Database May-2026" tabs=4
+TAB Users List | grid=82 | hdr=["User ID","Name","Email"]
+  r2=["501006468766","Aballah alhamoud","aballah@dabdoob.com"]
+TAB Freshdesk Current State | grid=65445 | hdr=["ID","Subject","Status","Group Name","Contact Type 1","Contact Type 2","Contact Type 3","Channel","Phone Number","Source","Order ID","Parcel ID","Updated At","Created At","Country"]
+  r2=["125407","Order JTC962097 — Gift Note","Closed","Ops Kuwait - Gift cards","","","","","","Email","","","2026-04-21 3:59:50","2026-04-21 2:13:41"]
+TAB New Tickets Daily | grid=430056 | hdr=["Performed At","Ticket ID","Performer Name","Performer Type","Activity Type","Field Changed","New Value","Source"]
+  r2=["4/20/2026 0:06:59","124255","User 501010077190","user","Field Change","new_ticket","TRUE"]
+TAB Sheet2 | grid=1000 | hdr=[]
+  r2=["","#REF!","Open","Resolved","Pending","Pending on Ops","No Response From customer","Waiting on Customer","Pending on 3PL","No response"]
+
+## qa_engine_source "Freshdesk Database May-2026" tabs=4
+TAB Users List | grid=88 | hdr=["User ID","Name","Email"]
+  r2=["501006468766","Aballah alhamoud","aballah@dabdoob.com"]
+TAB Sheet3 | grid=1000 | hdr=[]
+TAB Freshdesk Current State | grid=90859 | hdr=["ID","Subject","Status","Group Name","Contact Type 1","Contact Type 2","Contact Type 3","Channel","Phone Number","Source","Order ID","Parcel ID","Updated At","Created At","Country"]
+  r2=["125407","Order JTC962097 — Gift Note","Closed","Ops Kuwait - Gift cards","","","","","","Email","","","2026-04-21 3:59:50","2026-04-21 2:13:41"]
+TAB New Tickets Daily | grid=165462 | hdr=["Performed At","Ticket ID","Performer Name","Performer Type","Activity Type","Field Changed","New Value","Source"]
+  r2=["09/01/2026 01:10:20","299159","User 501012947710","user","Field Change","new_ticket","TRUE"]
+
+## qa_queue "Dabdoob CX — Quality Queue Data" tabs=15
+TAB Queue Log | grid=3614 | hdr=["Key","Queued Date","ISO Week","Slot","Agent","Channel","Group","Contact Type","Tier","Ticket ID","Subject","Country","Status","Last Touch","Touches","State","Audited At","Audited By"]
+  r2=["300284|Abdelsamad Mohamed","2026-09-05","W2026-08-30","1","Abdelsamad Mohamed","Inbound Calls","Inbound Calls Documentation","Waiting Address out of delivery SLA","1","300284","Inbound call with 966504775257","KSA","Resolved","2026-09-02 16:05","1","expired"]
+  colA_rows=3614
+TAB Ticket Detail Cache | grid=25296 | hdr=["ID","Group Name","Contact Type 1","Contact Type 2","Contact Type 3","Subject","Status","Country","Order ID","Channel","Source","Created At","Cached At"]
+  r2=["300755","Jeddah Ops","Orders","Delivery Issue","Delivery Delay request","RMV919567","Closed","KSA","RMV919567","Internal Escalation","Portal","2026-09-03 10:53:08","2026-09-09 14:49:38"]
+  colA_rows=25296
+TAB Scores - Audits By Day | grid=1000 | hdr=["Week","Date","Agent","Audits Scored"]
+  r2=["W2026-10-18","2026-10-19","Abdelsamad Mohamed","8"]
+TAB Scores - Audits By Week | grid=1000 | hdr=["Week","Agent","Audits Scored"]
+  r2=["W2026-05-31","Abdelsamad Mohamed","12"]
+TAB Scores - Audits | grid=5786 | hdr=["Date","Agent","Auditor","Backend","Channel","Contact Type","Ticket","Submitted","Score","Zero","Fail","Attributes","Pillars"]
+  r2=["2026-10-18","Abdelsamad Mohamed","hozaifa.edres@dabdoob.com","Voice","Outbound","Missing a Part","336386","2026-10-21 13:00","100","0","0"]
+TAB Scores - Meta | grid=1000 | hdr=["Key","Value"]
+  r2=["ranAt","2026-11-09 11:03"]
+TAB Scores - Pillars | grid=1000 | hdr=["Pillar","Failures","Avg Deduction %"]
+  r2=["Actions & Documentation","471","84.6"]
+TAB Scores - Weak Points | grid=1000 | hdr=["Agent","Attribute","Failures","Agent Rate %","Team Rate %","vs Team pp"]
+  r2=["Abdallah Abdelraouf","Did the agent select the correct contact type?","3","10.7","1.11","9.6"]
+TAB Scores - Questions | grid=1000 | hdr=["Backend","Question","Failures","Per 100 Audits"]
+  r2=["Voice","Internal Action: Did the agent accurately complete all required customer requests and account actions using the appropriate tools?","167","2.8"]
+TAB Scores - Contact Types | grid=1000 | hdr=["Contact Type","Audits","Avg Score","Zero Rate %","Fail Rate %"]
+  r2=["Address Confirmed3","517","97.3","1.5","4.3"]
+TAB Scores - Segments | grid=1000 | hdr=["Backend","Channel","Audits","Avg Score","Zero Rate %","Fail Rate %"]
+  r2=["Voice","Inbound","3604","92.8","5.3","11.7"]
+TAB Scores - Auditors | grid=1000 | hdr=["Auditor","Audits","Avg Score","Zero Rate %","Fail Rate %"]
+  r2=["hozaifa.edres@dabdoob.com","7379","93.5","4.9","9.5"]
+TAB Scores - Agents | grid=1000 | hdr=["Agent","Audits","Avg Score","Avg Points","Zero Rate %","Fail Rate %","vs Auditor","Strict Auditor %","Rank Raw","Rank Adjusted","Move"]
+  r2=["Abdelsamad Mohamed","501","95.2","","3.4","7.8","1.9","4","7","7","0"]
+TAB Catalogue | grid=1000 | hdr=["Kind","Value","Times Seen","Last Seen"]
+  r2=["Activity","Field Change","168028","2026-11-09"]
+  colA_rows=214
+TAB Build Log | grid=1000 | hdr=["Ran At","By","Mode","Agents","Queued","Pool","Eligible","Notes"]
+  r2=["2026-08-17 18:49:37","daily trigger","day","14","56","2146","2146","22 off-channel, 0 without detail, 4 unmapped groups, 0 expired, 0 at quota"]
+  colA_rows=103
+
+DONE

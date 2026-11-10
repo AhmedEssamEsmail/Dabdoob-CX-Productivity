@@ -1,0 +1,89 @@
+===== LIVE-03 backfills (APPROVED --write), started %DATE% %TIME% =====
+===== 1/7 backfill-freshchat-sheet --write =====
+◇ injected env (11) from .env.local
+mode=write workbook=1Ll5BxooiYJhKooIr88p_g-ePRo9WI9lvLkWDXdju7V4 (config) data_tz=Africa/Cairo (config)
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+read=1893 skipped=140 unique=1753
+written=1753
+===== 2/7 run-fd-mirror --write =====
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+fd-write fetched=210166 written=210143 skipped=0 watermark=2026-11-10T11:03:24.000Z full=true partial=false
+===== 3/7 run-qa-history --write =====
+◇ injected env (11) from .env.local
+Fatal: Error: Cannot find module 'server-only'
+Require stack:
+- C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\lib\migrate.ts
+    at node:internal/modules/cjs/loader:1456:15
+    at nextResolveSimple (C:\Users\AHMED\KPIs\CX-Hub\node_modules\tsx\dist\register-B1c7OH6V.cjs:23:1010)
+    at C:\Users\AHMED\KPIs\CX-Hub\node_modules\tsx\dist\register-B1c7OH6V.cjs:22:4512
+    at C:\Users\AHMED\KPIs\CX-Hub\node_modules\tsx\dist\register-B1c7OH6V.cjs:22:2830
+    at resolveTsPaths (C:\Users\AHMED\KPIs\CX-Hub\node_modules\tsx\dist\register-B1c7OH6V.cjs:23:762)
+    at C:\Users\AHMED\KPIs\CX-Hub\node_modules\tsx\dist\register-B1c7OH6V.cjs:23:1203
+    at j._resolveFilename (file:///C:/Users/AHMED/KPIs/CX-Hub/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:18825)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1066:19)
+    at defaultResolve (node:internal/modules/cjs/loader:1101:31)
+    at nextStep (node:internal/modules/customization_hooks:189:26) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\AHMED\\KPIs\\CX-Hub\\src\\features\\cx-quality\\lib\\migrate.ts'
+  ]
+}
+qa-history exit=1
+===== STOPPED: run-qa-history exit=1 -> scripts 4-7 (run-sc-refresh, backfill-fc-messages, backfill-fd-history, backfill-qe-cache-orphans) NOT run per contract =====
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+Fatal: Error: Config keys are lower_snake_case, up to 64 characters.
+    at setConfig (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\platform\settings.ts:211:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async qaImportHistory_ (C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\lib\migrate.ts:367:7)
+    at async write (C:\Users\AHMED\KPIs\CX-Hub\migration\run-qa-history.ts:73:18)
+run-qa-history exit=1
+===== STOPPED (resume run): run-qa-history exit=1 "Config keys are lower_snake_case, up to 64 characters." -> scripts 4-7 (run-sc-refresh, backfill-fc-messages, backfill-fd-history, backfill-qe-cache-orphans) NOT run per contract =====
+===== RESUME attempt 3: run-qa-history --write =====
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+Fatal: DescribedError: invalid input syntax for type numeric: ""
+    at described (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\lib\errors.ts:193:10)
+    at qaImportHistory_ (C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\lib\migrate.ts:353:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async write (C:\Users\AHMED\KPIs\CX-Hub\migration\run-qa-history.ts:73:18) {
+  code: 'internal',
+  detail: undefined,
+  hint: undefined
+}
+exit=1
+===== STOPPED (resume attempt 3): run-qa-history exit=1 "invalid input syntax for type numeric: \"\"" (migrate.ts:353 upsert; row emits score_final:"" + started_at:"" vs numeric/timestamptz cols) -> scripts 4-7 NOT run per contract =====
+===== RESUME attempt 4: run-qa-history --write =====
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+5785 audits imported or refreshed, 2683 rows skipped. Voice: read to row 9231 of 9231. Texting: read to row 4039 of 4039 (resumes at row 3039)
+exit=0
+===== run-sc-refresh --write =====
+◇ injected env (11) from .env.local
+sc-refresh --write
+productivity_files months: 2026-09
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+2026-09  status=ok  title="1I29yjZ2XaX5yJnnHgKLxthBsKfSgBrK7aCRfafniuVI"  rows=480  agents=16
+DONE — all months ok
+exit=0
+===== backfill-fc-messages --write =====
+◇ injected env (11) from .env.local
+mode=write workbook=1ZxDxS13pu0xXS3aPBfXxajtodwKIndaF0NOjZv6xacM (config) tz=Africa/Cairo (config)
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+Freshchat Messages (auto): read=75438 skipped=0 unique_so_far=75438 width=22 ts_col=8
+Freshchat Messages: read=9269 skipped=0 unique_so_far=84707 width=20 ts_col=6
+Sheet1: EMPTY/HEADER-ONLY (grid=0) — skipped
+TOTAL: tabs=3 empty_tabs=1 read=84707 skipped=0 null_ts=0 unique=84707
+written=84707
+exit=0
+===== backfill-fd-history --write =====
+◇ injected env (11) from .env.local
+mode=write table=fd_activities tab='New Tickets Daily' tz=Asia/Kuwait (config) fd_window=[2026-07-02T16:08:22.000Z .. 2026-11-09T05:49:49.000Z] margin=1d
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+touch_archive: read=430055 in_gap=380451 in_gap_left=187460 in_gap_right=192991 future=187933 outside_gap=49604 skipped=0 unique_so_far=380356 grid=430056
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+qa_engine_source: read=165461 in_gap=120522 in_gap_left=26428 in_gap_right=94094 future=94053 outside_gap=44939 skipped=0 unique_so_far=495825 grid=165462
+TOTAL: sheets=2 read=595516 in_gap=500973 in_gap_left=213888 in_gap_right=287085 future=281986 skipped=0 unique=495825
+written=495825

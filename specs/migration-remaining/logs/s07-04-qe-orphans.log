@@ -1,0 +1,16 @@
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+mode=dry sheet_ids=25295 qe_fd_cache=11645 tickets=176616
+missing=13650 (s3=13650 drift=0) orphan=1523 (s3=1523 drift=0)
+SET missing: size=13650 sampled=50 subject_fill=50/50 status_fill=50/50 created_fill=50/50 created_parseable=50/50 window=[2026-09-04T12:55:45.000Z .. 2026-11-08T15:01:38.000Z]
+  id=331773 subject="Outbound call with 96566687581" status=Resolved created_at=2026-10-13 10:26:23
+  id=332078 subject="KYD296779" status=Pending on 3PL created_at=2026-10-13 16:43:07
+  id=302031 subject="Order TZG450525 — Gift Note" status=Closed created_at=2026-09-04 15:55:45
+SET orphan: size=1523 sampled=50 subject_fill=50/50 status_fill=50/50 created_fill=50/50 created_parseable=50/50 window=[2026-11-07T04:58:57.000Z .. 2026-11-08T19:31:45.000Z]
+  id=354880 subject="VWB372855" status=No Response From customer created_at=2026-11-07 6:58:57
+  id=354935 subject="Inbound call with 96599979451" status=Resolved created_at=2026-11-07 10:02:11
+  id=354969 subject="Outbound call with 971506003237" status=Resolved created_at=2026-11-07 10:27:25
+would_write missing=13650 orphan=1523 (dry — pass --write|--write=orphan once PM gates)
+reads: sheets=4 supabase=189
+DONE
+EXIT=0

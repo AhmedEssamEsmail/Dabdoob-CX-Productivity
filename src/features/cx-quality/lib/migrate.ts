@@ -5,7 +5,7 @@
  *   - qaImportHistory_ : reads the two Google-Forms response sheets ("Voice QA
  *     Form V1 (Responses)", "Texting QA Form V1 (Responses)") and upserts mapped
  *     rows into qa_audits. Deterministic audit ids => safe to re-run. A cursor
- *     per sheet lives in app config (QE_HIST_*), resuming where the last run
+ *     per sheet lives in app config (qe_hist_*), resuming where the last run
  *     stopped — exactly the legacy Script-Properties behaviour.
  *   - qaReconcileQueueLog_ : marks engine Queue Log rows audited when a matching
  *     qa_audits row exists (ticket + first-two-names agent + submitted >= queued).
@@ -276,10 +276,10 @@ export function qaHistoryRows_(head: unknown[], rows: unknown[][], ctx: Row): { 
       kind: 'audit', queue_id: '', calibration_id: '', ticket_id: ticket, agent_email: email,
       tl_email: ctx.managerOf ? (ctx.managerOf as (e: string) => string | null)(email) || '' : '',
       auditor_email: auditor, channel, contact_type: '', form_id: formId, form_version: 1, answers_json: JSON.stringify(answers),
-      comment: comments.slice(0, 2000), score: Math.round(final * 10) / 10, fatal, score_final: '', started_at: '', submitted_at: submittedAt,
-      audit_date: qeFmt_(when, 'yyyy-MM-dd'), status: 'historical', ack_due_date: '', acknowledged_at: '', ack_by: '',
+      comment: comments.slice(0, 2000), score: Math.round(final * 10) / 10, fatal, score_final: null, started_at: null, submitted_at: submittedAt,
+      audit_date: qeFmt_(when, 'yyyy-MM-dd'), status: 'historical', ack_due_date: '', acknowledged_at: null, ack_by: '',
       updated_at: submittedAt, updated_by: 'history import', source: src.label + ' form', source_agent: agentRaw, sample_basis: 'historical',
-      interaction_at: parsedCall ? "'" + qeFmt_(parsedCall, 'yyyy-MM-dd') : '',
+      interaction_at: parsedCall ? qeFmt_(parsedCall, 'yyyy-MM-dd') : '',
     })
   })
   return { audits: out, skipped, unmatched }
@@ -310,7 +310,7 @@ async function qaFirstSheetRows_(ssId: string): Promise<unknown[][]> {
 
 /**
  * qaImportHistory_ verbatim: imports new response rows from both sheets, a row
- * cursor per sheet in config (QE_HIST_*). Idempotent (deterministic audit ids,
+ * cursor per sheet in config (qe_hist_*). Idempotent (deterministic audit ids,
  * upserted). opts.budgetMs stops inside the time budget; opts.secret must match
  * the qa_history_secret config when one is set.
  */
@@ -328,7 +328,7 @@ export async function qaImportHistory_(actor: string, opts?: { budgetMs?: number
     const src = QA_HIST_SOURCES[key]
     const grid = await qaFirstSheetRows_(src.ssId)
     const lastRow = grid.length
-    const curKey = 'QE_HIST_' + key.toUpperCase()
+    const curKey = 'qe_hist_' + key
     let cur = Number((await getConfig(curKey, 2)) || 2)
     if (lastRow < 2 || cur > lastRow) {
       ;(report.notes as string[]).push(src.label + ': nothing new')
@@ -444,6 +444,6 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
 
 /** restartQualityAuditHistory verbatim: forget the cursors, rescan all. */
 export async function restartQualityAuditHistory_(): Promise<string> {
-  for (const k of Object.keys(QA_HIST_SOURCES)) await setConfig('QE_HIST_' + k.toUpperCase(), null)
+  for (const k of Object.keys(QA_HIST_SOURCES)) await setConfig('qe_hist_' + k, null)
   return 'History cursors cleared. Run importQualityAuditHistory.'
 }

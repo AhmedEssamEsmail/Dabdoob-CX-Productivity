@@ -1,0 +1,3 @@
+◇ injected env (11) from .env.local
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+readSheet tickets rows=178954 sample=["ticket_id","status","group_name","responder_id","requester_id","channel","country","contact_type_1"]

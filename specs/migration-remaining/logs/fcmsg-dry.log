@@ -1,0 +1,8 @@
+◇ injected env (11) from .env.local
+mode=dry workbook=1ZxDxS13pu0xXS3aPBfXxajtodwKIndaF0NOjZv6xacM (config) tz=Africa/Cairo (config)
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+Freshchat Messages (auto): read=73536 skipped=0 unique_so_far=73536 width=22 ts_col=8
+Freshchat Messages: read=9269 skipped=0 unique_so_far=82805 width=20 ts_col=6
+Sheet1: EMPTY/HEADER-ONLY (grid=0) — skipped
+TOTAL: tabs=3 empty_tabs=1 read=82805 skipped=0 null_ts=0 unique=82805
+would_write=82805 (dry run — pass --write to upsert)

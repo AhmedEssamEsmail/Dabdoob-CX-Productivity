@@ -1,0 +1,8 @@
+◇ injected env (11) from .env.local
+Sheets→Supabase migration (DRY RUN — read+map only)
+Spreadsheets: core, productivity, tickets, live, data_2026, quality, hct, v1_ops, oct_workbook, daily_report | mappings: 110
+The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+sched_offdays  <-  core/sched_offdays: 8 rows
+sched_overrides  <-  core/sched_overrides: 163 rows
+sched_overrides  <-  v1_ops/ShiftOverrides: 126 rows
+sched_offdays  <-  v1_ops/TLOffDays: 19 rows

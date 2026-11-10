@@ -368,3 +368,28 @@ Newly idempotent after WP-F22 (previously one-shot): `prod_daily_layers` (both s
 | Reviewed by (owner) | _pending_ | _pending_ | _pending_ |
 
 > † FIELD-DIFF / CHECKSUM-DIFF flags in the module tables are validator artifacts verified benign — see `audits/migration-run.md` §5 (bool/ISO-timestamp rendering, `now()` re-stamps, transform-free validator mapRow, pre-existing remote rows). Zero PGRST204, zero NOT-NULL violations, zero quota errors in the real run.
+
+---
+
+## Migration run 2 — post-run state (migration-remaining, 2026-11-09)
+
+> **PARTIAL — live writes PENDING-APPROVAL.** Code/mappings/CLIs complete and
+> verified read-only; no remote write has executed. Full ledger:
+> `audits/migration-run-2.md`. Per-store final states:
+> `specs/migration-remaining/source-inventory.md`. Validator now covers
+> 124 tables incl. `dq_hct`, `actions` (v1_ops), `fc_messages`
+> (`tl5-validate.log`, exit=0; `npx tsx migration/validate.ts --md`).
+
+| Store | Target | Dry/probe evidence | Live write |
+|---|---|---|---|
+| hct `1LtUZb…` | `dq_hct` | dry read 60 rows (`dry-run-2.log` l.99) | PENDING-APPROVAL |
+| v1_ops `1hul-T…` Tasks | `actions` | dry read 18 rows (l.100); non-task tabs final: 9 land via S06 mappings incl. `v1_task_occurrences`, 8 rejected (`decisions-v1-ops.md`) | PENDING-APPROVAL |
+| daily_report `Freshchat` | `freshchat` | read 1,742 → 1,602 unique (`fc-dry.log`) | PENDING-APPROVAL |
+| fd_activity `Activities` | `fd_activities` | gap=873 (remote 207,811 vs expected 208,684) (`fd-check.log`) | PENDING-APPROVAL |
+| voice/text QA forms | `qa_audits` | would-import 4,076 + 1,709 (`qa-probe.log`) | PENDING-APPROVAL |
+| oct_workbook (2026-09) | `scRefreshMonth_` | configured month resolved; prior run 480 rows (`sc-probe.log`); 2026-08 blocked on workbook share (S06-11) | PENDING-APPROVAL |
+| fc_messages `1ZxDxS…` | `fc_messages` | 82,805 unique rows (`fcmsg-dry.log`) | PENDING-APPROVAL |
+| touch_archive / qa_engine_source / qa_queue | — | rejected as stores (⊆ landed tables / live V1 store); reshard flags resolved — NTD tabs → `fd_activities` gap fill, qa_queue orphans → `qe_fd_cache` import staged (run-2 §7) | n/a |
+| 23 insert-only tables | — | dedupe+UNIQUE DDL authored (4 migrations), `upsertOn` flipped 23/23 | PENDING-APPROVAL (apply + targeted re-run, expect 0 new rows) |
+
+**Sign-off (run 2):** _pending PM approval-gated live runs; QA/Data/Security gates review `audits/migration-run-2.md`._
