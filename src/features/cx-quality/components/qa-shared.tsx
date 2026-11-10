@@ -23,7 +23,6 @@
 import {
   type ReactNode,
   type RefObject,
-  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -38,29 +37,31 @@ import {
   PageHead,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Seg, Select, Textarea } from '@/features/shared/components/ui'
+import {
+  Button,
+  ConfirmInline,
+  Input,
+  Seg,
+  Select,
+  TableScroll,
+  Textarea,
+} from '@/features/shared/components/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
+import { FetchError, fetchJson, postJson } from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
+import { loadOptions } from '@/features/shared/lib/use-options'
 
 /* Re-exports so the pages draw from one file (merged from qa-shared2). */
 export { Chip, LinesSkeleton, LoadError, toast }
+export { FetchError, fetchJson, postJson }
 
 /* --- api seam -----------------------------------------------------------
  * L(fn, ...args) — legacy called google.script.run[fn](...args). The
  * dispatcher lives at POST /api/qa/<fn> with {args: [...]}.
  */
-export async function fetchJson(url: string, body?: any): Promise<any> {
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
-  })
-  const j = await r.json().catch(() => ({}))
-  if (!r.ok || j.error) throw new Error(j.error || `${r.status} ${r.statusText}`)
-  return j
-}
-
 /** qa(fn, ...args) — the dispatcher (exported; internal alias L). */
 export const qa = (fn: string, ...args: any[]): Promise<any> =>
-  fetchJson(`/api/qa/${fn}`, { args })
+  postJson(`/api/qa/${fn}`, { args })
 
 const L = qa
 
@@ -106,38 +107,15 @@ export const P = {
 /** Q(t, tone) — the toast emitter. */
 export const Q = toast
 
-/* --- se/dn — the loader hook ------------------------------------------- */
-const dn = new Map<unknown, unknown>()
-
-/** se(t) — verbatim: named thunks are cached across remounts in dn. */
-export function useSe(load: () => Promise<any>) {
-  const cacheable = !!load.name
-  const [data, setData] = useState<any>(() =>
-    cacheable ? (dn.get(load) as any) ?? null : null
-  )
-  const [error, setError] = useState('')
-  const [tick, setTick] = useState(0)
-
-  useEffect(() => {
-    if (cacheable && data !== null) dn.set(load, data)
-  }, [data]) // eslint-disable-line react-hooks/exhaustive-deps -- verbatim se: only data matters
-
-  useEffect(() => {
-    let live = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- verbatim se: clears stale error before reload
-    setError('')
-    load().then(
-      (u) => live && setData(u),
-      (u) => live && setError(u.message)
-    )
-    return () => {
-      live = false
-    }
-  }, [tick]) // eslint-disable-line react-hooks/exhaustive-deps -- verbatim se: only tick re-fires
-
-  const reload = useCallback(() => setTick((r) => r + 1), [])
-  return { data, error, reload, setData }
-}
+/* --- se/dn — the loader hook -------------------------------------------
+ * Named thunks keep their cross-remount cache via usePageData's
+ * function-identity cacheKey; anonymous loaders stay uncached, exactly
+ * like the legacy dn Map keyed on load.name.
+ */
+export const useSe = (load: () => Promise<any>) =>
+  usePageData(load.name || null, load, {
+    cacheKey: load.name ? load : null,
+  })
 
 /* --- de / D — page shell + section ------------------------------------- */
 /** de — the routed page shell. */
@@ -160,7 +138,7 @@ export function QaPage({
 }) {
   return (
     <section
-      className="cxp dq-page"
+      className="cxp page"
       aria-labelledby="page-title"
       aria-busy={!d && !error}
     >
@@ -188,7 +166,7 @@ export function QaSection({
   return (
     <section className="cx-section" aria-labelledby={id}>
       <div className="cx-section__head">
-        <h2 className="cx-section__title" id={id}>
+        <h2 className="cx-section__title" id={id} tabIndex={-1}>
           {title}
         </h2>
         {hint ? <span className="cx-section__hint">{hint}</span> : null}
@@ -201,11 +179,11 @@ export function QaSection({
 
 /* --- _t / ae / oe / Ie / U — chips ------------------------------------- */
 /** oe(t, n) — score band: null → neutral, fatal || <80 bad, <90 warn, else ok. */
-export const qaBand = (t: number | null, n?: boolean): string =>
+export const qaBand = (t: number | null, n?: boolean): ChipStatus =>
   t === null ? 'neutral' : n || t < 80 ? 'bad' : t < 90 ? 'warn' : 'ok'
 
 /** _t — status → [label, tone] (identical across the Quality closures). */
-export const QA_STATUS: Record<string, [string, string]> = {
+export const QA_STATUS: Record<string, [string, ChipStatus]> = {
   submitted: ['Waiting for the CTL', 'neutral'],
   acknowledged: ['Acknowledged', 'ok'],
   disputed: ['Disputed: left out of scores', 'warn'],
@@ -233,7 +211,7 @@ export const QA_STATUS: Record<string, [string, string]> = {
 export function StatusChip({ s }: { s: string }) {
   return (
     <Chip status={QA_STATUS[s]?.[1] ?? 'neutral'}>
-      {QA_STATUS[s]?.[0] ?? s}
+      {QA_STATUS[s]?.[0] ?? s.replace(/_/g, ' ')}
     </Chip>
   )
 }
@@ -326,7 +304,6 @@ export const qaBasisNote = (t: string, n: number): string =>
  */
 const Ve: Record<string, string[]> = {}
 const ft = new Set<() => void>()
-const it = new Map<string, Promise<any>>()
 const LT = '__other__' // lt
 
 const Ma = (key: string): string[] | undefined => Ve[key]
@@ -350,14 +327,10 @@ function useStoreSignal<T>(read: () => T, deps: any[] = []): T {
   return a
 }
 
-/** be — the shared-app options endpoints. */
+/** be — the shared-app options endpoints (loads dedupe via loadOptions). */
 const be = {
-  getDropdownOptions: (listKey: string): Promise<string[]> =>
-    fetch(`/api/options/${encodeURIComponent(listKey)}`)
-      .then((r) => r.json())
-      .then((j) => (Array.isArray(j) ? j : (j?.options ?? []))),
   addDropdownOption: (listKey: string, value: string): Promise<any> =>
-    fetchJson(`/api/options/${encodeURIComponent(listKey)}`, { value }),
+    postJson(`/api/options/${encodeURIComponent(listKey)}`, { value }),
 }
 
 /** Te — verbatim ListSelect. */
@@ -391,13 +364,10 @@ export function ListSelect({
 
   useEffect(() => {
     if (r !== undefined) return
-    let R = it.get(listKey)
-    if (!R) {
-      R = be.getDropdownOptions(listKey).then((Z) => Zt(listKey, Z))
-      it.set(listKey, R)
-      R.catch(() => it.delete(listKey))
-    }
-    R.catch((Z) => _(Z.message))
+    loadOptions(listKey).then(
+      (Z) => Zt(listKey, Z),
+      (Z) => _(Z instanceof Error ? Z.message : String(Z))
+    )
   }, [listKey, r])
 
   useEffect(() => {
@@ -446,8 +416,8 @@ export function ListSelect({
   const S = f || y ? `${m}-err` : undefined
 
   return (
-    <div className="field">
-      <label htmlFor={m} className="field-label">
+    <div className="cx-field">
+      <label htmlFor={m} className="cx-label">
         {label}
         {required ? (
           <span className="req" aria-hidden="true">
@@ -475,7 +445,7 @@ export function ListSelect({
         <option value={LT}>Other…</option>
       </Select>
       {hint ? (
-        <p id={A} className="field-hint">
+        <p id={A} className="cx-hint">
           {hint}
         </p>
       ) : null}
@@ -506,7 +476,7 @@ export function ListSelect({
         </div>
       ) : null}
       {f || y ? (
-        <p id={S} className="field-error" role="alert">
+        <p id={S} className="cx-error" role="alert">
           {f || `Choices did not load: ${y}`}
         </p>
       ) : null}
@@ -750,6 +720,7 @@ export function AuditForm({
   const [f, g] = useState<any>({})
   const [y, _] = useState(false)
   const [T, k] = useState('')
+  const [M, C2] = useState(false)
 
   const C = useMemo(() => qaScoreAnswers(t, u), [t, u])
   const O = (N: string, z: string) => d((X: any) => ({ ...X, [N]: z }))
@@ -791,11 +762,10 @@ export function AuditForm({
       [...new Set([...Object.keys(u), ...Object.keys(r)])].some(
         (X) => u[X] !== r[X]
       ) || o.trim() !== ''
-    if (
-      dirty &&
-      !window.confirm('Leave this audit? Your answers are not saved and will be lost.')
-    )
+    if (dirty) {
+      C2(true)
       return
+    }
     i()
   }
 
@@ -804,14 +774,15 @@ export function AuditForm({
 
   return (
     <form
-      className="card qa-form"
+      className="cx-panel qa-form"
       onSubmit={Z}
       aria-label={`Audit: ${t.title}`}
+      tabIndex={-1}
     >
-      <div className="card-head">
+      <div className="cx-section__head">
         <div>
-          <div className="card-title">{t.title}</div>
-          <div className="card-hint">
+          <div className="cx-section__title">{t.title}</div>
+          <div className="cx-section__hint">
             Under 100% opens a CTL for the team lead.
           </div>
         </div>
@@ -824,11 +795,11 @@ export function AuditForm({
             <span aria-hidden="true">← </span>
             {c}
           </Button>
-          <span className="pill warn">In progress</span>
+          <Chip status="warn">In progress</Chip>
         </div>
       </div>
-      <div className="card-pad">
-        <div className="qa-form__facts">{n}</div>
+      <div className="cx-panel--pad">
+        <div>{n}</div>
         <div className="cx-field">
           <label className="cx-label" htmlFor="qa-when">
             Interaction date and time (Riyadh)
@@ -861,11 +832,7 @@ export function AuditForm({
           const z = N.questions.map((F: any) => F.id)
           const X = !!N.optional && z.every((F: string) => u[F] === 'na')
           return (
-            <fieldset
-              className="qa-sec"
-              data-skipped={X ? 'true' : undefined}
-              key={N.id}
-            >
+            <fieldset className="qa-sec" key={N.id}>
               <legend className="qa-sec__title">{N.title}</legend>
               {N.optional ? (
                 <div className="qa-sec__opt">
@@ -883,14 +850,19 @@ export function AuditForm({
                   </Button>
                 </div>
               ) : null}
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Question</th>
-                    <th className="num">Weight</th>
-                    <th className="num">Answer</th>
-                  </tr>
-                </thead>
+              <TableScroll label={`${N.title} questions`}>
+                <table className="cx-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Question</th>
+                      <th className="num" scope="col">
+                        Weight
+                      </th>
+                      <th className="num" scope="col">
+                        Answer
+                      </th>
+                    </tr>
+                  </thead>
                 <tbody>
                   {N.questions.map((F: any) => {
                     const da =
@@ -968,7 +940,8 @@ export function AuditForm({
                     )
                   })}
                 </tbody>
-              </table>
+                </table>
+              </TableScroll>
             </fieldset>
           )
         })}
@@ -988,6 +961,17 @@ export function AuditForm({
             {T}
           </p>
         ) : null}
+        {M ? (
+          <ConfirmInline
+            label="Leave this audit? Your answers are not saved and will be lost."
+            confirmLabel="Leave without saving"
+            onConfirm={() => {
+              C2(false)
+              i()
+            }}
+            onCancel={() => C2(false)}
+          />
+        ) : null}
         <div className="between">
           <div className="flex">
             <div className="qa-score" data-status={J} aria-live="polite">
@@ -1001,7 +985,7 @@ export function AuditForm({
               </span>
             </div>
             {C.score !== null && C.score < 100 ? (
-              <span className="pill bad">opens CTL</span>
+              <Chip status="bad">opens CTL</Chip>
             ) : null}
           </div>
           <div className="qa-form__foot">
@@ -1031,8 +1015,9 @@ export function AuditForm({
             </Button>
           </div>
         </div>
-        <div className="note">
+        <div className="cx-note">
           <svg
+            className="cx-icon"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1059,7 +1044,7 @@ const COUNT_MS = 900 // cn
 const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩' // ls
 
 /** Nt() — reduced motion check. */
-const reduceMotion = () =>
+export const reduceMotion = () =>
   (typeof matchMedia === 'function' &&
     matchMedia('(prefers-reduced-motion: reduce)').matches) ||
   document.documentElement.hasAttribute('data-reduce-motion')
@@ -1165,7 +1150,7 @@ export const QA_CONF: Record<string, string> = {
   low: 'Low',
 }
 /** xt — confidence tones. */
-export const QA_CONF_TONE: Record<string, string> = {
+export const QA_CONF_TONE: Record<string, ChipStatus> = {
   high: 'ok',
   medium: 'warn',
   low: 'neutral',
@@ -1183,7 +1168,7 @@ export const QA_TREND_ARROW: Record<string, string> = {
 export const qaCi = (t: any): string =>
   t ? `${t.pct}% (${t.lo}–${t.hi})` : '–'
 /** Et — verdict-aware row tone. */
-export const qaVerdictTone = (t: any): string =>
+export const qaVerdictTone = (t: any): ChipStatus =>
   t.verdict ? qaBand(t.avg, false) : 'neutral'
 /** Pe — fail-reason labels + Untagged. */
 export const QA_REASON_LABELS: Record<string, string> = {
@@ -1213,7 +1198,7 @@ export const QA_BASIS_LABELS: Record<string, string> = {
   unknown: 'Unknown basis',
 }
 /** yn — the analytics flag chips. */
-export const QA_FLAG_LABELS: Record<string, [string, string]> = {
+export const QA_FLAG_LABELS: Record<string, [string, ChipStatus]> = {
   critical: ['Critical fail', 'bad'],
   repeat: ['Repeat after CTL', 'bad'],
   below: ['Below the team', 'warn'],
@@ -1328,7 +1313,7 @@ export const qaDayName = (t: string): string =>
 export const qaAddDays = (t: string, n: number): string =>
   new Date(Date.parse(t + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10)
 /** Rt — coverage tone: 0 bad, under quota warn, else ok. */
-export const qaCovTone = (t: number, n: number): string =>
+export const qaCovTone = (t: number, n: number): ChipStatus =>
   t <= 0 ? 'bad' : t < n ? 'warn' : 'ok'
 
 /* --- ta — the interaction/audit basis segmented control ------------------ */
@@ -1372,12 +1357,11 @@ export function DrillSection({
   } = useSe(() =>
     P.analyticsAudits(scope.grain, scope.period, pick.agent ?? '', pick.question ?? '', scope.basis)
   )
-  const p = useRef<HTMLElement | null>(null)
   const m = [pick.agentName, pick.questionText ? `“${pick.questionText.slice(0, 80)}”` : '']
     .filter(Boolean)
     .join(': ')
   return (
-    <section className="cx-section qa-drill" aria-labelledby="qa-drill-h" ref={p}>
+    <section className="cx-section qa-drill" aria-labelledby="qa-drill-h">
       <div className="cx-section__head">
         <h2 className="cx-section__title" id="qa-drill-h" tabIndex={-1}>
           {m}

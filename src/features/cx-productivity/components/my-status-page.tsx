@@ -1,13 +1,9 @@
 'use client'
 
-import { Fragment, useState, type FormEvent } from 'react'
-import {
-  LinesSkeleton,
-  LoadError,
-  Section,
-} from '@/features/shared/components/shell/ui'
-import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Textarea } from '@/features/shared/components/ui'
+import { Fragment } from 'react'
+import { Section } from '@/features/shared/components/shell/ui'
+import { Chip, Empty, PageShell, PagedList } from '@/features/shared/components/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import {
   CasesLine,
@@ -31,12 +27,6 @@ import { addDays, type FlagView, type RuleView } from '@/features/cx-productivit
 
 const ce = {
   myPage: () => fetchJson('/api/prod/my-page'),
-  dispute: (input: { flagId: string; reason: string }) =>
-    fetchJson('/api/prod/disputes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    }),
 }
 
 interface Mine {
@@ -60,7 +50,7 @@ interface MyPage {
 }
 
 /** wi-side pill — mirrors the flag's review state (mock 10). */
-function flagPill(f: FlagView): { cls: string; label: string; sub: string } {
+function flagPill(f: FlagView): { cls: ChipStatus | ''; label: string; sub: string } {
   if (f.dispute?.status === 'open') return { cls: 'bad', label: 'disputed', sub: 'open' }
   if (f.decision === 'pending')
     return { cls: 'warn', label: 'under review', sub: f.tlName ? `by ${f.tlName}` : '' }
@@ -69,62 +59,12 @@ function flagPill(f: FlagView): { cls: string; label: string; sub: string } {
   return { cls: '', label: f.decision, sub: f.decidedBy }
 }
 
-/* --- the dispute form (Nt in the bundle) — unreachable while canDispute is
-        always false, ported for parity ----------------------------------- */
-
-function DisputeRaise({ f, onDone }: { f: FlagView; onDone: () => void }) {
-  const [reason, setReason] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [formError, setFormError] = useState('')
-  return (
-    <form
-      className="pv-form"
-      onSubmit={(e: FormEvent) => {
-        e.preventDefault()
-        setSaving(true)
-        setFormError('')
-        ce.dispute({ flagId: f.flagId, reason }).then(
-          () => {
-            setSaving(false)
-            toast('Dispute sent to your team lead.')
-            onDone()
-          },
-          (p: unknown) => {
-            setSaving(false)
-            setFormError(p instanceof Error ? p.message : String(p))
-          },
-        )
-      }}
-    >
-      <div className="cx-field">
-        <label className="cx-label" htmlFor={`dr-${f.flagId}`}>
-          What were you doing in this time?
-        </label>
-        <Textarea
-          id={`dr-${f.flagId}`}
-          value={reason}
-          onInput={(e) => setReason(e.currentTarget.value)}
-        />
-      </div>
-      {formError ? (
-        <p className="cx-error" role="alert">
-          {formError}
-        </p>
-      ) : null}
-      <Button type="submit" disabled={saving}>
-        {saving ? 'Sending…' : 'Send the dispute'}
-      </Button>
-    </form>
-  )
-}
-
 /* --- Ia — the page ------------------------------------------------------ */
 
 const ROUTE = { title: 'My status' }
 
 export function MyStatusPage() {
   const { data: n, error, reload } = useSe<MyPage>(ce.myPage)
-  const [open, setOpen] = useState('')
   const o = n?.mine
   const waiting = (n?.flags ?? []).filter((f) => f.decision === 'pending').length
   const disputes = (n?.flags ?? []).filter((f) => f.dispute?.status === 'open').length
@@ -132,7 +72,7 @@ export function MyStatusPage() {
     o && o.prodRawPct != null && o.prodEffPct != null
       ? Math.round((o.prodEffPct - o.prodRawPct) * 10) / 10
       : null
-  const dCls = dPp === null ? '' : dPp > 0 ? 'up good' : dPp < 0 ? 'up' : 'flat'
+  const dCls = dPp === null ? '' : dPp > 0 ? 'up' : dPp < 0 ? 'down' : 'flat'
   const sparkRaw = (n?.trend ?? []).map((p) => p.idleEffPct)
   const sparkVals = sparkRaw.filter((v): v is number => v != null)
   const sparkLo = sparkVals.length ? Math.min(...sparkVals) : 0
@@ -142,22 +82,19 @@ export function MyStatusPage() {
   )
   const barW = (v: number | null | undefined) => (v == null ? 0 : Math.min(Math.max(v, 0), 100))
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!n && !error}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {ROUTE.title}
-          </h1>
-          {n ? (
-            <p className="page-sub">
-              Week of {re(n.week)} – {re(addDays(n.week, 6))} · your flagged IDLE time and what each
-              review changed in your productivity.
-            </p>
-          ) : null}
-        </div>
-      </header>
-      {error ? <LoadError message={error} onRetry={reload} /> : null}
-      {!n && !error ? <LinesSkeleton lines={6} /> : null}
+    <PageShell
+      id="page-title"
+      className="cxp page"
+      title={ROUTE.title}
+      purpose={
+        n
+          ? `Week of ${re(n.week)} – ${re(addDays(n.week, 6))} · your flagged IDLE time and what each review changed in your productivity.`
+          : undefined
+      }
+      busy={!n && !error}
+      error={error}
+      onRetry={reload}
+    >
       {n ? (
         <Fragment>
           <div className="grid grid-4 mb-3">
@@ -220,25 +157,25 @@ export function MyStatusPage() {
                 </div>
               </dl>
             ) : (
-              <div className="empty">
-                <div className="s">No logged time this week yet.</div>
-              </div>
+              <Empty title="No logged time this week yet." />
             )}
           </Section>
           <div
-            className="grid"
-            style={{ gridTemplateColumns: '1.5fr 1fr', alignItems: 'start' }}
+            className="grid cols-32"
+            style={{ alignItems: 'start' }}
           >
-            <section className="card" aria-labelledby="pv-mf-h">
-              <div className="card-head">
-                <h2 id="pv-mf-h" className="card-title" style={{ margin: 0 }}>
+            <section className="cx-panel" aria-labelledby="pv-mf-h">
+              <div className="cx-section__head">
+                <h2 id="pv-mf-h" className="cx-section__title">
                   Your flags
                 </h2>
-                <div className="card-hint">dispute window: {n.rule.disputeDays} days</div>
+                <div className="cx-section__hint">dispute window: {n.rule.disputeDays} days</div>
               </div>
               {n.flags.length ? (
                 <div className="pv-cards">
-                  {n.flags.map((f) => {
+                  <PagedList
+                    items={n.flags}
+                    renderItem={(f) => {
                     const p = flagPill(f)
                     return (
                       <article
@@ -277,48 +214,29 @@ export function MyStatusPage() {
                               ) : null}
                             </p>
                           ) : null}
-                          {f.canDispute ? (
-                            open === f.flagId ? (
-                              <DisputeRaise
-                                f={f}
-                                onDone={() => {
-                                  setOpen('')
-                                  reload()
-                                }}
-                              />
-                            ) : (
-                              <Button onClick={() => setOpen(f.flagId)}>
-                                Dispute{f.disputeUntil ? ` (until ${f.disputeUntil})` : ''}
-                              </Button>
-                            )
-                          ) : null}
                         </div>
                         <div className="wi-side">
-                          <span className={p.cls ? `pill ${p.cls}` : 'pill'}>{p.label}</span>
+                          <Chip status={p.cls || undefined}>{p.label}</Chip>
                           {p.sub ? <div className="s mt-1">{p.sub}</div> : null}
                         </div>
                       </article>
                     )
-                  })}
+                    }}
+                  />
                 </div>
               ) : (
-                <div className="empty">
-                  <h2 className="t" style={{ margin: 0, fontSize: 'var(--text-md)' }}>
-                    No flags in the last 45 days
-                  </h2>
-                  <div className="s">Flags appear here once your IDLE time is sent for review.</div>
-                </div>
+                <Empty title="No flags in the last 45 days" body="Flags appear here once your IDLE time is sent for review." />
               )}
             </section>
             <div className="grid" style={{ alignContent: 'start' }}>
-              <section className="card" aria-labelledby="pv-bva-h">
-                <div className="card-head">
-                  <h2 id="pv-bva-h" className="card-title" style={{ margin: 0 }}>
+              <section className="cx-panel" aria-labelledby="pv-bva-h">
+                <div className="cx-section__head">
+                  <h2 id="pv-bva-h" className="cx-section__title">
                     Before vs after
                   </h2>
-                  <div className="card-hint">this week</div>
+                  <div className="cx-section__hint">this week</div>
                 </div>
-                <div className="card-pad">
+                <div className="cx-panel--pad">
                   <div className="hbar-row">
                     <span className="small">Raw</span>
                     <div className="bar warn">
@@ -333,26 +251,29 @@ export function MyStatusPage() {
                     </div>
                     <b className="num small">{T(o?.prodEffPct, '%')}</b>
                   </div>
-                  <hr className="hr" style={{ margin: '.8rem 0' }} />
+                  <hr className="hr hr--compact" />
                   <div className="small faint">How flags moved your score</div>
-                  <div className="spark mt-1" style={{ height: '3rem' }}>
+                  <div className="spark spark--tall mt-1">
                     {spark.map((h, i) => (
-                      <i key={i} style={{ height: `${h}%` }} />
+                      <i
+                        key={i}
+                        style={{ height: `${h}%` }}
+                        role="img"
+                        tabIndex={0}
+                        aria-label={`Week of ${(n?.trend ?? [])[i]?.week ?? i + 1}: ${T(sparkRaw[i], '%')}`}
+                      />
                     ))}
                   </div>
                   <div className="small faint mt-1">Mon → Sun</div>
                 </div>
               </section>
-              <section className="card" aria-labelledby="pv-wyc-h">
-                <div className="card-head">
-                  <h2 id="pv-wyc-h" className="card-title" style={{ margin: 0 }}>
+              <section className="cx-panel" aria-labelledby="pv-wyc-h">
+                <div className="cx-section__head">
+                  <h2 id="pv-wyc-h" className="cx-section__title">
                     What you can do
                   </h2>
                 </div>
-                <div
-                  className="card-pad small muted"
-                  style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}
-                >
+                <div className="cx-panel--pad small muted pv-wyc">
                   <div>
                     · Check each flag: the cases listed are what the system saw inside your IDLE
                     window.
@@ -369,6 +290,6 @@ export function MyStatusPage() {
           </div>
         </Fragment>
       ) : null}
-    </section>
+    </PageShell>
   )
 }

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Check-ins page (checkins.closure.js symbol Xa). */
 import { useEffect, useState } from 'react'
-import { Button, Field, Input, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Field, Input, Textarea } from '@/features/shared/components/ui'
 import { AgeChip, Head, ListSelect, LoadError, Skeleton, fetchJson, hm, useHashParams, useSe } from './shared'
 
 const STATUS_ORDER = (t: string) => {
@@ -104,12 +104,12 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
     }
   }
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!a && !error}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!a && !error}>
       <Head title={route.title} sub={cur ? `Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait. This one is ${cur.slot}, ${String(cur.name).toLowerCase()} (${cur.cairo} Cairo).` : 'Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait time.'} />
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!a || !cur ? <><Skeleton tall lines={2} /><Skeleton lines={10} /></> : (
         <>
-          <section className="card" aria-label="Today's check-ins">
+          <section className="cx-panel" aria-label="Today's check-ins">
             <DayRail slots={a.slots} now={a.now} />
           </section>
           {missed.length ? (
@@ -121,7 +121,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
             </div>
           ) : null}
           <div className="cx-split cx-split--narrow">
-            <form className="card" onSubmit={submit} noValidate>
+            <form className="cx-panel" onSubmit={submit} noValidate>
               <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)', borderBlockEnd: '1px solid var(--cx-line)' }}>
                 {notOpen ? (
                   <div className="cx-note" data-status="neutral"><div><strong>The {cur.slot} check-in opens at {hm(cur.opensAt)}.</strong> The numbers below are live and will change.</div></div>
@@ -144,14 +144,14 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                     <div className="cx-readout">
                       <span className="cx-queuerow__name">
                         {k.queue}
-                        {k.stale ? <span className="pill warn">Stale: not refreshed since the daily report</span> : null}
-                        {byStatusLine(k.byStatus) ? <span className="dq-statusline">{byStatusLine(k.byStatus)}</span> : null}
+                        {k.stale ? <Chip status="warn">Stale: not refreshed since the daily report</Chip> : null}
+                        {byStatusLine(k.byStatus) ? <span className="cx-statusline">{byStatusLine(k.byStatus)}</span> : null}
                       </span>
                       <span><b className="cx-num">{k.open}</b> open</span>
                       {a.previousSlot ? <span className="cx-delta">{delta(k.delta)} since {a.previousSlot}</span> : null}
                       <span className="cx-lock">{k.kind === 'chat' ? `From the daily report${k.sourceAsOf ? `, ${hm(k.sourceAsOf)}` : ''}` : `From Freshdesk${a.dataAsOf ? `, ${hm(a.dataAsOf)}` : ''}`}</span>
-                      {/* kept raw:dq-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
-                      <label className="dq-correct"><input type="checkbox" checked={draft[k.queue].correct} onChange={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], correct: (e.target as HTMLInputElement).checked } }))} /> Correct the count</label>
+                      {/* kept raw:cx-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
+                      <label className="cx-correct"><input type="checkbox" checked={draft[k.queue].correct} onChange={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], correct: (e.target as HTMLInputElement).checked } }))} /> Correct the count</label>
                       {draft[k.queue].correct ? <Input className="cx-num" type="number" min={0} aria-label={`Correct open count for ${k.queue}`} value={draft[k.queue].openCorrected} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], openCorrected: (e.target as HTMLInputElement).value } }))} /> : null}
                     </div>
                     <div className="cx-readout">
@@ -181,8 +181,8 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                 <Field label={<>Anything the next shift or Mohamed should know? <span className="cx-faint" style={{ fontWeight: 400 }}>Optional</span></>}>
                   <Textarea id="gen" value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} />
                 </Field>
-                {/* kept raw:dq-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
-                <label className="dq-correct"><input type="checkbox" checked={help} onChange={(e) => setHelp((e.target as HTMLInputElement).checked)} /> I need help from Mohamed now</label>
+                {/* kept raw:cx-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
+                <label className="cx-correct"><input type="checkbox" checked={help} onChange={(e) => setHelp((e.target as HTMLInputElement).checked)} /> I need help from Mohamed now</label>
                 {help ? (
                   <Field label="What help do you need?" hint="Mohamed gets an email and a card on his Home as soon as you submit."><Textarea id="help" value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /></Field>
                 ) : null}
@@ -195,12 +195,12 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
             </form>
             <div style={{ display: 'grid', gap: 'var(--cx-space-4)', alignContent: 'start' }}>
               {a.earlier.length ? a.earlier.map((k: any) => (
-                <section key={(k.date ?? '') + k.slot} className="card">
-                  <div className="card-head">
-                    <h2 className="card-title" style={{ margin: 0 }}>{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
-                    <span className="card-hint">{String(k.by).split('@')[0]}{k.late ? ' (late)' : ''}</span>
+                <section key={(k.date ?? '') + k.slot} className="cx-panel">
+                  <div className="cx-section__head">
+                    <h2 className="cx-section__title" style={{ margin: 0 }}>{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
+                    <span className="cx-section__hint">{String(k.by).split('@')[0]}{k.late ? ' (late)' : ''}</span>
                   </div>
-                  <div className="card-pad" style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+                  <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
                     {k.helpNeeded ? <p className="cx-note" data-status="bad"><span><strong>Asked Mohamed for help:</strong> {k.helpNote || 'no note'}</span></p> : null}
                     {k.generalNote ? <p className="cx-note" data-status="info"><span><strong>Handoff note:</strong> {k.generalNote}</span></p> : null}
                     <div className="cx-tablewrap">
@@ -208,7 +208,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                         <thead><tr><th scope="col">Queue</th><th scope="col" className="cx-num-col">Agents</th><th scope="col">Status given</th></tr></thead>
                         <tbody>
                           {(k.queues || []).map((A: any) => (
-                            <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td><span className={A.status === 'On track' ? 'pill ok' : 'pill warn'}>{A.status}</span>{A.note ? <span className="dq-statusline">{A.note}</span> : null}</td></tr>
+                            <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td><Chip status={A.status === 'On track' ? 'ok' : 'warn'}>{A.status}</Chip>{A.note ? <span className="cx-statusline">{A.note}</span> : null}</td></tr>
                           ))}
                         </tbody>
                       </table>
@@ -216,10 +216,10 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                   </div>
                 </section>
               )) : (
-                <div className="empty">
-                  <div className="t">No earlier check-ins yet.</div>
-                  <div className="s">Submitted check-ins from earlier slots today and last night show up here.</div>
-                </div>
+                <Empty
+                  title="No earlier check-ins yet."
+                  body="Submitted check-ins from earlier slots today and last night show up here."
+                />
               )}
               <div className="cx-note" data-status="neutral"><div><strong>If a check-in is missed</strong><br />The team lead gets an email and a pop-up 30 minutes after the slot. Mohamed sees the slot marked missed on Home.</div></div>
             </div>

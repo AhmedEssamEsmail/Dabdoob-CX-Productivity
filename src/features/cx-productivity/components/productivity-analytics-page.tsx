@@ -1,9 +1,12 @@
 'use client'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { LinesSkeleton, LoadError, PageHead } from '@/features/shared/components/shell/ui'
-import { Button } from '@/features/shared/components/ui'
+import { Button, Chip } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { toUserText } from '@/features/shared/lib/error-copy'
+import { getBoot, useBootSelector } from '@/features/shared/shell/context'
+import { useSearchParamState } from '@/features/shared/lib/use-search-param-state'
 import {
   Ba,
   CalibrationChart,
@@ -85,14 +88,23 @@ interface Analytics {
 const ROUTE = { title: 'Productivity analytics' }
 
 export function ProductivityAnalyticsPage() {
-  const [week, setWeek] = useState('')
-  const { data: s, error, reload } = useSe<Analytics>(() => ce.analytics(week))
+  const isAdmin = useBootSelector(() => getBoot()?.user.role === 'admin', [])
+  const [weekParam, setWeekParam] = useSearchParamState('week', '')
+  const weekRef = useRef(weekParam)
+  const { data: s, error, reload } = useSe<Analytics>(() => ce.analytics(weekRef.current))
+  useEffect(() => {
+    if (weekRef.current !== weekParam) {
+      weekRef.current = weekParam
+      reload()
+    }
+  }, [weekParam, reload])
   const shift = (d: number) => {
     if (!s) return
     const p = new Date(`${s.week}T00:00:00Z`)
     p.setUTCDate(p.getUTCDate() + d * 7)
-    setWeek(p.toISOString().slice(0, 10))
-    setTimeout(reload, 0)
+    weekRef.current = p.toISOString().slice(0, 10)
+    setWeekParam(weekRef.current)
+    reload()
   }
   const aside = s ? (
     <div className="pv-week">
@@ -104,20 +116,25 @@ export function ProductivityAnalyticsPage() {
     </div>
   ) : null
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!s && !error}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!s && !error}>
       <PageHead
         title={ROUTE.title}
         aside={aside}
         sub="Raw vs reviewed status per agent; reclassifying IDLE time changes the Productivity % denominator."
       />
-      {error ? <LoadError message={error} onRetry={reload} /> : null}
+      {error ? (
+        <LoadError
+          message={toUserText(error, { isAdmin, feature: 'Productivity analytics' })}
+          onRetry={reload}
+        />
+      ) : null}
       {!s && !error ? <LinesSkeleton lines={6} /> : null}
       {s ? (
         <Fragment>
-          <section className="card" aria-labelledby="pa-a-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="pa-a-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="pa-a-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="pa-a-h" className="cx-section__title" style={{ margin: 0 }}>
                   Idle and productivity, as logged and after review
                 </h2>
               </div>
@@ -153,7 +170,7 @@ export function ProductivityAnalyticsPage() {
                           {h.deltaPp === null ? '–' : `${h.deltaPp > 0 ? '+' : ''}${h.deltaPp} pp`}
                           {h.bandChange ? (
                             <span className="pv-sub">
-                              <span className="pill warn">{h.bandChange}</span>
+                              <Chip status="warn">{h.bandChange}</Chip>
                             </span>
                           ) : null}
                         </td>
@@ -168,13 +185,13 @@ export function ProductivityAnalyticsPage() {
               </table>
             </div>
           </section>
-          <section className="card" aria-labelledby="pa-t-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="pa-t-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="pa-t-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="pa-t-h" className="cx-section__title" style={{ margin: 0 }}>
                   How flags were reviewed, by team lead
                 </h2>
-                <div className="card-hint">Flags raised in the week</div>
+                <div className="cx-section__hint">Flags raised in the week</div>
               </div>
             </div>
             <div className="cx-tablewrap">
@@ -235,10 +252,10 @@ export function ProductivityAnalyticsPage() {
               </table>
             </div>
           </section>
-          <section className="card" aria-labelledby="pa-d-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="pa-d-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="pa-d-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="pa-d-h" className="cx-section__title" style={{ margin: 0 }}>
                   Disputes, last 4 weeks
                 </h2>
               </div>
@@ -274,26 +291,26 @@ export function ProductivityAnalyticsPage() {
               </table>
             </div>
           </section>
-          <section className="card" aria-labelledby="pa-w-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="pa-w-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="pa-w-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="pa-w-h" className="cx-section__title" style={{ margin: 0 }}>
                   Last 4 weeks
                 </h2>
               </div>
             </div>
-            <div className="card-pad">
+            <div className="cx-panel--pad">
               <Tn points={s.trend} />
             </div>
           </section>
           {s.heatmap ? (
-            <section className="card" aria-labelledby="pa-h-h">
-              <div className="card-head">
+            <section className="cx-panel" aria-labelledby="pa-h-h">
+              <div className="cx-section__head">
                 <div>
-                  <h2 id="pa-h-h" className="card-title" style={{ margin: 0 }}>
+                  <h2 id="pa-h-h" className="cx-section__title" style={{ margin: 0 }}>
                     Idle after review by hour and weekday
                   </h2>
-                  <div className="card-hint">
+                  <div className="cx-section__hint">
                     Quiet-hour idle is roster slack; busy-hour idle is behaviour
                   </div>
                 </div>
@@ -302,10 +319,10 @@ export function ProductivityAnalyticsPage() {
             </section>
           ) : null}
           {s.calibration ? (
-            <section className="card" aria-labelledby="pa-c-h">
-              <div className="card-head">
+            <section className="cx-panel" aria-labelledby="pa-c-h">
+              <div className="cx-section__head">
                 <div>
-                  <h2 id="pa-c-h" className="card-title" style={{ margin: 0 }}>
+                  <h2 id="pa-c-h" className="cx-section__title" style={{ margin: 0 }}>
                     {`Calibration of X (now ${s.rule.x} in ${s.rule.windowMin} minutes)`}
                   </h2>
                 </div>

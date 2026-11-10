@@ -1,0 +1,86 @@
+[
+  {
+    "route": "/overview",
+    "vp": "1440",
+    "url": "http://localhost:3000/overview",
+    "hScroll": false,
+    "h1": "Good morning, E2E",
+    "pageErrs": [],
+    "shot": "overview--1440.png"
+  },
+  {
+    "route": "/overview",
+    "vp": "390",
+    "url": "http://localhost:3000/overview",
+    "hScroll": false,
+    "h1": "Good morning, E2E",
+    "pageErrs": [],
+    "shot": "overview--390.png"
+  },
+  {
+    "route": "/queue",
+    "vp": "1440",
+    "url": "http://localhost:3000/queue",
+    "hScroll": false,
+    "h1": "Queue health",
+    "pageErrs": [],
+    "shot": "queue--1440.png"
+  },
+  {
+    "route": "/queue",
+    "vp": "390",
+    "url": "http://localhost:3000/queue",
+    "hScroll": false,
+    "h1": "Queue health",
+    "pageErrs": [],
+    "shot": "queue--390.png"
+  },
+  {
+    "route": "/my-day",
+    "vp": "1440",
+    "url": "http://localhost:3000/my-day",
+    "hScroll": false,
+    "h1": "My day",
+    "pageErrs": [],
+    "shot": "my-day--1440.png"
+  },
+  {
+    "route": "/my-day",
+    "vp": "390",
+    "url": "http://localhost:3000/my-day",
+    "hScroll": false,
+    "h1": "My day",
+    "pageErrs": [],
+    "shot": "my-day--390.png"
+  },
+  {
+    "route": "/status-validation",
+    "vp": "1440",
+    "url": "http://localhost:3000/status-validation",
+    "hScroll": false,
+    "h1": "Status validation",
+    "pageErrs": [],
+    "shot": "status-validation--1440.png"
+  },
+  {
+    "route": "/status-validation",
+    "vp": "390",
+    "url": "http://localhost:3000/status-validation",
+    "hScroll": false,
+    "h1": "Status validation",
+    "pageErrs": [],
+    "shot": "status-validation--390.png"
+  },
+  {
+    "route": "/auth/login",
+    "vp": "1440",
+    "hScroll": false,
+    "shot": "login--1440.png"
+  },
+  {
+    "route": "/auth/login",
+    "vp": "390",
+    "hScroll": false,
+    "shot": "login--390.png"
+  }
+]

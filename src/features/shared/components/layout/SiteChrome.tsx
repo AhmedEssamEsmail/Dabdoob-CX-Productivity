@@ -27,7 +27,7 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 
 function SiteChromeBody({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const isAuthPage = pathname.startsWith('/auth/')
+  const isAuthPage = pathname === '/auth' || pathname.startsWith('/auth/')
 
   /* Auth screens bypass AppShell — apply the stored cx.appearance here so
      theme/accent/transparency still take effect (legacy ia(ca()) ran on every

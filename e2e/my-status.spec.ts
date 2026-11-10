@@ -15,7 +15,7 @@ test.describe('My Status Page', () => {
     await expect(page.locator('.cxp[aria-busy="false"]')).toBeVisible({ timeout: 15000 })
 
     await expect(page.getByRole('heading', { name: 'My status' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'This week', exact: true })).toBeVisible()
   })
 
   test('productivity score displays correctly', async ({ page }) => {

@@ -131,19 +131,7 @@ export default function LoginPage() {
               placeholder="name@dabdoob.com"
             />
           </Field>
-          <Field
-            label={
-              <span className="between">
-                <span>Password</span>
-                <span
-                  className="small"
-                  style={{ color: 'var(--cx-accent-text)', fontWeight: 600 }}
-                >
-                  Forgot password?
-                </span>
-              </span>
-            }
-          >
+          <Field label="Password">
             <Input
               id="password"
               name="password"

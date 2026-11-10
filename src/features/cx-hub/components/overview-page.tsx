@@ -1,16 +1,17 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 
-/* verbatim port of the legacy Rg overview page (Home): dq-page header,
+/* verbatim port of the legacy Rg overview page (Home): page header,
  * up-next, ecosystem link, needs cards, per-role bodies (admin board mu,
  * TL dayrail + oldest, specialist note, agent oldest). */
 
 import { Fragment, useRef, useState } from 'react'
-import { Button } from '@/features/shared/components/ui'
+import { Button, Empty } from '@/features/shared/components/ui'
 import {
   Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, Hf, Hi, If, jl, Kf, km, lo, Nf,
   Of, pg, Ql, rg, sh, To, useTh, Vi, Wf, Yn, _g,
 } from './hub-shared'
+import { resolveLink } from '@/features/shared/shell/gates'
 
 type Q = Record<string, any>
 
@@ -23,7 +24,7 @@ function Ag(n: Q) {
     title: `${e.name} check-in`,
     live: t,
     meta: t ? `Due by ${Yn(e.dueAt)}.` : `Opens at ${Yn(e.at)}.`,
-    action: t ? { label: 'Start', href: '#/checkins' } : void 0,
+    action: t ? { label: 'Start', href: resolveLink('#/checkins').href } : void 0,
   }
 }
 function Cg(n: Q) {
@@ -147,9 +148,9 @@ function Tg({ d }: { d: Q }) {
     ['Not assigned', e((i) => i.unassigned)],
   ]
   return (
-    <dl className="dq-totals">
+    <dl className="cx-totals">
       {t.map(([i, s]) => (
-        <div key={i} className="dq-totals__item">
+        <div key={i} className="cx-totals__item">
           <dt>{i}</dt>
           <dd className="cx-num">
             <Kf value={s} format={Hi} />
@@ -161,24 +162,24 @@ function Tg({ d }: { d: Q }) {
 }
 function vg({ tiles, active, onPick, label }: Q) {
   return (
-    <ul className="dq-stats" aria-label={label}>
+    <ul className="cx-stats" aria-label={label}>
       {tiles.map((s: Q) => (
         <li key={s.key}>
-          {/* eslint-disable-next-line -- kept raw: dq-stat is a full stat tile, not a button */}
+          {/* kept raw: cx-stat is a full stat tile, not a button */}
           <button
             type="button"
-            className="dq-stat"
+            className="cx-stat"
             data-status={s.status}
             aria-pressed={active === s.key}
             onClick={() => onPick(active === s.key ? '' : s.key)}
           >
-            <span className="dq-stat__label">{s.label}</span>
-            <span className="dq-stat__row">
-              <span className="dq-stat__value cx-num">
+            <span className="cx-stat__label">{s.label}</span>
+            <span className="cx-stat__row">
+              <span className="cx-stat__value cx-num">
                 <Kf value={s.value} format={Hi} />
               </span>
               {s.delta !== null ? (
-                <span className="dq-stat__delta cx-num" aria-label={`${Ql(s.delta)} since the last snapshot`}>
+                <span className="cx-stat__delta cx-num" aria-label={`${Ql(s.delta)} since the last snapshot`}>
                   {Ql(s.delta)}
                 </span>
               ) : null}
@@ -193,7 +194,7 @@ function wg({ q, labels, i: t }: { q: Q; labels: string[]; i: number }) {
   const i = q.open || 1
   return (
     <span
-      className="dq-agebar cc-sweep-bar"
+      className="cx-agebar cc-sweep-bar"
       style={km(t)}
       role="img"
       aria-label={q.bands.map((s: number, r: number) => `${labels[r]}: ${s}`).join(', ')}
@@ -241,10 +242,6 @@ function OvIco({ s }: { s: string }) {
   )
 }
 
-const OV_CSS =
-  '.ov-main{display:grid;grid-template-columns:1.7fr 1fr;gap:1rem;align-items:start}' +
-  '@media (max-width:900px){.ov-main{grid-template-columns:1fr}}'
-
 function Mu() {
   const { data: n, error: e, reload: t } = Eo(Of.queueHealth)
   const [i, s] = useState('')
@@ -285,8 +282,8 @@ function Mu() {
         </div>
         {vg({ tiles: h, active: i, onPick: g, label: 'Queue totals. Press one to list only the queues it counts.' })}
         <Tg d={n} />
-        <div className="cx-panel cx-panel--pad" style={{ marginBlockStart: 'var(--cx-space-3)' }}>
-          <p className="cx-label" style={{ marginBlockEnd: 'var(--cx-space-2)' }}>
+        <div className="cx-panel cx-panel--pad ov-mt-3">
+          <p className="cx-label ov-mb-2">
             Open tickets by age <span className="cx-faint cx-num">{Hi(c)}</span>
           </p>
           <Wf counts={l} bands={n.bands} />
@@ -334,14 +331,14 @@ function Mu() {
               {p.map((y: Q, v: number) => (
                 <Fragment key={y.queue}>
                   {v > 0 && !y.ours && p[v - 1].ours ? (
-                    <tr className="dq-groupbreak">
+                    <tr className="cx-groupbreak">
                       <th scope="colgroup" colSpan={9}>
                         Other teams
                       </th>
                     </tr>
                   ) : null}
                   <tr>
-                    <th scope="row" className="dq-rowhead">
+                    <th scope="row" className="cx-rowhead">
                       {y.queue}
                       {y.kind === 'chat' ? <span className="cx-faint"> (best effort)</span> : null}
                       {y.stale ? (
@@ -351,7 +348,7 @@ function Mu() {
                           now. Refresh now does not update chats.
                         </_g>
                       ) : null}
-                      {du(y.byStatus) ? <span className="dq-statusline">{du(y.byStatus)}</span> : null}
+                      {du(y.byStatus) ? <span className="cx-statusline">{du(y.byStatus)}</span> : null}
                     </th>
                     <td className="cx-num-col cx-num">
                       <strong>{Hi(y.open)}</strong>
@@ -361,7 +358,7 @@ function Mu() {
                     <td className="cx-num-col cx-num">
                       {y.unassigned ? (
                         y.kind === 'ticket' ? (
-                          <a href="#/aging?unassigned=1" title="Open the tickets nobody has">
+                          <a href={resolveLink('#/aging?unassigned=1').href} title="Open the tickets nobody has">
                             {y.unassigned}
                           </a>
                         ) : (
@@ -430,14 +427,14 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
     { label: 'Schedule adherence', v: pulse.adherence ?? null, cls: ' blue' },
   ]
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!e && !t}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!e && !t}>
       <header className="page-head">
         <div>
           <h1 id="page-title" className="page-title">
             {e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
           </h1>
           {e ? (
-            <p className="page-sub">
+            <p className="page-purpose">
               {To(e.now)}, {Yn(e.now)} Kuwait ·{' '}
               {!e.specialist && e.role !== 'agent'
                 ? Cg(e)
@@ -500,14 +497,13 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
       {r ? <Nf item={r} /> : null}
       {e ? (
         <div className="ov-main">
-          <style dangerouslySetInnerHTML={{ __html: OV_CSS }} />
-          <section className="card" aria-labelledby="needs-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="needs-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="needs-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="needs-h" className="cx-section__title">
                   {e.role === 'tl' ? 'Do now' : 'Needs you today'}
                 </h2>
-                <div className="card-hint">Ordered by how long each has waited.</div>
+                <div className="cx-section__hint">Ordered by how long each has waited.</div>
               </div>
             </div>
             {needsRows.length ? (
@@ -533,26 +529,21 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                 })}
               </div>
             ) : (
-              <div className="empty">
-                <div className="s">Nothing is waiting on you.</div>
-              </div>
+              <Empty title="Nothing is waiting on you." />
             )}
           </section>
-          <div className="grid" style={{ alignContent: 'start' }}>
-            <section className="card" aria-labelledby="ovq-h">
-              <div className="card-head">
-                <h2 id="ovq-h" className="card-title" style={{ margin: 0 }}>
+          <div className="grid ov-grid-start">
+            <section className="cx-panel" aria-labelledby="ovq-h">
+              <div className="cx-section__head">
+                <h2 id="ovq-h" className="cx-section__title">
                   Queues right now
                 </h2>
-                <a className="card-hint" href="#/queue">
+                <a className="cx-section__hint" href={resolveLink('#/queue').href}>
                   Open →
                 </a>
               </div>
               {ovQueues.length ? (
-                <div
-                  className="card-pad"
-                  style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}
-                >
+                <div className="cx-panel--pad ov-stack">
                   {ovQueues.map((q) => {
                     const ne = (e.bands?.edges ?? []).length
                     const qb = pg(Number(q.oldestH) || 0, e.bands?.edges ?? [])
@@ -577,23 +568,21 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                   })}
                 </div>
               ) : (
-                <div className="empty">
-                  <div className="s">No queue snapshot yet.</div>
-                </div>
+                <Empty title="No queue snapshot yet." />
               )}
             </section>
-            <section className="card" aria-labelledby="ovp-h">
-              <div className="card-head">
+            <section className="cx-panel" aria-labelledby="ovp-h">
+              <div className="cx-section__head">
                 <div>
-                  <h2 id="ovp-h" className="card-title" style={{ margin: 0 }}>
+                  <h2 id="ovp-h" className="cx-section__title">
                     Team pulse
                   </h2>
-                  <div className="card-hint">
+                  <div className="cx-section__hint">
                     {e.role === 'admin' ? 'Team, last 7 days' : 'Your scope, last 7 days'}
                   </div>
                 </div>
               </div>
-              <div className="card-pad">
+              <div className="cx-panel--pad">
                 {pulseRows.map((r) => (
                   <div className="hbar-row" key={r.label}>
                     <span className="small">{r.label}</span>
@@ -616,7 +605,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
             <p className="cx-note">
               <span>
                 You own no tickets, so there is no aging list here. Seen something in a QA audit
-                that a team lead should raise? <a href="#/coaching">Send a coaching signal</a>: it
+                that a team lead should raise? <a href={resolveLink('#/coaching').href}>Send a coaching signal</a>: it
                 becomes a suggested topic in that person&apos;s next 1:1.
               </span>
             </p>
@@ -631,7 +620,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                   <h2 className="cx-section__title" id="today-h">
                     Check-ins today
                   </h2>
-                  <a href="#/checkins">Open check-ins</a>
+                  <a href={resolveLink('#/checkins').href}>Open check-ins</a>
                 </div>
                 <div className="cx-panel">
                   <Sg slots={e.slots} now={e.now} />
@@ -646,7 +635,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                 empty="Your team has no open tickets."
                 ticketUrl={e.ticketUrl}
                 showAgent={!0}
-                allLink="#/aging?mine=1"
+                allLink={resolveLink('#/aging?mine=1').href}
               />
             </div>
             <Mu />
@@ -657,7 +646,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
             title="My aging cases"
             empty="You have no open tickets assigned to you."
             ticketUrl={e.ticketUrl}
-            allLink="#/aging"
+            allLink={resolveLink('#/aging').href}
           />
         )
       ) : (

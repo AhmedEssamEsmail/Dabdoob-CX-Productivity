@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, ConfirmInline, Empty, ErrMsg, Failed, Input, PageShell, Select, Skeleton } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * KPI logs — port of the legacy Desk page (KpiLogs.js): three hand-kept
@@ -39,67 +40,16 @@ const B = (v: string) => {
 }
 const todayKw = () => new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10)
 
-function Skeleton() {
-  return (
-    <div aria-busy="true" aria-label="Loading" className="dk-skel">
-      {[92, 70, 84, 60, 76].map((w) => (
-        <span key={w} className="skeleton" style={{ width: `${w}%` }} />
-      ))}
-    </div>
-  )
-}
-
-function Failed({ message, retry }: { message: string; retry: () => void }) {
-  return (
-    <div className="dk-failed" role="alert">
-      <p>This page could not load: {message}</p>
-      <Button variant="primary" onClick={retry}>
-        Try again
-      </Button>
-    </div>
-  )
-}
-
 function Shell({ route, children }: { route: { title: string; purpose: string }; children: ReactNode }) {
   return (
-    <section className="page dk" aria-labelledby="page-title">
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-purpose">{route.purpose}</p>
-        </div>
-      </header>
+    <PageShell title={route.title} purpose={route.purpose} id="page-title" className="dk">
       {children}
-    </section>
+    </PageShell>
   )
-}
-
-function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
-}
-
-function ErrMsg({ message }: { message: string }) {
-  return message ? (
-    <p className="dk-error" role="alert">
-      {message}
-    </p>
-  ) : null
 }
 
 function useLoaded<T>(load: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState('')
-  const reload = useCallback(() => {
-    setError('')
-    load().then(setData, (e) => setError(e instanceof Error ? e.message : String(e)))
-  }, [load])
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reload() only clears a stale error, then sets state in the async .then
-    reload()
-  }, [reload])
-  return { data, setData, error, reload }
+  return usePageData<T>(null, load, { cache: false })
 }
 
 function useRun() {
@@ -181,22 +131,27 @@ function LogForm({
 
 function RemoveBtn({ kind, id, onDone }: { kind: string; id: string; onDone: () => void }) {
   const run = useRun()
+  const [confirming, setConfirming] = useState(false)
+  const remove = () =>
+    void run.run(async () => {
+      await api.kpiLogRemove(kind, id)
+      toast('Removed.')
+      onDone()
+    })
   return (
     <>
-      <Button
-        variant="quiet"
-        className="dk-sm"
-        disabled={run.busy}
-        onClick={() =>
-          void run.run(async () => {
-            await api.kpiLogRemove(kind, id)
-            toast('Removed.')
-            onDone()
-          })
-        }
-      >
-        {run.busy ? 'Removing…' : 'Remove'}
-      </Button>
+      {confirming ? (
+        <ConfirmInline
+          label="Remove this entry?"
+          confirmLabel="Remove"
+          onConfirm={remove}
+          onCancel={() => setConfirming(false)}
+        />
+      ) : (
+        <Button variant="quiet" className="dk-sm" disabled={run.busy} onClick={() => setConfirming(true)}>
+          Remove
+        </Button>
+      )}
       <ErrMsg message={run.error} />
     </>
   )
@@ -219,7 +174,7 @@ export default function KpiLogsPage() {
   if (!data) {
     return (
       <Shell route={ROUTE}>
-        <Skeleton />
+        <Skeleton shape="rows" n={5} />
       </Shell>
     )
   }
@@ -228,7 +183,7 @@ export default function KpiLogsPage() {
     <Shell route={ROUTE}>
       <h2 className="dk-h">Behaviour cases confirmed by HR</h2>
       <p className="dk-fine">One case in the period takes the agent&apos;s Behaviour KPI to 0 (15 points).</p>
-      <div className="card card-pad">
+      <div className="cx-panel cx-panel--pad">
       <LogForm kind="behaviour" label="Log the case" blank={{ email: '', date: todayKw(), note: '' }} onSaved={refresh}>
         {(f, set) => (
           <>
@@ -258,7 +213,7 @@ export default function KpiLogsPage() {
               <div className="dk-row">
                 <b>{a.name}</b>
                 <span>{B(a.date)}</span>
-                <Badge tone="bad">Confirmed case</Badge>
+                <Chip status="bad">Confirmed case</Chip>
                 <RemoveBtn kind="behaviour" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -268,9 +223,7 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <div className="empty">
-          <div className="s">No cases in the last {data.days} days.</div>
-        </div>
+        <Empty title={`No cases in the last ${data.days} days.`} />
       )}
       </div>
       <h2 className="dk-h">Unplanned leaves</h2>
@@ -278,7 +231,7 @@ export default function KpiLogsPage() {
         Each entry is one leave, however many days it covers. 3 inside any 2 months within the last 3 months make the
         agent not eligible for KPIs.
       </p>
-      <div className="card card-pad">
+      <div className="cx-panel cx-panel--pad">
       <LogForm kind="leave" label="Log the leave" blank={{ email: '', from: todayKw(), to: '', type: '', note: '' }} onSaved={refresh}>
         {(f, set) => (
           <>
@@ -323,7 +276,7 @@ export default function KpiLogsPage() {
                   {B(a.from)}
                   {a.to !== a.from ? ` to ${B(a.to)}` : ''}
                 </span>
-                <Badge>{a.type}</Badge>
+                <Chip>{a.type}</Chip>
                 <RemoveBtn kind="leave" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -333,9 +286,7 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <div className="empty">
-          <div className="s">No unplanned leaves in the last {data.days} days.</div>
-        </div>
+        <Empty title={`No unplanned leaves in the last ${data.days} days.`} />
       )}
       </div>
       <h2 className="dk-h">Tickets left out of an area&apos;s SLA</h2>
@@ -343,7 +294,7 @@ export default function KpiLogsPage() {
         For tickets the data cannot tell apart, such as Returns shipped with Ajex or outside KSA. Applied at the next
         hourly update.
       </p>
-      <div className="card card-pad">
+      <div className="cx-panel cx-panel--pad">
       {data.canExclude.length ? (
         <LogForm
           kind="exclusion"
@@ -386,9 +337,7 @@ export default function KpiLogsPage() {
           )}
         </LogForm>
       ) : (
-        <div className="empty">
-          <div className="s">Only an area&apos;s owner or an admin can leave tickets out.</div>
-        </div>
+        <Empty title="Only an area's owner or an admin can leave tickets out." />
       )}
       {data.exclusions.length ? (
         <ul className="dk-list">
@@ -397,7 +346,7 @@ export default function KpiLogsPage() {
               <div className="dk-row">
                 <b>#{a.ticketId}</b>
                 <span>{a.area}</span>
-                <Badge tone="warn">{a.reason}</Badge>
+                <Chip status="warn">{a.reason}</Chip>
                 <RemoveBtn kind="exclusion" id={a.id} onDone={refresh} />
               </div>
               <span className="dk-fine">
@@ -407,9 +356,7 @@ export default function KpiLogsPage() {
           ))}
         </ul>
       ) : (
-        <div className="empty">
-          <div className="s">No tickets left out in the last {data.days} days.</div>
-        </div>
+        <Empty title={`No tickets left out in the last ${data.days} days.`} />
       )}
       </div>
     </Shell>

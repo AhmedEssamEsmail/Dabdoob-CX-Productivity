@@ -1,8 +1,8 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react'
-import { Chip } from './Chip'
+import { Chip, type ChipStatus } from './Chip'
 
 export interface StatusChipProps extends HTMLAttributes<HTMLSpanElement> {
-  status: string
+  status: ChipStatus
   plain?: boolean
   children?: ReactNode
 }

@@ -6,17 +6,20 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   BootProvider,
+  getBoot,
   loadBootstrap,
   setBoot,
   shellApi,
-  type Bootstrap,
+  useBootSelector,
 } from '@/features/shared/shell/context'
 import {
   APPEARANCE_KEY,
@@ -110,7 +113,7 @@ function routePath(pathname: string): string {
 }
 
 export default function AppShell({ children }: { children?: ReactNode }) {
-  const [boot, setBootState] = useState<Bootstrap | null>(null)
+  const boot = useBootSelector(getBoot, [])
   const [bootError, setBootError] = useState('')
   const [navOpen, setNavOpen] = useState(false)
   const [railOff, setRailOff] = useState(readRailOff)
@@ -127,15 +130,40 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   const indRef = useRef<HTMLSpanElement>(null)
   const railSearchRef = useRef<HTMLButtonElement>(null)
   const reposition = useRef<() => void>(() => {})
-  useLang()
+  const lang = useLang()
 
   const path = routePath(pathname)
-  const route = PAGES.find((page) => page.path === path) ?? PAGES[0]
+  const route =
+    PAGES.filter(
+      (page) => path === page.path || path.startsWith(`${page.path}/`)
+    ).sort((a, b) => b.path.length - a.path.length)[0] ?? PAGES[0]
   /* The app context follows the current route's group: a Quality page renders
      the rail, brand and title of the legacy Quality app; a Hub page renders
      the Hub's. Unknown (non-registry) paths default to the hub context. */
   const ctxApp = appForGroup(route.group)
   const ctxTitle = appTitle(ctxApp)
+
+  /* Role/app-gated pages and the page this route actually renders (fallback
+     while the requested page is denied or its redirect is in flight).
+     Computed before the early returns so the title effect can read it. */
+  const visible = useMemo(() => {
+    if (!boot) return []
+    const app = appForGroup(route.group)
+    return PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
+      inApp(page, app)
+    )
+  }, [boot, route.group])
+  const fallback =
+    visible.find((page) => page.path === 'my-day') ??
+    visible.find((page) => page.path === 'overview') ??
+    visible[0]
+  const current = path && visible.includes(route) ? route : fallback
+
+  /* Unified nav: every group renders its role-gated pages — no inApp filter. */
+  const navVisible = useMemo(
+    () => (boot ? PAGES.filter((page) => pageAllowed(page, boot)) : []),
+    [boot]
+  )
 
   /* xa() — reload when the view-as session changed elsewhere. */
   const viewAsTarget = boot?.viewAs?.canUse ? (boot.viewAs.target ?? null) : null
@@ -154,7 +182,8 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     return () => document.removeEventListener('visibilitychange', check)
   }, [viewAsTarget])
 
-  /* pn() — park the .nav-ind slider on the current link every render. */
+  /* pn() — park the .nav-ind slider on nav-context changes; ResizeObserver
+     covers size/layout shifts from groups, rail mode and the mobile nav. */
   useLayoutEffect(() => {
     const update = () => {
       const nav = navRef.current
@@ -175,7 +204,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     }
     reposition.current = update
     update()
-  })
+  }, [current?.path, railOff, boot])
 
   useEffect(() => {
     const nav = navRef.current
@@ -193,6 +222,10 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     else document.documentElement.dataset.entry = 'calm'
   }, [path])
 
+  /* ux-14 — the element that invoked the palette (⌘K keydown target) is
+     captured before open so close can restore focus to it. */
+  const paletteInvoker = useRef<HTMLElement | null>(null)
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey) || event.key !== 'k') return
@@ -206,11 +239,14 @@ export default function AppShell({ children }: { children?: ReactNode }) {
         if (editable && !target.classList.contains('cpk-input')) return
       }
       event.preventDefault()
+      if (!paletteOpen && target instanceof HTMLElement) {
+        paletteInvoker.current = target
+      }
       setPaletteOpen((open) => !open)
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [])
+  }, [paletteOpen])
 
   /* ux-12 — the kbd hint is platform-aware; the navigator read lives in an
      effect so SSR and the first client render emit the same '⌘K'. */
@@ -220,12 +256,19 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   }, [])
 
   /* ux-14 — every palette close path (Esc/backdrop/Enter, ⌘K toggle,
-     route change) restores focus to .rail-search on the true->false edge. */
+     route change) restores focus to the captured invoker on the
+     true->false edge; .rail-search is only the fallback when the
+     invoker is gone (click-open, unmounted field). */
   const prevPaletteOpen = useRef(paletteOpen)
   useEffect(() => {
     const wasOpen = prevPaletteOpen.current
     prevPaletteOpen.current = paletteOpen
-    if (wasOpen && !paletteOpen) railSearchRef.current?.focus()
+    if (wasOpen && !paletteOpen) {
+      const invoker = paletteInvoker.current
+      paletteInvoker.current = null
+      if (invoker && document.contains(invoker)) invoker.focus()
+      else railSearchRef.current?.focus()
+    }
   }, [paletteOpen])
 
   /* Legacy k/A/V: a requested page that cannot render in this app (external
@@ -249,10 +292,14 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     router.replace(`/${cur.path}?${query.toString()}`)
   }, [path, boot, router, searchParams, ctxApp])
 
-  /* The document title is the app title of the context, as in each legacy app. */
+  /* SH-M3 — the tab title names the resolved page plus the app context so
+     routes are distinguishable in tabs/history; falls back to the app title
+     before boot resolves a page. Client-side only, so no SSR title flash. */
   useEffect(() => {
-    document.title = ctxTitle
-  }, [ctxTitle])
+    document.title = current?.title
+      ? `${D(current.title)} · ${ctxTitle}`
+      : ctxTitle
+  }, [current?.path, current?.title, ctxTitle, lang])
 
   /* ia(ca()) — stored appearance holds from the first app paint. */
   useEffect(() => {
@@ -282,7 +329,6 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     loadBootstrap().then(
       (data) => {
         setBoot(data)
-        setBootState(data)
       },
       (cause: unknown) =>
         setBootError(cause instanceof Error ? cause.message : String(cause))
@@ -326,14 +372,9 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       <main className="state-screen">
         <h1>{D('{app} could not start', { app: ctxTitle })}</h1>
         <p>{bootError}</p>
-        {/* kept raw: legacy .btn contract */}
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => location.reload()}
-        >
+        <Button variant="primary" onClick={() => location.reload()}>
           {D('Reload')}
-        </button>
+        </Button>
       </main>
     )
   }
@@ -389,21 +430,11 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     return <BootProvider value={boot}>{children}</BootProvider>
   }
 
-  const visible = PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
-    inApp(page, ctxApp)
-  )
   /* Legacy hash router: 'requested' is the URL's page; an empty path has none —
      the fallback page renders at the root URL with no note and no redirect. */
   const requested = path
     ? PAGES.find((page) => page.path === path)
     : undefined
-  const fallback =
-    visible.find((page) => page.path === 'my-day') ??
-    visible.find((page) => page.path === 'overview') ??
-    visible[0]
-  const current = path && visible.includes(route) ? route : fallback
-  /* Unified nav: every group renders its role-gated pages — no inApp filter. */
-  const navVisible = PAGES.filter((page) => pageAllowed(page, boot))
 
   /* The current route's group is always expanded after nav (adjust-during-
      render, same pattern as prevRoutePath); manual collapses of other groups
@@ -454,7 +485,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       </p>
       {hubLink.missing ? null : (
         <a
-          className="btn btn-primary"
+          className="cx-btn cx-btn--primary"
           href={hubLink.href}
           onClick={(event) => navigate(event, hubLink.href)}
         >
@@ -463,9 +494,12 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       )}
     </div>
   ) : requested && requested !== current ? (
-    /* Redirect to the fallback is in flight — render nothing rather than the
-       catch-all's UnbuiltPage for a route this app does not serve. */
-    <div className="page" />
+    /* Redirect to the fallback is in flight — render an honest pending state
+       rather than the catch-all's UnbuiltPage for a route this app does not
+       serve. */
+    <main className="state-screen" role="status">
+      <p>{D('Opening {title}…', { title: D(requested.title) })}</p>
+    </main>
   ) : (
     children
   )
@@ -490,30 +524,35 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                 navigate(event, hubLink.missing ? pageHref('overview') : hubLink.href)
               }
             >
-              <img
+              <Image
                 className="brand-logo"
                 src="/assets/dabdoob-logo.png"
                 alt=""
                 aria-hidden="true"
+                width={640}
+                height={372}
+                preload
               />
               <div>
                 <div className="brand-name">Dabdoob CX</div>
                 <div className="brand-sub">Operations console</div>
               </div>
             </a>
-            <Button
+            <button
+              type="button"
               className="nav-toggle"
               aria-expanded={navOpen}
               aria-controls="nav"
               onClick={() => setNavOpen((open) => !open)}
             >
               {D(navOpen ? 'Close' : 'Menu')}
-            </Button>
+            </button>
           </div>
           <button
             type="button"
             className="rail-search"
             ref={railSearchRef}
+            aria-label={D('Search or jump to…')}
             aria-haspopup="dialog"
             aria-expanded={paletteOpen}
             onClick={() => setPaletteOpen(true)}
@@ -533,7 +572,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               <path d="m20 20-3.5-3.5" />
             </svg>
             <span className="rail-search-label">{D('Search or jump to…')}</span>
-            <kbd>{modKbd}</kbd>
+            <kbd aria-hidden="true">{modKbd}</kbd>
           </button>
           <nav id="nav" className="nav" aria-label={D('Main')} ref={navRef}>
             <span className="nav-ind" ref={indRef} aria-hidden="true" hidden />
@@ -612,7 +651,8 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
               </svg>
             </Link>
-            <Button
+            <button
+              type="button"
               className="rail-collapse"
               aria-label={D(railOff ? 'Show the menu' : 'Hide the menu')}
               aria-expanded={!railOff}
@@ -628,7 +668,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m15 6-6 6 6 6" />
               </svg>
-            </Button>
+            </button>
           </div>
         </aside>
         <main id="main" className="main" tabIndex={-1}>

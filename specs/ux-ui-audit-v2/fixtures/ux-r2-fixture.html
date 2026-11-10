@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ux-r2 fixture — cx-panel &gt; cx-section__head contract (real CSS)</title>
+<link rel="stylesheet" href="../../../src/app/theme.css">
+<link rel="stylesheet" href="../../../src/app/cx-kit.css">
+<link rel="stylesheet" href="../../../src/app/refresh.css">
+<style>
+  .wrap { max-width: 56rem; margin: 0 auto; padding: 1rem; display: grid; gap: 1.25rem; }
+  .lbl { font: 600 .75rem/1.2 system-ui, sans-serif; color: #888; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 .35rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div>
+    <p class="lbl">A — migrated: section.cx-panel &gt; .cx-section__head + .cx-panel--pad (my-day MailCard shape)</p>
+    <section class="cx-panel" id="a" aria-labelledby="a-t">
+      <div class="cx-section__head">
+        <div class="cx-section__title" id="a-t">Waiting for your reply</div>
+        <div class="cx-section__hint">Unread or starred in your inbox for more than 3 hours.</div>
+      </div>
+      <div class="cx-panel--pad">
+        <p style="margin:0">Padded body — left edge must align with head text.</p>
+      </div>
+    </section>
+  </div>
+
+  <div>
+    <p class="lbl">B — canonical: .cx-section &gt; .cx-section__head, head OUTSIDE panel (must get NO padding/border)</p>
+    <section class="cx-section" id="b">
+      <div class="cx-section__head">
+        <div class="cx-section__title" id="b-t">Coverage</div>
+        <div class="cx-section__hint">Head outside the panel — canonical pattern.</div>
+      </div>
+      <section class="cx-panel cx-panel--pad">
+        <p style="margin:0">Panel body.</p>
+      </section>
+    </section>
+  </div>
+
+  <div>
+    <p class="lbl">C — legacy reference: .card &gt; .card-head + .card-pad (pre-migration chrome)</p>
+    <section class="card" id="c">
+      <div class="card-head">
+        <strong>Legacy card head</strong>
+      </div>
+      <div class="card-pad"><p style="margin:0">Legacy body.</p></div>
+    </section>
+  </div>
+
+  <div>
+    <p class="lbl">D — chips: all tones + plain (ux-3 context)</p>
+    <section class="cx-panel cx-panel--pad" id="d">
+      <span class="cx-chip" data-status="ok">On track</span>
+      <span class="cx-chip" data-status="info">Info</span>
+      <span class="cx-chip" data-status="warn">At risk</span>
+      <span class="cx-chip" data-status="bad">Breached</span>
+      <span class="cx-chip" data-status="neutral">Draft</span>
+      <span class="cx-chip cx-chip--plain">Plain</span>
+    </section>
+  </div>
+
+  <div>
+    <p class="lbl">E — Empty inside panel (ux-2 context) + bare Empty</p>
+    <section class="cx-panel cx-panel--pad" id="e1">
+      <div class="cx-empty"><strong>Nothing is waiting on you.</strong><p>You're all caught up for now — check back after your next sync.</p></div>
+    </section>
+    <div class="cx-empty" id="e2" style="margin-block-start:.75rem"><strong>No results.</strong></div>
+  </div>
+
+  <div>
+    <p class="lbl">F — form.cx-panel &gt; .cx-section__head (qa-form shape; head still direct child of panel)</p>
+    <form class="cx-panel" id="f" aria-label="Audit">
+      <div class="cx-section__head">
+        <div>
+          <div class="cx-section__title">Audit form</div>
+          <div class="cx-section__hint">Under 100% opens a CTL.</div>
+        </div>
+      </div>
+      <div class="cx-panel--pad"><p style="margin:0">Form body.</p></div>
+    </form>
+  </div>
+
+</div>
+</body>
+</html>

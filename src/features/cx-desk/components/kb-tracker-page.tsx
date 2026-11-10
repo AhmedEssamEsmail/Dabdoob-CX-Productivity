@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Count, Empty, ErrMsg, Failed, Input, PageShell, Select, Skeleton } from '@/features/shared/components/ui'
 
 /* ------------------------------------------------------------------ *
  * KB tracker — port of the legacy Desk page: articles requested of the
@@ -47,137 +48,22 @@ const toLocal = (iso: string) => (iso ? utc3(iso).toISOString().slice(0, 16) : '
 const fromLocal = (v: string) => (v ? new Date(Date.parse(v + ':00+03:00')).toISOString() : '')
 const blank = (): Partial<KbRow> => ({ topic: '', requestedAt: new Date().toISOString(), doneAt: '', accurate: '', note: '' })
 
-const NUM = /^(\D*?)(-?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(\D*)$/
-
-/* Animated number: counts up to the final value once it scrolls into view. */
-function Count({ v }: { v: string | number }) {
-  const text = v === null || v === undefined ? '' : String(v)
-  const m = NUM.exec(text)
-  const target = m ? Number(m[2] + m[3].replace(/,/g, '') + (m[4] ?? '')) : null
-  const ref = useRef<HTMLSpanElement>(null)
-  const [k, setK] = useState(1)
-  useEffect(() => {
-    if (target === null || target === 0) return
-    queueMicrotask(() => setK(0))
-    const el = ref.current
-    let raf = 0
-    let timer = 0
-    const start = () => {
-      const t0 = performance.now()
-      const step = (now: number) => {
-        const p = Math.min(1, (now - t0) / 900)
-        setK(p)
-        if (p < 1) raf = requestAnimationFrame(step)
-      }
-      raf = requestAnimationFrame(step)
-      timer = window.setTimeout(() => {
-        cancelAnimationFrame(raf)
-        setK(1)
-      }, 1100)
-    }
-    const io =
-      el && typeof IntersectionObserver === 'function'
-        ? new IntersectionObserver((es) => {
-            if (es.some((e) => e.isIntersecting)) {
-              io?.disconnect()
-              start()
-            }
-          })
-        : null
-    if (io && el) io.observe(el)
-    else start()
-    return () => {
-      io?.disconnect()
-      cancelAnimationFrame(raf)
-      clearTimeout(timer)
-      setK(1)
-    }
-  }, [target])
-  const ease = 1 - (1 - k) ** 3
-  let live = text
-  if (m && target !== null && k < 1) {
-    const dec = m[4] ? m[4].length - 1 : 0
-    live =
-      m[1] +
-      (target * ease).toLocaleString('en-US', {
-        minimumFractionDigits: dec,
-        maximumFractionDigits: dec,
-        useGrouping: m[3].includes(','),
-      }) +
-      m[5]
-  }
-  return (
-    <>
-      <span ref={ref} aria-hidden="true">
-        {live}
-      </span>
-      <span className="sr-only">{text}</span>
-    </>
-  )
-}
-
-function Skeleton() {
-  return (
-    <div aria-busy="true" aria-label="Loading" className="dk-skel">
-      {[92, 70, 84, 60, 76].map((w) => (
-        <span key={w} className="skeleton" style={{ width: `${w}%` }} />
-      ))}
-    </div>
-  )
-}
-
-function Failed({ message, retry }: { message: string; retry: () => void }) {
-  return (
-    <div className="dk-failed" role="alert">
-      <p>This page could not load: {message}</p>
-      <Button variant="primary" onClick={retry}>
-        Try again
-      </Button>
-    </div>
-  )
-}
-
 function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="page dk" aria-labelledby="page-title">
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-purpose">{route.purpose}</p>
-        </div>
-        {aside ? <div className="page-actions">{aside}</div> : null}
-      </header>
+    <PageShell
+      title={route.title}
+      purpose={route.purpose}
+      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      id="page-title"
+      className="dk"
+    >
       {children}
-    </section>
+    </PageShell>
   )
-}
-
-function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
-}
-
-function ErrMsg({ message }: { message: string }) {
-  return message ? (
-    <p className="dk-error" role="alert">
-      {message}
-    </p>
-  ) : null
 }
 
 function useLoaded<T>(load: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState('')
-  const reload = useCallback(() => {
-    setError('')
-    load().then(setData, (e) => setError(e instanceof Error ? e.message : String(e)))
-  }, [load])
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reload() only clears a stale error, then sets state in the async .then
-    reload()
-  }, [reload])
-  return { data, setData, error, reload }
+  return usePageData<T>(null, load, { cache: false })
 }
 
 function useRun() {
@@ -282,7 +168,7 @@ export default function KbTrackerPage() {
   if (!data) {
     return (
       <Shell route={ROUTE}>
-        <Skeleton />
+        <Skeleton shape="rows" n={5} />
       </Shell>
     )
   }
@@ -324,7 +210,7 @@ export default function KbTrackerPage() {
       </div>
       {editing ? <KbForm row={editing} onSaved={onSaved} onCancel={() => setEditing(null)} /> : null}
       {data.rows.length ? (
-        <div className="card card-pad">
+        <div className="cx-panel cx-panel--pad">
         <ul className="dk-list">
           {data.rows.map((r) => (
             <li key={r.id}>
@@ -332,14 +218,14 @@ export default function KbTrackerPage() {
                 <b>{r.topic}</b>
                 {r.doneAt ? (
                   r.accurate === 'no' ? (
-                    <Badge tone="bad">Not accurate</Badge>
+                    <Chip status="bad">Not accurate</Chip>
                   ) : r.accurate === 'yes' ? (
-                    <Badge tone="ok">Accurate</Badge>
+                    <Chip status="ok">Accurate</Chip>
                   ) : (
-                    <Badge>Done, not checked</Badge>
+                    <Chip>Done, not checked</Chip>
                   )
                 ) : (
-                  <Badge tone="warn">Open</Badge>
+                  <Chip status="warn">Open</Chip>
                 )}
                 {data.canEdit ? (
                   <Button variant="quiet" className="dk-sm" onClick={() => setEditing(r)}>
@@ -357,10 +243,8 @@ export default function KbTrackerPage() {
         </ul>
         </div>
       ) : (
-        <div className="card">
-          <div className="empty">
-            <div className="s">No KB updates yet. Add the first one when an article is requested.</div>
-          </div>
+        <div className="cx-panel">
+          <Empty title="No KB updates yet. Add the first one when an article is requested." />
         </div>
       )}
     </Shell>

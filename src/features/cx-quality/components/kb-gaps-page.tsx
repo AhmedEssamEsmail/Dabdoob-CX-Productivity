@@ -16,7 +16,13 @@ import {
   useSe,
 } from './qa-shared'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Select, Textarea } from '@/features/shared/components/ui'
+import {
+  Button,
+  Empty,
+  Select,
+  TableScroll,
+  Textarea,
+} from '@/features/shared/components/ui'
 
 export function KbGapsPage({ route }: { route: { title: string } }) {
   const { data: n, error: a, reload: s } = useSe(P.kbGapsPage)
@@ -62,7 +68,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
             </p>
           ) : n.canAdd ? (
             <form
-              className="card card-pad qa-grid"
+              className="cx-panel cx-panel--pad qa-grid"
               onSubmit={(g) => {
                 g.preventDefault()
                 d(true)
@@ -142,9 +148,10 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
             title="Gaps"
             hint={`${n.gaps.filter((g: any) => g.status !== 'added').length} not yet in the KB`}
           >
-            <div className="card">
+            <div className="cx-panel">
               {n.gaps.length ? (
-                <table className="tbl">
+                <TableScroll label="Knowledge-base gaps" minWidth="44rem" fade>
+                  <table className="cx-table qa-kbgaps">
                   <thead>
                     <tr>
                       <th scope="col">Logged</th>
@@ -200,11 +207,10 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </TableScroll>
               ) : (
-                <div className="empty">
-                  <div className="s">No gaps logged yet.</div>
-                </div>
+                <Empty title="No gaps logged yet." />
               )}
             </div>
           </QaSection>

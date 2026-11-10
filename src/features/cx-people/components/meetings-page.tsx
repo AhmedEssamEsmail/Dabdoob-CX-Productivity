@@ -4,6 +4,7 @@
  * (meetings.closure.js symbols pa/ya/ga/va/ls/ba/fa/cs). */
 import { useRef, useState } from 'react'
 import { fetchJson, useSe } from './shared'
+import { CarriedReview } from './carried-review'
 import {
   PwShell,
   PwLate,
@@ -19,7 +20,7 @@ import {
   inputDT,
   routeOf,
 } from './pw'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* I — the meetings facade (Meetings.js + Actions.js post-update). */
 const api = {
@@ -52,20 +53,6 @@ const TYPE_LABELS: Record<string, string> = {
   BR: 'Monthly business review',
   team: 'Team meeting',
   adhoc: 'Ad hoc',
-}
-
-/* Ul / Wl — action review outcomes. */
-const OUTCOMES = [
-  { id: 'done', label: 'Done' },
-  { id: 'carried', label: 'Still open' },
-  { id: 'blocked', label: 'Blocked' },
-  { id: 'dropped', label: 'Dropped' },
-]
-const OUTCOME_LABELS: Record<string, string> = {
-  done: 'What was done',
-  carried: '',
-  blocked: 'Blocked by what, and who can unblock it',
-  dropped: 'Why it is dropped',
 }
 
 /* os — attendees of a series get every person, minus agents outside it. */
@@ -124,11 +111,11 @@ function ActionRows({
     })
   return (
     <>
-      <p className="pw-small pw-muted" style={{ marginBottom: 8 }}>
+      <p className="pw-small pw-muted pw-mb-8">
         One action per row. Press Enter for a new row, or paste a list from your notes to get one row per line.
       </p>
       {rows.map((row, i) => (
-        <div key={row.key} style={{ marginBottom: allowTask ? 10 : 0 }}>
+        <div key={row.key} className={allowTask ? 'pw-mb-10' : undefined}>
           <div className="pw-new-action">
             <label className="field">
               <span className="field-label">Action {i + 1}</span>
@@ -195,7 +182,7 @@ function ActionRows({
             </Button>
           </div>
           {allowTask ? (
-            <div className="pw-inline" style={{ marginTop: 4 }}>
+            <div className="pw-inline pw-mt-4">
               <label className="pw-check">
                 {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
                 <input
@@ -206,7 +193,7 @@ function ActionRows({
                 Track as a TL task
               </label>
               {row.trackAsTask ? (
-                <label className="field" style={{ maxWidth: 160 }}>
+                <label className="field pw-max-w-160">
                   <span className="field-label">Estimated hours</span>
                   <Input
                     className="input"
@@ -274,7 +261,7 @@ function LogBrActions({ data, onLogged }: { data: any; onLogged: () => void }) {
       <h2 id="log-h" className="pw-h2">
         Log actions from a business review
       </h2>
-      <div className="pw-inline" style={{ marginBottom: 12 }}>
+      <div className="pw-inline pw-mb-12">
         {series.length > 1 ? (
           <label className="field">
             <span className="field-label">Meeting</span>
@@ -345,12 +332,11 @@ function MeetingAction({ actionId, title, due }: { actionId: string; title: stri
       <div className="wi-main">
         <div className="wi-t">{title}</div>
         <div className="wi-s">
-          Due {dayLabel(due)} {due < today() ? <span className="pill bad">Overdue</span> : null}
+          Due {dayLabel(due)} {due < today() ? <Chip status="bad">Overdue</Chip> : null}
         </div>
       </div>
       <Input
-        className="input"
-        style={{ flex: 1 }}
+        className="input pw-flex-1"
         aria-label={`Where "${title}" stands`}
         placeholder="Where it stands"
         value={note}
@@ -373,7 +359,7 @@ function MeetingAction({ actionId, title, due }: { actionId: string; title: stri
         </Button>
       </div>
       {busy.error ? (
-        <div style={{ flexBasis: '100%' }}>
+        <div className="pw-basis-full">
           <PwErr message={busy.error} />
         </div>
       ) : null}
@@ -448,14 +434,14 @@ function SeriesView({
                 Open the meeting
               </Button>
             </div>
-            <p className="pw-small pw-muted" style={{ marginTop: 8 }}>
+            <p className="pw-small pw-muted pw-mt-8">
               It opens with every action still open from earlier meetings of this series.
             </p>
             <PwErr message={open.error} />
           </div>
         )
       ) : null}
-      <h3 className="pw-h2" style={{ fontSize: 'var(--cx-text-lg)' }}>
+      <h3 className="pw-h2">
         Past meetings
       </h3>
       {series.meetings?.filter((m: any) => m.status === 'closed').length ? (
@@ -477,100 +463,9 @@ function SeriesView({
             ))}
         </div>
       ) : (
-        <div className="empty">
-          <div className="s">None yet.</div>
-        </div>
+        <Empty title="None yet." />
       )}
     </section>
-  )
-}
-
-/* ls — the outcome picker for each carried action. */
-function CarriedReview({
-  actions,
-  value,
-  onChange,
-  disabled,
-}: {
-  actions: any[]
-  value: Record<string, any>
-  onChange: (v: Record<string, any>) => void
-  disabled?: boolean
-}) {
-  const patch = (action: any, p: Record<string, unknown>) => {
-    const next = { ...(value[action.actionId] ?? { actionId: action.actionId, outcome: 'done' }), ...p }
-    if (next.outcome === 'carried' && !next.newDueDate) next.newDueDate = addDays(today(), 7)
-    onChange({ ...value, [action.actionId]: next })
-  }
-  return (
-    <div>
-      {actions.map((a) => {
-        const v = value[a.actionId]
-        const overdue = a.dueDate < today()
-        return (
-          <div key={a.actionId} className="pw-carry">
-            <div>
-              <div className="pw-row-title">
-                {a.title} {a.sourceDeleted ? <span className="pill warn">Created in a deleted 1:1</span> : null}
-              </div>
-              <div className="pw-row-meta">
-                {a.ownerName}, due {dayLabel(a.dueDate)} {overdue ? <span className="pill bad">Overdue</span> : null}{' '}
-                {a.carryCount >= 3 ? (
-                  <span className="pill bad">Carried {a.carryCount} times: escalate, reassign or drop</span>
-                ) : a.carryCount ? (
-                  <span className="pill warn">Carried {a.carryCount}×</span>
-                ) : null}
-              </div>
-              {a.latestUpdate ? (
-                <p className="pw-small pw-muted" style={{ marginTop: 4 }}>
-                  Latest from {a.latestUpdate.byName}, {dayTime(a.latestUpdate.at)}:{' '}
-                  {a.latestUpdate.kind === 'file' ? `file ${a.latestUpdate.fileName}` : a.latestUpdate.note}
-                </p>
-              ) : null}
-            </div>
-            <div className="pw-seg" role="group" aria-label={`Outcome for ${a.title}`}>
-              {OUTCOMES.map((o) => (
-                // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
-                <button
-                  key={o.id}
-                  type="button"
-                  aria-pressed={v?.outcome === o.id}
-                  disabled={disabled}
-                  onClick={() => patch(a, { outcome: o.id })}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-            {v ? (
-              v.outcome === 'carried' ? (
-                <label className="field" style={{ maxWidth: 220 }}>
-                  <span className="field-label">New due date</span>
-                  <Input
-                    className="input"
-                    type="date"
-                    min={today()}
-                    value={v.newDueDate ?? ''}
-                    disabled={disabled}
-                    onInput={(e) => patch(a, { newDueDate: e.currentTarget.value })}
-                  />
-                </label>
-              ) : (
-                <label className="field">
-                  <span className="field-label">{OUTCOME_LABELS[v.outcome]}</span>
-                  <Input
-                    className="input"
-                    value={v.note ?? ''}
-                    disabled={disabled}
-                    onInput={(e) => patch(a, { note: e.currentTarget.value })}
-                  />
-                </label>
-              )
-            ) : null}
-          </div>
-        )
-      })}
-    </div>
   )
 }
 
@@ -610,7 +505,7 @@ function MeetingView({
   const filledReviews = Object.values(reviews).filter((r: any) => toReview.some((a: any) => a.actionId === r.actionId))
   return (
     <section aria-labelledby="mtg-h">
-      <div className="pw-actions-bar" style={{ marginTop: 0, marginBottom: 12 }}>
+      <div className="pw-actions-bar pw-mt-0 pw-mb-12">
         <Button size="sm" variant="quiet" onClick={onBack}>
           Back to {view.series.title}
         </Button>
@@ -623,7 +518,7 @@ function MeetingView({
         {meeting.summarySentAt ? `Summary sent ${dayTime(meeting.summarySentAt)}.` : ''}
       </p>
       <div className="pw-section">
-        <h3 className="pw-h2" style={{ fontSize: 'var(--cx-text-lg)' }}>
+        <h3 className="pw-h2">
           Review of open actions
         </h3>
         {view.carried.length ? (
@@ -662,12 +557,10 @@ function MeetingView({
             ) : null}
           </div>
         ) : (
-          <div className="empty">
-            <div className="s">Nothing carried from earlier meetings.</div>
-          </div>
+          <Empty title="Nothing carried from earlier meetings." />
         )}
       </div>
-      <div className="pw-section pw-panel" style={{ display: 'grid', gap: 14 }}>
+      <div className="pw-section pw-panel pw-grid-14">
         <label className="field">
           <span className="field-label">Notes</span>
           <Textarea
@@ -688,7 +581,7 @@ function MeetingView({
             onBlur={autosave}
           />
         </label>
-        <label className="field" style={{ maxWidth: 280 }}>
+        <label className="field pw-max-w-280">
           <span className="field-label">Next meeting</span>
           <Input
             className="input"
@@ -702,11 +595,11 @@ function MeetingView({
         {canEdit ? <p className="pw-small pw-muted">Notes save automatically when you leave a field.</p> : null}
       </div>
       <div className="pw-section">
-        <h3 className="pw-h2" style={{ fontSize: 'var(--cx-text-lg)' }}>
+        <h3 className="pw-h2">
           New actions
         </h3>
         {view.newActions.length ? (
-          <div className="worklist" style={{ marginBottom: 12 }}>
+          <div className="worklist pw-mb-12">
             {view.newActions.map((a: any) => (
               <div key={a.actionId} className="workitem">
                 <div className="wi-main">
@@ -715,7 +608,7 @@ function MeetingView({
                     {a.ownerName}, due {dayLabel(a.dueDate)}
                   </div>
                 </div>
-                <div className="wi-side">{a.trackAsTask ? <span className="pill">Task</span> : null}</div>
+                <div className="wi-side">{a.trackAsTask ? <Chip>Task</Chip> : null}</div>
               </div>
             ))}
           </div>
@@ -732,17 +625,17 @@ function MeetingView({
                 busy.run(() => api.meetingsAddActions(meeting.meetingId, list)).then((v) => (v ? (onChange(v), true) : false))
               }
             />
-            <p className="pw-small pw-muted" style={{ marginTop: 8 }}>
+            <p className="pw-small pw-muted pw-mt-8">
               Default due date is the day before the next meeting ({dayLabel(view.defaultDueDate || addDays(today(), 7))}).
             </p>
           </div>
         ) : null}
       </div>
       <div className="pw-section">
-        <h3 className="pw-h2" style={{ fontSize: 'var(--cx-text-lg)' }}>
+        <h3 className="pw-h2">
           Attendance
         </h3>
-        <div className="pw-panel" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px' }}>
+        <div className="pw-panel pw-attend">
           {view.attendees.map((a: any) => (
             <label key={a.email} className="pw-check">
               {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
@@ -815,7 +708,7 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
       <h2 id="new-series-h" className="pw-h2">
         Set up a meeting series
       </h2>
-      <div className="form-grid" style={{ marginTop: 12 }}>
+      <div className="form-grid pw-mt-12">
         <div className="field">
           <span className="field-label">Type</span>
           <div className="pw-seg" role="group" aria-label="Type">
@@ -847,9 +740,9 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
           </label>
         ) : null}
       </div>
-      <fieldset style={{ border: 0, padding: 0, margin: '16px 0 0' }}>
+      <fieldset className="pw-fieldset">
         <legend className="field-label">Attendees</legend>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px', marginTop: 8 }}>
+        <div className="pw-checks pw-mt-8">
           {data.people
             .filter((p: any) => p.email !== chair)
             .map((p: any) => (
@@ -938,12 +831,12 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
           ) : null}
           <LogBrActions data={data} onLogged={() => void reload()} />
           {data.myActions.length ? (
-            <section className="card" aria-labelledby="meet-actions-h">
-              <div className="card-head">
-                <h2 id="meet-actions-h" className="card-title" style={{ margin: 0 }}>
+            <section className="cx-panel" aria-labelledby="meet-actions-h">
+              <div className="cx-section__head">
+                <h2 id="meet-actions-h" className="cx-section__title pw-m-0">
                   Your open actions from meetings
                 </h2>
-                <div className="card-hint">Post where each one stands before the next meeting — your note fills in the review.</div>
+                <div className="cx-section__hint">Post where each one stands before the next meeting — your note fills in the review.</div>
               </div>
               <div className="worklist">
                 {data.myActions.map((a: any) => (
@@ -954,7 +847,7 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
           ) : null}
           {data.series.length ? (
             <div className="pw-two">
-              <nav className="pw-rows" aria-label="Meeting series" style={{ display: 'block' }}>
+              <nav className="pw-rows" aria-label="Meeting series">
                 {data.series.map((s: any) => (
                   // eslint-disable-next-line -- kept raw: .pw-series-btn family nav button (aria-current list picker)
                   <button
@@ -969,8 +862,8 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
                       {TYPE_LABELS[s.meetingType] ?? s.meetingType}, chaired by {s.chairName}
                     </div>
                     {s.openActions ? (
-                      <div style={{ marginTop: 4 }}>
-                        <span className="pill warn">{s.openActions} open</span>
+                      <div className="pw-mt-4">
+                        <Chip status="warn">{s.openActions} open</Chip>
                       </div>
                     ) : null}
                   </button>
@@ -994,9 +887,7 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
               </div>
             </div>
           ) : (
-            <div className="empty">
-              <div className="s">No meeting series yet. Set one up to start keeping notes and actions.</div>
-            </div>
+            <Empty title="No meeting series yet. Set one up to start keeping notes and actions." />
           )}
         </>
       ) : (

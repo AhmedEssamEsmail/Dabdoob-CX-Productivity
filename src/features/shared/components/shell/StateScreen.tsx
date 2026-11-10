@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { RouteDef } from '@/features/shared/components/shell/registry'
 import { D } from '@/features/shared/shell/i18n'
+import { Empty } from '@/features/shared/components/ui'
 
 /**
  * The full-area screens the shell swaps in: boot failure, no access, and
@@ -35,21 +36,23 @@ export function UnbuiltPage({
         </h1>
         <p className="page-purpose">{route.purpose}</p>
       </header>
-      <div className="empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
-          <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
-          <path d="M22 4 12 14l-3-3" />
-        </svg>
-        <div className="t">{D('Not built yet')}</div>
-        <div className="s">
-          {route.reqs.length
+      <Empty
+        icon={
+          <svg className="cx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+            <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" />
+            <path d="M22 4 12 14l-3-3" />
+          </svg>
+        }
+        title={D('Not built yet')}
+        body={
+          route.reqs.length
             ? D('Covers requirement{s} {reqs} in the brief.', {
                 s: route.reqs.length > 1 ? 's' : '',
                 reqs: route.reqs.join(', '),
               })
-            : D('This page is not built yet.')}
-        </div>
-      </div>
+            : D('This page is not built yet.')
+        }
+      />
       {children}
     </section>
   )

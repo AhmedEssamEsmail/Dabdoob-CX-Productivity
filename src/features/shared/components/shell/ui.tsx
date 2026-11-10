@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 import { Button } from '@/features/shared/components/ui'
+import { PageShell } from '@/features/shared/components/ui/PageShell'
 
 /**
  * Shared UI primitives ported from the legacy bundle with exact classes:
@@ -89,9 +90,11 @@ export function LoadError({
     <div className="cx-note" data-status="bad" role="alert">
       <div>
         <strong>This page could not load.</strong> {message}{' '}
-        <Button variant="quiet" onClick={onRetry}>
-          Try again
-        </Button>
+        {onRetry ? (
+          <Button variant="quiet" onClick={onRetry}>
+            Try again
+          </Button>
+        ) : null}
       </div>
     </div>
   )
@@ -196,34 +199,25 @@ export function Section({
 }
 
 /** Y */
-export function Chip({ status, children }: { status?: string; children?: ReactNode }) {
-  return (
-    <span className="cx-chip" data-status={status}>
-      {children}
-    </span>
-  )
-}
+export { Chip } from '@/features/shared/components/ui/Chip'
+export type { ChipStatus } from '@/features/shared/components/ui/Chip'
 
-/** Pa */
+/** Pa — thin alias over PageShell (legacy name survives; no hardcoded id). */
 export function PageHead({
   title,
   sub,
+  purpose,
   aside,
+  id,
 }: {
   title: ReactNode
   sub?: ReactNode
+  purpose?: ReactNode
   aside?: ReactNode
+  id?: string
 }) {
   return (
-    <header className="dq-head">
-      <div>
-        <h1 id="page-title" className="page-title">
-          {title}
-        </h1>
-        <p className="page-purpose">{sub}</p>
-      </div>
-      {aside ? <div className="dq-head__aside">{aside}</div> : null}
-    </header>
+    <PageShell title={title} purpose={sub ?? purpose} aside={aside} id={id} />
   )
 }
 

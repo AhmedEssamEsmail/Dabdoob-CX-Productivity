@@ -21,7 +21,13 @@ import {
   vsPrev,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import {
+  Button,
+  Empty,
+  Input,
+  Select,
+  TableScroll,
+} from '@/features/shared/components/ui'
 
 /** Qs — where the auditor and reference differ (verbatim). */
 function DiffList({ c: t }: { c: any }) {
@@ -50,9 +56,7 @@ function TrendChart({ trend: t }: { trend: any[] }) {
   const c = [...new Set(t.map((f: any) => f.auditorName))]
   if (!i.length)
     return (
-      <div className="empty">
-        <div className="s">No finished calibrations yet.</div>
-      </div>
+      <Empty title="No finished calibrations yet." />
     )
   const l = 560,
     p = 200,
@@ -113,7 +117,7 @@ function TrendChart({ trend: t }: { trend: any[] }) {
               .filter((_: any) => _.auditorName === f)
               .sort((_: any, T: any) => _.month.localeCompare(T.month))
             return (
-              <g className={`qa-trend__s qa-trend__s${g % 4}`} key={f}>
+              <g className={`qa-trend__s qa-trend__s${g % 8}`} key={f}>
                 <polyline
                   className="cc-sweep-line"
                   pathLength={1}
@@ -153,7 +157,7 @@ function TrendChart({ trend: t }: { trend: any[] }) {
       </div>
       <figcaption className="qa-trend__legend">
         {c.map((f, g) => (
-          <span className={`qa-trend__key qa-trend__s${g % 4}`} key={f}>
+          <span className={`qa-trend__key qa-trend__s${g % 8}`} key={f}>
             {f}
           </span>
         ))}
@@ -201,7 +205,7 @@ function AssignForm({ d: t, onDone: n }: { d: any; onDone: () => void }) {
 
   return (
     <form
-      className="card card-pad qa-grid"
+      className="cx-panel cx-panel--pad qa-grid"
       onSubmit={(g) => {
         g.preventDefault()
         h(true)
@@ -330,7 +334,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
           ) : null}
           {l.length ? (
             <QaSection id="calm-h" title="Your calibration audits">
-              <ul className="card cx-list">
+              <ul className="cx-panel cx-list">
                 {l.map((u: any) => (
                   <li className="cx-list__row qa-row" key={u.calibrationId}>
                     <span>
@@ -352,7 +356,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
             </QaSection>
           ) : null}
           <QaSection id="calt-h" title="Alignment by month">
-            <div className="card card-pad">
+            <div className="cx-panel cx-panel--pad">
               <TrendChart trend={n.trend} />
             </div>
           </QaSection>
@@ -366,19 +370,20 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
             title="Results"
             hint={m.length ? `${m.length} waiting for one or both audits` : undefined}
           >
-            <div className="card">
+            <div className="cx-panel">
               {p.length ? (
-                <table className="tbl">
-                  <thead>
-                    <tr>
-                      <th scope="col">Month</th>
-                      <th scope="col">Ticket</th>
-                      <th scope="col">Auditor</th>
-                      <th scope="col">Reference</th>
-                      <th scope="col">Alignment</th>
-                      <th scope="col">Where they differ</th>
-                    </tr>
-                  </thead>
+                <TableScroll label="Calibration results">
+                  <table className="cx-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Month</th>
+                        <th scope="col">Ticket</th>
+                        <th scope="col">Auditor</th>
+                        <th scope="col">Reference</th>
+                        <th scope="col">Alignment</th>
+                        <th scope="col">Where they differ</th>
+                      </tr>
+                    </thead>
                   <tbody>
                     {p.map((u: any) => (
                       <tr key={u.calibrationId}>
@@ -407,11 +412,10 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </TableScroll>
               ) : (
-                <div className="empty">
-                  <div className="s">No finished calibrations yet.</div>
-                </div>
+                <Empty title="No finished calibrations yet." />
               )}
             </div>
           </QaSection>

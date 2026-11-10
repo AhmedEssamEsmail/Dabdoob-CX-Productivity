@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Button, Input } from '@/features/shared/components/ui'
+import { useState } from 'react'
+import { Button, Empty, Input } from '@/features/shared/components/ui'
+import { toUserText } from '@/features/shared/lib/error-copy'
+import { getBoot, useBootSelector } from '@/features/shared/shell/context'
+import { Eo, fetchJson, jl, sh, Ti } from './hub-shared'
 
 interface ConfigItem {
   key: string
@@ -11,25 +14,19 @@ interface ConfigItem {
   updated_at?: string
 }
 
+function loadConfig(): Promise<ConfigItem[]> {
+  // GET /api/config returns the config rows array verbatim (no envelope).
+  return fetchJson<ConfigItem[] | { config?: ConfigItem[] }>('/api/config').then((data) =>
+    Array.isArray(data) ? data : data.config || [],
+  )
+}
+
 export function AdminConfigPage() {
-  const [config, setConfig] = useState<ConfigItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: config, error, reload, setData } = Eo(loadConfig)
+  const isAdmin = useBootSelector(() => getBoot()?.user.role === 'admin', [])
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
-
-  useEffect(() => {
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => {
-        // GET /api/config returns the config rows array verbatim (no envelope).
-        setConfig(Array.isArray(data) ? data : data.config || [])
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to load config:', err)
-        setLoading(false)
-      })
-  }, [])
+  const rows = config ?? []
 
   const handleEdit = (key: string, currentValue: string) => {
     setEditingKey(key)
@@ -38,15 +35,15 @@ export function AdminConfigPage() {
 
   const handleSave = async (key: string) => {
     try {
-      await fetch('/api/config', {
+      await fetchJson('/api/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ key, value: editValue }),
       })
-      setConfig(config.map(c => c.key === key ? { ...c, value: editValue } : c))
+      setData((prev) => (prev ?? []).map((c) => (c.key === key ? { ...c, value: editValue } : c)))
       setEditingKey(null)
     } catch (err) {
-      console.error('Failed to update config:', err)
+      Ti((err as Error).message, 'error')
     }
   }
 
@@ -55,16 +52,8 @@ export function AdminConfigPage() {
     setEditValue('')
   }
 
-  if (loading) {
-    return (
-      <main className="state-screen">
-        <h1>Loading configuration…</h1>
-      </main>
-    )
-  }
-
   return (
-    <section className="page" aria-labelledby="page-title">
+    <section className="page" aria-labelledby="page-title" aria-busy={!config && !error}>
       <header className="page-head">
         <div>
           <h1 id="page-title" className="page-title">
@@ -74,32 +63,40 @@ export function AdminConfigPage() {
         </div>
       </header>
 
-      <section className="card">
-        <div className="card-head">
+      {error ? sh({ message: toUserText(error, { isAdmin, feature: 'Configuration' }), onRetry: reload }) : null}
+
+      <section className="cx-panel">
+        <div className="cx-section__head">
           <div>
-            <div className="card-title">System Configuration</div>
-            <div className="card-hint">{config.length} settings</div>
+            <h2 className="cx-section__title">System Configuration</h2>
+            <div className="cx-section__hint">{config ? `${rows.length} settings` : '…'}</div>
           </div>
         </div>
-        {config.length === 0 ? (
-          <div className="empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-            <div className="t">No configuration yet</div>
-            <div className="s">Settings will appear here once they load.</div>
-          </div>
+        {error ? null : !config ? (
+          jl({ lines: 8, tall: true })
+        ) : rows.length === 0 ? (
+          <Empty
+            icon={
+              <svg className="cx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            }
+            title="No configuration yet"
+            body="Settings will appear here once they load."
+          />
         ) : (
         <div className="cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
-                  <th>Key</th>
-                  <th>Value</th>
-                  <th>Updated</th>
-                  <th />
+                  <th scope="col">Key</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col">
+                    <span className="cx-sr">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {config.map((item) => (
+                {rows.map((item) => (
                   <tr key={item.key}>
                     <td>
                       <div className="field">
@@ -112,6 +109,7 @@ export function AdminConfigPage() {
                         <Input
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
+                          aria-label={`Value for ${item.key}`}
                         />
                       ) : (
                         <code>{item.value}</code>

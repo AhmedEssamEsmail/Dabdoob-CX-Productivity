@@ -7,7 +7,9 @@ import {
   type ViewAsPerson,
 } from '@/features/shared/shell/context'
 import { displayRole, ROLE_LABELS } from '@/features/shared/shell/gates'
+import { useDialogModal } from '@/features/shared/lib/use-dialog-modal'
 import { Button, Input } from '@/features/shared/components/ui'
+import { D } from '@/features/shared/shell/i18n'
 
 /**
  * Vt + kn — the "View as" banner and people picker, ported 1:1.
@@ -32,31 +34,34 @@ export function ViewAsBanner({ user }: { user: ShellUser }) {
   const [exiting, setExiting] = useState(false)
   const [error, setError] = useState('')
   return (
-    <div className="va-banner" role="region" aria-label="View as">
+    <div className="va-banner" role="region" aria-label={D('View as')}>
       <svg className="va-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         {EYE}
       </svg>
       <p className="va-banner-text">
-        Viewing as <strong>{user.name}</strong> ({displayRole(user)}) — read-only
-        {error ? <span className="va-banner-error"> {error}</span> : null}
+        {D('Viewing as')} <strong>{user.name}</strong> ({D(displayRole(user))}) —{' '}
+        {D('read-only')}
+        {error ? (
+          <span className="va-banner-error" style={{ color: 'var(--signal-ink)' }}>
+            {error}
+          </span>
+        ) : null}
       </p>
       <ViewAsPicker label="Switch person" quiet />
-      {/* kept raw: legacy .btn contract */}
-      <button
-        type="button"
-        className="btn va-exit"
+      <Button
+        className="va-exit"
         disabled={exiting}
         onClick={() => {
           setExiting(true)
           setError('')
           switchViewAs('').catch((cause: Error) => {
             setExiting(false)
-            setError(`Could not exit: ${cause.message}`)
+            setError(D('Could not exit: {msg}', { msg: cause.message }))
           })
         }}
       >
-        {exiting ? 'Exiting…' : 'Exit'}
-      </button>
+        {exiting ? D('Exiting…') : D('Exit')}
+      </Button>
     </div>
   )
 }
@@ -69,7 +74,6 @@ export function ViewAsPicker({
   label?: string
   quiet?: boolean
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
   const [people, setPeople] = useState<ViewAsPerson[] | null>(null)
@@ -77,14 +81,12 @@ export function ViewAsPicker({
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
 
+  /* Shared dialog lifecycle: showModal/close sync, ESC → close, focus
+     restore to the invoking element. */
+  const { dialogRef, onCancel } = useDialogModal(open, () => setOpen(false))
+
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
-      inputRef.current?.focus()
-    }
-    if (!open && dialog.open) dialog.close()
+    if (open) inputRef.current?.focus()
   }, [open])
 
   useEffect(() => {
@@ -114,40 +116,51 @@ export function ViewAsPicker({
 
   return (
     <>
-      <Button
-        className={quiet ? 'btn va-switch' : 'va-open'}
-        aria-haspopup="dialog"
-        title={quiet ? undefined : 'See the apps as one person sees them, read-only'}
-        onClick={() => setOpen(true)}
-      >
-        {quiet ? null : (
+      {quiet ? (
+        <Button
+          className="va-switch"
+          aria-haspopup="dialog"
+          onClick={() => setOpen(true)}
+        >
+          <span className="va-open-text">{D(label)}</span>
+        </Button>
+      ) : (
+        <button
+          type="button"
+          className="va-open"
+          aria-haspopup="dialog"
+          title={D('See the apps as one person sees them, read-only')}
+          onClick={() => setOpen(true)}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             {EYE}
           </svg>
-        )}
-        <span className="va-open-text">{label}</span>
-      </Button>
+          <span className="va-open-text">{D(label)}</span>
+        </button>
+      )}
       <dialog
         ref={dialogRef}
         className="popup va-picker"
         aria-labelledby="va-title"
         onClose={() => setOpen(false)}
+        onCancel={onCancel}
       >
         <div className="popup-body">
           <h2 id="va-title" className="popup-title">
-            View as
+            {D('View as')}
           </h2>
           <p className="popup-text">
-            Pick a person to see every app as they do: their pages, their data
-            and their pop-ups. Nothing can be changed until you exit.
+            {D(
+              'Pick a person to see every app as they do: their pages, their data and their pop-ups. Nothing can be changed until you exit.'
+            )}
           </p>
           <label className="field va-search">
-            <span className="field-label">Find a person</span>
+            <span className="field-label">{D('Find a person')}</span>
             <Input
               ref={inputRef}
               className="input"
               type="search"
-              placeholder="Name, role, position or team lead"
+              placeholder={D('Name, role, position or team lead')}
               value={query}
               onInput={(event) => setQuery((event.target as HTMLInputElement).value)}
               onKeyDown={(event) => {
@@ -162,45 +175,52 @@ export function ViewAsPicker({
           ) : null}
           {!people && !error ? (
             <p className="va-empty" role="status">
-              Loading the roster…
+              {D('Loading the roster…')}
             </p>
           ) : null}
           {people && !matches.length ? (
-            <p className="va-empty">No one on the roster matches “{query}”.</p>
+            <p className="va-empty">
+              {D('No one on the roster matches “{q}”.', { q: query })}
+            </p>
           ) : null}
           {matches.length ? (
-            <ul className="va-list" aria-label="People">
+            <ul className="va-list" aria-label={D('People')}>
               {matches.map((person) => (
                 <li key={person.email}>
-                  <Button
+                  <button
+                    type="button"
                     className="va-person"
                     disabled={!!busy}
                     onClick={() => pick(person)}
                   >
                     <span className="va-person-name">
-                      {busy === person.email ? `Opening as ${person.name}…` : person.name}
+                      {busy === person.email
+                        ? D('Opening as {name}…', { name: person.name })
+                        : person.name}
                     </span>
                     <span className="va-person-meta">
                       <span className={`va-role va-role--${person.role}`}>
-                        {ROLE_LABELS[person.role]}
+                        {D(ROLE_LABELS[person.role])}
                       </span>
-                      {person.auditor ? <span className="va-tag">Audits</span> : null}
+                      {person.auditor ? <span className="va-tag">{D('Audits')}</span> : null}
                       <span className="va-person-sub">
-                        {[person.position, person.tlName ? `Team lead: ${person.tlName}` : '']
+                        {[
+                          person.position,
+                          person.tlName ? D('Team lead: {name}', { name: person.tlName }) : '',
+                        ]
                           .filter(Boolean)
                           .join(', ')}
                       </span>
                     </span>
-                  </Button>
+                  </button>
                 </li>
               ))}
             </ul>
           ) : null}
           <div className="popup-actions">
-            {/* kept raw: legacy .btn contract */}
-            <button type="button" className="btn btn-quiet" onClick={() => setOpen(false)}>
-              Cancel
-            </button>
+            <Button variant="quiet" onClick={() => setOpen(false)}>
+              {D('Cancel')}
+            </Button>
           </div>
         </div>
       </dialog>

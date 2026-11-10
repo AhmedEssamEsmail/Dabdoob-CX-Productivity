@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
-import { Button, Field, Input, Select, Toggle } from '@/features/shared/components/ui'
+import { Button, Chip, Field, Input, Seg, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 import { AgeChip, AsOfHint, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 
@@ -22,7 +22,7 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
   }
   if (flag && scope !== 'agent')
     return (
-      <span className="dq-help">
+      <span>
         <span className="cx-chip" data-status="bad" title={flag.note}>Help asked by {String(flag.by).split('@')[0]}</span>
         <span className="cx-muted"> {flag.note}</span>{' '}
         <Button variant="quiet" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { flag_id: flag.flagId, resolved_note: '' }))}>
@@ -33,7 +33,7 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
     )
   if (scope !== 'agent') return <span className="cx-faint">–</span>
   return open ? (
-    <span className="dq-help">
+    <span>
       <Input aria-label={`What is blocking ticket ${t[0]}`} placeholder="What is blocking it, what you need" value={note} onInput={(e) => setNote((e.target as HTMLInputElement).value)} />{' '}
       <Button disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { ticket_id: t[0], note }))}>Send</Button>{' '}
       <Button variant="quiet" onClick={() => setOpen(false)}>Cancel</Button>
@@ -104,41 +104,33 @@ export function AgingPage({ route }: { route: { title: string } }) {
   const title = n ? (band !== null ? n.bands.labels[band] : S >= T ? `Open ${bandTop(n.bands.edges[T - 1])} or more` : 'All open tickets') + (queue ? ` in ${queue}` : '') : ''
   const topCount = counts[counts.length - 1] ?? 0
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!n && !error}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!n && !error}>
       <header className="page-head">
         <div>
           <h1 id="page-title" className="page-title">
             {n?.scope === 'agent' ? D('My aging cases') : route.title}
           </h1>
-          <p className="page-sub">
+          <p className="page-purpose">
             {n?.scope === 'agent'
               ? D('Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.')
               : D('Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.')}
           </p>
         </div>
         <div className="page-actions">
-          <div className="seg" role="group" aria-label={D('Assignment')}>
-            {(
-              [
-                ['all', D('All')],
-                ['ours', D('Ours')],
-                ['unassigned', D('Unassigned')],
-              ] as const
-            ).map(([v, label]) => (
-              <button
-                key={v}
-                type="button"
-                className={assign === v ? 'on' : ''}
-                aria-pressed={assign === v}
-                onClick={() => {
-                  setAssign(v)
-                  setShown(PAGE)
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <Seg
+            name="ag-assign"
+            value={assign}
+            onChange={(v) => {
+              setAssign(v as 'all' | 'ours' | 'unassigned')
+              setShown(PAGE)
+            }}
+            options={[
+              { value: 'all', label: D('All') },
+              { value: 'ours', label: D('Ours') },
+              { value: 'unassigned', label: D('Unassigned') },
+            ]}
+            aria-label={D('Assignment')}
+          />
           {n ? (
             <>
               <AsOfHint iso={n.dataAsOf} />
@@ -157,16 +149,16 @@ export function AgingPage({ route }: { route: { title: string } }) {
       {!n && !error ? <><Skeleton tall lines={3} /><Skeleton lines={8} /></> : null}
       {n ? (
         <>
-          <section className="card mb-3" aria-labelledby="dist-h">
-            <div className="card-head">
+          <section className="cx-panel mb-3" aria-labelledby="dist-h">
+            <div className="cx-section__head">
               <div>
-                <h2 id="dist-h" className="card-title" style={{ margin: 0 }}>
+                <h2 id="dist-h" className="cx-section__title" style={{ margin: 0 }}>
                   {D('Wait-time distribution')}
                 </h2>
-                <div className="card-hint">{D('Select a band to filter the matrix below')}</div>
+                <div className="cx-section__hint">{D('Select a band to filter the matrix below')}</div>
               </div>
             </div>
-            <div className="card-pad">
+            <div className="cx-panel--pad">
               <div className="mixbar">
                 {(counts as number[]).map((c, i) => {
                   const r = Number(ageRank(i, counts.length))
@@ -210,27 +202,27 @@ export function AgingPage({ route }: { route: { title: string } }) {
             </div>
           </section>
           {grid.length > 1 ? (
-              <div className="card">
-                <div className="card-head">
+              <div className="cx-panel">
+                <div className="cx-section__head">
                   <div>
-                    <div className="card-title">By queue × age</div>
-                    <div className="card-hint">Select a cell to list its tickets</div>
+                    <div className="cx-section__title">By queue × age</div>
+                    <div className="cx-section__hint">Select a cell to list its tickets</div>
                   </div>
                   {topCount > 0 ? (
-                    <span className="pill bad">
+                    <Chip status="bad">
                       {fmt(topCount)} tickets &gt; {bandTop(n.bands.edges[T - 1])}
-                    </span>
+                    </Chip>
                   ) : null}
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="tbl" style={{ minWidth: '64rem' }}>
+                <TableScroll label="Queue by age matrix" minWidth="64rem">
+                  <table className="cx-table">
                     <thead>
                       <tr>
                         <th>Queue</th>
                         {n.bands.labels.map((x: string) => (
-                          <th key={x} scope="col" className="num">{x}</th>
+                          <th key={x} scope="col" className="cx-num-col cx-num">{x}</th>
                         ))}
-                        <th scope="col" className="num">All</th>
+                        <th scope="col" className="cx-num-col cx-num">All</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -238,7 +230,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                         <tr key={x}>
                           <td className="lead">{x}</td>
                           {P.map((U, V) => (
-                            <td key={V} className="num">
+                            <td key={V} className="cx-num-col cx-num">
                               <button
                                 type="button"
                                 className="cx-agechip"
@@ -261,13 +253,13 @@ export function AgingPage({ route }: { route: { title: string } }) {
                               </button>
                             </td>
                           ))}
-                          <td className="num"><b>{P.reduce((U, V) => U + V, 0)}</b></td>
+                          <td className="cx-num-col cx-num"><b>{P.reduce((U, V) => U + V, 0)}</b></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
-                <div className="card-pad small faint">
+                </TableScroll>
+                <div className="cx-panel--pad small faint">
                   Age counts from ticket creation to now. Colour goes grey → deep red as the wait grows. Source: Freshdesk; {n.excludedGroups.join(', ')} groups left out.
                 </div>
               </div>
@@ -315,7 +307,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                     <tr key={x[0]} data-age={ageRank(x[6], n.bands.labels.length)}>
                       <td className="cx-num"><a className="cx-mono" href={n.ticketUrl + x[0]} target="_blank" rel="noopener noreferrer" aria-label={`Open ticket ${x[0]} in Freshdesk`}>#{x[0]}</a></td>
                       <td>{x[1]}</td>
-                      <td className="cx-muted">{x[10] || '–'}</td>
+                      <td className="cx-muted">{x[10] && x[10] !== 'null' ? x[10] : '–'}</td>
                       <td>{x[7] || <span className="cx-faint">Not assigned</span>}</td>
                       {n.scope !== 'agent' ? <td>{x[8] || '–'}</td> : null}
                       <td><span className="cx-chip" data-status={x[3] ? 'info' : 'neutral'} title={x[3] ? "CX's to work" : 'Waiting on another team or the customer'}>{x[2]}</span></td>

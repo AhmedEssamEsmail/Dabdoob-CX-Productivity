@@ -10,9 +10,9 @@ import { appUrls } from './settings'
 export async function getAppBootstrap(
   loadQuality: (user: PlatformUser) => Promise<unknown>
 ): Promise<Record<string, unknown>> {
-  const user = await currentUser()
-  const st = await viewAsState()
-  const email = await currentEmail()
+  /* The three identity reads are independent: each resolves from the session
+     (realEmail) and config, none consumes another's result — parallelize them. */
+  const [user, st, email] = await Promise.all([currentUser(), viewAsState(), currentEmail()])
   const now = Date.now()
   if (user.role === 'unknown') {
     return {

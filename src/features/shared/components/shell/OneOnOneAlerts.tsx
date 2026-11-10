@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { alertsApi, type OneOnOneAlert } from '@/features/shared/shell/context'
 import { resolveLink } from '@/features/shared/shell/gates'
 import { kuwaitTime } from '@/features/shared/components/shell/ui'
@@ -13,6 +13,36 @@ import { kuwaitTime } from '@/features/shared/components/shell/ui'
  */
 
 const SEEN_KEY = 'cx.oo-alerts-seen' // vn
+const SOUND_KEY = 'cx.oo-alerts-muted'
+const mutedListeners = new Set<() => void>()
+
+function subscribeMuted(listener: () => void) {
+  mutedListeners.add(listener)
+  return () => {
+    mutedListeners.delete(listener)
+  }
+}
+
+function mutedSnapshot(): boolean {
+  try {
+    return localStorage.getItem(SOUND_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function mutedServerSnapshot(): boolean {
+  return false
+}
+
+function setMutedPreference(next: boolean): void {
+  try {
+    localStorage.setItem(SOUND_KEY, next ? '1' : '0')
+  } catch {
+    /* storage unavailable */
+  }
+  mutedListeners.forEach((listener) => listener())
+}
 
 function readSeen(): Record<string, number> {
   try {
@@ -78,6 +108,7 @@ const startKey = (key: string) => key.replace(/^oosoon\|/, 'oostart|')
 
 export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[] }) {
   const [alerts, setAlerts] = useState<OneOnOneAlert[]>([])
+  const muted = useSyncExternalStore(subscribeMuted, mutedSnapshot, mutedServerSnapshot)
   const [sound, setSound] = useState<'blocked' | 'on'>('blocked')
   const [flash, setFlash] = useState(false)
   const timers = useRef(new Map<string, number>())
@@ -121,6 +152,8 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
 
   /* Merge each incoming poll payload; clear scheduled promotions on unmount. */
   useEffect(() => merge.current(incoming), [incoming])
+
+  const toggleMuted = () => setMutedPreference(!muted)
   useEffect(
     () => () => {
       timers.current.forEach((id) => window.clearTimeout(id))
@@ -144,13 +177,14 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
     }
   }, [])
 
-  /* Chime once per 'start' alert; if blocked, flash the title instead. */
+  /* Chime once per 'start' alert unless muted; if blocked, flash the title. */
   useEffect(() => {
     const fresh = alerts.filter((a) => a.type === 'start' && !chimed.current.has(a.key))
     if (!fresh.length) return
     fresh.forEach((a) => chimed.current.add(a.key))
+    if (muted) return
     if (!chime()) setTimeout(() => setFlash(true), 0)
-  }, [alerts])
+  }, [alerts, muted])
 
   const anyStart = alerts.some((a) => a.type === 'start')
   useEffect(() => {
@@ -184,7 +218,7 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
 
   if (!alerts.length) return null
   return (
-    <div className="oo-alerts" aria-label="1:1 reminders">
+    <div className="oo-alerts" role="region" aria-label="1:1 reminders">
       {alerts.map((alert) => {
         const link = alert.link ? resolveLink(alert.link) : null
         return (
@@ -192,7 +226,7 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
             className="oo-alert"
             data-type={alert.type}
             role={alert.type === 'start' ? 'alert' : 'status'}
-            aria-live="assertive"
+            aria-live={alert.type === 'start' ? 'assertive' : 'polite'}
             key={alert.key}
           >
             <p className="oo-alert-when">
@@ -227,11 +261,19 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
               >
                 Dismiss
               </button>
-              <span className="oo-alert-sound">
-                {sound === 'on'
-                  ? 'Sound on'
-                  : 'Sound off: click anywhere in the app to allow it'}
-              </span>
+              <button
+                type="button"
+                className="btn btn-quiet btn-small"
+                aria-pressed={muted}
+                onClick={toggleMuted}
+              >
+                {muted ? 'Sound off' : 'Sound on'}
+              </button>
+              {!muted && sound === 'blocked' ? (
+                <span className="oo-alert-sound">
+                  Click anywhere in the app to allow sound
+                </span>
+              ) : null}
             </div>
           </section>
         )

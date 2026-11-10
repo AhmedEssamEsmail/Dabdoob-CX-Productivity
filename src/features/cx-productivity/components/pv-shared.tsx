@@ -1,7 +1,9 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useRef, type CSSProperties } from 'react'
 import { Chip, stagger, useEnterAnim, useTip, vsPrev } from '@/features/shared/components/shell/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
+import { usePageData } from '@/features/shared/lib/use-page-data'
 import { daysUntil, type FlagView } from '@/features/cx-productivity/lib/prod-validation'
 
 /**
@@ -34,7 +36,7 @@ export const Ea = (due: string, today: string) => daysUntil(due, today)
 
 /* --- zt/be — decision chip -------------------------------------------- */
 
-export const DECISIONS: Record<string, [string, string]> = {
+export const DECISIONS: Record<string, [string, ChipStatus]> = {
   pending: ['Waiting for review', 'warn'],
   accepted: ['Accepted', 'ok'],
   reverted: ['Reverted to raw', 'neutral'],
@@ -55,26 +57,13 @@ export const CHANNEL_LABELS: Record<string, string> = {
   wa: 'waiting address',
 }
 
-/** Se — data fetch with error + reload. */
-export function useSe<T>(fn: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState('')
-  const [tick, setTick] = useState(0)
-  useEffect(() => {
-    let live = true
-    queueMicrotask(() => live && setError(''))
-    fn().then(
-      (d) => live && setData(d),
-      (e: unknown) => live && setError(e instanceof Error ? e.message : String(e)),
-    )
-    return () => {
-      live = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick])
-  const reload = useCallback(() => setTick((t) => t + 1), [])
-  return { data, error, reload, setData }
-}
+/* --- Se — data fetch with error + reload --------------------------------
+ * Named thunks keep their cross-remount cache via usePageData's
+ * function-identity cacheKey; anonymous loaders stay uncached, exactly
+ * like the legacy tick-only refetch.
+ */
+export const useSe = <T,>(fn: () => Promise<T>) =>
+  usePageData<T>(fn.name || null, fn, { cacheKey: fn.name ? fn : null })
 
 /* --- kt — the three-lane strip ----------------------------------------- */
 

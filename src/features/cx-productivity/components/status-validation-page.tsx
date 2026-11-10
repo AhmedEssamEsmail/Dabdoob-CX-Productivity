@@ -1,15 +1,21 @@
 'use client'
 
-import { useState, type CSSProperties, type FormEvent } from 'react'
-import {
-  Chip,
-  LinesSkeleton,
-  LoadError,
-  Section,
-} from '@/features/shared/components/shell/ui'
+import { useState, type FormEvent } from 'react'
+import { Chip, Section } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Seg, Select, Textarea } from '@/features/shared/components/ui'
+import {
+  Button,
+  Empty,
+  Failed,
+  Input,
+  LinesSkeleton,
+  PageShell,
+  PagedList,
+  Seg,
+  Textarea,
+} from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { useSearchParamState } from '@/features/shared/lib/use-search-param-state'
 import {
   CasesLine,
   CHANNEL_LABELS,
@@ -43,15 +49,7 @@ const ce = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     }),
-  decideDispute: (flagId: string, input: { disputeId: string; outcome: string; status: string; note: string }) =>
-    fetchJson(`/api/prod/disputes/${encodeURIComponent(input.disputeId)}/decide`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ flagId, ...input }),
-    }),
 }
-
-/* --- Ue — the dq-page shell -------------------------------------------- */
 
 interface ReviewPage {
   today: string
@@ -70,40 +68,6 @@ interface ReviewPage {
     lastSnapshot: string
     statusesSeen: { status: string; rows: number; engine: boolean }[]
   } | null
-}
-
-export function Page({
-  route,
-  sub,
-  d,
-  error,
-  reload,
-  aside,
-  children,
-}: {
-  route: { title: string }
-  sub: string
-  d: unknown
-  error: string
-  reload: () => void
-  aside?: React.ReactNode
-  children?: React.ReactNode
-}) {
-  return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!d && !error}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-sub">{sub}</p>
-        </div>
-        {aside ? <div className="page-actions">{aside}</div> : null}
-      </header>
-      {error ? <LoadError message={error} onRetry={reload} /> : null}
-      {!d && !error ? <LinesSkeleton lines={6} /> : d ? children : null}
-    </section>
-  )
 }
 
 /* --- Da — the opened flag's decide form -------------------------------- */
@@ -127,7 +91,7 @@ function FlagDetail({
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
-  if (error) return <LoadError message={error} onRetry={reload} />
+  if (error) return <Failed message={error} onRetry={reload} />
   if (!r) return <LinesSkeleton lines={5} />
 
   const f = r.flag
@@ -155,19 +119,19 @@ function FlagDetail({
   }
 
   return (
-    <div className="pv-detail card">
-      <div className="card-head">
+    <div className="pv-detail cx-panel">
+      <div className="cx-section__head">
         <div>
-          <div className="card-title">
+          <div className="cx-section__title">
             {f.agentName} — {re(f.intervalStart)}, {fe(f)}
           </div>
-          <div className="card-hint">
+          <div className="cx-section__hint">
             {G(f.flaggedMin)} flagged of {G(f.intervalMin)} {f.rawStatus}
           </div>
         </div>
         <DecisionChip d={f.decision} />
       </div>
-      <div className="card-pad">
+      <div className="cx-panel--pad">
         <div className="grid grid-3" style={{ marginBlock: '0 1rem' }}>
           <div className="stat">
             <span className="stat-l">Suggested status</span>
@@ -194,11 +158,11 @@ function FlagDetail({
             columns are not persisted (prod_flags.case_ids_json stores only
             [id, channel] pairs; prod_tph_cases holds hour-level counts, not
             per-case touches), so the 2-column table keeps only what exists. */}
-        <div className="card" style={{ boxShadow: 'none', marginBlockEnd: '1rem' }}>
-          <div className="card-head">
-            <div className="card-title">Inside the window</div>
+        <div className="cx-panel pv-card--flat">
+          <div className="cx-section__head">
+            <div className="cx-section__title">Inside the window</div>
           </div>
-          <table className="tbl">
+          <table className="cx-table">
             <thead>
               <tr>
                 <th scope="col">Case</th>
@@ -280,96 +244,6 @@ function FlagDetail({
   )
 }
 
-/* --- qa — the TL's decision on an agent dispute (mechanism disabled
-        upstream; rendered only if a dispute row ever appears) ------------- */
-
-function DisputeForm({ f, statuses, onDone }: { f: FlagView; statuses: string[]; onDone: () => void }) {
-  const [outcome, setOutcome] = useState('')
-  const [status, setStatus] = useState(f.rawStatus)
-  const [note, setNote] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [formError, setFormError] = useState('')
-  const g = f.dispute
-  if (!g) return null
-  return (
-    <form
-      className="pv-form"
-      onSubmit={(e: FormEvent) => {
-        e.preventDefault()
-        if (!outcome) {
-          setFormError('Choose upheld or not upheld.')
-          return
-        }
-        setSaving(true)
-        setFormError('')
-        ce.decideDispute(f.flagId, { disputeId: g.disputeId, outcome, status, note }).then(
-          () => {
-            setSaving(false)
-            toast('Recorded. The agent was emailed.')
-            onDone()
-          },
-          (m: unknown) => {
-            setSaving(false)
-            setFormError(m instanceof Error ? m.message : String(m))
-          },
-        )
-      }}
-    >
-      <p className="pv-quote">
-        <strong>{f.agentName}</strong>{' '}
-        <span className="cx-faint">({g.raisedAt.slice(0, 10)})</span>: {g.reason}
-      </p>
-      <Seg
-        name={`o-${g.disputeId}`}
-        value={outcome}
-        onChange={setOutcome}
-        aria-label="Outcome"
-        options={[
-          { value: 'upheld', label: 'Uphold' },
-          { value: 'rejected', label: 'Do not uphold' },
-        ]}
-      />
-      {outcome === 'upheld' ? (
-        <div className="cx-field">
-          <label className="cx-label" htmlFor={`ds-${g.disputeId}`}>
-            The flagged time counts as
-          </label>
-          <Select
-            id={`ds-${g.disputeId}`}
-            value={status}
-            onChange={(e) => setStatus(e.currentTarget.value)}
-          >
-            <option value={f.rawStatus}>{f.rawStatus} (raw: revert)</option>
-            {statuses.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </Select>
-        </div>
-      ) : null}
-      <div className="cx-field">
-        <label className="cx-label" htmlFor={`dn-${g.disputeId}`}>
-          Note to the agent
-        </label>
-        <Textarea
-          id={`dn-${g.disputeId}`}
-          value={note}
-          onInput={(e) => setNote(e.currentTarget.value)}
-        />
-      </div>
-      {formError ? (
-        <p className="cx-error" role="alert">
-          {formError}
-        </p>
-      ) : null}
-      <Button type="submit" variant="primary" disabled={saving}>
-        {saving ? 'Saving…' : 'Record the decision'}
-      </Button>
-    </form>
-  )
-}
-
 /* --- La — the admin-only data-source section ---------------------------- */
 
 function DataSource({ d }: { d: ReviewPage }) {
@@ -409,19 +283,6 @@ function DataSource({ d }: { d: ReviewPage }) {
 
 const ROUTE = { title: 'Status validation' }
 
-const WI_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.9rem',
-  inlineSize: '100%',
-  padding: '0.8rem 1.25rem',
-  border: 0,
-  borderBottom: '1px solid var(--cx-line)',
-  borderRadius: 0,
-  background: 'transparent',
-  textAlign: 'start',
-}
-
 type PvView = 'open' | 'reviewed' | 'disputed'
 
 const pvInitials = (f: FlagView) => {
@@ -436,51 +297,53 @@ const pvInitials = (f: FlagView) => {
 
 export function StatusValidationPage() {
   const { data: n, error, reload } = useSe<ReviewPage>(ce.reviewPage)
-  const [selected, setSelected] = useState('')
-  const [agentFilter, setAgentFilter] = useState('')
-  const [view, setView] = useState<PvView>('open')
+  const [selected, setSelected] = useSearchParamState('flag', '')
+  const [agentFilter, setAgentFilter] = useSearchParamState('agent', '')
+  const [viewParam, setViewParam] = useSearchParamState('view', 'open', { push: true })
+  const view = viewParam === 'reviewed' || viewParam === 'disputed' ? viewParam : 'open'
   const changeView = (v: PvView) => {
-    setView(v)
+    setViewParam(v)
     setSelected('')
   }
   const done = () => {
     setSelected('')
     reload()
   }
+  const pendingRows = (n?.pending ?? []).filter(
+    (f) =>
+      !agentFilter.trim() ||
+      f.agentName.toLowerCase().includes(agentFilter.trim().toLowerCase()),
+  )
   return (
-    <Page
-      route={ROUTE}
-      d={n}
-      error={error}
-      reload={reload}
-      sub={
+    <PageShell
+      id="page-title"
+      className="cxp page"
+      title={ROUTE.title}
+      purpose={
         n
           ? `IDLE time with ${n.rule.x} or more distinct cases inside ${n.rule.windowMin} minutes (intervals of ${n.rule.minIntervalMin} minutes or more). Until you review a flag, its suggested status counts; on day ${n.rule.reviewDays} it is accepted automatically.`
-          : ''
+          : undefined
       }
       aside={
         n ? (
-          <div className="seg" role="group" aria-label="Flag views">
-            {(
-              [
-                ['open', 'Open', n.pending.length],
-                ['reviewed', 'Reviewed', n.decided.length],
-                ['disputed', 'Disputed', n.disputes.length],
-              ] as const
-            ).map(([v, label, count]) => (
-              <button
-                key={v}
-                type="button"
-                className={view === v ? 'on' : undefined}
-                aria-pressed={view === v}
-                onClick={() => changeView(v)}
-              >
-                {label} ({count})
-              </button>
-            ))}
+          <div className="page-actions">
+            <Seg
+              name="pv-view"
+              aria-label="Flag views"
+              value={view}
+              onChange={(v) => changeView(v as PvView)}
+              options={[
+                { value: 'open', label: `Open (${n.pending.length})` },
+                { value: 'reviewed', label: `Reviewed (${n.decided.length})` },
+                { value: 'disputed', label: `Disputed (${n.disputes.length})` },
+              ]}
+            />
           </div>
         ) : undefined
       }
+      busy={!n && !error}
+      error={error}
+      onRetry={reload}
     >
       {n ? (
         <>
@@ -491,11 +354,10 @@ export function StatusValidationPage() {
             hint="Open each flag to decide it"
           >
             <div className="md">
-              <section className="card">
-                <div className="card-head">
-                  <div className="card-title">Flags</div>
-                  <input
-                    className="input"
+              <section className="cx-panel">
+                <div className="cx-section__head">
+                  <div className="cx-section__title">Flags</div>
+                  <Input
                     type="search"
                     placeholder="Agent…"
                     aria-label="Filter flags by agent"
@@ -504,29 +366,17 @@ export function StatusValidationPage() {
                   />
                 </div>
                 <div className="worklist">
-                  {n.pending
-                    .filter(
-                      (f) =>
-                        !agentFilter.trim() ||
-                        f.agentName.toLowerCase().includes(agentFilter.trim().toLowerCase()),
-                    )
-                    .map((f, i, rows) => {
+                  <PagedList
+                    items={pendingRows}
+                    renderItem={(f) => {
                       const h = Ea(f.dueDate, n.today)
                       const sel = selected === f.flagId
                       return (
                         <Button
                           key={f.flagId}
-                          className="workitem pv-item"
+                          className="workitem pv-item pv-item--row"
                           aria-pressed={sel}
-                          style={
-                            sel || i === rows.length - 1
-                              ? {
-                                  ...WI_ROW,
-                                  ...(sel ? { background: 'var(--cx-accent-soft)' } : {}),
-                                  ...(i === rows.length - 1 ? { borderBottom: 0 } : {}),
-                                }
-                              : WI_ROW
-                          }
+                          data-selected={sel || undefined}
                           onClick={() => setSelected(f.flagId)}
                         >
                           <span className="avatar" aria-hidden="true">
@@ -553,7 +403,8 @@ export function StatusValidationPage() {
                           </span>
                         </Button>
                       )
-                    })}
+                    }}
+                  />
                 </div>
               </section>
               {selected ? (
@@ -565,7 +416,14 @@ export function StatusValidationPage() {
                   ticketUrl={n.ticketUrl}
                   onDone={done}
                 />
-              ) : null}
+              ) : (
+                <div className="pv-detail cx-panel">
+                  <Empty
+                    title="Pick a flag"
+                    body="Select a flag on the left to review and decide it."
+                  />
+                </div>
+              )}
             </div>
           </Section>
           ) : null}
@@ -591,7 +449,6 @@ export function StatusValidationPage() {
                     </header>
                     <FlagStrip f={f} />
                     <CasesLine f={f} ticketUrl={n.ticketUrl} />
-                    <DisputeForm f={f} statuses={n.statuses} onDone={reload} />
                   </article>
                 ))}
               </div>
@@ -603,7 +460,7 @@ export function StatusValidationPage() {
           {view === 'reviewed' ? (
             <Section id="pv-h" title="Decided, last 30 days">
               {n.decided.length ? (
-              <div className="card cx-tablewrap">
+              <div className="cx-panel cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -648,6 +505,6 @@ export function StatusValidationPage() {
           <DataSource d={n} />
         </>
       ) : null}
-    </Page>
+    </PageShell>
   )
 }

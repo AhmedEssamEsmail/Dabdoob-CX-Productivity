@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { fetchJson, useSe } from './shared'
 import { PwShell, PwLate, PwSkel, PwErr, routeOf } from './pw'
-import { Button, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Select, Textarea } from '@/features/shared/components/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* I — the coaching facade. */
@@ -13,15 +13,6 @@ const api = {
   coachingPage: () => fetchJson('/api/people/coaching'),
   coachingSignal: (input: { email: string; topic: string; reason: string }) =>
     fetchJson('/api/people/coaching', input),
-}
-
-/* $e */
-function Chip({ status, children }: { status?: string; children?: React.ReactNode }) {
-  return (
-    <span className={`pill${status && status !== 'neutral' ? ` ${status}` : ''}`} data-status={status}>
-      {children}
-    </span>
-  )
 }
 
 /* xa */
@@ -61,7 +52,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
       {error ? <PwLate message={error} retry={reload} /> : null}
       {data ? (
         <>
-          <form className="card card-pad" onSubmit={submit} style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+          <form className="cx-panel cx-panel--pad" onSubmit={submit} style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
             <div className="cx-field">
               <label className="cx-label" htmlFor="cs-p">
                 Person
@@ -104,9 +95,9 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
               {busy ? 'Sending…' : 'Send to their team lead'}
             </Button>
           </form>
-          <section className="card" aria-labelledby="cs-h">
-            <div className="card-head">
-              <h2 className="card-title" id="cs-h">
+          <section className="cx-panel" aria-labelledby="cs-h">
+            <div className="cx-section__head">
+              <h2 className="cx-section__title" id="cs-h">
                 Sent
               </h2>
             </div>
@@ -142,10 +133,10 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
                 </table>
               </div>
             ) : (
-              <div className="empty">
-                <div className="t">Nothing sent yet.</div>
-                <div className="s">Coaching signals you send show up here, with whether a 1:1 has raised them.</div>
-              </div>
+              <Empty
+                title="Nothing sent yet."
+                body="Coaching signals you send show up here, with whether a 1:1 has raised them."
+              />
             )}
           </section>
         </>

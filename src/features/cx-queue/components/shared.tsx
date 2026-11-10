@@ -1,15 +1,23 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* Queue & Workforce shared widgets — ports of the closure-bundle helpers
- * (dq-head, cx-chip, cx-agechip, dq-refresh, the useSe loader, Kuwait formatters,
+ * (cx-chip, cx-agechip, cx-refresh, the useSe loader, Kuwait formatters,
  * the cc-sweep/cc-tip/count-up machinery (bt/Oe/ps/fs/Bt/nn/gs/On/$a/Qe),
  * the Ca filter bar, it status-line, vs chip, xe skeletons,
  * and the Qa dropdown + options cache from checkins.closure.js).
  */
-import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Input, PageShell, Select } from '@/features/shared/components/ui'
 import { pageParams } from '@/features/shared/shell/gates'
+import { FetchError, fetchJson as baseFetchJson, postJson } from '@/features/shared/lib/fetch-json'
+import { useOptions } from '@/features/shared/lib/use-options'
+import { usePageData } from '@/features/shared/lib/use-page-data'
+import { usePoll } from '@/features/shared/lib/use-poll'
+
+export { FetchError, postJson }
+export { Failed as LoadError, LinesSkeleton as Skeleton, Skeleton as Xe } from '@/features/shared/components/ui/PageStates'
+export { StatusChip } from '@/features/shared/components/ui'
 
 export const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 export const kwDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: 'numeric', month: 'short' })
@@ -34,17 +42,7 @@ export function AgeChip({ hours, band }: { hours: number; band: number }) {
 }
 
 export function Head({ title, sub, aside }: { title: string; sub: string; aside?: React.ReactNode }) {
-  return (
-    <header className="dq-head">
-      <div>
-        <h1 id="page-title" className="page-title">
-          {title}
-        </h1>
-        <p className="page-purpose">{sub}</p>
-      </div>
-      {aside ? <div className="dq-head__aside">{aside}</div> : null}
-    </header>
-  )
+  return <PageShell title={title} purpose={sub} aside={aside} id="page-title" />
 }
 
 export function AsOfHint({ iso, what = 'Freshdesk' }: { iso?: string | null; what?: string }) {
@@ -57,64 +55,15 @@ export function AsOfHint({ iso, what = 'Freshdesk' }: { iso?: string | null; wha
   )
 }
 
-export function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="cx-note" data-status="bad" role="alert">
-      <div>
-        <strong>This page could not load.</strong> {message}{' '}
-        <Button variant="quiet" onClick={onRetry}>
-          Try again
-        </Button>
-      </div>
-    </div>
-  )
+/** Legacy (url, body?) facade over the canonical fetch-json: a second arg
+    auto-POSTs JSON via postJson; RequestInit callers use postJson/baseFetchJson. */
+export function fetchJson(url: string, body?: unknown): Promise<any> {
+  return body === undefined ? baseFetchJson(url) : postJson(url, body)
 }
 
-/** dt — the pages' skeleton shortcut over xe: tall <= 2 lines is a tile strip. */
-export function Skeleton({ lines = 3, tall = false }: { lines?: number; tall?: boolean }) {
-  return tall && lines <= 2 ? <Xe shape="tiles" n={3} /> : <Xe shape={tall ? 'ladder' : 'rows'} n={tall ? lines - 1 : lines} />
-}
-
-export class FetchError extends Error {
-  fn: string
-  constructor(fn: string, message: string) {
-    super(message)
-    this.fn = fn
-  }
-}
-
-/** google.script.run facade -> fetch on the Next API routes. */
-export async function fetchJson(url: string, body?: unknown): Promise<any> {
-  const res = await fetch(url, body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-  const data = await res.json().catch(() => null)
-  if (!res.ok) throw new FetchError(url, String((data && data.error) || res.statusText || 'Request failed'))
-  return data
-}
-
-const cache = new Map<string, unknown>()
-
-/** The vt() loader from the bundles: cached data, error, reload. */
+/** The vt() loader from the bundles: cached data, error, reload — usePageData. */
 export function useSe<T = any>(name: string, load: () => Promise<T>, deps: unknown[] = []) {
-  const [data, setData] = useState<T | null>(() => (cache.get(name) as T) ?? null)
-  const [error, setError] = useState('')
-  const [tick, setTick] = useState(0)
-  useEffect(() => {
-    if (data !== null) cache.set(name, data)
-  }, [data, name])
-  useEffect(() => {
-    let on = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- verbatim useSe: clears stale error before reload
-    setError('')
-    load()
-      .then((d) => on && setData(d))
-      .catch((e) => on && setError(e.message))
-    return () => {
-      on = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, ...deps])
-  const reload = useCallback(() => setTick((t) => t + 1), [])
-  return { data, error, reload, setData }
+  return usePageData<T>(name, load, { deps })
 }
 
 export function useHashParams(): URLSearchParams {
@@ -331,15 +280,6 @@ export function statusLine(t: Record<string, number> | null | undefined): string
   return a.length ? `${s} (also ${a.join(', ')})` : s
 }
 
-/** vs — the cx-chip wrapper. */
-export function StatusChip({ status, children, title }: { status: string; children: React.ReactNode; title?: string }) {
-  return (
-    <span className="cx-chip" data-status={status} title={title}>
-      {children}
-    </span>
-  )
-}
-
 interface FilterPick {
   value: string
   onChange: (v: string) => void
@@ -422,11 +362,7 @@ export function RefreshNow({ onDone }: { onDone: () => void }) {
   const [until, setUntil] = useState(0)
   // eslint-disable-next-line react-hooks/purity -- verbatim: cooldown timer seeds from Date.now()
   const [now, setNow] = useState(Date.now())
-  useEffect(() => {
-    if (until <= Date.now()) return
-    const iv = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(iv)
-  }, [until])
+  usePoll(until > now ? 1000 : null, () => setNow(Date.now()), { immediate: false })
   const left = Math.max(0, Math.ceil((until - now) / 1000))
   const go = () => {
     setBusy(true)
@@ -449,7 +385,7 @@ export function RefreshNow({ onDone }: { onDone: () => void }) {
     )
   }
   return (
-    <span className="dq-refresh">
+    <span className="cx-refresh">
       <Button disabled={busy || left > 0} aria-busy={busy} onClick={go}>
         {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
       </Button>
@@ -509,44 +445,6 @@ export function AgeLadder({
   )
 }
 
-const SKEL_CHART = [55, 70, 48, 82, 64, 90, 58, 74, 40, 68, 86, 60, 52] // xa
-const SKEL_ROW = [78, 62, 90, 54, 70, 46, 84, 58, 66, 50] // Tn
-
-/** xe — the legacy skeleton shapes: tiles, chart, ladder and rows. */
-export function Xe({ shape, n = 6 }: { shape: 'tiles' | 'chart' | 'ladder' | 'rows'; n?: number }) {
-  if (shape === 'tiles') {
-    return (
-      <div className="cc-skel__tiles" aria-hidden="true">
-        {Array.from({ length: n }, (_, i) => (
-          <span key={i} className="skeleton cc-skel__tile" />
-        ))}
-      </div>
-    )
-  }
-  return (
-    <div className="cx-panel cx-panel--pad cc-skel" aria-hidden="true">
-      <span className="skeleton cc-skel__title" />
-      {shape === 'ladder' ? <span className="skeleton cc-skel__ladder" /> : null}
-      {shape === 'chart' ? (
-        <div className="cc-skel__chart">
-          {SKEL_CHART.map((h, i) => (
-            <span key={i} className="skeleton" style={{ blockSize: `${h}%` }} />
-          ))}
-        </div>
-      ) : null}
-      {shape === 'rows' || shape === 'ladder'
-        ? Array.from({ length: n }, (_, i) => (
-            <span key={i} className="cc-skel__row">
-              <span className="skeleton" />
-              <span className="skeleton" style={{ inlineSize: `${SKEL_ROW[i % SKEL_ROW.length]}%` }} />
-              <span className="skeleton" />
-            </span>
-          ))
-        : null}
-    </div>
-  )
-}
-
 // ---------------------------------------------------------------------------
 // The server-backed dropdown (checkins.closure.js symbols qt/Ot/ea/kn/ls/Qa).
 // Options live per listKey and are shared by every mounted select; "Other…"
@@ -555,30 +453,6 @@ export function Xe({ shape, n = 6 }: { shape: 'tiles' | 'chart' | 'ladder' | 'ro
 // ---------------------------------------------------------------------------
 
 const OPT_OTHER = '__other__' // qt
-let optData: Record<string, string[]> = {} // ot
-const optInflight = new Map<string, Promise<unknown>>() // Ot
-const optSubs = new Set<() => void>() // It
-
-/** ss/kn: write one list's options, then notify subscribers. */
-function optPut(listKey: string, options: string[]): void {
-  optData = { ...optData, [listKey]: options }
-  optSubs.forEach((f) => f())
-}
-
-/** ls: subscribe a component to the shared options store. */
-function useOpt<T>(read: () => T, deps: unknown[] = []): T {
-  const [v, setV] = useState(read)
-  useEffect(() => {
-    const f = () => setV(() => read())
-    optSubs.add(f)
-    f()
-    return () => {
-      optSubs.delete(f)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- verbatim ls(): re-subscribes on the caller's deps
-  }, deps)
-  return v
-}
 
 /**
  * Qa verbatim: a dropdown backed by GET /api/options/<listKey>, with an
@@ -606,23 +480,14 @@ export function ListSelect({
   hint?: string
 }) {
   const p = useId()
-  const d = useOpt(() => optData[listKey], [listKey])
+  const { options: optOptions, loading: optLoading, error: optError, reload: optReload } = useOptions(listKey)
+  const d = optError || optLoading ? undefined : optOptions
   const [u, c] = useState(false)
   const [o, f] = useState('')
   const [g, m] = useState(false)
   const [b, v] = useState('')
-  const [y, w] = useState('')
+  const y = optError ?? ''
   const M = useRef<HTMLInputElement | null>(null)
-  useEffect(() => {
-    if (d !== undefined) return
-    let q = optInflight.get(listKey)
-    if (!q) {
-      q = fetchJson('/api/options/' + encodeURIComponent(listKey)).then((N) => optPut(listKey, (N.options as string[]) ?? []))
-      optInflight.set(listKey, q)
-      q.catch(() => optInflight.delete(listKey))
-    }
-    q.catch((N) => w((N as Error).message))
-  }, [listKey, d])
   useEffect(() => {
     if (u) M.current?.focus()
   }, [u])
@@ -643,8 +508,8 @@ export function ListSelect({
     m(true)
     v('')
     try {
-      const q = await fetchJson('/api/options/' + encodeURIComponent(listKey), { value: o })
-      optPut(listKey, q.options)
+      const q = await postJson('/api/options/' + encodeURIComponent(listKey), { value: o })
+      optReload()
       onChange(q.value)
       c(false)
       f('')

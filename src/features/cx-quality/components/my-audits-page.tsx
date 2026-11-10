@@ -7,7 +7,7 @@
  *   Mt → qaIsNum, P.confirmCtl → confirmQaCtl.
  */
 import { useState } from 'react'
-import { Button, Textarea } from '@/features/shared/components/ui'
+import { Button, Empty, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   Count,
@@ -165,9 +165,7 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
               {i.length ? (
                 i.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
               ) : (
-                <div className="empty">
-                  <div className="s">Nothing to confirm.</div>
-                </div>
+                <Empty title="Nothing to confirm." />
               )}
             </div>
           </QaSection>
@@ -184,9 +182,7 @@ export default function MyAuditsPage({ route }: { route: { title: string } }) {
             {c.length ? (
               c.map((l: any) => <AuditCard a={l} onDone={s} key={l.auditId} />)
             ) : (
-              <div className="empty">
-                <div className="s">No other audits.</div>
-              </div>
+              <Empty title="No other audits." />
             )}
           </div>
         </>

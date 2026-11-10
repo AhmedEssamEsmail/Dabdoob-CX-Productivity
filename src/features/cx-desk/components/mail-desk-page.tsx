@@ -1,9 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, ConfirmInline, Empty, ErrMsg, Failed, PageShell, Skeleton, TableScroll, Textarea } from '@/features/shared/components/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 
 /* ------------------------------------------------------------------ *
  * Mail Desk — port of the legacy Google Apps Script page.
@@ -106,7 +108,7 @@ const STATUS_LABEL: Record<string, string> = {
   replied: 'Replied',
   answered_in_gmail: 'Answered in Gmail',
 }
-const STATUS_TONE: Record<string, string> = {
+const STATUS_TONE: Record<string, ChipStatus> = {
   pending: 'warn',
   sending: 'warn',
   approved: 'ok',
@@ -117,68 +119,26 @@ const STATUS_TONE: Record<string, string> = {
 
 /* Toasts come from the shared shell emitter (the legacy `ne`). */
 
-function Skeleton() {
-  return (
-    <div aria-busy="true" aria-label="Loading" className="dk-skel">
-      {[92, 70, 84, 60, 76].map((w) => (
-        <span key={w} className="skeleton" style={{ width: `${w}%` }} />
-      ))}
-    </div>
-  )
-}
-
-function Failed({ message, retry }: { message: string; retry: () => void }) {
-  return (
-    <div className="dk-failed" role="alert">
-      <p>This page could not load: {message}</p>
-      <Button variant="primary" onClick={retry}>
-        Try again
-      </Button>
-    </div>
-  )
+function Badge({ tone, children }: { tone?: ChipStatus; children: ReactNode }) {
+  return <Chip tone={tone}>{children}</Chip>
 }
 
 function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="page dk" aria-labelledby="page-title">
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-purpose">{route.purpose}</p>
-        </div>
-        {aside ? <div className="page-actions">{aside}</div> : null}
-      </header>
+    <PageShell
+      title={route.title}
+      purpose={route.purpose}
+      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      id="page-title"
+      className="dk"
+    >
       {children}
-    </section>
+    </PageShell>
   )
 }
 
-function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
-}
-
-function ErrMsg({ message }: { message: string }) {
-  return message ? (
-    <p className="dk-error" role="alert">
-      {message}
-    </p>
-  ) : null
-}
-
 function useLoaded<T>(load: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState('')
-  const reload = useCallback(() => {
-    setError('')
-    load().then(setData, (e) => setError(e instanceof Error ? e.message : String(e)))
-  }, [load])
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reload() only clears a stale error, then sets state in the async .then
-    reload()
-  }, [reload])
-  return { data, setData, error, reload }
+  return usePageData<T>(null, load, { cache: false })
 }
 
 function useRun() {
@@ -242,12 +202,14 @@ function SlaTr({ m }: { m: SlaRow }) {
         )}
       </td>
       <td className="md-flags">
+        <div className="md-flags__in">
         {m.status === 'open' ? (
           <Badge tone={m.breached ? 'bad' : 'warn'}>{m.breached ? 'Open past due' : 'Open'}</Badge>
         ) : null}
         {m.coveringMissed ? <Badge tone="bad">On-queue TL did not reply</Badge> : null}
         {m.status === 'replied' && m.breached ? <Badge tone="warn">Replied after the shift ended</Badge> : null}
         {m.byExpected && !m.breached ? <Badge tone="ok">On time</Badge> : null}
+        </div>
       </td>
     </tr>
   )
@@ -256,6 +218,7 @@ function SlaTr({ m }: { m: SlaRow }) {
 function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onDone: (u: Approval) => void }) {
   const [text, setText] = useState('')
   const [pending, setPending] = useState<{ decision: string; tok: string } | null>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
   const run = useRun()
   const to = a.replyTo || a.requester
   const confirm = () =>
@@ -305,59 +268,59 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
               : 'Sending…'}
           </p>
           {a.stuck ? (
-            <Button
-              variant="quiet"
-              className="dk-sm"
-              disabled={run.busy}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    'Put this approval back to waiting? Check the Gmail thread first: if a reply was sent, resetting lets someone send a second one.',
-                  )
-                ) {
+            confirmReset ? (
+              <ConfirmInline
+                label="Put this approval back to waiting?"
+                detail="Check the Gmail thread first: if a reply was sent, resetting lets someone send a second one."
+                confirmLabel={run.busy ? 'Resetting…' : 'Reset to pending'}
+                onConfirm={() => {
                   void run.run(async () => {
                     onDone(await api.reset(a.threadId))
+                    setConfirmReset(false)
                     toast('Back to waiting.')
                   })
-                }
-              }}
-            >
-              Reset to pending
-            </Button>
+                }}
+                onCancel={() => setConfirmReset(false)}
+              />
+            ) : (
+              <Button variant="danger-quiet" size="sm" disabled={run.busy} onClick={() => setConfirmReset(true)}>
+                Reset to pending
+              </Button>
+            )
           ) : null}
         </div>
       ) : pending ? (
-        <div className="md-confirm" role="alertdialog" aria-label="Confirm the reply">
-          <p>
-            {dryRun ? 'Record' : 'Send'} <b>{DECIDE_LABEL[pending.decision]}</b>
-            {pending.decision !== 'reply' && text.trim() ? ' with your text' : ''} to {to}
-            {a.cc ? `, cc ${a.cc.split(',').join(', ')}` : ''}, in the original thread?
-            {dryRun ? ' Dry run is on: nothing is emailed.' : ''}
-          </p>
-          <div className="md-actions">
-            <Button variant="primary" className="dk-sm" disabled={run.busy} onClick={() => void confirm()}>
-              {run.busy ? 'Sending…' : dryRun ? 'Record decision' : 'Send now'}
-            </Button>
-            <Button variant="quiet" className="dk-sm" disabled={run.busy} onClick={() => setPending(null)}>
-              Back
-            </Button>
-          </div>
-        </div>
+        <ConfirmInline
+          className="md-confirm"
+          label={
+            <>
+              {dryRun ? 'Record' : 'Send'} <b>{DECIDE_LABEL[pending.decision]}</b>
+              {pending.decision !== 'reply' && text.trim() ? ' with your text' : ''} to {to}
+              {a.cc ? `, cc ${a.cc.split(',').join(', ')}` : ''}, in the original thread?
+            </>
+          }
+          detail={dryRun ? 'Dry run is on: nothing is emailed.' : undefined}
+          confirmLabel={run.busy ? 'Sending…' : dryRun ? 'Record decision' : 'Send now'}
+          onConfirm={() => void confirm()}
+          onCancel={() => {
+            if (!run.busy) setPending(null)
+          }}
+        />
       ) : (
         <div className="md-actions">
-          <Button variant="primary" className="dk-sm" onClick={() => setPending({ decision: 'approved', tok: token() })}>
+          <Button variant="primary" size="sm" onClick={() => setPending({ decision: 'approved', tok: token() })}>
             Approved
           </Button>
           <Button
-            variant="quiet"
-            className="dk-sm md-reject"
+            variant="danger-quiet"
+            size="sm"
             onClick={() => setPending({ decision: 'rejected', tok: token() })}
           >
             Rejected
           </Button>
           <Button
             variant="quiet"
-            className="dk-sm"
+            size="sm"
             disabled={text.trim().length < 2}
             onClick={() => setPending({ decision: 'reply', tok: token() })}
           >
@@ -383,7 +346,7 @@ export default function MailDeskPage() {
     <div className="md-aside">
       <Button
         variant="quiet"
-        className="dk-sm"
+        size="sm"
         disabled={run.busy}
         onClick={() =>
           void run.run(async () => {
@@ -406,7 +369,7 @@ export default function MailDeskPage() {
   if (!data) {
     return (
       <Shell route={ROUTE}>
-        <Skeleton />
+        <Skeleton shape="rows" n={5} />
       </Shell>
     )
   }
@@ -444,14 +407,12 @@ export default function MailDeskPage() {
               ))}
             </div>
           ) : (
-            <div className="card">
-              <div className="empty">
-                <div className="s">No approval mails waiting.</div>
-              </div>
+            <div className="cx-panel">
+              <Empty title="No approval mails waiting." />
             </div>
           )}
           {decided.length ? (
-            <div className="card card-pad">
+            <div className="cx-panel cx-panel--pad">
             <details className="md-decided">
               <summary>Decided in the last 14 days, {decided.length}</summary>
               <ul>
@@ -478,9 +439,8 @@ export default function MailDeskPage() {
             <Button
               key={f}
               variant="quiet"
-              className="dk-sm"
+              size="sm"
               aria-pressed={filter === f}
-              data-on={filter === f}
               onClick={() => setFilter(f)}
             >
               {f === 'all'
@@ -492,8 +452,8 @@ export default function MailDeskPage() {
           ))}
         </div>
         {rows.length ? (
-          <div className="card card-pad">
-          <div className="dk-scroll">
+          <div className="cx-panel cx-panel--pad">
+            <TableScroll label="Mails needing a reply" minWidth="44rem">
             <table className="dk-table md-table">
               <thead>
                 <tr>
@@ -512,13 +472,11 @@ export default function MailDeskPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </TableScroll>
           </div>
         ) : (
-          <div className="card">
-            <div className="empty">
-              <div className="s">Nothing here for this filter.</div>
-            </div>
+          <div className="cx-panel">
+            <Empty title="Nothing here for this filter." />
           </div>
         )}
       </section>

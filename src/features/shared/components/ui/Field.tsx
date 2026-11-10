@@ -14,17 +14,23 @@ export interface FieldProps extends HTMLAttributes<HTMLDivElement> {
   label: ReactNode
   hint?: ReactNode
   error?: ReactNode
+  invalid?: boolean
   id?: string
   wide?: boolean
   children?: ReactNode
 }
 
-type FieldChildProps = { id?: string; 'aria-describedby'?: string }
+type FieldChildProps = {
+  id?: string
+  'aria-describedby'?: string
+  'aria-invalid'?: boolean
+}
 
 export function Field({
   label,
   hint,
   error,
+  invalid,
   id,
   wide,
   children,
@@ -39,10 +45,12 @@ export function Field({
       .filter(Boolean)
       .join(' ') || undefined
 
+  const isInvalid = invalid ?? error != null
   const control =
     child != null
       ? cloneElement(child as ReactElement<FieldChildProps>, {
           id: childId,
+          'aria-invalid': isInvalid || undefined,
           'aria-describedby':
             [child.props['aria-describedby'], describedBy]
               .filter(Boolean)

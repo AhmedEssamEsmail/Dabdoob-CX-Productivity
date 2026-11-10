@@ -1,8 +1,17 @@
 /* ============================================================================
    theme.css — single source of truth for every design token.
    Refined-neutral ops console: hairline borders, one restrained accent,
-   tight type hierarchy, dense data surfaces. Loads before cx-kit.css;
-   generated legacy stylesheets are no longer imported.
+   tight type hierarchy, dense data surfaces. Loads first of the global
+   sheets (theme -> cx-kit -> refresh -> per-app styles/*.css sheets); the
+   retired generated globals.css / legacy-apps.css are deleted.
+
+   Load-order contract (PERF-9): the import order in src/app/layout.tsx is
+   deliberate — theme -> cx-kit -> refresh -> [data-app] route sheet. Shared
+   rules are authored as `:root .cls` (0,2,0) so they TIE with per-app sheet
+   rules at equal specificity and win purely by load order; do NOT reorder
+   the imports or change this specificity contract without a full cascade
+   review. @layer is intentionally not used (see specs/ux-ui-audit-v2/
+   DECISION.md).
    ========================================================================== */
 
 :root {
@@ -85,13 +94,29 @@
   --rail-w-mini: 3.5rem;
   --gutter: clamp(1rem, 2.5vw, 3rem);
   --main-pad: clamp(1.25rem, 2.5vw, 2rem);
+  /* fill height: vh fallback first, dvh enhancement (mobile URL-bar safe) */
   --fill-h: calc(100vh - 2 * var(--main-pad));
-  --page-max: none;
+  --fill-h-dvh: calc(100dvh - 2 * var(--main-pad));
+  /* content column cap: keeps line/table length readable on ultra-wide */
+  --page-max: 104rem;
   --page-narrow: 62rem;
   --dialog-s: 30rem;
   --dialog-m: 38rem;
   --dialog-l: 52rem;
   --target: 2.25rem;
+
+  /* z-index scale — stacking contract: base < raised < sticky chrome < overlays < modal.
+     rail/banner/frame/toast/alert/modal name the audited layers; tip shares the
+     rail band inside chart stacking contexts. */
+  --z-base: 0;
+  --z-raised: 1;
+  --z-rail: 5;
+  --z-tip: 5;
+  --z-banner: 6;
+  --z-frame: 30;
+  --z-toast: 40;
+  --z-alert: 45;
+  --z-modal: 60;
 
   /* cx-* aliases — same contract as legacy globals.css :root */
   --cx-font: var(--font);
@@ -134,7 +159,8 @@
   --cx-surface-sunken: color-mix(in oklab, var(--line) 45%, var(--paper));
   --cx-ink: var(--ink);
   --cx-ink-2: var(--ink-2);
-  --cx-ink-3: color-mix(in oklab, var(--ink-2) 85%, var(--surface));
+  /* faint tier — ≥4.5:1 on --cx-surface (was 85%, ~4.2-4.5:1 borderline) */
+  --cx-ink-3: color-mix(in oklab, var(--ink-2) 92%, var(--surface));
   --cx-line: var(--line);
   --cx-line-2: var(--line-2);
   --cx-line-strong: var(--line-strong);
@@ -428,18 +454,9 @@ html[data-theme="dark"][data-accent="rust"] {
   :root { --cx-target: 2.75rem; --target: 2.75rem; }
 }
 
-/* Re-pin at app scope: per-app re-declares in legacy-apps.css lose
-   (same specificity, theme.css loads later). */
-[data-app] {
-  --cx-target: 2.25rem;
-  --target: 2.25rem;
-  --cx-radius-control: var(--radius-m);
-  --cx-text-sm: .8125rem;
-}
-@media (pointer: coarse) {
-  [data-app] { --cx-target: 2.75rem; --target: 2.75rem; }
-}
-
+/* Density contract for :root; the coarse-pointer override lives above.
+   (The former [data-app] re-pin was removed — no styles/*.css sheet
+   re-declares these tokens after legacy-apps.css was deleted.) */
 /* ========================================================================== */
 /* Focus ring — AA-visible on light and dark surfaces */
 /* ========================================================================== */

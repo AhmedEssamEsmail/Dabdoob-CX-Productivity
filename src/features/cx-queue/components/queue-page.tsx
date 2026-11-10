@@ -4,6 +4,8 @@
  * Ie/Ba/Na/Wa/ja/ys/Ua/Va (the cx-ladder _s, Ca filter bar, it status line,
  * count-up nn/gs and skeleton xe live in ./shared). */
 import { Fragment, useRef, useState } from 'react'
+import { resolveLink } from '@/features/shared/shell/gates'
+import { Chip, TableScroll } from '@/features/shared/components/ui'
 import {
   AgeChip, AsOfHint, Count, Head, LoadError, RefreshNow, StatusChip, Xe,
   ageRank, bandTop, dayAt, deltaFmt, edgeRank, fetchJson, fmt, hm,
@@ -23,7 +25,7 @@ const METRICS: Record<string, (q: any) => number> = {
 /** The mock delta chip: ▲ rising, ▼ falling, – flat. */
 function Delta({ n }: { n: number }) {
   return (
-    <span className={`delta ${n > 0 ? 'up' : n < 0 ? 'down' : 'flat'}`} aria-label={`${deltaFmt(n)} since the last snapshot`}>
+    <span className={`delta ${n > 0 ? 'down' : n < 0 ? 'up' : 'flat'}`} aria-label={`${deltaFmt(n)} since the last snapshot`}>
       {n > 0 ? '▲' : n < 0 ? '▼' : '–'} {fmt(Math.abs(n))}
     </span>
   )
@@ -106,12 +108,12 @@ function exportCsv(rows: any[], labels: string[], date: string) {
   URL.revokeObjectURL(url)
 }
 
-/** ja — the per-row dq-agebar: band slivers sized by share of the open count. */
+/** ja — the per-row cx-agebar: band slivers sized by share of the open count. */
 function AgeBar({ q, labels, i }: { q: any; labels: string[]; i: number }) {
   const a = q.open || 1
   return (
     <span
-      className="dq-agebar cc-sweep-bar"
+      className="cx-agebar cc-sweep-bar"
       style={sweepStyle(i)}
       role="img"
       aria-label={q.bands.map((l: number, r: number) => `${labels[r]}: ${l}`).join(', ')}
@@ -150,15 +152,16 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
       sub={route.purpose ?? 'Every queue now: open work, its age, and how it moved since the last check-in.'}
       aside={
         <>
-          <input
-            className="input"
-            type="search"
-            aria-label="Filter queues"
-            placeholder="Search queue names"
-            value={r}
-            onChange={(e) => i(e.target.value)}
-            style={{ width: '11rem' }}
-          />
+          <label className="cx-filter">
+            <input
+              className="input"
+              type="search"
+              aria-label="Filter queues"
+              placeholder="Search queue names"
+              value={r}
+              onChange={(e) => i(e.target.value)}
+            />
+          </label>
           <button type="button" className="btn btn-quiet" disabled={!t} onClick={() => exportCsv(f, t?.bands?.labels ?? [], new Date().toISOString().slice(0, 10))}>
             Export
           </button>
@@ -201,22 +204,22 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
           </div>
         ))}
       </div>
-      <section className="card mb-3" aria-labelledby="age-h">
-        <div className="card-head">
-          <div className="card-title" id="age-h">
+      <section className="cx-panel mb-3" aria-labelledby="age-h">
+        <div className="cx-section__head">
+          <div className="cx-section__title" id="age-h">
             Open tickets by age
           </div>
-          <div className="card-hint">
+          <div className="cx-section__hint">
             {fmt(p)} open · click a band to list its tickets
             {ageBand !== null ? ` · ${t.bands.labels[ageBand] ?? 'selected band'}` : ''}
             {ageBand !== null ? (
-              <button type="button" className="pill warn" onClick={() => setAgeBand(null)}>
+              <button type="button" className="btn btn-quiet" onClick={() => setAgeBand(null)}>
                 All ages
               </button>
             ) : null}
           </div>
         </div>
-        <div className="card-pad">
+        <div className="cx-panel--pad">
           <div className="mixbar">
             {d.map((count: number, idx: number) => {
               const label = t.bands.labels[idx] ?? `Band ${idx + 1}`
@@ -225,8 +228,9 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                   key={`${label}-${idx}`}
                   role="button"
                   tabIndex={0}
+                  className="q-mixseg"
                   aria-pressed={ageBand === idx}
-                  aria-label={`${label}: ${fmt(count)}`}
+                  aria-label={`${fmt(count)} items, age band ${label}`}
                   title={`${label}: ${fmt(count)}`}
                   style={{ flexGrow: count || (p ? 0 : 1), flexShrink: 1, flexBasis: 0, background: bandColor(idx), color: `var(--cx-age-ink-${ageRank(idx, d.length)})` }}
                   onClick={() => pickBand(idx)}
@@ -252,52 +256,53 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
           </div>
         </div>
       </section>
-      <section className="card" aria-labelledby="queues-h">
-        <div className="card-head">
+      <section className="cx-panel" aria-labelledby="queues-h">
+        <div className="cx-section__head">
           <div>
-            <div className="card-title" id="queues-h">
+            <div className="cx-section__title" id="queues-h">
               By queue
             </div>
-            <div className="card-hint">
+            <div className="cx-section__hint">
               {t.sinceSlot ? `Change is against the ${t.sinceSlot} snapshot.` : 'No snapshot yet today, so no change column.'}{' '}
               <AsOfHint iso={t.dataAsOf} />
             </div>
           </div>
           <div className="flex">
             {helpCount ? (
-              <span className="pill warn">
+              <Chip status="warn">
                 {helpCount} {helpCount === 1 ? 'queue needs' : 'queues need'} help
-              </span>
+              </Chip>
             ) : null}
           </div>
         </div>
         <div className="cc-chart" ref={h}>
-          <table className="tbl">
+          <TableScroll label="By queue" minWidth="52rem" fade>
+          <table className="cx-table">
             <thead>
               <tr>
                 <th scope="col">Queue</th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   Open
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   {t.sinceSlot ? `Since ${t.sinceSlot}` : 'Change'}
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   Ours
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   Unassigned
                 </th>
-                <th scope="col" style={{ width: '9rem' }}>
+                <th scope="col" className="q-agemix">
                   Age mix
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   Oldest
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   In today
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className="cx-num-col cx-num">
                   Resolved
                 </th>
               </tr>
@@ -313,8 +318,8 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                 return (
                   <Fragment key={m.queue}>
                     {idx > 0 && !m.ours && f[idx - 1].ours ? (
-                      <tr className="dq-groupbreak">
-                        <th scope="colgroup" colSpan={9}>
+                      <tr className="cx-groupbreak">
+                        <th colSpan={9}>
                           Other teams
                         </th>
                       </tr>
@@ -333,21 +338,21 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                           </StatusChip>
                         ) : null}
                       </td>
-                      <td className="num">
+                      <td className="cx-num-col cx-num">
                         <b>{fmt(m.open)}</b>
                       </td>
-                      <td className="num">
+                      <td className="cx-num-col cx-num">
                         {m.delta === null || m.delta === undefined ? (
                           <span className="cx-faint">–</span>
                         ) : (
-                          <span className={`delta ${m.delta > 0 ? 'up' : m.delta < 0 ? 'down' : 'flat'}`}>{deltaFmt(m.delta)}</span>
+                          <span className={`delta ${m.delta > 0 ? 'down' : m.delta < 0 ? 'up' : 'flat'}`}>{deltaFmt(m.delta)}</span>
                         )}
                       </td>
-                      <td className="num">{fmt(m.actionable)}</td>
-                      <td className="num">
+                      <td className="cx-num-col cx-num">{fmt(m.actionable)}</td>
+                      <td className="cx-num-col cx-num">
                         {m.unassigned ? (
                           m.kind === 'ticket' ? (
-                            <a className="rowlink" href="#/aging?unassigned=1" title="Open the tickets nobody has">
+                            <a className="rowlink" href={resolveLink('#/aging?unassigned=1').href} title="Open the tickets nobody has">
                               {m.unassigned}
                             </a>
                           ) : (
@@ -360,18 +365,19 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                       <td>
                         <AgeBar q={m} labels={t.bands.labels} i={idx} />
                       </td>
-                      <td className="num">
+                      <td className="cx-num-col cx-num">
                         {m.open ? <AgeChip hours={m.oldestH} band={edgeRank(m.oldestH, t.bands.edges)} /> : null}
-                        {st ? <span className={`pill ${st.tone}${st.tone === 'ok' ? ' no-dot' : ''}`}>{st.label}</span> : null}
+                        {st ? <Chip status={st.tone} plain={st.tone === 'ok'}>{st.label}</Chip> : null}
                       </td>
-                      <td className="num">{fmt(m.createdToday)}</td>
-                      <td className="num">{fmt(m.resolvedToday)}</td>
+                      <td className="cx-num-col cx-num">{fmt(m.createdToday)}</td>
+                      <td className="cx-num-col cx-num">{fmt(m.resolvedToday)}</td>
                     </tr>
                   </Fragment>
                 )
               })}
             </tbody>
           </table>
+          </TableScroll>
         </div>
       </section>
       <p className="cx-hint">
@@ -386,7 +392,7 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
 /** Va — the route component. */
 export function QueuePage({ route }: { route: { title: string; purpose?: string } }) {
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title">
+    <section className="page" aria-labelledby="page-title">
       <Board route={route} />
     </section>
   )

@@ -6,7 +6,7 @@
  * button + result note, and the holiday form/table. */
 
 import { useState } from 'react'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select } from '@/features/shared/components/ui'
 import { Eo, Ft, jl, Oo, sh, Ti, To, Vf, Vi, Yn } from './hub-shared'
 
 type Q = Record<string, any>
@@ -251,7 +251,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
   const b = e ? e.people.filter((S: Q) => y || S.active) : []
   const w = (S: string) => e?.people.find((_: Q) => _.email === S)?.name || S
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!e && !t}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!e && !t}>
       <Vf
         title={n.title}
         sub="Role, who each person reports to, where they are based, their days off, and public holidays by country. The daily HCT sync never changes what you set here."
@@ -279,13 +279,13 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
       {t ? sh({ message: t, onRetry: i }) : null}
       {e ? (
         <Ft>
-          <section className="card" aria-labelledby="ppl-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="ppl-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="ppl-h">
+                <div className="cx-section__title" id="ppl-h">
                   People
                 </div>
-                <div className="card-hint">
+                <div className="cx-section__hint">
                   Roles, who each person reports to, where they are based, and their days off.
                 </div>
               </div>
@@ -330,9 +330,9 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                       </tr>
                     ) : (
                       <tr key={S.email}>
-                        <th scope="row" className="dq-rowhead">
+                        <th scope="row" className="cx-rowhead">
                           {S.name}
-                          <span className="cx-faint dq-sub">
+                          <span className="cx-faint cx-sub">
                             {S.email}
                             {S.active ? '' : ', left'}
                           </span>
@@ -340,7 +340,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                         <td>
                           {Gi[S.role] || S.role}
                           {S.roleOverride ? (
-                            <span className="cx-faint dq-sub">
+                            <span className="cx-faint cx-sub">
                               set in V2, {S.source === 'hct' ? 'HCT says' : 'without it'}{' '}
                               {Gi[S.hctRole] || S.hctRole || 'Agent'}
                             </span>
@@ -350,12 +350,12 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                           {S.tlEmail ? (
                             w(S.tlEmail)
                           ) : e.lastSync?.unresolved.some((_: Q) => _.email === S.email) ? (
-                            <span className="pill warn">Not found in the HCT</span>
+                            <Chip status="warn">Not found in the HCT</Chip>
                           ) : (
                             '–'
                           )}
                           {S.tlOverride ? (
-                            <span className="cx-faint dq-sub">
+                            <span className="cx-faint cx-sub">
                               set in V2, {S.source === 'hct' ? 'HCT says' : 'without it'}{' '}
                               {S.hctTlEmail ? w(S.hctTlEmail) : 'nobody'}
                             </span>
@@ -363,12 +363,12 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                         </td>
                         <td>
                           {S.basedInCountry || (
-                            <span
-                              className="pill warn"
+                            <Chip
+                              status="warn"
                               title="Public holidays are not excused for this person until you set it"
                             >
                               Not set
-                            </span>
+                            </Chip>
                           )}
                         </td>
                         <td>
@@ -394,25 +394,27 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
               </table>
             </div>
             ) : (
-              <div className="empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-                <div className="t">No people to show</div>
-                <div className="s">Tick &quot;Show people who left&quot; to include people who have left.</div>
-              </div>
+              <Empty
+                icon={
+                  <svg className="cx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                }
+                title="No people to show"
+                body={'Tick "Show people who left" to include people who have left.'}
+              />
             )}
           </section>
-          <section className="card" aria-labelledby="hol-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="hol-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="hol-h">
+                <div className="cx-section__title" id="hol-h">
                   Public holidays
                 </div>
-                <div className="card-hint">
+                <div className="cx-section__hint">
                   A 1:1 due on a holiday in the person&apos;s country is never counted as missed.
                 </div>
               </div>
             </div>
-            <form className="card-pad dq-holform" onSubmit={E} noValidate={!0}>
+            <form className="cx-panel--pad dq-holform" onSubmit={E} noValidate={!0}>
               <Oo listKey={Ff} label="Country" value={o.country} onChange={(S) => c((_) => ({ ..._, country: S }))} />
               <div className="cx-field">
                 <label className="cx-label" htmlFor="hol-date">
@@ -486,11 +488,13 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
               </table>
             </div>
             ) : (
-              <div className="empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-                <div className="t">No holidays yet</div>
-                <div className="s">Add each country&apos;s public holidays above.</div>
-              </div>
+              <Empty
+                icon={
+                  <svg className="cx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                }
+                title="No holidays yet"
+                body="Add each country's public holidays above."
+              />
             )}
           </section>
         </Ft>

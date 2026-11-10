@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from "next/font/google";
 import "./theme.css";
 import "./cx-kit.css";
 import "./refresh.css";
@@ -16,6 +17,24 @@ export const metadata: Metadata = {
 // whole app out of blocking-prerender/static-shell validation.
 export const instant = false;
 
+/* index.html lines 7-10 verbatim font set — IBM Plex Sans (variable, covers
+   400-700), IBM Plex Sans Arabic 400/600/700, IBM Plex Mono 400/500 — now
+   self-hosted via next/font (no render-blocking request, display:swap). */
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-ibm-plex-sans",
+});
+const plexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic", "latin", "latin-ext"],
+  weight: ["400", "600", "700"],
+  variable: "--font-ibm-plex-sans-arabic",
+});
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
+  variable: "--font-ibm-plex-mono",
+});
+
 /**
  * index.html line 14 verbatim — stored appearance must hold before app JS
  * runs — plus the legacy `data-entry="first"` the bundle set at eval time.
@@ -31,27 +50,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       ? "null"
       : JSON.stringify(payload).replace(/</g, "\\u003c");
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html
+      lang="en"
+      dir="ltr"
+      suppressHydrationWarning
+      className={`${plexSans.variable} ${plexSansArabic.variable} ${plexMono.variable}`}
+    >
       <head>
-        {/* index.html lines 7-10 verbatim: preconnects + the exact font set the
-            legacy bundle loaded — IBM Plex Sans 400/500/600/700, IBM Plex Sans
-            Arabic 400/600/700, IBM Plex Mono 400/500. Kept non-render-blocking
-            via media="print" so the boot splash paints before font CSS arrives. */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-          media="print"
-          suppressHydrationWarning
-        />
-        {/* Equivalent of the legacy inline onload="this.media='all'" — React
-            drops string event handlers, so a tiny script flips media to 'all'. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.querySelectorAll('link[media="print"]').forEach(function(l){l.onload=function(){l.media='all'}})`,
-          }}
-        />
+        {/* Rebind the theme.css type tokens (literal family names can't match
+            next/font's generated family) to the self-hosted vars. `html:root`
+            (0,1,1) beats theme.css `:root` (0,1,0) regardless of sheet order. */}
+        <style>{`html:root{--font:var(--font-ibm-plex-sans),var(--font-ibm-plex-sans-arabic),"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,sans-serif;--font-mono:var(--font-ibm-plex-mono),"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;--cx-font-ar:var(--font-ibm-plex-sans-arabic),var(--font)}`}</style>
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT }} />
       </head>
       <body>

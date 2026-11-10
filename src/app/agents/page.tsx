@@ -3,5 +3,5 @@ import '@/app/styles/people.css'
 import { AgentsPage } from '@/features/cx-people/components/agents-page'
 
 export default function Page() {
-  return <AgentsPage route={{ title: 'Agents' }} />
+  return <AgentsPage route={{ title: 'Agent performance' }} />
 }

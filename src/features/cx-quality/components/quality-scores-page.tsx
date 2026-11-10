@@ -7,10 +7,11 @@
  *   wl/Ua/ql → hash params, ca/ia/vl/He/pe/dt → date helpers (qa-shared),
  *   M/_e → sort (qa-shared), Pe/bn/Ot/Me/ye/kl/na → vocabulary (qa-shared).
  */
+import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Chip, useTip } from '@/features/shared/components/shell/ui'
-import { Button, Input, Seg } from '@/features/shared/components/ui'
-import { pageParams } from '@/features/shared/shell/gates'
+import { Button, Empty, Input, Seg } from '@/features/shared/components/ui'
+import { pageParams, resolveLink } from '@/features/shared/shell/gates'
 import {
   BasisSeg,
   DrillSection,
@@ -95,6 +96,13 @@ function TrendChart({ d, compare }: { d: any; compare: boolean }) {
         })}`
   const C = Math.max(1, Math.ceil(l / 10))
   const O = c.filter((v: any) => v.score !== null).length
+  if (O === 0)
+    return (
+      <figure className="qa-trend qa-line cc-chart" ref={a as any}>
+        {i}
+        <Empty title="No scored audits in these dates." />
+      </figure>
+    )
   return (
     <figure className="qa-trend qa-line cc-chart" ref={a as any}>
       {i}
@@ -170,15 +178,15 @@ function SideBars({ d }: { d: any }) {
   const a = n.reduce((s, i) => s + d.reasons[i], 0)
   return (
     <section className="qs-side" aria-labelledby="qs-why-h">
-      <div className="card">
-        <div className="card-head">
+      <div className="cx-panel">
+        <div className="cx-section__head">
           <div>
-            <div className="card-title" id="qs-why-h">
+            <div className="cx-section__title" id="qs-why-h">
               Why points were lost
             </div>
           </div>
         </div>
-        <div className="card-pad">
+        <div className="cx-panel--pad">
           {a ? (
             <ul className="qs-bars">
               {n.map((s) => (
@@ -195,19 +203,17 @@ function SideBars({ d }: { d: any }) {
               ))}
             </ul>
           ) : (
-            <div className="empty">
-              <div className="s">No tagged fails in these dates.</div>
-            </div>
+            <Empty title="No tagged fails in these dates." />
           )}
         </div>
       </div>
-      <div className="card">
-        <div className="card-head">
+      <div className="cx-panel">
+        <div className="cx-section__head">
           <div>
-            <div className="card-title">Not in the score</div>
+            <div className="cx-section__title">Not in the score</div>
           </div>
         </div>
-        <div className="card-pad">
+        <div className="cx-panel--pad">
           {d.others.length ? (
             <ul className="qs-others">
               {d.others.map((s: any) => (
@@ -218,11 +224,7 @@ function SideBars({ d }: { d: any }) {
               ))}
             </ul>
           ) : (
-            <div className="empty">
-              <div className="s">
-                Every audit in these dates is from the random sample.
-              </div>
-            </div>
+            <Empty title="Every audit in these dates is from the random sample." />
           )}
         </div>
       </div>
@@ -246,9 +248,9 @@ function ScoreCell({ r, minN }: { r: any; minN: number }) {
         {r.lowSample ? (
           <>
             {' '}
-            <span className="pill warn" title={`Under ${minN} audits: read with care`}>
+            <Chip status="warn" title={`Under ${minN} audits: read with care`}>
               low sample
-            </span>
+            </Chip>
           </>
         ) : (
           ''
@@ -295,10 +297,10 @@ function BreakdownTable({
   const p = s.by === 'agent' ? d.minN : 10
   const m = s.by === 'agent'
   return (
-    <section className="card" aria-labelledby="qs-tbl-h">
-      <div className="card-head">
+    <section className="cx-panel" aria-labelledby="qs-tbl-h">
+      <div className="cx-section__head">
         <div>
-          <div className="card-title" id="qs-tbl-h">
+          <div className="cx-section__title" id="qs-tbl-h">
             Who is behind the score
           </div>
         </div>
@@ -528,15 +530,15 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               ? ' Older audits get theirs once backfillQaInteractionDates has run.'
               : ''}
           </p>
-          <section className="card" aria-labelledby="qs-team-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="qs-team-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="qs-team-h">
+                <div className="cx-section__title" id="qs-team-h">
                   Team score, random sample
                 </div>
               </div>
             </div>
-            <div className="qs-hero">
+            <div className={f.score === null ? 'qs-hero qs-hero--flat' : 'qs-hero'}>
             <div>
               {f.score === null ? (
                 <p className="qs-big cx-faint">–</p>
@@ -599,18 +601,18 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
             </dl>
             </div>
           </section>
-          <section className="card" aria-labelledby="qs-trend-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="qs-trend-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="qs-trend-h">
+                <div className="cx-section__title" id="qs-trend-h">
                   Score trend
                 </div>
-                <div className="card-hint">
+                <div className="cx-section__hint">
                   Random daily sample only; the band is the 95% range.
                 </div>
               </div>
             </div>
-            <div className="card-pad">
+            <div className="cx-panel--pad">
               <TrendChart d={i} compare={p} />
             </div>
           </section>
@@ -639,7 +641,10 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               How scores work
             </Button>{' '}
             More detail by week or month:{' '}
-            <a href="#/quality-analytics">Quality analytics</a>.
+            <Link href={resolveLink('#/quality-analytics').href}>
+              Quality analytics
+            </Link>
+            .
           </p>
           {r ? (
             <p className="cx-muted">

@@ -1,0 +1,932 @@
+{
+  "contrast": [
+    {
+      "page": "/overview",
+      "n": 58,
+      "worst": [
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "span.rail-search-label \"Search or jump to…\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "div.brand-sub \"Operations console\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "kbd \"Ctrl K\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Hub\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Quality\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [
+        {
+          "el": "th \"Queue\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Open\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Change\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Ours to work\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Not assigned\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "token": "oklab(0.513998 -0.00965426 -0.0244734)"
+    },
+    {
+      "page": "/audit-queue",
+      "n": 346,
+      "worst": [
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "span.rail-search-label \"Search or jump to…\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "div.brand-sub \"Operations console\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "kbd \"Ctrl K\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Hub\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Quality\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [
+        {
+          "el": "th \"Action time\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Agent\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Channel\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Contact type\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Ticket\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "token": "oklab(0.513998 -0.00965426 -0.0244734)"
+    },
+    {
+      "page": "/my-day",
+      "n": 30,
+      "worst": [
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "span.rail-search-label \"Search or jump to…\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "div.brand-sub \"Operations console\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "kbd \"Ctrl K\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Hub\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Quality\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [],
+      "token": "oklab(0.513998 -0.00965426 -0.0244734)"
+    },
+    {
+      "page": "/status-validation",
+      "n": 26,
+      "worst": [
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(242,245,247)",
+          "ratio": 5.14,
+          "fs": "13.3333px"
+        },
+        {
+          "el": "circle",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "span.rail-search-label \"Search or jump to…\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(247,249,250)",
+          "ratio": 5.33,
+          "fs": "13px"
+        },
+        {
+          "el": "div.brand-sub \"Operations console\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "kbd \"Ctrl K\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Hub\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Quality\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [],
+      "token": "oklab(0.513998 -0.00965426 -0.0244734)"
+    },
+    {
+      "page": "/auth/login",
+      "n": 6,
+      "worst": [
+        {
+          "el": "div.brand-sub \"dabdoob operations console\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span \"or\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span.flex \"Restricted to Dabdoob CX team members\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "rect",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        },
+        {
+          "el": "span \"v2.4\"",
+          "color": "oklab(0.513998 -0.00965426 -0.0244734)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 5.63,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [],
+      "token": "oklab(0.513998 -0.00965426 -0.0244734)"
+    },
+    {
+      "page": "/overview [dark]",
+      "n": 58,
+      "worst": [
+        {
+          "el": "circle",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(34,44,55)",
+          "ratio": 5.1,
+          "fs": "13px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(34,44,55)",
+          "ratio": 5.1,
+          "fs": "13px"
+        },
+        {
+          "el": "span.rail-search-label \"Search or jump to…\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(34,44,55)",
+          "ratio": 5.1,
+          "fs": "13px"
+        },
+        {
+          "el": "div.brand-sub \"Operations console\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "kbd \"Ctrl K\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Hub\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Quality\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Productivity\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "path",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "span.nav-label-text \"Queue & Workforce\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        }
+      ],
+      "thsWorst": [
+        {
+          "el": "th \"Queue\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Open\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Change\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Ours to work\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        },
+        {
+          "el": "th \"Not assigned\"",
+          "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+          "bg": "rgb(26,35,43)",
+          "ratio": 5.73,
+          "fs": "12px"
+        }
+      ],
+      "token": "oklab(0.688525 -0.0114683 -0.0198856)"
+    }
+  ],
+  "pills": [],
+  "banner": {
+    "banner": {
+      "bg": "rgb(233, 164, 18)",
+      "color": "rgb(58, 42, 0)"
+    },
+    "text": {
+      "color": "rgb(58, 42, 0)",
+      "ratio": 6.47
+    },
+    "tokens": {
+      "signalInk": "rgb(58, 42, 0)",
+      "badFg": "rgb(179, 38, 30)",
+      "warnFg": "rgb(125, 80, 0)"
+    },
+    "signalInkOnBanner": 6.47,
+    "badFgOnBanner": 3.05,
+    "warnFgOnBanner": 3.24
+  },
+  "reflow": [
+    {
+      "route": "/overview",
+      "innerWidth": 320,
+      "docScrollW": 474,
+      "bodyScrollW": 304,
+      "hScroll": true,
+      "wide": []
+    },
+    {
+      "route": "/tph",
+      "innerWidth": 320,
+      "docScrollW": 320,
+      "bodyScrollW": 304,
+      "hScroll": false,
+      "wide": []
+    }
+  ],
+  "admin390": {
+    "height": 209051,
+    "analysis": {
+      "leafCount": 281,
+      "leaves": [
+        {
+          "el": "dt.",
+          "h": 2815,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_hubWeb app URL of the hub app (Hub Admin > Connected apps)."
+        },
+        {
+          "el": "dt.",
+          "h": 2770,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_productivityWeb app URL of the productivity app (Hub Admin > C"
+        },
+        {
+          "el": "dt.",
+          "h": 2747,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_fcrWeb app URL of the fcr app (Hub Admin > Connected apps)."
+        },
+        {
+          "el": "dt.",
+          "h": 2747,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_operationsWeb app URL of the operations app (Hub Admin > Conne"
+        },
+        {
+          "el": "dt.",
+          "h": 2747,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_qualityWeb app URL of the quality app (Hub Admin > Connected a"
+        },
+        {
+          "el": "dt.",
+          "h": 2747,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_queueWeb app URL of the queue app (Hub Admin > Connected apps)"
+        },
+        {
+          "el": "dt.",
+          "h": 2725,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_peopleWeb app URL of the people app (Hub Admin > Connected app"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2723,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/dabdoob.com/macros/s/AKfycbwXsPBQQ5XfAI3s5"
+        },
+        {
+          "el": "dt.",
+          "h": 2702,
+          "ow": "normal",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "app_url_deskWeb app URL of the desk app (Hub Admin > Connected apps)."
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2678,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycbyWvfJZpuKAMYHoR"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2655,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycbwzi_NbE6zw3Zaof"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2655,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycbyzSDVtRUyRVYmah"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2655,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycby7GRTZ0HV-80Fhn"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2655,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycbxMsOlJ82_VeQ5ay"
+        },
+        {
+          "el": "span.setting-value",
+          "h": 2633,
+          "ow": "anywhere",
+          "ws": "normal",
+          "ff": "\"IBM Plex Sans\", \"IBM Plex San",
+          "text": "https://script.google.com/a/macros/dabdoob.com/s/AKfycbxdkyYc8Dgwvdux4"
+        }
+      ],
+      "sections": [
+        {
+          "el": "section.page.page-narrow",
+          "h": 208802
+        },
+        {
+          "el": "div.topbar",
+          "h": 48
+        }
+      ],
+      "hist": {
+        "100": 99,
+        "200": 51,
+        "300": 13,
+        "400": 13,
+        "500": 10,
+        "600": 8,
+        "700": 2,
+        "800": 2,
+        "900": 18,
+        "1000": 14,
+        "1100": 5,
+        "1200": 2,
+        "1300": 2,
+        "1400": 3,
+        "1500": 4,
+        "1600": 1,
+        "1700": 2,
+        "1800": 3,
+        "1900": 2,
+        "2000": 2,
+        "2100": 1,
+        "2200": 1,
+        "2600": 7,
+        "2700": 8,
+        "2800": 1,
+        "4200": 1,
+        "4500": 1,
+        "4600": 1,
+        "8200": 1,
+        "21600": 1,
+        "21700": 1,
+        "75600": 1
+      }
+    }
+  },
+  "loginImg": {
+    "found": true,
+    "src": "/assets/dabdoob-logo.png",
+    "complete": true,
+    "naturalWidth": 640,
+    "naturalHeight": 372,
+    "currentSrc": "http://localhost:3000/assets/dabdoob-logo.png",
+    "afterWait": {
+      "complete": true,
+      "naturalWidth": 640
+    }
+  },
+  "dark": {
+    "themeAttr": "dark",
+    "ink3worst": [
+      {
+        "el": "circle",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(34,44,55)",
+        "ratio": 5.1,
+        "fs": "13px"
+      },
+      {
+        "el": "path",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(34,44,55)",
+        "ratio": 5.1,
+        "fs": "13px"
+      },
+      {
+        "el": "span.rail-search-label \"Search or jump to…\"",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(34,44,55)",
+        "ratio": 5.1,
+        "fs": "13px"
+      },
+      {
+        "el": "div.brand-sub \"Operations console\"",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(26,35,43)",
+        "ratio": 5.73,
+        "fs": "12px"
+      },
+      {
+        "el": "kbd \"Ctrl K\"",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(26,35,43)",
+        "ratio": 5.73,
+        "fs": "12px"
+      },
+      {
+        "el": "span.nav-label-text \"Hub\"",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(26,35,43)",
+        "ratio": 5.73,
+        "fs": "12px"
+      },
+      {
+        "el": "path",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(26,35,43)",
+        "ratio": 5.73,
+        "fs": "12px"
+      },
+      {
+        "el": "span.nav-label-text \"Quality\"",
+        "color": "oklab(0.688525 -0.0114683 -0.0198856)",
+        "bg": "rgb(26,35,43)",
+        "ratio": 5.73,
+        "fs": "12px"
+      }
+    ],
+    "body": {
+      "color": "rgb(232, 237, 241)",
+      "bg": "rgb(19, 26, 32)",
+      "ratio": 14.89
+    }
+  },
+  "rtl": {
+    "lang": "ar",
+    "dir": "rtl",
+    "hScroll": false,
+    "docScrollW": 1440,
+    "innerW": 1440
+  },
+  "palette": {
+    "open": {
+      "found": true,
+      "cls": "cpk",
+      "text": "HubMy dayHubHomeHubPeople & holidaysHubAdminHubQualityTeam scoresQualityAudit DeskQualityCTLsQualityDisputesQualityCalib"
+    }
+  },
+  "auditForm": {
+    "queueProbe": {
+      "workitems": 0,
+      "enabled": 0,
+      "emptyText": "Nothing to do in today’s queue."
+    },
+    "error": "no enabled .qa-workitem (queue empty or read-only)"
+  },
+  "mdStatus": []
+}

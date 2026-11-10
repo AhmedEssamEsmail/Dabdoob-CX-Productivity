@@ -8,301 +8,53 @@
  * drawer; ta basis seg; Count te machinery (is/rn/on/cs/Nt); constants
  * Ke/xt/ye/Me/Ge/Et/Pe/bn/Ks/Ot/yn/vn; helpers tl/nl/al/dl/he/ul/Rt/hl).
  */
-import {
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { useState } from 'react'
 import {
   Chip,
+  Count,
   P,
+  QA_BASIS_LABELS,
+  QA_CONF,
+  QA_CONF_TONE,
+  QA_FLAG_LABELS,
+  QA_REASON_LABELS,
+  QA_TREND_ARROW,
+  QaLink,
   QaPage,
   QaSection,
   ScoreChip,
-  qaBasisNote,
   qaBand,
+  qaBasisNote,
+  qaCi,
+  qaMargin,
   qaPct,
+  qaPeriodLabel,
+  qaReasonMix,
+  qaVerdictTone,
   useSe,
 } from './qa-shared'
-import {
-  LoadError,
-  useTip,
-} from '@/features/shared/components/shell/ui'
-import { prefersReducedMotion } from '@/features/shared/shell/i18n'
+import { Columns, Coverage, SparkChart, Spread } from './quality-analytics-charts'
+import { LoadError } from '@/features/shared/components/shell/ui'
 import { Button, Seg, Select } from '@/features/shared/components/ui'
-
-/* --- constants (Ke/xt/ye/Me/Ge/Et/Pe/bn/Ks/Ot/yn/vn) -------------------- */
-const CONF: Record<string, string> = {
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
-}
-const CONF_T: Record<string, string> = {
-  high: 'ok',
-  medium: 'warn',
-  low: 'neutral',
-}
-/** ye — the ± range or "range unknown". */
-const qaMargin = (t: number | null): string =>
-  t === null ? 'range unknown' : `±${t}`
-const TREND_G: Record<string, string> = { up: '↑', down: '↓', '': '' }
-/** Ge — "pct% (lo–hi)" or dash. */
-const qaPctl = (t: any): string =>
-  t ? `${t.pct}% (${t.lo}–${t.hi})` : '–'
-/** Et — band only when the row has a verdict. */
-const qaVerdictStatus = (t: any): string =>
-  t.verdict ? qaBand(t.avg, false) : 'neutral'
-const WHY_V = ['agent', 'process', 'product', 'kb']
-const REASON_L: Record<string, string> = {
-  agent: 'Agent',
-  process: 'Process',
-  product: 'Product',
-  kb: 'KB',
-  untagged: 'Untagged',
-}
-/** Ks — "Agent 50%, KB 30% (2 untagged)" reason-share line. */
-const qaReasons = (t: any): string => {
-  const n = WHY_V.reduce((s, i) => s + t[i], 0)
-  return (
-    (WHY_V.filter((s) => t[s])
-      .map((s) => `${REASON_L[s]} ${Math.round((t[s] / n) * 100)}%`)
-      .join(', ') || '–') +
-    (t.untagged ? ` (${t.untagged} untagged)` : '')
-  )
-}
-const BASIS_L: Record<string, string> = {
-  random: 'Random',
-  targeted: 'Targeted',
-  request: 'Requested',
-  'off-queue': 'Off-queue',
-  'non-ticket': 'Non-ticket',
-  historical: 'History',
-  unknown: 'Unknown basis',
-}
-const ATTN: Record<string, [string, string]> = {
-  critical: ['Critical fail', 'bad'],
-  repeat: ['Repeat after CTL', 'bad'],
-  below: ['Below the team', 'warn'],
-  falling: ['Falling', 'warn'],
-  under: ['Under-audited', 'neutral'],
-}
-/** vn — period label. */
-const qaPeriodLabel = (t: any, n = t.period): string =>
-  t.grain === 'week' ? `Week of ${n}` : n
-
-/** me — a button styled as the legacy qa-link. */
-function QaLinkBtn({
-  label,
-  onClick,
-}: {
-  label: ReactNode
-  onClick: () => void
-}) {
-  return (
-    <Button type="button" className="qa-link" onClick={onClick}>
-      {label}
-    </Button>
-  )
-}
-
-/* --- small helpers ------------------------------------------------------ */
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const qaDowName = (t: string): string =>
-  DAYS[new Date(t + 'T00:00:00Z').getUTCDay()]
-const qaCountBand = (t: number, n: number): string =>
-  t <= 0 ? 'bad' : t < n ? 'warn' : 'ok'
-/** tl — period cell label (week drops the year-month prefix). */
-const qaPeriodShort = (t: any, n: string): string =>
-  t.grain === 'week' ? n.slice(5) : n
-/** nl — "+1.4 points on the period before" (verbatim). */
-const qaVsText = (t: number | null, n: number | null): string => {
-  if (t === null || n == null) return ''
-  const a = Math.round((t - n) * 10) / 10
-  return a === 0
-    ? 'same as the period before'
-    : `${a > 0 ? '+' : ''}${a} points on the period before`
-}
-/** al — "Nov 25" month short. */
-const qaMonthShort = (t: string): string =>
-  new Date(t + '-01T00:00:00Z').toLocaleString('en-GB', {
-    month: 'short',
-    year: '2-digit',
-    timeZone: 'UTC',
-  })
-const qaPerDay = (t: any, n: string): number =>
-  n === 'queued' ? t.offerPerDay : t.perDay
-
-/* --- Count — the animated number machinery (te + is + rn + on) ---------- */
-const CS = /^(\D*?)(-?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(\D*)$/
-const CN = 900
-const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩'
-
-function Nt(): boolean {
-  return (
-    prefersReducedMotion() ||
-    document.documentElement.hasAttribute('data-reduce-motion')
-  )
-}
-
-/** is — scroll-into-view then ease a 0→1 progress over CN ms (verbatim). */
-function useCountAnim(t: number | null) {
-  const n = useRef<HTMLElement | null>(null)
-  const a = useRef(false)
-  const [s, i] = useState(1)
-
-  useEffect(() => {
-    if (a.current || t === null || t === 0 || Nt() || document.hidden) return
-    a.current = true
-    i(0)
-    let c = 0,
-      l = 0
-    const p = () => {
-      const u = performance.now()
-      const d = (o: number) => {
-        const h = Math.min(1, (o - u) / CN)
-        i(h)
-        if (h < 1) c = requestAnimationFrame(d)
-      }
-      c = requestAnimationFrame(d)
-      l = window.setTimeout(() => {
-        cancelAnimationFrame(c)
-        i(1)
-      }, CN + 100)
-    }
-    const m = n.current
-    const r =
-      m && typeof IntersectionObserver === 'function'
-        ? new IntersectionObserver((u) => {
-            if (u.some((d) => d.isIntersecting)) {
-              r?.disconnect()
-              p()
-            }
-          })
-        : null
-    if (r && m) r.observe(m)
-    else p()
-    return () => {
-      r?.disconnect()
-      cancelAnimationFrame(c)
-      clearTimeout(l)
-      i(1)
-    }
-  }, [t])
-  return { ref: n, k: s, ease: 1 - (1 - s) ** 3 }
-}
-
-/** rn — Arabic digit/punctuation localization (verbatim). */
-function rn(t: string): string {
-  return document.documentElement.lang !== 'ar'
-    ? t
-    : t
-        .replace(/(\d)([.,])(?=\d)/g, (n, a, s) => a + (s === '.' ? '٫' : '٬'))
-        .replace(/\d/g, (n) => AR_DIGITS[+n])
-}
-
-/** on — the live/sr-only pair. */
-function CountPair({
-  live: t,
-  final: n,
-  spanRef: a,
-}: {
-  live: string
-  final: string
-  spanRef: any
-}) {
-  return (
-    <>
-      <span ref={a} aria-hidden="true">
-        {rn(t)}
-      </span>
-      <span className="sr-only">{rn(n)}</span>
-    </>
-  )
-}
-
-/** te — Count: eases a numeric string up, localizes, keeps sr-only final. */
-function Count({ v: t }: { v: number | string | null }) {
-  const n = t == null ? '' : String(t)
-  const a = CS.exec(n)
-  const s = a
-    ? Number(a[2] + a[3].replace(/,/g, '') + (a[4] ?? ''))
-    : null
-  const { ref: i, k: c, ease: l } = useCountAnim(s)
-  if (!a || s === null || c >= 1)
-    return <CountPair live={n} final={n} spanRef={i} />
-  const p = a[4] ? a[4].length - 1 : 0
-  const m = (s * l).toLocaleString('en-US', {
-    minimumFractionDigits: p,
-    maximumFractionDigits: p,
-    useGrouping: a[3].includes(','),
-  })
-  return <CountPair live={a[1] + m + a[5]} final={n} spanRef={i} />
-}
-
-/* --- il — the agent sparkline ------------------------------------------- */
-function SparkChart({
-  d: t,
-  h: n,
-  name: a,
-}: {
-  d: any
-  h: any[] | undefined
-  name: string
-}) {
-  const s = (n ?? [])
-    .map((d: any, o: number) => (d.avg == null ? null : { i: o, v: d.avg }))
-    .filter((d: any) => d !== null) as { i: number; v: number }[]
-  if (s.length < 2) return <span className="cx-faint">–</span>
-  const i = 84,
-    c = 24,
-    l = Math.min(60, ...s.map((d) => d.v)),
-    p = (d: number) => 3 + (d * (i - 6)) / Math.max(1, (n ?? []).length - 1),
-    m = (d: number) => 3 + ((100 - d) * (c - 6)) / (100 - l),
-    r = s[s.length - 1],
-    u = `${a} by ${t.grain}: ${(n ?? [])
-      .map(
-        (d: any, o: number) =>
-          `${qaPeriodShort(t, t.history[o]?.period ?? '')} ${
-            d.avg == null ? 'none' : `${d.avg}% (${d.audits})`
-          }`
-      )
-      .join(', ')}`
-  return (
-    <svg
-      className="qa-spark"
-      viewBox={`0 0 ${i} ${c}`}
-      role="img"
-      aria-label={u}
-    >
-      <title>{u}</title>
-      <polyline
-        points={s.map((d) => `${p(d.i)},${m(d.v)}`).join(' ')}
-        fill="none"
-      />
-      <circle cx={p(r.i)} cy={m(r.v)} r={2.5} />
-    </svg>
-  )
-}
 
 /* --- Ys — the health/bases head ------------------------------------------ */
 function HealthHead({ d: t }: { d: any }) {
   const n = t.health
   const a = t.bases.filter((s: any) => s.basis !== 'random')
   return (
-    <section className="card" aria-labelledby="qa-health-h">
-      <div className="card-head">
+    <section className="cx-panel" aria-labelledby="qa-health-h">
+      <div className="cx-section__head">
         <div>
-          <div className="card-title" id="qa-health-h">
+          <div className="cx-section__title" id="qa-health-h">
             Team health
           </div>
-          <div className="card-hint">{qaPeriodLabel(t)}</div>
+          <div className="cx-section__hint">{qaPeriodLabel(t)}</div>
         </div>
       </div>
-      <div className="card-pad">
-      <dl className="dq-totals qa-health">
+      <div className="cx-panel--pad">
+      <dl className="cx-totals">
         <div
-          className="dq-totals__item"
+          className="cx-totals__item"
           data-status={
             n.score !== null && n.badge !== 'low' ? qaBand(n.score, false) : undefined
           }
@@ -319,24 +71,24 @@ function HealthHead({ d: t }: { d: any }) {
                 title={`${n.trend === 'up' ? 'Up' : 'Down'} from ${n.prevScore}%, beyond both ranges`}
               >
                 {' '}
-                {TREND_G[n.trend]}
+                {QA_TREND_ARROW[n.trend]}
               </span>
             ) : null}
           </dd>
           <span className="cx-faint qa-sub">
             {n.score === null
               ? 'No agent has 10 random audits yet'
-              : `${n.agents} agents, each counted once; ${CONF[n.badge].toLowerCase()} confidence`}
+              : `${n.agents} agents, each counted once; ${QA_CONF[n.badge].toLowerCase()} confidence`}
           </span>
         </div>
-        <div className="dq-totals__item">
+        <div className="cx-totals__item">
           <dt>Without critical fails</dt>
           <dd className="cx-num">
             <Count v={qaPct(n.scoreNoCritical)} />
           </dd>
         </div>
         <div
-          className="dq-totals__item"
+          className="cx-totals__item"
           data-status={n.critical ? 'bad' : undefined}
         >
           <dt>Critical fails</dt>
@@ -344,17 +96,17 @@ function HealthHead({ d: t }: { d: any }) {
             <Count v={n.critical} />
           </dd>
           <span className="cx-faint qa-sub">
-            {n.criticalRate ? `${qaPctl(n.criticalRate)} of ${t.audits}` : 'no random audits'}
+            {n.criticalRate ? `${qaCi(n.criticalRate)} of ${t.audits}` : 'no random audits'}
           </span>
         </div>
-        <div className="dq-totals__item">
+        <div className="cx-totals__item">
           <dt>Agents with a verdict</dt>
           <dd className="cx-num">
             <Count v={n.agentsVerdict} /> of <Count v={n.agentsAudited} />
           </dd>
           <span className="cx-faint qa-sub">16 or more audits</span>
         </div>
-        <div className="dq-totals__item">
+        <div className="cx-totals__item">
           <dt>Weighted to the ticket mix</dt>
           <dd className="cx-num">
             <Count v={n.weighted ? `${n.weighted.mean}%` : '–'} />
@@ -365,7 +117,7 @@ function HealthHead({ d: t }: { d: any }) {
               : 'no ticket volumes recorded yet'}
           </span>
         </div>
-        <div className="dq-totals__item">
+        <div className="cx-totals__item">
           <dt>Audited against quota</dt>
           <dd className="cx-num">
             <Count v={qaPct(n.quotaPct)} />
@@ -375,7 +127,7 @@ function HealthHead({ d: t }: { d: any }) {
           </span>
         </div>
         <div
-          className="dq-totals__item"
+          className="cx-totals__item"
           data-status={n.notFinal ? 'warn' : undefined}
         >
           <dt>Pending disputes</dt>
@@ -390,7 +142,7 @@ function HealthHead({ d: t }: { d: any }) {
       {a.length || t.blankScores ? (
         <p className="cx-muted qa-bases">
           Not in the score:{' '}
-          {a.map((s: any) => `${BASIS_L[s.basis]} ${s.audits} (average ${qaPct(s.avg)})`).join(', ')}
+          {a.map((s: any) => `${QA_BASIS_LABELS[s.basis]} ${s.audits} (average ${qaPct(s.avg)})`).join(', ')}
           {t.blankScores
             ? `${a.length ? '; ' : ''}${t.blankScores} with no score`
             : ''}
@@ -435,7 +187,7 @@ function Attention({
               i.map((c: any) => (
                 <tr key={c.email}>
                   <td>
-                    <QaLinkBtn
+                    <QaLink
                       label={c.name}
                       onClick={() =>
                         n({ agent: c.email, agentName: c.name })
@@ -447,7 +199,7 @@ function Attention({
                     <ul className="qa-whylist">
                       {c.reasons.map((l: any, p: number) => (
                         <li key={p}>
-                          <Chip status={ATTN[l.rule][1]}>{ATTN[l.rule][0]}</Chip>{' '}
+                          <Chip status={QA_FLAG_LABELS[l.rule][1]}>{QA_FLAG_LABELS[l.rule][0]}</Chip>{' '}
                           <span className="cx-muted">{l.text}</span>
                         </li>
                       ))}
@@ -486,7 +238,7 @@ function Attention({
 function ByChannel({ d: t }: { d: any }) {
   const n = (a: any) => (
     <>
-      <Chip status={qaVerdictStatus(a)}>{qaPct(a.avg)}</Chip>{' '}
+      <Chip status={qaVerdictTone(a)}>{qaPct(a.avg)}</Chip>{' '}
       <span className="qa-range cx-num">
         {a.other ? 'not ranked' : qaMargin(a.margin)}
       </span>
@@ -496,7 +248,7 @@ function ByChannel({ d: t }: { d: any }) {
           title={`${a.trend === 'up' ? 'Up' : 'Down'} from ${a.prevAvg}%, beyond both ranges`}
         >
           {' '}
-          {TREND_G[a.trend]}
+          {QA_TREND_ARROW[a.trend]}
         </span>
       ) : null}
     </>
@@ -538,7 +290,7 @@ function ByChannel({ d: t }: { d: any }) {
                     <span className="cx-faint qa-sub">{a.agents} agents</span>
                   </td>
                   <td>
-                    <Chip status={CONF_T[a.badge]}>{CONF[a.badge]}</Chip>
+                    <Chip status={QA_CONF_TONE[a.badge]}>{QA_CONF[a.badge]}</Chip>
                   </td>
                   <td className="cx-num">{a.fatal || ''}</td>
                 </tr>
@@ -576,7 +328,7 @@ function ByChannel({ d: t }: { d: any }) {
                   <td>{n(a)}</td>
                   <td className="cx-num">{a.audits}</td>
                   <td>
-                    <Chip status={CONF_T[a.badge]}>{CONF[a.badge]}</Chip>
+                    <Chip status={QA_CONF_TONE[a.badge]}>{QA_CONF[a.badge]}</Chip>
                   </td>
                 </tr>
               ))
@@ -625,14 +377,14 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
               t.byAgent.map((s: any) => (
                 <tr className={s.badge === 'low' ? 'qa-low' : undefined} key={s.key}>
                   <td>
-                    <QaLinkBtn
+                    <QaLink
                       label={s.label}
                       onClick={() => n({ agent: s.key, agentName: s.label })}
                     />
                     <span className="cx-faint qa-sub">{s.tlName}</span>
                   </td>
                   <td>
-                    <Chip status={qaVerdictStatus(s)}>{qaPct(s.avg)}</Chip>{' '}
+                    <Chip status={qaVerdictTone(s)}>{qaPct(s.avg)}</Chip>{' '}
                     <span className="qa-range cx-num">{qaMargin(s.margin)}</span>
                     {s.trend ? (
                       <span
@@ -640,7 +392,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                         title={`${s.trend === 'up' ? 'Up' : 'Down'} from ${s.prevAvg}%, beyond both ranges`}
                       >
                         {' '}
-                        {TREND_G[s.trend]}
+                        {QA_TREND_ARROW[s.trend]}
                       </span>
                     ) : null}
                     <span className="cx-faint qa-sub">{s.audits} audits</span>
@@ -649,7 +401,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     <SparkChart d={t} h={s.history} name={s.label} />
                   </td>
                   <td>
-                    <Chip status={CONF_T[s.badge]}>{CONF[s.badge]}</Chip>
+                    <Chip status={QA_CONF_TONE[s.badge]}>{QA_CONF[s.badge]}</Chip>
                   </td>
                   <td className="cx-num">{s.fatal || ''}</td>
                   <td>
@@ -669,8 +421,8 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                   </td>
                   {a ? (
                     <>
-                      <td className="cx-num">{qaPctl(s.fullMarks)}</td>
-                      <td className="cx-num">{qaPctl(s.fatalRate)}</td>
+                      <td className="cx-num">{qaCi(s.fullMarks)}</td>
+                      <td className="cx-num">{qaCi(s.fatalRate)}</td>
                     </>
                   ) : null}
                 </tr>
@@ -713,7 +465,7 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
               i.map((c: any) => (
                 <tr className={c.gated ? 'qa-low' : undefined} key={c.key}>
                   <td>
-                    <QaLinkBtn
+                    <QaLink
                       label={c.text}
                       onClick={() =>
                         n({ question: c.key, questionText: c.text })
@@ -734,7 +486,7 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     </span>
                   </td>
                   <td className="cx-num">{qaPct(c.naPct)}</td>
-                  <td>{qaReasons(c.reasons)}</td>
+                  <td>{qaReasonMix(c.reasons)}</td>
                 </tr>
               ))
             ) : (
@@ -760,184 +512,6 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
           a re-score keeps the old answers.
         </p>
       ) : null}
-    </QaSection>
-  )
-}
-
-/* --- _n — a columns chart -------------------------------------------------- */
-function ColsChart({
-  title: t,
-  grain: n,
-  cols: a,
-  cells: s,
-}: {
-  title: string
-  grain: string
-  cols: any
-  cells: any[]
-}) {
-  const { ref: i, tipFor: c, tipEl: l } = useTip<HTMLElement>()
-  const p = 560,
-    m = 210,
-    r = 32,
-    u = 8,
-    d = 20,
-    o = 40,
-    h = a.periods.length,
-    b = (p - r - u) / h,
-    x = Math.min(44, b * 0.6),
-    f = (_: number) =>
-      d + ((100 - Math.max(0, Math.min(100, _))) * (m - d - o)) / 100,
-    g = (_: string) => (n === 'week' ? _.slice(5) : qaMonthShort(_)),
-    y = s.some((_) => _?.avg != null && _.audits > 0)
-
-  return (
-    <figure className="qa-trend qa-cols cc-chart" ref={i as any}>
-      <figcaption className="qa-cols__title">{t}</figcaption>
-      {l}
-      <div className="qa-trend__scroll">
-        <svg viewBox={`0 0 ${p} ${m}`} role="group" aria-label={t}>
-          {[0, 50, 100].map((_) => (
-            <g key={_}>
-              <line
-                x1={r}
-                x2={p - u}
-                y1={f(_)}
-                y2={f(_)}
-                className="qa-trend__grid"
-              />
-              <text
-                x={r - 6}
-                y={f(_) + 4}
-                textAnchor="end"
-                className="qa-trend__lbl"
-              >
-                {_}
-              </text>
-            </g>
-          ))}
-          {a.periods.map((_: string, T: number) => {
-            const k = s[T]
-            const C = r + b * T + b / 2
-            const O = k != null && k.avg != null && k.audits > 0
-            return (
-              <g key={_}>
-                {O ? (
-                  <>
-                    <rect
-                      className={`cc-sweep-col qa-dot--${qaBand(k.avg, false)}${k.history * 2 > k.audits ? ' qa-cols__hist' : ''}`}
-                      x={C - x / 2}
-                      y={f(k.avg)}
-                      width={x}
-                      height={f(0) - f(k.avg)}
-                      rx={2}
-                      tabIndex={0}
-                      role="img"
-                      {...c(
-                        `${n === 'week' ? `Week of ${_}` : _}: ${k.avg}% from ${k.audits} audits (${k.history} old-form history, ${k.audits - k.history} random)`
-                      )}
-                    />
-                    <text
-                      x={C}
-                      y={f(k.avg) - 5}
-                      textAnchor="middle"
-                      className="qa-trend__lbl qa-cols__val"
-                    >
-                      {Math.round(k.avg)}
-                    </text>
-                  </>
-                ) : null}
-                <text
-                  x={C}
-                  y={m - 22}
-                  textAnchor="middle"
-                  className="qa-trend__lbl"
-                >
-                  {g(_)}
-                </text>
-                <text
-                  x={C}
-                  y={m - 6}
-                  textAnchor="middle"
-                  className="qa-trend__lbl qa-trend__n"
-                >
-                  {O ? k.audits : '–'}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
-      </div>
-      {y ? null : (
-        <div className="empty qa-cols__none">
-          <div className="s">
-            No audits in these {n === 'week' ? 'weeks' : 'months'}.
-          </div>
-        </div>
-      )}
-    </figure>
-  )
-}
-
-/* --- sl — score over time -------------------------------------------------- */
-function Columns({ d: t }: { d: any }) {
-  const [n, a] = useState('')
-  const s = t.columns
-  if (!s) return null
-  const i = new Map<string, string>()
-  ;[...s.week.agents, ...s.month.agents].forEach((p: any) =>
-    i.set(p.key, p.label)
-  )
-  const c = (p: any) =>
-    n
-      ? p.agents.find((m: any) => m.key === n)?.cells ??
-        p.periods.map(() => null)
-      : p.team
-  const l = n ? i.get(n) ?? n : 'Team'
-
-  return (
-    <QaSection
-      id="qa-cols-h"
-      title="Score over time"
-      hint="Plain average score of the audits in each period; under each column, how many audits. No column means no audits that period."
-    >
-      <div className="qa-cols__pick">
-        <label className="cx-label" htmlFor="qa-cols-agent">
-          Show
-        </label>
-        <Select
-          id="qa-cols-agent"
-          value={n}
-          onChange={(p) => a(p.currentTarget.value)}
-        >
-          <option value="">Whole team</option>
-          {[...i]
-            .sort((p, m) => p[1].localeCompare(m[1]))
-            .map(([p, m]) => (
-              <option value={p} key={p}>
-                {m}
-              </option>
-            ))}
-        </Select>
-      </div>
-      <div className="qa-cols__grid">
-        <ColsChart
-          title={`${l} score, week over week`}
-          grain="week"
-          cols={s.week}
-          cells={c(s.week)}
-        />
-        <ColsChart
-          title={`${l} score, month over month`}
-          grain="month"
-          cols={s.month}
-          cells={c(s.month)}
-        />
-      </div>
-      <p className="qa-trend__legend">
-        Includes old-form history audits (pale column: mostly history). Not the
-        team score above: every audit counts once, no 10-audit rule.
-      </p>
     </QaSection>
   )
 }
@@ -992,15 +566,15 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
       title="Coaching loop"
       hint={`Repeat failures in the 30 days to ${t.periodEnd}: the same question failed twice, or again on a ticket handled after the CTL on it.`}
     >
-      <dl className="dq-totals">
-        <div className="dq-totals__item">
+      <dl className="cx-totals">
+        <div className="cx-totals__item">
           <dt>CTLs open</dt>
           <dd className="cx-num">
             <Count v={a.ctlOpen} />
           </dd>
         </div>
         <div
-          className="dq-totals__item"
+          className="cx-totals__item"
           data-status={a.ctlOverdue ? 'bad' : undefined}
         >
           <dt>Overdue</dt>
@@ -1008,10 +582,10 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
             <Count v={a.ctlOverdue} />
           </dd>
         </div>
-        <div className="dq-totals__item">
+        <div className="cx-totals__item">
           <dt>Failed again after coaching</dt>
           <dd className="cx-num">
-            <Count v={a.postCtl ? qaPctl(a.postCtl) : '–'} />
+            <Count v={a.postCtl ? qaCi(a.postCtl) : '–'} />
           </dd>
           <span className="cx-faint qa-sub">
             {a.postCtlFails} of {a.postCtlAsked} later answers on coached
@@ -1035,7 +609,7 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
               c.map((l: any) => (
                 <tr key={l.agentEmail + l.key}>
                   <td>
-                    <QaLinkBtn
+                    <QaLink
                       label={l.agentName}
                       onClick={() =>
                         n({
@@ -1053,7 +627,7 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     {l.fails} of {l.asked}
                     <span className="cx-faint qa-sub">last {l.last}</span>
                   </td>
-                  <td>{l.reason ? REASON_L[l.reason] : '–'}</td>
+                  <td>{l.reason ? QA_REASON_LABELS[l.reason] : '–'}</td>
                   <td>
                     {l.afterCtl ? (
                       <>
@@ -1155,132 +729,6 @@ function TeamLeads({ d: t }: { d: any }) {
   )
 }
 
-/* --- ll — agents against the team (spread) ------------------------------------- */
-function Spread({ d: t }: { d: any }) {
-  const { ref: n, tipFor: a, tipEl: s } = useTip<HTMLElement>()
-  const i = t.byAgent.filter((g: any) => g.avg !== null)
-  if (!i.length) return null
-  const c = t.health.score
-  const l = 22,
-    p = 150,
-    m = 76,
-    r = 560,
-    u = 20,
-    d = u + i.length * l + 22,
-    o = Math.max(
-      0,
-      Math.floor(
-        Math.min(...i.map((g: any) => g.avg - (g.margin ?? 0)), c ?? 100) / 10
-      ) * 10
-    ),
-    h = 100,
-    b = (g: number) =>
-      p + ((Math.min(h, Math.max(o, g)) - o) * (r - p - m)) / (h - o)
-  const x: Record<string, number> = { ok: 0, warn: 0, bad: 0 }
-  i.forEach((g: any) => {
-    if (g.verdict) x[qaBand(g.avg, false)]++
-  })
-  const f = x.ok + x.warn + x.bad
-
-  return (
-    <QaSection
-      id="qa-spread-h"
-      title="Agents against the team"
-      hint={`Each agent's random-audit score with its 95% range, lowest first; the dashed line is the team score. Grey dot: under 16 audits, no verdict yet. ${f ? `Of the ${f} agents with a verdict: ${x.ok} green, ${x.warn} amber, ${x.bad} red.` : 'No agent has 16 audits yet.'}`}
-    >
-      <figure className="qa-trend qa-spread cc-chart" ref={n as any}>
-        {s}
-        <svg
-          viewBox={`0 0 ${r} ${d}`}
-          role="group"
-          aria-label="Agent quality scores against the team score"
-        >
-          {[o, Math.round((o + h) / 2), h].map((g) => (
-            <g key={g}>
-              <line
-                x1={b(g)}
-                x2={b(g)}
-                y1={u - 4}
-                y2={d - 18}
-                className="qa-trend__grid"
-              />
-              <text
-                x={b(g)}
-                y={d - 4}
-                textAnchor="middle"
-                className="qa-trend__lbl"
-              >
-                {g}
-              </text>
-            </g>
-          ))}
-          {c !== null ? (
-            <g>
-              <line
-                x1={b(c)}
-                x2={b(c)}
-                y1={u - 4}
-                y2={d - 18}
-                className="qa-spread__team"
-              />
-              <text
-                x={b(c)}
-                y={u - 8}
-                textAnchor="middle"
-                className="qa-trend__lbl"
-              >
-                Team {c}%
-              </text>
-            </g>
-          ) : null}
-          {i.map((g: any, y: number) => {
-            const _ = u + y * l + l / 2
-            const T = qaVerdictStatus(g)
-            return (
-              <g className={g.verdict ? undefined : 'qa-spread__thin'} key={g.key}>
-                <text
-                  x={p - 8}
-                  y={_ + 4}
-                  textAnchor="end"
-                  className="qa-trend__lbl"
-                >
-                  {g.label.length > 20 ? g.label.slice(0, 19) + '…' : g.label}
-                </text>
-                {g.margin !== null ? (
-                  <line
-                    className="qa-spread__ci"
-                    x1={b(g.avg - g.margin)}
-                    x2={b(g.avg + g.margin)}
-                    y1={_}
-                    y2={_}
-                  />
-                ) : null}
-                <circle
-                  className={`cc-sweep-fade qa-dot--${T}`}
-                  cx={b(g.avg)}
-                  cy={_}
-                  r={5}
-                  tabIndex={0}
-                  role="img"
-                  {...a(
-                    `${g.label}: ${g.avg}%${g.margin !== null ? ` ±${g.margin}` : ''} from ${g.audits} audits${c !== null ? `, ${qaVsText(g.avg, c).replace('on the period before', 'against the team').replace('same as the period before', 'level with the team')}` : ''}`
-                  )}
-                />
-                <text x={r - m + 8} y={_ + 4} className="qa-trend__lbl">
-                  {g.avg}% · {g.audits}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
-        <figcaption className="qa-trend__legend">
-          <span>Right: score · audits.</span>
-        </figcaption>
-      </figure>
-    </QaSection>
-  )
-}
-
 /* --- Zs — fix outside the team ------------------------------------------------- */
 function Outside({ d: t }: { d: any }) {
   return t.outside.length ? (
@@ -1322,218 +770,6 @@ function Outside({ d: t }: { d: any }) {
       </div>
     </QaSection>
   ) : null
-}
-
-/* --- ml / xn / pl — the coverage machinery -------------------------------------- */
-function CoverageTotals({ c: t }: { c: any }) {
-  return (
-    <div className="cx-panel cx-tablewrap">
-      <table className="cx-table">
-        <thead>
-          <tr>
-            <th scope="col">Day</th>
-            <th scope="col">Audited</th>
-            <th scope="col">Queued</th>
-            <th scope="col">Quota</th>
-          </tr>
-        </thead>
-        <tbody>
-          {t.days
-            .map((n: string, a: number) => (
-              <tr key={n}>
-                <td>
-                  {qaDowName(n)} {n}
-                </td>
-                <td>
-                  <Chip status={qaCountBand(t.totals.audited[a], t.totals.target[a])}>
-                    {t.totals.audited[a]}
-                  </Chip>
-                </td>
-                <td className="cx-num">{t.totals.queued[a]}</td>
-                <td className="cx-num">{t.totals.target[a]}</td>
-              </tr>
-            ))
-            .reverse()}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-/** xn — the per-agent status line (verbatim). */
-function xn(t: any): [string, string] {
-  const n = t.audited.slice(-7).reduce((a: number, s: number) => a + s, 0)
-  return t.queuedTotal
-    ? t.auditedTotal
-      ? n < t.perWeek
-        ? [`${n} of ${t.perWeek} in 7 days`, 'warn']
-        : [`${n} of ${t.perWeek} in 7 days`, 'ok']
-      : ['Queued, never audited', 'bad']
-    : ['Never queued', 'bad']
-}
-
-function Coverage({ c: t }: { c: any }) {
-  const [n, a] = useState('queued')
-  const [s, i] = useState('')
-  if (t.error)
-    return (
-      <QaSection id="qa-cov-h" title="Samples per agent per day">
-        <p className="cx-error">
-          The Queue Log could not be read: {t.error}
-        </p>
-      </QaSection>
-    )
-  if (!t.agents.length)
-    return (
-      <QaSection id="qa-cov-h" title="Samples per agent per day">
-        <div className="empty">
-          <div className="s">
-            No agents on the roster and nothing in the Queue Log for the last{' '}
-            {t.days.length} days.
-          </div>
-        </div>
-      </QaSection>
-    )
-  const c = t.agents.filter((m: any) => xn(m)[1] !== 'ok').length
-  const l = t.agents.find((m: any) => m.expected && !m.actionPlan)?.offerPerDay ?? 0
-  const p = (
-    <Seg
-      className="qa-view"
-      name="qa-cov-count"
-      value={n}
-      onChange={a}
-      options={[
-        { value: 'queued', label: 'Queued' },
-        { value: 'audited', label: 'Audited' },
-      ]}
-      aria-label="Count"
-    />
-  )
-  return (
-    <>
-      <QaSection
-        id="qa-cov-h"
-        title="Samples per agent per day"
-        hint={
-          n === 'queued'
-            ? `Last ${t.days.length} days: items added to the queue each day (Queued Date), whatever happened to them later, against the daily offer of ${l}.`
-            : `Last ${t.days.length} days: audits done each day, against the daily quota. ${c} of ${t.agents.length} agents below quota.`
-        }
-      >
-        {p}
-        {n === 'queued' ? (
-          <p className="qa-cov-tip cx-faint" aria-live="polite">
-            {s || 'Point at or tab to a day under the offer to see why.'}
-          </p>
-        ) : null}
-        <div className="cx-panel cx-tablewrap qa-cov-wrap">
-          <table className="cx-table qa-cov">
-            <thead>
-              <tr>
-                <th scope="col" className="qa-cov__name">
-                  Agent
-                </th>
-                {t.days.map((m: string) => (
-                  <th
-                    scope="col"
-                    className="qa-cov__day"
-                    title={`${qaDowName(m)} ${m}`}
-                    key={m}
-                  >
-                    <span>{qaDowName(m).slice(0, 2)}</span>
-                    {+m.slice(8)}
-                  </th>
-                ))}
-                <th scope="col">Audited</th>
-                <th scope="col">Queued</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {t.agents.map((m: any) => {
-                const [r, u] = xn(m)
-                const d = qaPerDay(m, n)
-                return (
-                  <tr key={m.key}>
-                    <th scope="row" className="qa-cov__name">
-                      {m.name}
-                      <span className="cx-faint qa-sub">
-                        {[
-                          m.tlName,
-                          m.actionPlan ? `action plan, ${m.perDay} a day` : '',
-                          m.expected ? '' : 'not on the agent roster',
-                        ]
-                          .filter(Boolean)
-                          .join(', ')}
-                      </span>
-                    </th>
-                    {m[n].map((o: number, h: number) => {
-                      const b = n === 'queued' ? m.reasons?.[h] : ''
-                      const x = `${m.name}, ${qaDowName(t.days[h])} ${t.days[h]}: ${m.queued[h]} queued (offer ${m.offerPerDay}), ${m.audited[h]} audited (quota ${m.perDay})${b ? '. ' + b : ''}`
-                      return (
-                        <td
-                          className="qa-cov__cell"
-                          data-l={qaCountBand(o, d)}
-                          data-noq={
-                            n === 'audited' && !m.queued[h] ? 'true' : undefined
-                          }
-                          title={x}
-                          tabIndex={b ? 0 : undefined}
-                          aria-label={b ? x : undefined}
-                          onMouseEnter={b ? () => i(x) : undefined}
-                          onFocus={b ? () => i(x) : undefined}
-                          key={t.days[h]}
-                        >
-                          {o}
-                        </td>
-                      )
-                    })}
-                    <td className="cx-num">{m.auditedTotal}</td>
-                    <td className="cx-num">
-                      {m.queuedTotal}
-                      {m.passed || m.expired ? (
-                        <span className="cx-faint qa-sub">
-                          {m.passed} passed, {m.expired} expired
-                        </span>
-                      ) : null}
-                    </td>
-                    <td>
-                      <Chip status={u}>{r}</Chip>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p className="qa-cov-legend cx-faint">
-          <span className="qa-cov__cell" data-l="bad">
-            0
-          </span>{' '}
-          none
-          <span className="qa-cov__cell" data-l="warn">
-            2
-          </span>{' '}
-          below the daily {n === 'queued' ? 'offer' : 'quota'}
-          <span className="qa-cov__cell" data-l="ok">
-            {n === 'queued' ? l : 4}
-          </span>{' '}
-          {n === 'queued' ? 'offer' : 'quota'} met
-          {n === 'audited' ? (
-            <>
-              <span className="qa-cov__cell" data-l="bad" data-noq="true">
-                0
-              </span>{' '}
-              striped: nothing was queued for them that day
-            </>
-          ) : null}
-        </p>
-      </QaSection>
-      <QaSection id="qa-cov-t-h" title="All agents: audits per day against the quota">
-        <CoverageTotals c={t} />
-      </QaSection>
-    </>
-  )
 }
 
 /* --- ol — the extras (month auditors, coverage, form rules) -------------------- */
@@ -1717,13 +953,12 @@ function Drill({
       t.basis
     )
   )
-  const p = useRef<HTMLElement | null>(null)
   const m = [n.agentName, n.questionText ? `“${n.questionText.slice(0, 80)}”` : '']
     .filter(Boolean)
     .join(': ')
 
   return (
-    <section className="cx-section qa-drill" aria-labelledby="qa-drill-h" ref={p as any}>
+    <section className="cx-section qa-drill" aria-labelledby="qa-drill-h">
       <div className="cx-section__head">
         <h2 className="cx-section__title" id="qa-drill-h" tabIndex={-1}>
           {m}
@@ -1752,7 +987,7 @@ function Drill({
                   {i.questions.map((r: any) => (
                     <tr key={r.key}>
                       <td>
-                        <QaLinkBtn
+                        <QaLink
                           label={r.text}
                           onClick={() =>
                             a({ ...n, question: r.key, questionText: r.text })
@@ -1782,7 +1017,7 @@ function Drill({
                   {i.agents.map((r: any) => (
                     <tr key={r.email}>
                       <td>
-                        <QaLinkBtn
+                        <QaLink
                           label={r.name}
                           onClick={() =>
                             a({ ...n, agent: r.email, agentName: r.name })
@@ -1824,7 +1059,7 @@ function Drill({
                         )}
                         <span className="cx-faint qa-sub">
                           {r.date}, {r.agentName}, {r.channel},{' '}
-                          {BASIS_L[r.basis].toLowerCase()}
+                          {QA_BASIS_LABELS[r.basis].toLowerCase()}
                         </span>
                       </td>
                       <td>
@@ -1839,7 +1074,7 @@ function Drill({
                               <span className="qa-sub" key={u.key}>
                                 {u.text}
                                 {u.reason
-                                  ? ` (${REASON_L[u.reason] ?? u.reason})`
+                                  ? ` (${QA_REASON_LABELS[u.reason] ?? u.reason})`
                                   : ''}
                               </span>
                             ))

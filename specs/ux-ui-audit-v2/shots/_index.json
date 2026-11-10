@@ -1,0 +1,438 @@
+[
+  {
+    "route": "/",
+    "shots": [
+      "home--1440.png",
+      "home--390.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/overview",
+    "shots": [
+      "overview--1440.png",
+      "overview--390.png",
+      "overview--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/agents",
+    "shots": [
+      "agents--1440.png",
+      "agents--390.png",
+      "agents--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/analytics",
+    "shots": [
+      "analytics--1440.png",
+      "analytics--390.png",
+      "analytics--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/ecosystem",
+    "shots": [
+      "ecosystem--1440.png",
+      "ecosystem--390.png",
+      "ecosystem--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/quality-scores",
+    "shots": [
+      "quality-scores--1440.png",
+      "quality-scores--390.png",
+      "quality-scores--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/quality-analytics",
+    "shots": [
+      "quality-analytics--1440.png",
+      "quality-analytics--390.png",
+      "quality-analytics--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/qa-forms",
+    "shots": [
+      "qa-forms--1440.png",
+      "qa-forms--390.png",
+      "qa-forms--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/calibration",
+    "shots": [
+      "calibration--1440.png",
+      "calibration--390.png",
+      "calibration--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/disputes",
+    "shots": [
+      "disputes--1440.png",
+      "disputes--390.png",
+      "disputes--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/audit-queue",
+    "shots": [
+      "audit-queue--1440.png",
+      "audit-queue--390.png",
+      "audit-queue--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/queue",
+    "shots": [
+      "queue--1440.png",
+      "queue--390.png",
+      "queue--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/mail-desk",
+    "shots": [
+      "mail-desk--1440.png",
+      "mail-desk--390.png",
+      "mail-desk--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/heatmap",
+    "shots": [
+      "heatmap--1440.png",
+      "heatmap--390.png",
+      "heatmap--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/scheduler",
+    "shots": [
+      "scheduler--1440.png",
+      "scheduler--390.png",
+      "scheduler--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/people-holidays",
+    "shots": [
+      "people-holidays--1440.png",
+      "people-holidays--390.png",
+      "people-holidays--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/coaching",
+    "shots": [
+      "coaching--1440.png",
+      "coaching--390.png",
+      "coaching--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/one-on-ones",
+    "shots": [
+      "one-on-ones--1440.png",
+      "one-on-ones--390.png",
+      "one-on-ones--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/meetings",
+    "shots": [
+      "meetings--1440.png",
+      "meetings--390.png",
+      "meetings--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/checkins",
+    "shots": [
+      "checkins--1440.png",
+      "checkins--390.png",
+      "checkins--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/notes",
+    "shots": [
+      "notes--1440.png",
+      "notes--390.png",
+      "notes--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/my-actions",
+    "shots": [
+      "my-actions--1440.png",
+      "my-actions--390.png",
+      "my-actions--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/my-auditor-kpis",
+    "shots": [
+      "my-auditor-kpis--1440.png",
+      "my-auditor-kpis--390.png",
+      "my-auditor-kpis--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/my-audits",
+    "shots": [
+      "my-audits--1440.png",
+      "my-audits--390.png",
+      "my-audits--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/my-day",
+    "shots": [
+      "my-day--1440.png",
+      "my-day--390.png",
+      "my-day--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/my-status",
+    "shots": [
+      "my-status--1440.png",
+      "my-status--390.png",
+      "my-status--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/productivity-analytics",
+    "shots": [
+      "productivity-analytics--1440.png",
+      "productivity-analytics--390.png",
+      "productivity-analytics--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/tph",
+    "shots": [
+      "tph--1440.png",
+      "tph--390.png",
+      "tph--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/tph-grid",
+    "shots": [
+      "tph-grid--1440.png",
+      "tph-grid--390.png",
+      "tph-grid--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/kpi-logs",
+    "shots": [
+      "kpi-logs--1440.png",
+      "kpi-logs--390.png",
+      "kpi-logs--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/status-validation",
+    "shots": [
+      "status-validation--1440.png",
+      "status-validation--390.png",
+      "status-validation--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/trackers",
+    "shots": [
+      "trackers--1440.png",
+      "trackers--390.png",
+      "trackers--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/admin",
+    "shots": [
+      "admin--1440.png",
+      "admin--390.png",
+      "admin--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/admin/config",
+    "shots": [
+      "admin__config--1440.png",
+      "admin__config--390.png",
+      "admin__config--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/admin/roster",
+    "shots": [
+      "admin__roster--1440.png",
+      "admin__roster--390.png",
+      "admin__roster--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/aging",
+    "shots": [
+      "aging--1440.png",
+      "aging--390.png",
+      "aging--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/ctls",
+    "shots": [
+      "ctls--1440.png",
+      "ctls--390.png",
+      "ctls--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/kb-gaps",
+    "shots": [
+      "kb-gaps--1440.png",
+      "kb-gaps--390.png",
+      "kb-gaps--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/kb-tracker",
+    "shots": [
+      "kb-tracker--1440.png",
+      "kb-tracker--390.png",
+      "kb-tracker--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/tl-performance",
+    "shots": [
+      "tl-performance--1440.png",
+      "tl-performance--390.png",
+      "tl-performance--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/tl-tasks",
+    "shots": [
+      "tl-tasks--1440.png",
+      "tl-tasks--390.png",
+      "tl-tasks--768.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/auth/login",
+    "shots": [
+      "auth__login--1440.png",
+      "auth__login--390.png"
+    ],
+    "status": "ok",
+    "note": ""
+  },
+  {
+    "route": "/auth/logout",
+    "shots": [
+      "auth__logout--1440.png",
+      "auth__logout--390.png"
+    ],
+    "status": "ok",
+    "note": "redirect page: /auth/logout -> /api/auth/logout -> /auth/login"
+  },
+  {
+    "route": "/__catchall_probe__",
+    "shots": [
+      "catchall--1440.png",
+      "catchall--390.png"
+    ],
+    "status": "ok",
+    "note": "src/app/[...slug] catch-all: unknown paths redirect to / (200); shots show the home page it lands on. Captured in a second pass after dev-server restart."
+  }
+]

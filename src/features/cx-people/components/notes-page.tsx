@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchJson, useSe } from './shared'
 import { PwShell, PwLate, PwSkel, PwErr, useBusy, dayTime, taskDraft, routeOf } from './pw'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* Sa / ta — note statuses. */
 const STATUS_LABELS: Record<string, string> = {
@@ -38,9 +38,6 @@ function NoteCapture({ onSaved }: { onSaved: (note: any) => void }) {
   const [tag, setTag] = useState('')
   const [error, setError] = useState('')
   const boxRef = useRef<HTMLTextAreaElement | null>(null)
-  useEffect(() => {
-    boxRef.current?.focus()
-  }, [])
   const save = () => {
     const t = text.trim()
     if (!t) return
@@ -141,7 +138,7 @@ function NoteRow({
   }
 
   return (
-    <li className="nt-item card" data-status={note.status}>
+    <li className="nt-item cx-panel" data-status={note.status}>
       {editing ? (
         <Textarea
           className="input nt-edit"
@@ -311,12 +308,10 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
               ))}
             </ol>
           ) : (
-            <div className="empty">
-              <div className="t">
-                {notes.length ? 'No note matches that search.' : 'Nothing here yet.'}
-              </div>
-              {!notes.length ? <div className="s">Write the first thought in the box above.</div> : null}
-            </div>
+            <Empty
+              title={notes.length ? 'No note matches that search.' : 'Nothing here yet.'}
+              body={!notes.length ? 'Write the first thought in the box above.' : null}
+            />
           )}
         </>
       ) : (

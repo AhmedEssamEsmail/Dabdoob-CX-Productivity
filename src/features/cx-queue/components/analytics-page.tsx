@@ -3,7 +3,7 @@
 /* verbatim port of the legacy Analytics page (analytics.closure.js symbols
  * Za/Sa/ke/el/tl/nl; Ja/ht vocabulary; Xe skeletons + an/_t/wt from ./shared). */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Seg, Toggle } from '@/features/shared/components/ui'
+import { Empty, Seg, Toggle } from '@/features/shared/components/ui'
 import { AsOfHint, Count, Head, LoadError, Xe, fetchJson, fmt, sweepStyle, useSe, useSweep, useTip } from './shared'
 
 const Ja: [string, string][] = [
@@ -98,9 +98,9 @@ function InflowChart({ s: t, g: n, channels: s, sel: a, onSel: l }: { s: Pivot; 
       }}
     >
       {h}
-      <div className="dq-chartwrap" ref={f}>
+      <div className="cx-chartwrap" ref={f}>
         <svg
-          className="dq-chart"
+          className="cx-chart"
           width={H}
           height={y}
           viewBox={`0 0 ${H} ${y}`}
@@ -109,8 +109,8 @@ function InflowChart({ s: t, g: n, channels: s, sel: a, onSel: l }: { s: Pivot; 
         >
           {N.map((R) => (
             <g key={R}>
-              <line x1={o - 4} x2={H} y1={q(R)} y2={q(R)} className="dq-chart__grid" />
-              <text x={o - 8} y={q(R) + 4} className="dq-chart__axis" textAnchor="end">
+              <line x1={o - 4} x2={H} y1={q(R)} y2={q(R)} className="cx-chart__grid" />
+              <text x={o - 8} y={q(R) + 4} className="cx-chart__axis" textAnchor="end">
                 {R >= 1e3 ? `${R / 1e3}k` : R}
               </text>
             </g>
@@ -152,11 +152,11 @@ function InflowChart({ s: t, g: n, channels: s, sel: a, onSel: l }: { s: Pivot; 
                     const ue = q(I + Le)
                     const Ee = q(I)
                     I += Le
-                    return Le ? <rect key={J} x={A} y={ue} width={L} height={Math.max(0, Ee - ue - 1)} className={`dq-ch dq-ch--${J}`} rx={1.5} /> : null
+                    return Le ? <rect key={J} x={A} y={ue} width={L} height={Math.max(0, Ee - ue - 1)} className={`cx-ch cx-ch--${J}`} rx={1.5} /> : null
                   })}
                 </g>
                 {k % E === 0 || n !== 'day' ? (
-                  <text x={A + L / 2} y={y - 8} className="dq-chart__axis" textAnchor="middle">
+                  <text x={A + L / 2} y={y - 8} className="cx-chart__axis" textAnchor="middle">
                     {ke(R, n, true)}
                   </text>
                 ) : null}
@@ -169,7 +169,7 @@ function InflowChart({ s: t, g: n, channels: s, sel: a, onSel: l }: { s: Pivot; 
   )
 }
 
-/** tl — the dq-rank panel: "By country", or "By channel" inside one country, with the crumb back. */
+/** tl — the cx-rank panel: "By country", or "By channel" inside one country, with the crumb back. */
 function RankPanel({
   ranked: t,
   grain: n,
@@ -194,13 +194,13 @@ function RankPanel({
   const d = t.rows[0]?.[1] || 1
   const u = t.inOne ? 'channel' : 'country'
   return (
-    <section className="card card-pad dq-rank cc-chart" ref={p} aria-labelledby="rank-h">
-      <div className="dq-rank__head">
+    <section className="cx-panel cx-panel--pad cx-rank cc-chart" ref={p} aria-labelledby="rank-h">
+      <div className="cx-rank__head">
         <h2 className="cx-section__title" id="rank-h" ref={r} tabIndex={-1}>
           {l ? (
             <>
-              {/* kept raw:dq-crumb is a bespoke inline crumb button, not a ui/Button */}
-              <button type="button" className="dq-crumb" onClick={() => i(null)}>
+              {/* kept raw:cx-crumb is a bespoke inline crumb button, not a ui/Button */}
+              <button type="button" className="cx-crumb" onClick={() => i(null)}>
                 All inflow
               </button>
               <span aria-hidden="true"> › </span>
@@ -212,8 +212,8 @@ function RankPanel({
         </h2>
         {a ? (
           <>
-            {/* kept raw:dq-rank__chip is a bespoke chip-styled button, not a ui/Button */}
-            <button type="button" className="cx-chip dq-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
+            {/* kept raw:cx-rank__chip is a bespoke chip-styled button, not a ui/Button */}
+            <button type="button" className="cx-chip cx-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
               {ke(s, n)} <span aria-hidden="true">×</span>
             </button>
           </>
@@ -225,29 +225,29 @@ function RankPanel({
         {`Ranked by ${u}${l ? ` in ${l}` : ''}, ${ke(s, n)}.`}
       </p>
       {t.rows.length ? (
-        <ol className="dq-rank__list">
+        <ol className="cx-rank__list">
           {t.rows.map(([c, o], f) => {
             const g = (t.inOne && ht[c]) || c
             const m = t.total ? Math.round((o / t.total) * 100) : 0
             const b = (
               <>
-                <span className="dq-rank__n cx-num">{f + 1}</span>
-                <span className="dq-rank__name">{g}</span>
-                <span className="dq-rank__track">
+                <span className="cx-rank__n cx-num">{f + 1}</span>
+                <span className="cx-rank__name">{g}</span>
+                <span className="cx-rank__track">
                   <i className="cc-sweep-bar" style={{ inlineSize: `${(o / d) * 100}%`, ...sweepStyle(f) }} />
                 </span>
-                <span className="dq-rank__val cx-num">{fmt(o)}</span>
-                <span className="dq-rank__share cx-num cx-faint">{m}%</span>
+                <span className="cx-rank__val cx-num">{fmt(o)}</span>
+                <span className="cx-rank__share cx-num cx-faint">{m}%</span>
               </>
             )
             return (
               <li key={c}>
                 {t.inOne ? (
-                  <div className="dq-rank__row">{b}</div>
+                  <div className="cx-rank__row">{b}</div>
                 ) : (
                   <>
-                    {/* kept raw:dq-rank__row is a bespoke rank-row button, not a ui/Button */}
-                    <button type="button" className="dq-rank__row" onClick={() => i(c)} aria-label={`${g}: ${fmt(o)}, ${m}%. Show its channels`}>
+                    {/* kept raw:cx-rank__row is a bespoke rank-row button, not a ui/Button */}
+                    <button type="button" className="cx-rank__row" onClick={() => i(c)} aria-label={`${g}: ${fmt(o)}, ${m}%. Show its channels`}>
                       {b}
                     </button>
                   </>
@@ -257,9 +257,7 @@ function RankPanel({
           })}
         </ol>
       ) : (
-        <div className="empty">
-          <div className="s">No contacts in this {n}. Press another bar, or clear the {n}.</div>
-        </div>
+        <Empty title={`No contacts in this ${n}. Press another bar, or clear the ${n}.`} />
       )}
     </section>
   )
@@ -317,7 +315,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
       return M
     })
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!n && !s}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!n && !s}>
       <Head
         title={route.title}
         sub="Contacts coming in: inbound calls, chats and internal escalations raised outside CX. Weeks start on Sunday."
@@ -343,7 +341,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
               }}
               options={Ja.map(([value, label]) => ({ value, label }))}
             />
-            <fieldset className="cx-fieldset dq-countries">
+            <fieldset className="cx-fieldset cx-countries">
               <legend className="cx-label">Countries {i.size ? '' : '(all)'}</legend>
               {n.countries.map((y: string) => (
                 <Toggle key={y} checked={i.has(y)} onChange={() => v(y)}>
@@ -353,11 +351,11 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
             </fieldset>
           </div>
           {f ? (
-            <section className="card card-pad dq-headline cc-chart" ref={b} aria-label={o ? 'Pressed period' : 'Latest complete period'}>
-              <p className="dq-headline__num cx-num">
+            <section className="cx-panel cx-panel--pad cx-headline cc-chart" ref={b} aria-label={o ? 'Pressed period' : 'Latest complete period'}>
+              <p className="cx-headline__num cx-num">
                 <Count value={f.now} format={fmt} />
               </p>
-              <p className="dq-headline__text">
+              <p className="cx-headline__text">
                 contacts in {ke(f.p, l).replace(/^Week of/, 'the week of')}
                 {f.partial ? ' so far' : ''}
                 {f.change === null
@@ -367,20 +365,20 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
                     : `, ${f.change > 0 ? 'up' : 'down'} ${Math.abs(Math.round(f.change * 100))}% on the ${l} before`}
                 .
               </p>
-              <span className="dq-split cc-sweep-bar" aria-hidden="true">
-                {n.channels.map((y: string, w: number) => (f.split[w] ? <i key={y} className={`dq-ch dq-ch--${y}`} style={{ flexGrow: f.split[w] }} /> : null))}
+              <span className="cx-chsplit cc-sweep-bar" aria-hidden="true">
+                {n.channels.map((y: string, w: number) => (f.split[w] ? <i key={y} className={`cx-ch cx-ch--${y}`} style={{ flexGrow: f.split[w] }} /> : null))}
               </span>
-              <ul className="dq-legend">
+              <ul className="cx-legend">
                 {n.channels.map((y: string, w: number) => (
                   <li key={y}>
-                    <i className={`dq-ch dq-ch--${y}`} aria-hidden="true" /> {ht[y]} <b className="cx-num">{fmt(f.split[w])}</b>
+                    <i className={`cx-ch cx-ch--${y}`} aria-hidden="true" /> {ht[y]} <b className="cx-num">{fmt(f.split[w])}</b>
                   </li>
                 ))}
               </ul>
             </section>
           ) : null}
           {g ? <RankPanel ranked={g} grain={l} period={f!.p} picked={!!o} country={g.inOne ? [...i][0] : ''} headRef={u} onDrill={m} onClearPick={() => d(null)} /> : null}
-          <section className="card card-pad" aria-labelledby="chart-h">
+          <section className="cx-panel cx-panel--pad" aria-labelledby="chart-h">
             <h2 className="cx-sr" id="chart-h">
               Inflow chart
             </h2>
@@ -390,7 +388,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
               notification-only groups).
             </p>
           </section>
-          <details className="card dq-details">
+          <details className="cx-panel cx-details">
             <summary>Show the numbers as a table</summary>
             <div className="cx-tablewrap">
               <table className="cx-table">

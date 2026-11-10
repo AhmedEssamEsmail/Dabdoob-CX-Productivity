@@ -7,6 +7,8 @@
  * DOM and classes match mockups/assets/mock.css 1:1.
  */
 
+import { D } from '@/features/shared/shell/i18n'
+
 type Props = {
   crumbGroup: string | null
   crumbTitle: string
@@ -19,25 +21,33 @@ type Props = {
 
 export default function Topbar({
   crumbGroup,
-  crumbTitle,
   initials,
   pending,
   onBell,
   onAppearance,
   theme,
 }: Props) {
+  const notifLabel =
+    pending > 0
+      ? D('Notifications — {n} pending', { n: String(pending) })
+      : D('Notifications')
+  const notifStatus =
+    pending > 0
+      ? D(pending === 1 ? '{n} notification pending' : '{n} notifications pending', {
+          n: String(pending),
+        })
+      : ''
   return (
     <div className="topbar">
       <div className="crumbs">
-        {crumbGroup ? <>{crumbGroup} / </> : null}
-        <b>{crumbTitle}</b>
+        {crumbGroup ? <b>{crumbGroup}</b> : null}
       </div>
       <div className="topbar-right">
         <button
           type="button"
           className="icon-btn"
-          aria-label="Notifications"
-          title="Notifications"
+          aria-label={notifLabel}
+          title={notifLabel}
           onClick={onBell}
         >
           <svg
@@ -50,13 +60,20 @@ export default function Topbar({
           >
             <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0" />
           </svg>
-          {pending > 0 ? <span className="dot" /> : null}
+          {pending > 0 ? (
+            <span className="dot" aria-hidden="true">
+              {pending > 99 ? '99+' : pending}
+            </span>
+          ) : null}
         </button>
+        <span className="sr-only" role="status" aria-live="polite">
+          {notifStatus}
+        </span>
         <button
           type="button"
           className="icon-btn"
-          aria-label="Appearance"
-          title={`Appearance — ${theme}`}
+          aria-label={D('Appearance')}
+          title={D('Appearance — {theme}', { theme })}
           onClick={onAppearance}
         >
           <svg

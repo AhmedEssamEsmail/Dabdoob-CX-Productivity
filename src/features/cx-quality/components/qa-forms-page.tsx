@@ -13,7 +13,7 @@ import {
 } from './qa-shared'
 import { PageHead } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select, Toggle } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, Toggle } from '@/features/shared/components/ui'
 
 let aa = 0
 
@@ -361,7 +361,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
 
   return (
     <section
-      className="cxp dq-page"
+      className="cxp page"
       aria-labelledby="page-title"
       aria-busy={!n && !a}
     >
@@ -369,105 +369,100 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
         title={route.title}
         sub="The questions auditors answer, per channel. Critical questions set the audit to 0 when failed. Each save is a new version; past audits keep theirs."
       />
-      {a ? <LoadError message={a} onRetry={s} /> : null}
-      {n ? (
-        i ? (
-          <FormBuilder
-            draft={i}
-            onClose={(l) => {
-              c(null)
-              if (l) s()
-            }}
-          />
-        ) : (
-          <>
-            <Button
-              variant="primary"
-              onClick={() =>
-                c({
-                  title: '',
-                  channel: '',
-                  everyChannel: false,
-                  nonTicket: false,
-                  placeholder: false,
-                  active: true,
-                  scoring: 'weighted',
-                  sections: [la()],
-                })
-              }
-            >
-              New form
-            </Button>
-            <div className="card cx-tablewrap qa-gap">
-              <table className="cx-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Form</th>
-                    <th scope="col">Channel</th>
-                    <th scope="col">Questions</th>
-                    <th scope="col">Version</th>
-                    <th scope="col">State</th>
-                    <th scope="col">
-                      <span className="sr-only">Edit</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {n.forms.length ? (
-                    n.forms.map((l: any) => (
-                      <tr key={l.formId}>
-                        <td>{l.title}</td>
-                        <td>
-                          {l.channel === '*'
-                            ? 'Every channel without its own'
-                            : l.channel}
-                          {n.auditTypes?.includes(l.channel) ? (
-                            <span className="cx-faint qa-sub">
-                              Non-ticket audit type
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="cx-num">
-                          {l.sections.reduce(
-                            (p: number, m: any) => p + m.questions.length,
-                            0
-                          )}
-                        </td>
-                        <td className="cx-num">{l.version}</td>
-                        <td>
-                          {l.placeholder ? (
-                            <span className="pill warn">Placeholder</span>
-                          ) : null}{' '}
-                          <span className={`pill${l.active ? ' ok' : ''}`}>
-                            {l.active ? 'Active' : 'Off'}
+      {a ? (
+        <LoadError message={a} onRetry={s} />
+      ) : i ? (
+        <FormBuilder
+          draft={i}
+          onClose={(l) => {
+            c(null)
+            if (l) s()
+          }}
+        />
+      ) : n ? (
+        <>
+          <Button
+            variant="primary"
+            onClick={() =>
+              c({
+                title: '',
+                channel: '',
+                everyChannel: false,
+                nonTicket: false,
+                placeholder: false,
+                active: true,
+                scoring: 'weighted',
+                sections: [la()],
+              })
+            }
+          >
+            New form
+          </Button>
+          <div className="cx-panel cx-tablewrap qa-gap">
+            <table className="cx-table">
+              <thead>
+                <tr>
+                  <th scope="col">Form</th>
+                  <th scope="col">Channel</th>
+                  <th scope="col">Questions</th>
+                  <th scope="col">Version</th>
+                  <th scope="col">State</th>
+                  <th scope="col">
+                    <span className="sr-only">Edit</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {n.forms.length ? (
+                  n.forms.map((l: any) => (
+                    <tr key={l.formId}>
+                      <td>{l.title}</td>
+                      <td>
+                        {l.channel === '*'
+                          ? 'Every channel without its own'
+                          : l.channel}
+                        {n.auditTypes?.includes(l.channel) ? (
+                          <span className="cx-faint qa-sub">
+                            Non-ticket audit type
                           </span>
-                        </td>
-                        <td>
-                          <Button
-                            onClick={() => c(fl(l, n.auditTypes ?? []))}
-                          >
-                            Edit
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6}>
-                        <div className="empty">
-                          <div className="t">No forms yet.</div>
-                          <div className="s">
-                            Create the first audit form for a channel.
-                          </div>
-                        </div>
+                        ) : null}
+                      </td>
+                      <td className="cx-num">
+                        {l.sections.reduce(
+                          (p: number, m: any) => p + m.questions.length,
+                          0
+                        )}
+                      </td>
+                      <td className="cx-num">{l.version}</td>
+                      <td>
+                        {l.placeholder ? (
+                          <Chip status="warn">Placeholder</Chip>
+                        ) : null}{' '}
+                        <Chip status={l.active ? 'ok' : undefined}>
+                          {l.active ? 'Active' : 'Off'}
+                        </Chip>
+                      </td>
+                      <td>
+                        <Button onClick={() => c(fl(l, n.auditTypes ?? []))}>
+                          Edit
+                        </Button>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6}>
+                      <Empty
+                        title="No forms yet."
+                        body="Create the first audit form for a channel."
+                      />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : (
         <LinesSkeleton lines={6} />
       )}

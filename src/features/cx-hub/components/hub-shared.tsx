@@ -5,7 +5,6 @@ import {
   type CSSProperties,
   type ReactNode,
   Fragment,
-  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -13,14 +12,23 @@ import {
   useState,
 } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Input, Seg, Select } from '@/features/shared/components/ui'
+import { Failed } from '@/features/shared/components/ui/PageStates'
 import { getBoot, setBoot, useBootSelector } from '@/features/shared/shell/context'
 import { applyAppearance, D } from '@/features/shared/shell/i18n'
+import {
+  fetchJson as sharedFetchJson,
+  FetchError,
+  postJson,
+} from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
+import { loadOptions } from '@/features/shared/lib/use-options'
+import { usePoll } from '@/features/shared/lib/use-poll'
 
 /**
  * Shared machinery of the Hub pages, ported once: the oi()/yn() api objects
  * (Of/Vi/Ln/Fs/Ug), Eo useSe, the cc-tip/Count machinery (zm/Bf/Jl/zf/kf),
- * dq-head (Vf), the skeletons (lo/jl), the age chips (Ao/gg/fg/Gf),
+ * page-head (Vf), the skeletons (lo/jl), the age chips (Ao/gg/fg/Gf),
  * RefreshNow (Hf), the up-next pair (If/Nf + Om), the Dropdown (oo) with its
  * option store, and Kuwait formatters (Yn/To/Df).
  */
@@ -66,18 +74,11 @@ export function Om(): void {
 }
 
 /* ----------------------------------------------------------------- fetchJson */
-export async function fetchJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(url, { cache: 'no-store', ...init })
-  const body = (await r.json().catch(() => ({}))) as T & { error?: string }
-  if (!r.ok) throw new Error((body && body.error) || String(r.status))
-  return body as T
+export { FetchError, postJson }
+export function fetchJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
+  return sharedFetchJson(url, init)
 }
-const post = <T = any>(url: string, body?: unknown) =>
-  fetchJson<T>(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
-  })
+const post = <T = any>(url: string, body?: unknown) => postJson(url, body ?? {}) as Promise<T>
 
 /* --------------------------------------------------------------- api objects */
 export const Of = {
@@ -142,37 +143,9 @@ export interface ConfigRow {
 }
 
 /* --------------------------------------------------------------------- Eo */
-export function Eo<T>(fn: () => Promise<T>): {
-  data: T | null
-  error: string
-  reload: () => void
-  setData: (v: T | null) => void
-} {
-  const named = !!fn.name
-  const [data, setData] = useState<T | null>(() =>
-    named ? (eoCache.get(fn) as T | null) ?? null : null
-  )
-  const [error, setError] = useState('')
-  const [tick, setTick] = useState(0)
-  useEffect(() => {
-    if (named && data !== null) eoCache.set(fn, data as unknown)
-  }, [data, named, fn])
-  useEffect(() => {
-    let live = true
-    setError('')
-    fn().then(
-      (v) => live && setData(v),
-      (e) => live && setError((e as Error).message)
-    )
-    return () => {
-      live = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick])
-  const reload = useCallback(() => setTick((t) => t + 1), [])
-  return { data, error, reload, setData }
+export function Eo<T>(fn: () => Promise<T>) {
+  return usePageData<T>(null, fn, { cacheKey: fn.name ? fn : null })
 }
-const eoCache = new Map<() => Promise<unknown>, unknown>()
 
 /* ------------------------------------------------------- skeletons (lo/jl) */
 const Bm = [55, 70, 48, 82, 64, 90, 58, 74, 40, 68, 86, 60, 52]
@@ -214,30 +187,19 @@ export function jl({ lines = 3, tall = false }: { lines?: number; tall?: boolean
 }
 
 /* ------------------------------------------------------------------ sh */
-export function sh({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="cx-note" data-status="bad" role="alert">
-      <div>
-        <strong>This page could not load.</strong> {message}{' '}
-        <Button variant="quiet" className="cx-btn" onClick={onRetry}>
-          Try again
-        </Button>
-      </div>
-    </div>
-  )
-}
+export { Failed as sh }
 
 /* ------------------------------------------------------------------ Vf */
 export function Vf({ title, sub, aside }: { title: ReactNode; sub?: ReactNode; aside?: ReactNode }) {
   return (
-    <header className="dq-head">
+    <header className="page-head">
       <div>
         <h1 id="page-title" className="page-title">
           {title}
         </h1>
-        <p className="page-purpose">{sub}</p>
+        {sub ? <p className="page-purpose">{sub}</p> : null}
       </div>
-      {aside ? <div className="dq-head__aside">{aside}</div> : null}
+      {aside}
     </header>
   )
 }
@@ -473,24 +435,27 @@ export function Wf({
     >
       {tipEl}
       <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
-        {counts.map((o, c) => (
-          // eslint-disable-next-line -- kept raw: cx-ladder__seg is a data-viz segment sized by --n, not a button
-          <button
-            key={c}
-            type="button"
-            className={onPick ? 'cx-ladder__seg cc-pick' : 'cx-ladder__seg'}
-            data-age={Ao(c, counts.length)}
-            style={{ '--n': Math.max(o, 4) } as CSSProperties}
-            {...tipFor(`${bands.labels[c]}: ${o} tickets`)}
-            aria-pressed={onPick ? pressed === c : undefined}
-            onClick={onPick ? () => onPick(pressed === c ? null : c) : undefined}
-            tabIndex={onPick ? 0 : -1}
-          >
-            <span>
-              <Zf v={o} />
-            </span>
-          </button>
-        ))}
+        {counts.map((o, c) => {
+          // eslint-disable-next-line -- kept raw: cx-ladder__seg is a data-viz segment sized by --n, a control only when onPick is set
+          const Tag: any = onPick ? 'button' : 'span'
+          return (
+            <Tag
+              key={c}
+              {...(onPick ? { type: 'button' } : {})}
+              className={onPick ? 'cx-ladder__seg cc-pick' : 'cx-ladder__seg'}
+              data-age={Ao(c, counts.length)}
+              style={{ '--n': Math.max(o, 4) } as CSSProperties}
+              {...tipFor(`${bands.labels[c]}: ${o} tickets`)}
+              aria-pressed={onPick ? pressed === c : undefined}
+              onClick={onPick ? () => onPick(pressed === c ? null : c) : undefined}
+              tabIndex={onPick ? 0 : -1}
+            >
+              <span>
+                <Zf v={o} />
+              </span>
+            </Tag>
+          )
+        })}
       </div>
       <div className="cx-ladder__legend" aria-hidden="true">
         {counts.map((o, c) => (
@@ -543,23 +508,16 @@ export function rg({
       {owner ? sel('Owner', owner) : null}
       {team ? sel('Team', team) : null}
       {priority ? (
-        <div className="pw-seg" role="group" aria-label="Priority">
-          {/* eslint-disable-next-line -- kept raw: pw-seg styles its own segmented buttons */}
-          <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
-            Any priority
-          </button>
-          {priority.options.map((o) => (
-            // eslint-disable-next-line -- kept raw: pw-seg styles its own segmented buttons
-            <button
-              key={o}
-              type="button"
-              aria-pressed={priority.value === o}
-              onClick={() => priority.onChange(priority.value === o ? '' : o)}
-            >
-              {o}
-            </button>
-          ))}
-        </div>
+        <Seg
+          name="rg-priority"
+          aria-label="Priority"
+          value={priority.value}
+          onChange={(v) => priority.onChange(v === priority.value ? '' : v)}
+          options={[
+            { value: '', label: 'Any priority' },
+            ...priority.options.map((o) => ({ value: o, label: o })),
+          ]}
+        />
       ) : null}
       {search ? (
         <label className="cx-filter cx-filter--search">
@@ -584,11 +542,7 @@ export function Hf({ onDone }: { onDone: () => void }) {
   const [msg, setMsg] = useState('')
   const [until, setUntil] = useState(0)
   const [now, setNow] = useState(Date.now) // legacy he(Date.now()) — lazy init, same value
-  useEffect(() => {
-    if (until <= Date.now()) return
-    const u = setInterval(() => setNow(Date.now()), 1e3)
-    return () => clearInterval(u)
-  }, [until])
+  usePoll(until > now ? 1e3 : null, () => setNow(Date.now()), { immediate: false })
   const left = Math.max(0, Math.ceil((until - now) / 1e3))
   const run = () => {
     setBusy(true)
@@ -616,7 +570,7 @@ export function Hf({ onDone }: { onDone: () => void }) {
     )
   }
   return (
-    <span className="dq-refresh">
+    <span className="cx-refresh">
       <Button className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={run}>
         {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
       </Button>
@@ -645,11 +599,12 @@ export function If({ item }: { item: UpNextItem }) {
   )
 }
 export function Nf({ item }: { item: UpNextItem }) {
+  const upId = useId()
   return (
-    <section id={Lf} className="upnext" tabIndex={-1} aria-labelledby="upnext-h" data-live={item.live ? '' : undefined}>
+    <section id={Lf} className="upnext" tabIndex={-1} aria-labelledby={upId} data-live={item.live ? '' : undefined}>
       <p className="upnext-when">
         <span className="upnext-num">{item.at}</span>
-        <span className="upnext-tag" id="upnext-h">
+        <span className="upnext-tag" id={upId}>
           {item.live ? 'Now' : 'Up next'}
         </span>
       </p>
@@ -703,7 +658,6 @@ function useOpt(k: string): string[] | undefined {
   }, [k])
   return v
 }
-const Vo = new Map<string, Promise<string[]>>()
 export function Oo({
   listKey,
   label,
@@ -733,16 +687,14 @@ export function Oo({
   const inputRef = useRef<HTMLInputElement | null>(null)
   useEffect(() => {
     if (l !== undefined) return
-    let L = Vo.get(listKey)
-    if (!L) {
-      L = Ln.getDropdownOptions(listKey).then((H) => {
-        nu(listKey, H)
-        return H
-      })
-      Vo.set(listKey, L)
-      L.catch(() => Vo.delete(listKey))
+    let live = true
+    loadOptions(listKey).then(
+      (H) => live && nu(listKey, H),
+      (H) => live && setLoadErr((H as Error).message)
+    )
+    return () => {
+      live = false
     }
-    L.catch((H) => setLoadErr((H as Error).message))
   }, [listKey, l])
   useEffect(() => {
     if (other) inputRef.current?.focus()

@@ -13,9 +13,6 @@ export type { TextareaProps } from './Textarea'
 export { Field } from './Field'
 export type { FieldProps } from './Field'
 
-export { Card } from './Card'
-export type { CardProps } from './Card'
-
 export { Section } from './Section'
 export type { SectionProps } from './Section'
 
@@ -37,28 +34,7 @@ export type { ToggleProps } from './Toggle'
 export { Tabs } from './Tabs'
 export type { TabsProps, TabItem } from './Tabs'
 
-export {
-  Table,
-  THead,
-  TBody,
-  TR,
-  TH,
-  TD,
-  TableWrap,
-} from './Table'
-export type {
-  TableProps,
-  THeadProps,
-  TBodyProps,
-  TRProps,
-  THProps,
-  TDProps,
-  TableWrapProps,
-} from './Table'
-
-export { Modal } from './Modal'
-export type { ModalProps } from './Modal'
-
+// .cx-panel / .cx-table / .cx-note are documented raw markup classes (DECISION B).
 export { toast, Toasts } from './Toast'
 export type { ToastItem } from './Toast'
 
@@ -67,3 +43,36 @@ export type { SkeletonProps } from './Skeleton'
 
 export { Empty } from './Empty'
 export type { EmptyProps } from './Empty'
+
+export { PageShell } from './PageShell'
+
+export { Dialog } from './Dialog'
+export type { DialogProps } from './Dialog'
+
+export { TableScroll } from './TableScroll'
+export type { TableScrollProps } from './TableScroll'
+
+export { AutoSaveInput } from './AutoSaveInput'
+export type { AutoSaveInputProps } from './AutoSaveInput'
+
+export { PaintGrid } from './PaintGrid'
+export type { PaintGridProps, PaintGridCell, PaintGridRow } from './PaintGrid'
+
+export { PagedList } from './PagedList'
+export type { PagedListProps } from './PagedList'
+
+export { SettingsSection, SettingsToc } from './SettingsSection'
+export type {
+  SettingsSectionProps,
+  SettingsTocProps,
+  SettingsTocItem,
+} from './SettingsSection'
+
+export { Meter } from './Meter'
+export type { MeterProps } from './Meter'
+
+export { ConfirmInline } from './ConfirmInline'
+export type { ConfirmInlineProps } from './ConfirmInline'
+
+// Skeleton already exported above (./Skeleton); LinesSkeleton arrives via PageStates.
+export { LinesSkeleton, Failed, ErrMsg, Count } from './PageStates'

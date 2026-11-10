@@ -7,7 +7,7 @@
  * upload parsers live in ../lib/heatmap-engine (As/Cs/cl/dl/hl/ul/xs + rn/Ts/
  * ml/gl/fl). google.script.run is the /api/queue/heatmap route. */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
 import { fetchJson } from './shared'
 import {
   HM_AHT_GROUPS, hmChatSlotMin_, hmCsvParse_, hmCsv_, hmDeepMerge_, hmDefaults_,
@@ -174,9 +174,7 @@ function SavedSets({ page, over, setOver, onSets }: { page: any; over: any; setO
           ))}
         </ul>
       ) : (
-        <div className="empty">
-          <div className="s">None yet. Save the current assumptions to come back to them.</div>
-        </div>
+        <Empty title="None yet. Save the current assumptions to come back to them." />
       )}
       <div className="hm-save-set">
         <Input className="input" aria-label="Name for these assumptions" placeholder="Name, e.g. Ramadan plan" maxLength={60} value={l} onInput={(c) => r(c.currentTarget.value)} />
@@ -665,11 +663,11 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
   ]
   const o = (f: number) => `${String(Math.floor(f / 60)).padStart(2, '0')}:${String(f % 60).padStart(2, '0')}`
   return (
-    <section className="card" aria-labelledby="hm-grid-t">
-      <div className="card-head">
+    <section className="cx-panel" aria-labelledby="hm-grid-t">
+      <div className="cx-section__head">
         <div>
-          <h2 id="hm-grid-t" className="card-title">Agents in each half hour</h2>
-          <div className="card-hint">Needed agents per half hour — pick a layer to compare rostered, on-floor and scheduled coverage.</div>
+          <h2 id="hm-grid-t" className="cx-section__title">Agents in each half hour</h2>
+          <div className="cx-section__hint">Needed agents per half hour — pick a layer to compare rostered, on-floor and scheduled coverage.</div>
         </div>
         <fieldset className="hm-chips">
           <legend className="sr-only">Show</legend>
@@ -682,7 +680,7 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
           ))}
         </fieldset>
       </div>
-      <div className="card-pad">
+      <div className="cx-panel--pad">
       <div ref={a} className="hm-grid-scroll cc-chart" tabIndex={0} role="region" aria-label="Agents per interval and day">
         <table className="hm-grid">
           <thead>
@@ -1073,22 +1071,26 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
         <div className="hm-main">
           {!n && !h ? <div className="hm-skel" aria-hidden="true" /> : null}
           {n && !a ? (
-            <div className="card">
-              <div className="empty">
-                <div className="t">No volumes yet.</div>
-                <div className="s">
-                  Upload a heatmap{n.canAdmin ? ', or build one from the raw tabs below' : ''}. Not sure what the file looks like? Download an example,
-                  replace its numbers with yours, then upload it.
-                </div>
-                <div className="hm-need-actions">
-                  <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
-                    Example: one row per value
-                  </Button>
-                  <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
-                    Example: HeatMap tab layout
-                  </Button>
-                </div>
-              </div>
+            <div className="cx-panel">
+              <Empty
+                title="No volumes yet."
+                body={
+                  <>
+                    Upload a heatmap{n.canAdmin ? ', or build one from the raw tabs below' : ''}. Not sure what the file looks like? Download an example,
+                    replace its numbers with yours, then upload it.
+                  </>
+                }
+                action={
+                  <div className="hm-need-actions">
+                    <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())}>
+                      Example: one row per value
+                    </Button>
+                    <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-blocks.csv', hmExampleWide_())}>
+                      Example: HeatMap tab layout
+                    </Button>
+                  </div>
+                }
+              />
             </div>
           ) : null}
           {$.err ? (

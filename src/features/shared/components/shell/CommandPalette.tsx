@@ -35,15 +35,36 @@ function fuzzyHit(query: string, haystack: string): boolean {
 }
 
 /**
- * Fuzzy page filter for the command palette. Empty/blank query returns the
- * input order untouched; otherwise pages matching as a subsequence of
- * `title + ' ' + path + ' ' + group` (case-insensitive) are kept in order.
+ * Relevance score for one page against the query: exact title > title
+ * prefix > title substring > group/path substring > subsequence.
+ * Lower is better; -1 means no match.
+ */
+function matchScore(query: string, page: RouteDef): number {
+  const q = query.toLowerCase()
+  const title = page.title.toLowerCase()
+  const group = page.group.toLowerCase()
+  const path = page.path.toLowerCase()
+  if (title === q) return 0
+  if (title.startsWith(q)) return 1
+  if (title.includes(q)) return 2
+  if (group.includes(q) || path.includes(q)) return 3
+  if (fuzzyHit(q, `${page.title} ${page.path} ${page.group}`)) return 4
+  return -1
+}
+
+/**
+ * Fuzzy page filter for the command palette, ranked by matchScore so
+ * exact/prefix title hits surface before group/path and subsequence
+ * matches. Empty/blank query returns the input order untouched.
  */
 export function filterPalettePages(pages: RouteDef[], query: string): RouteDef[] {
-  if (!query.trim()) return pages
-  return pages.filter((page) =>
-    fuzzyHit(query.trim(), `${page.title} ${page.path} ${page.group}`)
-  )
+  const q = query.trim()
+  if (!q) return pages
+  return pages
+    .map((page, index) => ({ page, index, score: matchScore(q, page) }))
+    .filter((entry) => entry.score >= 0)
+    .sort((a, b) => a.score - b.score || a.index - b.index)
+    .map((entry) => entry.page)
 }
 
 export interface PaletteGroup {
@@ -88,10 +109,9 @@ export default function CommandPalette({
     () => PAGES.filter((page) => pageAllowed(page, boot)),
     [boot]
   )
-  const filtered = useMemo(
-    () => filterPalettePages(allowed, query).slice(0, MAX_ITEMS),
-    [allowed, query]
-  )
+  const matches = useMemo(() => filterPalettePages(allowed, query), [allowed, query])
+  const filtered = useMemo(() => matches.slice(0, MAX_ITEMS), [matches])
+  const overflow = matches.length - filtered.length
   const groups = useMemo(() => groupPalettePages(filtered), [filtered])
   const flat = useMemo(() => groups.flatMap((group) => group.pages), [groups])
   const indexOf = useMemo(() => {
@@ -191,8 +211,13 @@ export default function CommandPalette({
         />
         <div className="cpk-list" id="cpk-list" role="listbox" ref={listRef}>
           {groups.map((group) => (
-            <div className="cpk-group" role="presentation" key={group.group}>
-              <span className="cpk-group-label">
+            <div
+              className="cpk-group"
+              role="group"
+              aria-labelledby={`cpk-group-${group.group}`}
+              key={group.group}
+            >
+              <span className="cpk-group-label" id={`cpk-group-${group.group}`}>
                 {D(GROUP_LABELS[group.group] ?? group.group)}
               </span>
               {group.pages.map((page) => {
@@ -213,7 +238,7 @@ export default function CommandPalette({
                   >
                     <NavIcon path={page.path} />
                     <span className="cpk-item-title">{D(page.title)}</span>
-                    <span className="cpk-kbd">
+                    <span className="cpk-item-group">
                       {D(GROUP_LABELS[page.group] ?? page.group)}
                     </span>
                   </div>
@@ -224,6 +249,12 @@ export default function CommandPalette({
           {flat.length === 0 ? (
             <div className="cpk-empty">{D('No pages match')}</div>
           ) : null}
+        </div>
+        <div className="cpk-foot">
+          {overflow > 0
+            ? `${D('…{n} more — keep typing', { n: String(overflow) })} · `
+            : ''}
+          {D('↑↓ move · Enter open · Esc close')}
         </div>
       </div>
     </div>

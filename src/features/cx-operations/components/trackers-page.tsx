@@ -20,7 +20,7 @@ import {
 } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import { pageParams } from '@/features/shared/shell/gates'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, TableScroll } from '@/features/shared/components/ui'
 
 // ---------------------------------------------------------------- API surface
 // (ee in the closure: getTrackersPage / getTrackerRecords / addTrackerRecord /
@@ -402,7 +402,7 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
   }
   const y = t ? 'Save changes' : 'Add field'
   return (
-    <dialog ref={a} className="trk-dialog card" aria-labelledby="trk-af" onClose={n} onCancel={n}>
+    <dialog ref={a} className="trk-dialog cx-panel" aria-labelledby="trk-af" onClose={n} onCancel={n}>
       <h2 id="trk-af" className="trk-form-title">{t ? `Edit ${t.label}` : `Add a field to ${e.tracker.name}`}</h2>
       <p className="field-hint">
         {t
@@ -428,13 +428,13 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
 /** Kn: the skeleton. */
 function Kn() {
   return (
-    <div className="trk-grid" aria-hidden="true">
-      <div className="trk-records">
+    <div className="trk-grid" role="status" aria-busy="true" aria-label="Loading trackers">
+      <div className="trk-records" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((e) => (
           <div key={e} className="trk-skel trk-skel-row" />
         ))}
       </div>
-      <div className="trk-skel trk-skel-form" />
+      <div className="trk-skel trk-skel-form" aria-hidden="true" />
     </div>
   )
 }
@@ -574,7 +574,7 @@ function Xn({ data: e, me: t, onSaved: n }: { data: TrackerData; me: string; onS
   }
   const _ = e.fields.filter((l) => l.type !== 'computed')
   return (
-    <form className="trk-form card" onSubmit={o} aria-labelledby="trk-new">
+    <form className="trk-form cx-panel" onSubmit={o} aria-labelledby="trk-new">
       <h2 id="trk-new" className="trk-form-title">New record</h2>
       <p className="trk-form-meta">Saved with your email: {t}</p>
       {_.map((l) => {
@@ -650,7 +650,7 @@ function Er({ onCancel: e, onCreated: t }: { onCancel: () => void; onCreated: (d
     }
   }
   return (
-    <div className="trk-create card">
+    <div className="trk-create cx-panel">
       <div className="field">
         <label className="field-label" htmlFor="trk-name">Name of the new tracker</label>
         <Input id="trk-name" className="input" maxLength={60} value={n} onInput={(l) => s(l.currentTarget.value)} />
@@ -693,19 +693,16 @@ function Qn({ f: e, r: t }: { f: FieldOut; r: TrackerRow }) {
       <a href={n} target="_blank" rel="noopener noreferrer">{n.replace(/^https?:\/\/(www\.)?/i, '')}</a>
     </td>
   ) : (
-    <td className={a ? 'trk-num' : undefined} title={n.length > 40 ? n : undefined}>{n}</td>
+    <td className={a ? 'trk-num' : undefined} title={n || undefined}>{n}</td>
   )
 }
 
 /** zn: the records table (or its empty states). */
 function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; rows: TrackerRow[]; empty: boolean; onEdit?: (f: FieldOut | 'new') => void }) {
   return n ? (
-    <div className="trk-empty empty">
-      <div className="t">No records yet.</div>
-      <div className="s">Add the first one with the form.</div>
-    </div>
+    <Empty className="trk-empty" title="No records yet." body="Add the first one with the form." />
   ) : t.length ? (
-    <div className="trk-table-wrap card" tabIndex={0} role="region" aria-label="Records">
+    <TableScroll label="Records" className="trk-table-wrap cx-panel">
       <table className="trk-table">
         <thead>
           <tr>
@@ -732,7 +729,7 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
               ))}
               <td className="trk-by">
                 {a.outside ? (
-                  <span className="trk-outside pill info" data-status="info">Entered in the sheet</span>
+                  <Chip status="info" className="trk-outside">Entered in the sheet</Chip>
                 ) : (
                   <Fragment>
                     <span>{a.submittedBy}</span>
@@ -744,12 +741,9 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   ) : (
-    <div className="trk-empty empty">
-      <div className="t">Nothing matches that search.</div>
-      <div className="s">Try a different word, or clear the search box.</div>
-    </div>
+    <Empty className="trk-empty" title="Nothing matches that search." body="Try a different word, or clear the search box." />
   )
 }
 
@@ -845,7 +839,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
               {s.tracker.sourceUrl ? (
                 <Fragment>
                   {' '}
-                  <a href={s.tracker.sourceUrl} target="_blank" rel="noopener">Open the source sheet</a>
+                  <a href={s.tracker.sourceUrl} target="_blank" rel="noopener noreferrer">Open the source sheet</a>
                 </Fragment>
               ) : null}
             </p>
@@ -879,7 +873,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
               <Zn2 fields={s.fields} rows={g} empty={s.total === 0} onEdit={s.tracker.canBuild ? o : undefined} />
             </div>
             {s.tracker.canAdd && !s.headerProblems.length ? (
-              <Xn key={s.tracker.id + s.fields.length} data={s} me={t.me.email}
+              <Xn key={s.tracker.id} data={s} me={t.me.email}
                 onSaved={(p) => a((w) => (w && { ...w, rows: [p, ...w.rows], total: w.total + 1 }))} />
             ) : null}
           </div>

@@ -19,7 +19,7 @@ import 'server-only'
 import {
   normEmail_, pwMs_, pwIso_, pwKwDate_, pwKwTime_, pwAt_, pwAddDays_, pwToday_, pwIsManagerOf_,
 } from '@/features/shared/lib/adapters'
-import { dqWeekStart_ } from '@/features/cx-queue/lib'
+import { dqWeekStart_ } from '@/features/shared/lib/queue-core'
 import { newId, findRow, updateRow, readRows, cacheRemove } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { requireRole, pwDirectory } from '@/features/shared/platform/identity'

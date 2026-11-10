@@ -1,0 +1,82 @@
+{
+  "calibration": {
+    "buttons": [
+      "Menu",
+      "Search or jump to…Ctrl K",
+      "Hub",
+      "Quality",
+      "Productivity",
+      "Queue & Workforce",
+      "People & Performance",
+      "Operations & Trackers",
+      "TL desk",
+      "FCR",
+      "View as",
+      "Cancel",
+      "",
+      "",
+      "",
+      "Assign calibration"
+    ],
+    "rows": 0,
+    "bodyText": "QualityEACalibrationAn auditor and a team lead audit the same ticket without seeing each other's answers. The team lead is the reference; alignment is the auditor's weighted agreement with it.Alignment by monthNo finished calibrations yet.Assign a calibrationTicket numberChannel *Choose…Inbound CallsWaiting AddressChatsInternal TicketsOther…AuditorChoose an auditorNoha Hassan Foaad QandilHeba Alla"
+  },
+  "qaQ": {
+    "rows": 0
+  },
+  "kv": {
+    "rowCount": 144,
+    "heightSum": 206796,
+    "topHeights": [
+      75709,
+      21777,
+      8322,
+      4699,
+      4362,
+      2832,
+      2787,
+      2764,
+      2764,
+      2764
+    ],
+    "maxValueLen": 4204,
+    "detail": {
+      "key": "qa_engine_settings",
+      "valueLen": 4204,
+      "valuePreview": "{\"auditsPerWeek\":20,\"auditsPerDay\":4,\"lookbackDays\":3,\"weekStartsOn\":0,\"minTouches\":3,\"scoresStartDate\":\"2026-06-01\",\"sc",
+      "ddH": 75692,
+      "dtH": 75692,
+      "rowH": 75709
+    }
+  },
+  "myDay": {
+    "pills": [],
+    "mdClasses": [
+      "md-page",
+      "md-head",
+      "md-head-actions",
+      "md-fresh",
+      "md-layout",
+      "md-main",
+      "md-empty",
+      "md-day",
+      "md-h2",
+      "md-err",
+      "md-agenda",
+      "md-day-compact",
+      "md-side",
+      "md-cardtoggle",
+      "md-sub",
+      "md-mailsearch",
+      "md-settings-form"
+    ],
+    "badBg": "rgb(251, 233, 231)",
+    "badFg": "rgb(179, 38, 30)",
+    "badEdge": "rgb(217, 72, 63)"
+  },
+  "tokenPairs": {
+    "bad-fg on bad-bg": 5.58,
+    "bad-fg token": "rgb(179, 38, 30)",
+    "bad-bg token": "rgb(251, 233, 231)"
+  }
+}

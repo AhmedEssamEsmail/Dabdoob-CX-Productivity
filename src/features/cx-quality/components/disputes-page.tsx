@@ -7,33 +7,18 @@
  *   P.disputesPage / P.decideDispute.
  */
 import { useState } from 'react'
-import { Button, Input, Seg, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Seg, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   P,
   Q,
-  QA_STATUS,
   QaPage,
+  ScoreChip,
+  StatusChip,
   TicketRef,
-  qaBand,
   qaPct,
   useSe,
 } from './qa-shared'
-
-const pillCls = (t?: string | null) => `pill${t && t !== 'neutral' ? ` ${t}` : ''}`
-
-function StatusPill({ s }: { s: string }) {
-  const t = QA_STATUS[s]
-  return <span className={pillCls(t?.[1])}>{t?.[0] ?? s}</span>
-}
-
-function ScorePill({ score, fatal }: { score: number | null; fatal?: boolean | null }) {
-  return (
-    <span className={pillCls(qaBand(score, !!fatal))}>
-      {score === null ? '–' : `${score}%${fatal ? ', critical' : ''}`}
-    </span>
-  )
-}
 
 /* --- Bs — the meeting-decision form ------------------------------------------ */
 function DecisionForm({
@@ -149,24 +134,24 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
     >
       {n ? (
         <>
-          <section className="card" aria-labelledby="dsp-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="dsp-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="dsp-h">
+                <div className="cx-section__title" id="dsp-h">
                   {i.length ? `${i.length} to decide` : 'Nothing to decide'}
                 </div>
               </div>
             </div>
-            <div className="card-pad">
+            <div className="cx-panel--pad">
               {i.length ? (
                 <div className="qa-list">
                   {i.map((l: any) => (
                     <details className="qa-card qa-card--strip" key={l.disputeId}>
                       <summary>
                         <svg className="qa-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="m9 6 6 6-6 6" /></svg>
-                        <ScorePill score={l.oldScore} fatal={l.audit?.fatal} />
+                        <ScoreChip score={l.oldScore} fatal={l.audit?.fatal} />
                         <strong className="qa-name">{l.agentName}</strong>
-                        <span className="qa-meta">
+                        <span className="qa-meta qa-meta--full">
                           {l.audit ? (
                             <span>
                               ticket <TicketRef url={n.ticketUrl} id={l.audit.ticketId} />, audited by{' '}
@@ -180,7 +165,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                               : `raised by ${l.raisedByName}, ${l.raisedAt.slice(0, 10)}`}
                           </span>
                         </span>
-                        <StatusPill s={l.status} />
+                        <StatusChip s={l.status} />
                       </summary>
                       <div className="qa-detail">
                   <p className="qa-reason">
@@ -224,16 +209,14 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                   ))}
                 </div>
               ) : (
-                <div className="empty">
-                  <div className="s">No disputes waiting for a meeting decision.</div>
-                </div>
+                <Empty title="No disputes waiting for a meeting decision." />
               )}
             </div>
           </section>
-          <section className="card" aria-labelledby="dspa-h">
-            <div className="card-head">
+          <section className="cx-panel" aria-labelledby="dspa-h">
+            <div className="cx-section__head">
               <div>
-                <div className="card-title" id="dspa-h">
+                <div className="cx-section__title" id="dspa-h">
                   {`Disputes per auditor, ${n.month}`}
                 </div>
               </div>
@@ -261,17 +244,17 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                         </td>
                         <td className="cx-num">{l.upheld}</td>
                         <td>
-                          <span
-                            className={pillCls(
+                          <Chip
+                            status={
                               l.disputePct === null
                                 ? 'neutral'
                                 : l.disputePct < n.target
                                   ? 'ok'
                                   : 'bad'
-                            )}
+                            }
                           >
                             {qaPct(l.disputePct)}
-                          </span>
+                          </Chip>
                         </td>
                       </tr>
                     ))
@@ -285,10 +268,10 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
             </div>
           </section>
           {c.length ? (
-            <section className="card" aria-labelledby="dspc-h">
-              <div className="card-head">
+            <section className="cx-panel" aria-labelledby="dspc-h">
+              <div className="cx-section__head">
                 <div>
-                  <div className="card-title" id="dspc-h">
+                  <div className="cx-section__title" id="dspc-h">
                     Decided, last 60 days
                   </div>
                 </div>
@@ -311,7 +294,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                         <td>{l.agentName}</td>
                         <td>{l.auditorName}</td>
                         <td>
-                          <StatusPill s={l.status} />
+                          <StatusChip s={l.status} />
                         </td>
                         <td className="cx-num">
                           {l.decision === 'void'

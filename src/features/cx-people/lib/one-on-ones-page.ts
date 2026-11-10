@@ -41,7 +41,7 @@ import {
   dqOpenAgingFlags_,
   dqSlotsToday_,
   dqWithCurrentTl_,
-} from '@/features/cx-queue/lib'
+} from '@/features/shared/lib/queue-core'
 import {
   pwOpenSeriesActions_,
   pwIsOpenStatus_,

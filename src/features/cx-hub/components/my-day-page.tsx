@@ -6,9 +6,11 @@
  * agenda with focus-gap booking, deadlines, follow-ups, mail waiting, recent
  * files, the meetings-done ring and the settings/digest card. */
 
-import { useEffect, useRef, useState } from 'react'
-import { Button, Input } from '@/features/shared/components/ui'
+import { useEffect, useId, useRef, useState } from 'react'
+import { Button, Chip, Empty, Input, Seg } from '@/features/shared/components/ui'
+import { toUserText } from '@/features/shared/lib/error-copy'
 import { D } from '@/features/shared/shell/i18n'
+import { getBoot, useBootSelector } from '@/features/shared/shell/context'
 import { Df, Ft, Fs, If, Nf, useTh } from './hub-shared'
 
 type Q = Record<string, any>
@@ -44,6 +46,10 @@ const Wm = 10 * 6e4
 const ta = ['core', 'mail', 'files', 'followups']
 const er = (n: any) => !!n && typeof n === 'object' && Array.isArray(n.data)
 const Wo = (n: string) => new Error(`My day ${n}. Run debugMyDay in the Apps Script editor and send the log.`)
+
+function useIsAdmin(): boolean {
+  return useBootSelector(() => getBoot()?.user.role === 'admin', [])
+}
 
 function $m(n: Q, e: number): string {
   const t = n.events.today.ok ? n.events.today.data.filter((r: Q) => !r.allDay && Date.parse(r.end) > e).length : 0
@@ -136,15 +142,12 @@ function Km({ events: n, nowMs: e }: { events: Q[]; nowMs: number }) {
 }
 
 function Gr({ section: n, empty: e }: { section: Section; empty: string }) {
+  const isAdmin = useIsAdmin()
   return n ? (
     n.ok ? (
-      n.data.length ? null : (
-        <div className="empty">
-          <div className="s">{e}</div>
-        </div>
-      )
+      n.data.length ? null : <Empty title={e} />
     ) : (
-      <p className="md-err">Could not load this part: {n.error}</p>
+      <p className="md-err" role="alert">{toUserText(n.error, { isAdmin, feature: 'My day' })}</p>
     )
   ) : (
     <div className="md-skel" aria-hidden="true" />
@@ -252,11 +255,12 @@ function DaySection({ title: n, section: e, gaps: t, onBooked: i, compact: s }: 
   onBooked: () => void
   compact?: boolean
 }) {
+  const d = useId()
   const r = e?.ok ? e.data.filter((o: Q) => o.allDay) : []
   const a = e?.ok ? Uf(e.data, t) : []
   return (
-    <section className={`md-day ${s ? 'md-day-compact' : ''}`} aria-label={n}>
-      <h2 className="md-h2">{n}</h2>
+    <section className={`md-day ${s ? 'md-day-compact' : ''}`} aria-labelledby={d}>
+      <h2 className="md-h2" id={d}>{n}</h2>
       {r.length ? <p className="md-allday">All day: {r.map((o: Q) => o.title).join('; ')}</p> : null}
       {e?.ok && !a.length ? (
         <p className="md-empty">No meetings and no free gaps left in your working hours.</p>
@@ -304,6 +308,7 @@ function Zl({ label: n, tone: e, items: t, open: i }: { label: string; tone: str
 function Tg() {
   const [n, e] = useState('')
   const [t, i] = useState<Q | undefined>(void 0)
+  const isAdmin = useIsAdmin()
   return (
     <div className="md-mailsearch">
       <form
@@ -333,7 +338,7 @@ function Tg() {
         </Button>
       </form>
       {t?.busy ? <p className="md-sub">Searching…</p> : null}
-      {t?.error ? <p className="md-err">{t.error}</p> : null}
+      {t?.error ? <p className="md-err" role="alert">{toUserText(t.error, { isAdmin, feature: 'Mail search' })}</p> : null}
       {t?.items && !t.items.length ? <p className="md-empty">No mail matches “{t.q}”.</p> : null}
       {t?.items?.length ? <Zl label={`Results for “${t.q}”`} tone="results" items={t.items} open={!0} /> : null}
     </div>
@@ -341,15 +346,16 @@ function Tg() {
 }
 
 function MailCard({ section: n, hours: e }: { section: Section; hours: number }) {
+  const d = useId()
   return (
-    <section className="card" aria-labelledby="md-mail">
-      <div className="card-head">
-        <div className="card-title" id="md-mail">
+    <section className="cx-panel" aria-labelledby={d}>
+      <div className="cx-section__head">
+        <div className="cx-section__title" id={d}>
           Waiting for your reply
         </div>
-        <div className="card-hint">Unread or starred in your inbox for more than {e} hours.</div>
+        <div className="cx-section__hint">Unread or starred in your inbox for more than {e} hours.</div>
       </div>
-      <div className="card-pad">
+      <div className="cx-panel--pad">
         <Tg />
         <Gr section={n} empty="Nothing is waiting on you." />
         {n?.ok && n.data.length ? (
@@ -374,10 +380,10 @@ function ih({ id: n, label: e, count: t, open: i, onToggle: s }: {
   onToggle: () => void
 }) {
   return (
-    <div className="card-head" id={n}>
-      <button type="button" className="md-cardtoggle" aria-expanded={i} aria-controls={`${n}-body`} onClick={s}>
-        <span className="card-title">{e}</span>
-        {!i && t ? <span className="pill">{t}</span> : null}
+    <div className="cx-section__head" id={n}>
+      <button type="button" className="md-cardtoggle" aria-expanded={i} aria-controls={i ? `${n}-body` : undefined} onClick={s}>
+        <span className="cx-section__title">{e}</span>
+        {!i && t ? <Chip>{t}</Chip> : null}
       </button>
     </div>
   )
@@ -409,10 +415,10 @@ function useNh(n: string): [boolean, () => void] {
 function FilesCard({ section: n }: { section: Section }) {
   const [e, t] = useNh('files')
   return (
-    <section className="card" aria-labelledby="md-files">
+    <section className="cx-panel" aria-labelledby="md-files">
       {ih({ id: 'md-files', label: 'Recent files', count: n?.ok ? n.data.length : 0, open: e, onToggle: t })}
       {e ? (
-        <div className="card-pad" id="md-files-body">
+        <div className="cx-panel--pad" id="md-files-body">
           <Gr section={n} empty="No files changed recently." />
           {n?.ok && n.data.length ? (
             <ul className="worklist">
@@ -446,10 +452,10 @@ function FilesCard({ section: n }: { section: Section }) {
 function DeadlinesCard({ section: n }: { section: Section }) {
   const [e, t] = useNh('deadlines')
   return (
-    <section className="card" aria-labelledby="md-dl">
+    <section className="cx-panel" aria-labelledby="md-dl">
       {ih({ id: 'md-dl', label: 'Deadlines this week', count: n?.ok ? n.data.length : 0, open: e, onToggle: t })}
       {e ? (
-        <div className="card-pad" id="md-dl-body">
+        <div className="cx-panel--pad" id="md-dl-body">
           <Gr section={n} empty="Nothing due in the next 7 days." />
           {n?.ok && n.data.length ? (
             <ul className="worklist">
@@ -463,7 +469,7 @@ function DeadlinesCard({ section: n }: { section: Section }) {
                   </div>
                   {i.overdue ? (
                     <div className="wi-side">
-                      <span className="pill bad">Overdue</span>
+                      <Chip status="bad">Overdue</Chip>
                     </div>
                   ) : null}
                 </li>
@@ -480,6 +486,7 @@ function FollowUpsCard({ section: n }: { section: Section }) {
   const [e, t] = useNh('followups')
   const [i, s] = useState<Record<string, boolean>>({})
   const [r, a] = useState('')
+  const isAdmin = useIsAdmin()
   const o = (u: Q) => `${u.id}:${u.lastAtMs}`
   const c = n?.ok ? n.data.filter((u: Q) => !i[o(u)]) : []
   const l = (u: Q) => {
@@ -497,15 +504,15 @@ function FollowUpsCard({ section: n }: { section: Section }) {
   }
   const h = n?.ok ? { ...n, data: c } : n
   return (
-    <section className="card" aria-labelledby="md-followups">
+    <section className="cx-panel" aria-labelledby="md-followups">
       {ih({ id: 'md-followups', label: 'Team lead follow-ups', count: c.length, open: e, onToggle: t })}
       {e ? (
-        <div className="card-pad" id="md-followups-body">
+        <div className="cx-panel--pad" id="md-followups-body">
           <p className="md-sub">Mails from your team leads to your manager that have no reply yet.</p>
           <Gr section={h} empty="No team lead mail is waiting on a reply." />
           {r ? (
             <p className="md-err" role="alert">
-              {r}
+              {toUserText(r, { isAdmin, feature: 'Follow-ups' })}
             </p>
           ) : null}
           {c.length ? (
@@ -537,6 +544,7 @@ function FollowUpsCard({ section: n }: { section: Section }) {
 }
 
 function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
+  const isAdmin = useIsAdmin()
   const [t, i] = useState(String(n.settings.assistant_reply_after_hours))
   const [s, r] = useState(String(n.settings.assistant_work_hours))
   const [a, o] = useState(String(n.settings.assistant_focus_min_minutes))
@@ -568,13 +576,13 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
     }
   }
   return (
-    <details className="card">
+    <details className="cx-panel">
       <summary>
-        <div className="card-head">
-          <div className="card-title">Settings and morning email</div>
+        <div className="cx-section__head">
+          <div className="cx-section__title">Settings and morning email</div>
         </div>
       </summary>
-      <div className="card-pad">
+      <div className="cx-panel--pad">
         <form onSubmit={(g) => void d(g)} className="md-settings-form">
           <label className="field-label" htmlFor="md-h">
             Mail counts as waiting after (hours)
@@ -607,7 +615,7 @@ function SettingsCard({ day: n, onSaved: e }: { day: Q; onSaved: () => void }) {
             {c}
           </p>
         ) : null}
-        {h ? <p className="field-error">{h}</p> : null}
+        {h ? <p className="field-error">{toUserText(h, { isAdmin, feature: 'Settings' })}</p> : null}
       </div>
     </details>
   )
@@ -678,14 +686,14 @@ function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' |
   }
   rows.sort((a, b) => a.sort - b.sort)
   return (
-    <section className="card" aria-labelledby="md-timeline">
-      <div className="card-head">
-        <div className="card-title" id="md-timeline">
+    <section className="cx-panel" aria-labelledby="md-timeline">
+      <div className="cx-section__head">
+        <div className="cx-section__title" id="md-timeline">
           {D('Timeline')}
         </div>
-        <div className="card-hint">Kuwait time{isFinite(nowMs) ? ` · now ${Wn(nowMs)}` : ''}</div>
+        <div className="cx-section__hint">Kuwait time{isFinite(nowMs) ? ` · now ${Wn(nowMs)}` : ''}</div>
       </div>
-      <div className="card-pad agenda">
+      <div className="cx-panel--pad agenda">
         {rows.length ? (
           rows.map((r) => (
             <div className="ag-row" key={r.key}>
@@ -720,7 +728,7 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
       const h = Number(m.hoursWaiting) || 0
       items.push({
         key: `mail-${m.id}`,
-        href: String(m.url || '#'),
+        href: m.url ? String(m.url) : '',
         ico: 'mail',
         tone: h >= 48 ? 'bad' : h >= 24 ? 'warn' : 'info',
         title: String(m.subject || ''),
@@ -736,7 +744,7 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
       const h = Number(f.hoursWaiting) || 0
       items.push({
         key: `fu-${f.id}`,
-        href: String(f.url || '#'),
+        href: f.url ? String(f.url) : '',
         ico: 'flag',
         tone: h >= 48 ? 'bad' : h >= 24 ? 'warn' : 'info',
         title: String(f.subject || ''),
@@ -748,21 +756,27 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
   items.sort((a, b) => b.waited - a.waited)
   const loading = !mail && !followups
   return (
-    <section className="card" aria-labelledby="md-waiting">
-      <div className="card-head">
-        <div className="card-title" id="md-waiting">
+    <section className="cx-panel" aria-labelledby="md-waiting">
+      <div className="cx-section__head">
+        <div className="cx-section__title" id="md-waiting">
           {D('Waiting on you')}
         </div>
-        <div className="card-hint">{D('From other people')}</div>
+        <div className="cx-section__hint">{D('From other people')}</div>
       </div>
       {loading ? (
-        <div className="card-pad">
+        <div className="cx-panel--pad">
           <div className="md-skel" aria-hidden="true" />
         </div>
       ) : items.length ? (
         <div className="worklist">
-          {items.map((it) => (
-            <a key={it.key} className="workitem" href={it.href} target="_blank" rel="noopener">
+          {items.map((it) => {
+            const Tag: any = it.href ? 'a' : 'span'
+            return (
+              <Tag
+                key={it.key}
+                className="workitem"
+                {...(it.href ? { href: it.href, target: '_blank', rel: 'noopener' } : {})}
+              >
               <span className={`wi-ico ${it.tone}`} aria-hidden="true">
                 {it.ico === 'mail' ? (
                   <svg
@@ -795,14 +809,13 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
                 <div className="t">{it.waited} h</div>
                 <div className="s">{it.kind === 'mail' ? D('waiting') : D('no reply')}</div>
               </div>
-            </a>
-          ))}
+              </Tag>
+            )
+          })}
         </div>
       ) : (
-        <div className="card-pad">
-          <div className="empty">
-            <div className="s">{D('Nothing is waiting on you.')}</div>
-          </div>
+        <div className="cx-panel--pad">
+          <Empty title={D('Nothing is waiting on you.')} />
         </div>
       )}
     </section>
@@ -818,6 +831,7 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
   const [busy, setBusy] = useState('')
   const [err, setErr] = useState('')
   const [done, setDone] = useState<Record<string, boolean>>({})
+  const isAdmin = useIsAdmin()
   const date = String(day?.[dayKey === 'week' ? 'today' : dayKey] || '')
   const raw: Q[] = day?.focus?.ok
     ? dayKey === 'week'
@@ -841,16 +855,16 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
     }
   }
   return (
-    <section className="card" aria-labelledby="md-focus">
-      <div className="card-head">
-        <div className="card-title" id="md-focus">
+    <section className="cx-panel" aria-labelledby="md-focus">
+      <div className="cx-section__head">
+        <div className="cx-section__title" id="md-focus">
           {D('Focus blocks')}
         </div>
-        <div className="card-hint">
+        <div className="cx-section__hint">
           {gaps.length} {D('free')}
         </div>
       </div>
-      <div className="card-pad">
+      <div className="cx-panel--pad">
         {!day ? (
           <div className="md-skel" aria-hidden="true" />
         ) : gaps.length ? (
@@ -870,11 +884,11 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
                   </span>
                   <span className="flex">
                     {done[key] ? (
-                      <span className="pill ok">{D('booked')}</span>
+                      <Chip status="ok">{D('booked')}</Chip>
                     ) : isNow ? (
-                      <span className="pill acc">{D('now')}</span>
+                      <Chip status="info">{D('now')}</Chip>
                     ) : (
-                      <span className="pill">{D('free')}</span>
+                      <Chip>{D('free')}</Chip>
                     )}
                     {done[key] ? null : (
                       <Button
@@ -892,11 +906,9 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
             )
           })
         ) : (
-          <div className="empty">
-            <div className="s">{D('No free focus windows.')}</div>
-          </div>
+          <Empty title={D('No free focus windows.')} />
         )}
-        {err ? <p className="field-error">{err}</p> : null}
+        {err ? <p className="field-error">{toUserText(err, { isAdmin, feature: 'Focus blocks' })}</p> : null}
       </div>
     </section>
   )
@@ -904,6 +916,7 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
 
 /* ------------------------------------------------------------------- Zm */
 export function MyDayPage({ route: n }: { route: { title: string } }) {
+  const isAdmin = useIsAdmin()
   const [pd, setPd] = useState<'today' | 'week'>('today')
   const [bb, setBb] = useState(!1)
   const [e, t] = useState<Q | null>(null)
@@ -965,7 +978,7 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           {n.title}
         </h1>
         <p className="md-refused" role="alert">
-          {u}
+          {toUserText(u, { isAdmin, feature: 'My day' })}
         </p>
         <Button type="button" className="btn btn-primary" disabled={b} onClick={() => void C('core', !0)}>
           {b ? 'Trying again…' : 'Try again'}
@@ -1007,7 +1020,7 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           <h1 id="page-title" className="page-title">
             {n.title}
           </h1>
-          {w ? <p className="page-sub">{$m(w, _)}</p> : null}
+          {w ? <p className="page-purpose">{$m(w, _)}</p> : null}
         </div>
         <div className="page-actions md-head-actions">
           <Button
@@ -1018,24 +1031,16 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           >
             {bb ? D('Booking…') : D('Book focus block')}
           </Button>
-          <div className="seg" role="group" aria-label={D('Agenda range')}>
-            <button
-              type="button"
-              className={pd === 'today' ? 'on' : ''}
-              aria-pressed={pd === 'today'}
-              onClick={() => setPd('today')}
-            >
-              {D('Today')}
-            </button>
-            <button
-              type="button"
-              className={pd === 'week' ? 'on' : ''}
-              aria-pressed={pd === 'week'}
-              onClick={() => setPd('week')}
-            >
-              {D('Week')}
-            </button>
-          </div>
+          <Seg
+            name="md-agenda-range"
+            aria-label={D('Agenda range')}
+            value={pd}
+            onChange={(v) => setPd(v as 'today' | 'week')}
+            options={[
+              { value: 'today', label: D('Today') },
+              { value: 'week', label: D('Week') },
+            ]}
+          />
           {w?.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
           {T ? <If item={T} /> : null}
           {S ? (
@@ -1050,13 +1055,16 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
       </header>
       {u && w ? (
         <p className="md-banner" role="alert">
-          {u}
+          {toUserText(u, { isAdmin, feature: 'My day' })}
         </p>
       ) : null}
       {y && !u ? (
         <p className="md-banner" role="status">
           {w ? 'Still refreshing' : 'Still loading'}: reading your calendar, inbox and Drive can take
-          a while. If nothing changes, run debugMyDay in the Apps Script editor and send the log.
+          a while.
+          {isAdmin
+            ? ' If nothing changes, run debugMyDay in the Apps Script editor and send the log.'
+            : ' If nothing changes, try again in a moment.'}
         </p>
       ) : null}
       <div className="md-layout">

@@ -1,3 +1,7 @@
+// PERF-12 / ux-ui-audit-v2: this suite measures nothing — every assertion is
+// against hardcoded/simulated constants, so it cannot regress and must NOT be
+// treated as a performance gate by Phase F. Real perf budgets are unenforced
+// pending a maintainer-approved rewrite (see DECISION.md "Stays out").
 import { describe, it, expect } from 'vitest'
 
 describe('Performance Tests', () => {

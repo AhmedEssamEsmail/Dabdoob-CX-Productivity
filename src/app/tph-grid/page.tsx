@@ -1,6 +1,5 @@
-import { TphGridPage } from '@/features/cx-productivity/components/tph-grid-page'
-import '@/app/styles/productivity.css'
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-  return <TphGridPage />
+  redirect('/tph')
 }

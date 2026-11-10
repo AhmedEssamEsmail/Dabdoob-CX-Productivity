@@ -4,7 +4,7 @@
  * Z/xt/Es/$l/In/zt/jl/Bl/Dl/El/Fl/Pl/Rl/Hl/Il/Ol/ql/Nl/Ll. */
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Input, Select, Textarea } from '@/features/shared/components/ui'
 import { fetchJson, sweepStyle, useSweep } from './shared'
 
 /** Z — the scheduler API object (google.script.run facade). */
@@ -39,7 +39,7 @@ const KIND_LABEL: Record<string, string> = {
 const KINDS = Object.keys(KIND_LABEL)
 const kindLabel = (t: string) => KIND_LABEL[t]
 
-/** Request status -> shared .pill tone. */
+/** Request status -> shared Chip tone. */
 function StatusPill({ status }: { status: string }) {
   const tone =
     status === 'Approved' || status === 'Done'
@@ -48,8 +48,8 @@ function StatusPill({ status }: { status: string }) {
         ? 'bad'
         : status === 'Pending' || status === 'Awaiting peer'
           ? 'warn'
-          : ''
-  return <span className={tone ? `pill ${tone}` : 'pill'}>{status}</span>
+          : undefined
+  return <Chip status={tone}>{status}</Chip>
 }
 
 // SVG geometry (Pe / Tl / Ne / $e / _e / Nn).
@@ -1118,14 +1118,14 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`sch-panel-${u}`} aria-labelledby={`sch-tab-${u}`} aria-busy={p} className="card">
-        <div className="card-head">
+      <div role="tabpanel" id={`sch-panel-${u}`} aria-labelledby={`sch-tab-${u}`} aria-busy={p} className="cx-panel">
+        <div className="cx-section__head">
           <div>
-            <div className="card-title">{v.find(([y]) => y === u)?.[1] ?? ''}</div>
-            <div className="card-hint">{l?.plan.monthName ?? ''}</div>
+            <div className="cx-section__title">{v.find(([y]) => y === u)?.[1] ?? ''}</div>
+            <div className="cx-section__hint">{l?.plan.monthName ?? ''}</div>
           </div>
         </div>
-        <div className="card-pad">
+        <div className="cx-panel--pad">
         {!l && !i ? <div className="skeleton" style={{ height: '220px' }} /> : null}
         {l && u === 'month' ? <MonthGrid res={l} admin={!!m} onOpenDay={(y) => { f(y); c('timeline') }} onChanged={() => g()} /> : null}
         {l && u === 'timeline' ? <TimelineTab res={l} admin={!!m} date={o} setDate={f} onChanged={() => g()} /> : null}

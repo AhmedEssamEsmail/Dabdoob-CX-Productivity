@@ -6,7 +6,8 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { AsOfHint, LoadError, fetchJson, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Input, Select, Tabs } from '@/features/shared/components/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 import { useBoot } from '@/features/shared/shell/context'
 
 /* me — the scorecard facade (Scorecard.js). */
@@ -67,10 +68,10 @@ function kpiSub(k: any) {
 function Val({ v, sub }: { v: number | null; sub?: string }) {
   return (
     <>
-      <span className="cx-chip cx-chip--plain" data-status={tone(v)}>
+      <Chip plain status={tone(v) as ChipStatus}>
         {v === null ? '–' : `${v}%`}
-      </span>
-      {sub ? <span className="cx-hint dq-sub">{sub}</span> : null}
+      </Chip>
+      {sub ? <span className="cx-hint cx-sub">{sub}</span> : null}
     </>
   )
 }
@@ -109,33 +110,33 @@ function ScoreCells({ t, trendTd }: { t: any; trendTd?: any }) {
         : { cls: 'ok', text: 'clean' }
   return (
     <>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.inbProd} sub={`${t.inbAchieved} / ${t.inbTarget}`} />
       </td>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.txtProd} sub={`${t.txtAchieved} / ${t.txtTarget}`} />
       </td>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.waProd} sub={`${t.waAchieved} / ${t.waTarget}`} />
       </td>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.prod} sub={`${t.totalAchieved} / ${t.totalTarget}`} />
-        <span className="cx-hint dq-sub">{payLine(t.kpi, 'prod')}</span>
+        <span className="cx-hint cx-sub">{payLine(t.kpi, 'prod')}</span>
       </td>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.qual} sub={`${t.audits} ${t.audits === 1 ? 'audit' : 'audits'}`} />
-        <span className="cx-hint dq-sub">{payLine(t.kpi, 'qual')}</span>
+        <span className="cx-hint cx-sub">{payLine(t.kpi, 'qual')}</span>
       </td>
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <Val v={t.fcr} sub={`${t.fcrPassed} / ${scored} scored${t.fcrExcluded ? ` · ${t.fcrExcluded} excl` : ''}`} />
-        <span className="cx-hint dq-sub">{payLine(t.kpi, 'fcr')}</span>
+        <span className="cx-hint cx-sub">{payLine(t.kpi, 'fcr')}</span>
       </td>
-      <td className="num">
-        <span className={behaviorPill.cls ? `pill ${behaviorPill.cls}` : 'pill'}>{behaviorPill.text}</span>
-        <span className="cx-hint dq-sub">{payLine(t.kpi, 'behavior')}</span>
+      <td className="cx-num-col cx-num">
+        <Chip status={(behaviorPill.cls || undefined) as ChipStatus | undefined}>{behaviorPill.text}</Chip>
+        <span className="cx-hint cx-sub">{payLine(t.kpi, 'behavior')}</span>
       </td>
       {trendTd}
-      <td className="num">
+      <td className="cx-num-col cx-num">
         <strong>
           <Val v={t.overall} sub={kpiSub(t.kpi)} />
         </strong>
@@ -244,22 +245,9 @@ function KpiBuild({ k, raw }: { k: any; raw: any }) {
 /* ol — the per-month read status chip. */
 function ReadChip({ m }: { m: any }) {
   if (m.status === 'never' || m.status === '')
-    return (
-      <span className="cx-chip" data-status="neutral">
-        Not read yet
-      </span>
-    )
-  if (m.status === 'error')
-    return (
-      <span className="cx-chip" data-status="bad">
-        Last read failed
-      </span>
-    )
-  return (
-    <span className="cx-chip" data-status="ok">
-      Read
-    </span>
-  )
+    return <Chip status="neutral">Not read yet</Chip>
+  if (m.status === 'error') return <Chip status="bad">Last read failed</Chip>
+  return <Chip status="ok">Read</Chip>
 }
 
 /* cl — the admin "Productivity workbook per month" block. */
@@ -315,7 +303,7 @@ function ScorecardAdmin() {
   return (
     <div className="block">
       <h2 className="block-title">Productivity workbook per month</h2>
-      <p className="card-hint">{D("Reads each month's workbook into V2; months without one use the fallback.")}</p>
+      <p className="cx-section__hint">{D("Reads each month's workbook into V2; months without one use the fallback.")}</p>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
@@ -339,7 +327,7 @@ function ScorecardAdmin() {
                 onInput={(e) => setMonth(e.currentTarget.value)}
               />
             </div>
-            <div className="cx-field" style={{ flex: 1, minInlineSize: '18rem' }}>
+            <div className="cx-field pw-field-grow">
               <label className="cx-label" htmlFor="ps-link">
                 Workbook link or ID
               </label>
@@ -388,18 +376,18 @@ function ScorecardAdmin() {
               <tbody>
                 {data.months.map((m: any) => (
                   <tr key={m.month}>
-                    <th scope="row" className="dq-rowhead">
+                    <th scope="row" className="cx-rowhead">
                       {m.month}
                     </th>
                     <td>
                       {m.title || '–'}
-                      <span className="cx-faint dq-sub">
+                      <span className="cx-faint cx-sub">
                         {m.usingFallback ? 'fallback workbook' : `${m.workbookId.slice(0, 8)}…`}
                       </span>
                     </td>
                     <td>
                       <ReadChip m={m} />
-                      {m.error ? <span className="cx-hint dq-sub">{m.error}</span> : null}
+                      {m.error ? <span className="cx-hint cx-sub">{m.error}</span> : null}
                     </td>
                     <td>
                       {m.status === 'never' ? (
@@ -408,7 +396,7 @@ function ScorecardAdmin() {
                         <>
                           {m.matrixRows} agent-days, {m.agents} agents
                           {m.firstDate ? ` (${m.firstDate} to ${m.lastDate})` : ''}
-                          <span className="cx-hint dq-sub">
+                          <span className="cx-hint cx-sub">
                             FCR {m.fcrRows} rows{m.fcrNote ? `: ${m.fcrNote}` : ''}; behaviour{' '}
                             {m.behaviourFound
                               ? `${m.behaviourCases} cases`
@@ -568,21 +556,21 @@ export function AgentsPage({ route }: { route: { title: string } }) {
     return { cls: 'ok', text: 'Full pay' }
   }
   const viewTabs = [
-    { value: 'rank', label: 'Stack ranking' },
-    { value: 'detail', label: 'Agent detail' },
-    ...(boot?.user.role === 'admin' ? [{ value: 'workbook', label: 'Workbook imports' }] : []),
-    { value: 'scoring', label: 'How scoring works' },
+    { id: 'rank', label: 'Stack ranking' },
+    { id: 'detail', label: 'Agent detail' },
+    ...(boot?.user.role === 'admin' ? [{ id: 'workbook', label: 'Workbook imports' }] : []),
+    { id: 'scoring', label: 'How scoring works' },
   ]
 
   return (
-    <section className="cxp dq-page" aria-labelledby="page-title" aria-busy={!data && !error}>
+    <section className="cxp page" aria-labelledby="page-title" aria-busy={!data && !error}>
       <header className="page-head">
         <div>
           <h1 id="page-title" className="page-title">
             {route.title}
           </h1>
           {data ? (
-            <p className="page-sub">
+            <p className="page-purpose">
               {teamView
                 ? D('Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.')
                 : D('Your scorecard from the monthly productivity workbook.')}
@@ -595,7 +583,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               id="sc-from"
               type="date"
               aria-label={D('From')}
-              style={{ width: '9.5rem' }}
+              className="pw-input-date"
               value={from}
               onInput={(e) => setFrom(e.currentTarget.value)}
             />
@@ -604,7 +592,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               id="sc-to"
               type="date"
               aria-label={D('To')}
-              style={{ width: '9.5rem' }}
+              className="pw-input-date"
               value={to}
               onInput={(e) => setTo(e.currentTarget.value)}
             />
@@ -637,7 +625,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                       <>
                         {(() => {
                           const d = Math.round((teamScore - data.prevTeam) * 10) / 10
-                          const cls = d > 0 ? 'delta up good' : d < 0 ? 'delta up' : 'delta flat'
+                          const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat'
                           const txt = d > 0 ? `▲ ${d}` : d < 0 ? `▼ ${Math.abs(d)}` : '='
                           return <span className={cls}>{txt}</span>
                         })()}{' '}
@@ -685,23 +673,12 @@ export function AgentsPage({ route }: { route: { title: string } }) {
           </section>
           {teamView ? (
             <>
-              <div className="tabs" role="tablist" aria-label="Scorecard view">
-                {viewTabs.map((t) => (
-                  <a
-                    key={t.value}
-                    href="#"
-                    role="tab"
-                    aria-selected={view === t.value}
-                    className={view === t.value ? 'on' : undefined}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setView(t.value)
-                    }}
-                  >
-                    {t.label}
-                  </a>
-                ))}
-              </div>
+              <Tabs
+                tabs={viewTabs}
+                value={view}
+                onChange={setView}
+                aria-label="Scorecard view"
+              />
               {data.scope === 'tl' && view === 'rank' ? (
                 <div className="cx-filters">
                   <label className="cx-switch">
@@ -714,25 +691,25 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             </>
           ) : null}
           {!teamView || view === 'rank' ? (
-            <section className="card" aria-labelledby="sc-rank">
-              <div className="card-head">
-                <h2 className="card-title" id="sc-rank">
+            <section className="cx-panel" aria-labelledby="sc-rank">
+              <div className="cx-section__head">
+                <h2 className="cx-section__title" id="sc-rank">
                   {teamView ? 'Stack Ranking' : 'Your scorecard'}
                 </h2>
-                <span className="card-hint">
+                <span className="cx-section__hint">
                   {agents.length} agent{agents.length === 1 ? '' : 's'}
                 </span>
               </div>
               <div className="cx-tablewrap">
-                <table className="tbl">
+                <table className="cx-table">
                   <thead>
                     <tr>
-                      <th scope="col" className="num">
+                      <th scope="col" className="cx-num-col">
                         #
                       </th>
                       <th scope="col">Agent</th>
                       <th scope="col">{D('Team lead')}</th>
-                      <th scope="col" className="num">
+                      <th scope="col" className="cx-num-col">
                         Days
                       </th>
                       {COLUMNS.map((c) => (
@@ -741,7 +718,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                           {c === 'Behaviour' ? <th scope="col">Trend · 8w</th> : null}
                         </Fragment>
                       ))}
-                      <th scope="col" className="num">
+                      <th scope="col" className="cx-num-col">
                         {D('vs team')}
                       </th>
                       <th scope="col"></th>
@@ -750,33 +727,33 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                   <tbody>
                     {agents.map((a: any) => (
                       <tr key={a.email}>
-                        <td className="num">{a.rank ?? '–'}</td>
-                        <th scope="row">
-                          <span className="lead">
-                            <span className="flex">
-                              <span className="avatar" style={{ width: '1.7rem', height: '1.7rem', fontSize: '.65rem' }}>
-                                {initials(a.name)}
-                              </span>
-                              {teamView ? (
-                                <Button
-                                  variant="quiet"
-                                  onClick={() => {
-                                    setAgent(a.email)
-                                    setView('detail')
-                                  }}
-                                >
-                                  {a.name}
-                                </Button>
-                              ) : (
-                                a.name
-                              )}
+                        <td className="cx-num-col cx-num">{a.rank ?? '–'}</td>
+                        <th scope="row" className="cx-rowhead">
+                          <span className="flex">
+                            <span className="avatar avatar--xs">
+                              {initials(a.name)}
                             </span>
+                            {teamView ? (
+                              <Button
+                                variant="quiet"
+                                onClick={() => {
+                                  setAgent(a.email)
+                                  setView('detail')
+                                }}
+                              >
+                                {a.name}
+                              </Button>
+                            ) : (
+                              a.name
+                            )}
                           </span>
                         </th>
-                        <td className="sub">{a.tlName || '–'}</td>
-                        <td className="num">{a.days}</td>
+                        <td>
+                          <span className="cx-faint cx-sub">{a.tlName || '–'}</span>
+                        </td>
+                        <td className="cx-num-col cx-num">{a.days}</td>
                         <ScoreCells t={a} trendTd={<TrendCell trend={a.trend} />} />
-                        <td className="num">
+                        <td className="cx-num-col cx-num">
                           {(() => {
                             const d = vsTeamDelta(a)
                             if (d === null) return '–'
@@ -787,10 +764,10 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                             )
                           })()}
                         </td>
-                        <td className="num">
+                        <td className="cx-num-col cx-num">
                           {(() => {
                             const p = bandPill(a)
-                            return p ? <span className={`pill ${p.cls}`}>{p.text}</span> : '–'
+                            return p ? <Chip status={p.cls as ChipStatus}>{p.text}</Chip> : '–'
                           })()}
                         </td>
                       </tr>
@@ -880,7 +857,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                             <tbody>
                               {activeDays.map((d: any) => (
                                 <tr key={d.date}>
-                                  <th scope="row" className="dq-rowhead">
+                                  <th scope="row" className="cx-rowhead">
                                     {d.date}
                                   </th>
                                   <ScoreCells t={d} />

@@ -53,7 +53,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
             </div>
           </div>
           <QaSection id="mak-h" title={`${a.name}, ${a.month}`}>
-            <div className="card cx-tablewrap">
+            <div className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -107,7 +107,7 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
             title="Audits you did"
             hint={`Last 90 days, and any older audit with an undecided dispute. ${a.myAudits.filter((l: any) => l.dispute && (l.dispute.status === 'open' || l.dispute.status === 'escalated')).length} with a dispute waiting.`}
           >
-            <div className="card cx-tablewrap">
+            <div className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>

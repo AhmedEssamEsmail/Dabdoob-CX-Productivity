@@ -5,7 +5,7 @@
  *   Z/Je/Y/G/F/V/ie/ne  — Kuwait (UTC+3) date helpers
  *   ee                  — useBusy (in-flight guard + error)
  *   q/z/Re/ot/rt        — pw-badge, pw-error, pw-skeleton, pw-late, page shell
- *   es                  — the pw-dialog delete/reason confirm dialog
+ *   es                  — the delete/reason confirm dialog
  *   Ne                  — the dropdown "Other…" combo (getDropdownOptions/addDropdownOption)
  *   Wn/Ms/ln/Tt         — the tiny module store the combo caches options in
  *   Ie                  — oo-delta
@@ -15,15 +15,16 @@
  *   de                  — the toast emitter (re-exported)
  *   jt/st               — reduced-motion + the .is-in/.is-done entrance hook
  */
-import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { fetchJson } from './shared'
+import { loadOptions, useOptions } from '@/features/shared/lib/use-options'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
 import { PAGES, APPS } from '@/features/shared/components/shell/registry'
 import { pageParams } from '@/features/shared/shell/gates'
 import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 import { useEnterAnim } from '@/features/shared/components/shell/ui'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Dialog, Input, PageShell, Select } from '@/features/shared/components/ui'
 
 export { toast }
 export { prefersReducedMotion, useEnterAnim }
@@ -85,14 +86,8 @@ export function useBusy() {
 
 /* ------------------------------------------------- small pw widgets */
 
-/** q() */
-export function PwBadge({ tone, children }: { tone?: string; children?: ReactNode }) {
-  return (
-    <span className="pw-badge" data-tone={tone}>
-      {children}
-    </span>
-  )
-}
+/** q() — legacy alias onto the shared Chip. */
+export const PwBadge = Chip
 
 /** z() */
 export function PwErr({ message }: { message?: string | null }) {
@@ -128,34 +123,39 @@ export function PwLate({ message, retry }: { message: string; retry: () => void 
   )
 }
 
-/** rt() — the pw page shell: .page(.page-narrow).pw-page + .page-head. */
+/** rt() — the pw page shell: delegates to shared PageShell, keeping the .pw-page marker. */
 export function PwShell({
   route,
   children,
   aside,
   narrow,
+  busy,
+  error,
+  onRetry,
 }: {
   route: { title: ReactNode; purpose?: ReactNode }
   children?: ReactNode
   aside?: ReactNode
   narrow?: boolean
+  busy?: boolean
+  error?: string | null
+  onRetry?: () => void
 }) {
   return (
-    <section className={narrow ? 'page page-narrow pw-page' : 'page pw-page'} aria-labelledby="page-title">
-      <header className="page-head">
-        <h1 id="page-title" className="page-title">
-          {route.title}
-        </h1>
-        <p className="page-purpose">{route.purpose}</p>
-        {aside}
-      </header>
+    <PageShell
+      title={route.title}
+      purpose={route.purpose}
+      aside={aside}
+      narrow={narrow}
+      busy={busy}
+      error={error}
+      onRetry={onRetry}
+      className="pw-page"
+    >
       {children}
-    </section>
+    </PageShell>
   )
 }
-
-/** O() — Fragment passthrough. */
-export const Frag = ({ children }: { children?: ReactNode }) => <>{children}</>
 
 /**
  * routeOf(path, prop) — the registry RouteDef is the verbatim route object the
@@ -181,43 +181,12 @@ export function hashParam(t: string): string {
   return pageParams().get(t) ?? ''
 }
 
-/* --------------------------------- the tiny options store — Wn/Ms/ln */
-
-const storeSubs = new Set<() => void>() // Tt
-let storeValues: Record<string, unknown> = {} // Xe
-
-function storeGet(t: string) {
-  return storeValues[t] // Ms
-}
-
-function storeSet(t: string, n: unknown) {
-  // ln()
-  storeValues = { ...storeValues, [t]: n }
-  storeSubs.forEach((fn) => fn()) // Un()
-}
-
-/** Wn(selector, deps) — subscribe to a derived slice of the store. */
-export function useStore<T>(selector: () => T, deps: unknown[] = []): T {
-  const [value, setValue] = useState<T>(selector)
-  useEffect(() => {
-    const update = () => setValue(() => selector())
-    storeSubs.add(update)
-    update()
-    return () => {
-      storeSubs.delete(update)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
-  return value
-}
-
-/* --------------------------------- the dropdown API facade — ve */
-
-const dropdownCache = new Map<string, Promise<string[]>>() // vt
+/* ------------------------- the dropdown API facade — ve (options now
+   live in the canonical use-options inflight+cache; S06-15 owns any
+   remaining pub-sub store merge) */
 
 export const dropdownApi = {
-  getDropdownOptions: (listKey: string) =>
-    fetchJson('/api/options/' + encodeURIComponent(listKey)).then((r: any) => (Array.isArray(r) ? r : r?.options ?? [])) as Promise<string[]>,
+  getDropdownOptions: (listKey: string) => loadOptions(listKey),
   addDropdownOption: (listKey: string, value: string) =>
     fetchJson('/api/options/' + encodeURIComponent(listKey), { value }) as Promise<{ options: string[]; value: string }>,
 }
@@ -245,27 +214,19 @@ export function PwCombo({
   hint?: string
 }) {
   const uid = useId()
-  const options = useStore(() => storeGet(listKey) as string[] | undefined, [listKey])
+  const {
+    options: optList,
+    loading: optLoading,
+    error: optError,
+    reload: reloadOptions,
+  } = useOptions(listKey)
+  const options = optLoading || optError ? undefined : optList
+  const loadErr = optError ?? ''
   const [other, setOther] = useState(false)
   const [newChoice, setNewChoice] = useState('')
   const [adding, setAdding] = useState(false)
   const [addErr, setAddErr] = useState('')
-  const [loadErr, setLoadErr] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
-
-  useEffect(() => {
-    if (options !== undefined) return
-    let p = dropdownCache.get(listKey)
-    if (!p) {
-      p = dropdownApi.getDropdownOptions(listKey).then((list) => {
-        storeSet(listKey, list)
-        return list
-      })
-      dropdownCache.set(listKey, p)
-      p.catch(() => dropdownCache.delete(listKey))
-    }
-    p.catch((e: any) => setLoadErr(e.message))
-  }, [listKey, options])
 
   useEffect(() => {
     if (other) inputRef.current?.focus()
@@ -291,7 +252,7 @@ export function PwCombo({
     setAddErr('')
     try {
       const r = await dropdownApi.addDropdownOption(listKey, newChoice)
-      storeSet(listKey, r.options)
+      reloadOptions()
       onChange(r.value)
       setOther(false)
       setNewChoice('')
@@ -382,7 +343,7 @@ export function PwCombo({
   )
 }
 
-/* --------------------------------------- es() — the pw-dialog */
+/* --------------------------------------- es() — the delete dialog */
 
 export function PwDialog({
   title,
@@ -399,15 +360,10 @@ export function PwDialog({
   onConfirm: (reason: string) => Promise<boolean | void>
   onClose: () => void
 }) {
-  const ref = useRef<HTMLDialogElement | null>(null)
   const [reason, setReason] = useState('')
   const busy = useBusy()
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (el && !el.open) el.showModal()
-  }, [])
   return (
-    <dialog ref={ref} className="pw-dialog" aria-labelledby="pw-del-h" onCancel={onClose} onClose={onClose}>
+    <Dialog open labelledby="pw-del-h" onClose={onClose}>
       <h2 id="pw-del-h" className="pw-h2">
         {title}
       </h2>
@@ -431,7 +387,7 @@ export function PwDialog({
         />
       </label>
       <PwErr message={busy.error} />
-      <div className="pw-dialog-actions">
+      <div className="pwdlg-actions">
         <Button variant="quiet" onClick={onClose}>
           Keep it
         </Button>
@@ -442,14 +398,14 @@ export function PwDialog({
             busy
               .run(() => onConfirm(reason.trim()))
               .then((r) => {
-                if (r !== undefined) onClose()
+                if (r) onClose()
               })
           }
         >
           {busy.busy ? 'Deleting…' : confirmLabel}
         </Button>
       </div>
-    </dialog>
+    </Dialog>
   )
 }
 

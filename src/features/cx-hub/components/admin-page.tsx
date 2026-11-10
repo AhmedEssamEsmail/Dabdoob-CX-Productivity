@@ -7,7 +7,7 @@
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useEffect, useState } from 'react'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, SettingsSection, SettingsToc, Textarea } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -194,11 +194,13 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
         ))}
       </dl>
       {l.length === 0 ? (
-        <div className="empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-          <div className="t">No settings found</div>
-          <div className="s">Try a different search.</div>
-        </div>
+        <Empty
+          icon={
+            <svg className="cx-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          }
+          title="No settings found"
+          body="Try a different search."
+        />
       ) : null}
     </Ft>
   )
@@ -228,17 +230,11 @@ function Im() {
   const n = Pr()
   const e = n?.appUrls ?? {}
   return (
-    <section className="card">
-      <div className="card-head">
-        <div>
-          <div className="card-title">Connected apps</div>
-          <div className="card-hint">
-            Each system opens inside this one app now, so there are no web app URLs to connect.
-            The retired Apps Script addresses stay on record here, read-only.
-          </div>
-        </div>
-      </div>
-      <div className="card-pad">
+    <SettingsSection id="connected-apps" title="Connected apps">
+      <p className="cx-section__hint">
+        Each system opens inside this one app now, so there are no web app URLs to connect.
+        The retired Apps Script addresses stay on record here, read-only.
+      </p>
       <div className="form-grid">
         {Lm.map((h) => {
           const u = `app-url-${h}`
@@ -264,8 +260,7 @@ function Im() {
           )
         })}
       </div>
-      </div>
-    </section>
+    </SettingsSection>
   )
 }
 
@@ -281,14 +276,6 @@ function Pf({ route: n, narrow: e, children: t }: { route: { title: string; purp
           <p className="page-purpose">{n.purpose}</p>
         </div>
       </header>
-      <div className="pending">
-        <p className="pending-line">
-          Not built yet.
-          {n.reqs && n.reqs.length
-            ? ` Covers requirement${n.reqs.length > 1 ? 's' : ''} ${n.reqs.join(', ')} in the brief.`
-            : ''}
-        </p>
-      </div>
       {t}
     </section>
   )
@@ -388,21 +375,15 @@ function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: Confi
   const row = rows?.find((x) => x.key === 'reminders_enabled')
   const on = row ? row.value === true : true
   return (
-    <section className="card">
-      <div className="card-head">
-        <div>
-          <div className="card-title">Reminders</div>
-          <div className="card-hint">
-            Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
-          </div>
-        </div>
-        {rows === null ? (
-          <span className="pill">loading</span>
-        ) : (
-          <span className={on ? 'pill ok' : 'pill'}>{on ? 'on' : 'off'}</span>
-        )}
-      </div>
-      <div className="card-pad">
+    <SettingsSection id="reminders" title="Reminders">
+      <p className="cx-section__hint">
+        Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
+      </p>
+      {rows === null ? (
+        <Chip>loading</Chip>
+      ) : (
+        <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>
+      )}
       <Button
         type="button"
         className="btn btn-quiet btn-small"
@@ -424,8 +405,7 @@ function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: Confi
       >
         {busy ? 'Saving…' : on ? 'Turn off' : 'Turn on'}
       </Button>
-      </div>
-    </section>
+    </SettingsSection>
   )
 }
 
@@ -440,17 +420,21 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
   }, [])
   return (
     <Pf route={n} narrow={!0}>
-      <section className="card">
-        <div className="card-head">
-          <div>
-            <div className="card-title">Dropdown choices</div>
-            <div className="card-hint">
-              Every dropdown ends with Other. A value typed there is added to that dropdown for everyone.
-              Try it below.
-            </div>
-          </div>
-        </div>
-        <div className="card-pad">
+      <SettingsToc
+        label="Admin sections"
+        items={[
+          { id: 'dropdown-choices', label: 'Dropdown choices' },
+          { id: 'connected-apps', label: 'Connected apps' },
+          { id: 'reminders', label: 'Reminders' },
+          { id: 'appearance', label: 'Appearance' },
+          { id: 'settings', label: 'Settings' },
+        ]}
+      />
+      <SettingsSection id="dropdown-choices" title="Dropdown choices">
+        <p className="cx-section__hint">
+          Every dropdown ends with Other. A value typed there is added to that dropdown for everyone.
+          Try it below.
+        </p>
         <div className="form-grid">
           <Oo
             listKey="one_on_one.topic"
@@ -463,34 +447,23 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
           />
           <Oo listKey="queue.channel" label="Channel" value={i} onChange={s} />
         </div>
-        </div>
-      </section>
+      </SettingsSection>
       <Im />
       <Rb rows={r} onSaved={a} />
-      <section className="card">
-        <div className="card-head">
-          <div className="card-title">Appearance</div>
-        </div>
-        <div className="card-pad">
-          <Tm />
-        </div>
-      </section>
-      <section className="card">
-        <div className="card-head">
-          <div className="card-title">Settings</div>
-        </div>
-        <div className="card-pad">
-          {o ? (
-            <p className="field-error" role="alert">
-              Settings did not load: {o}
-            </p>
-          ) : r ? (
-            <Dm rows={r} onSaved={a} />
-          ) : (
-            <p className="card-hint">Loading settings…</p>
-          )}
-        </div>
-      </section>
+      <SettingsSection id="appearance" title="Appearance">
+        <Tm />
+      </SettingsSection>
+      <SettingsSection id="settings" title="Settings">
+        {o ? (
+          <p className="field-error" role="alert">
+            Settings did not load: {o}
+          </p>
+        ) : r ? (
+          <Dm rows={r} onSaved={a} />
+        ) : (
+          <p className="cx-section__hint">Loading settings…</p>
+        )}
+      </SettingsSection>
     </Pf>
   )
 }

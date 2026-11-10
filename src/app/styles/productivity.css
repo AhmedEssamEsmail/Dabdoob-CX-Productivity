@@ -3,19 +3,25 @@
    Re-authored from the legacy globals.css rules, scoped to [data-app="productivity"].
    ========================================================================== */
 
-[data-app="productivity"] .pv-review {display:grid;gap:var(--cx-space-4);align-items:start}
-[data-app="productivity"] .pv-list {list-style:none;margin:0;padding:0;display:grid;gap:var(--cx-space-2)}
 [data-app="productivity"] .pv-item {inline-size:100%;text-align:start;display:grid;gap:var(--cx-space-1);justify-items:start;padding:var(--cx-space-3) var(--cx-space-4);background:var(--cx-surface);color:var(--cx-ink);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object);cursor:pointer;font:inherit}
 [data-app="productivity"] .pv-item:hover {border-color:var(--cx-line-strong)}
 [data-app="productivity"] .pv-item[aria-pressed=true] {border-color:var(--cx-accent);box-shadow:inset 3px 0 0 var(--cx-accent)}
 [data-app="productivity"] .pv-item:focus-visible {outline:2px solid var(--cx-focus);outline-offset:2px}
 [data-app="productivity"] .pv-item__what {font-size:var(--cx-text-sm);color:var(--cx-ink-2)}
+[data-app="productivity"] .pv-item--row {display:flex;align-items:center;gap:var(--cx-space-4);padding:.8rem 1.25rem;border:0;border-bottom:1px solid var(--cx-line);border-radius:0;background:transparent;text-align:start;box-shadow:none}
+[data-app="productivity"] .pv-item--row:last-child {border-bottom:0}
+[data-app="productivity"] .pv-item--row[data-selected] {background:var(--cx-accent-soft)}
+[data-app="productivity"] .pv-item--row .wi-main {min-inline-size:0}
+[data-app="productivity"] .pv-item--row .wi-t, [data-app="productivity"] .pv-item--row .wi-s {display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-app="productivity"] .pv-item--row .wi-side {flex:0 1 auto;min-inline-size:0}
+[data-app="productivity"] .pv-item--row .wi-side .cx-chip {white-space:normal}
 [data-app="productivity"] .pv-detail {display:grid;gap:var(--cx-space-3)}
 [data-app="productivity"] .pv-detail__head {display:flex;flex-wrap:wrap;gap:var(--cx-space-2) var(--cx-space-3);align-items:center;margin-block-end:var(--cx-space-2)}
 [data-app="productivity"] .pv-cards {display:grid;gap:var(--cx-space-3)}
 [data-app="productivity"] .pv-cards>article {display:grid;gap:var(--cx-space-2)}
 [data-app="productivity"] .pv-strip {margin:0;display:grid;gap:6px}
-[data-app="productivity"] .pv-lane {display:grid;grid-template-columns:6.5rem minmax(0,1fr) 8rem;gap:var(--cx-space-3);align-items:center}
+[data-app="productivity"] .pv-strip {--pv-lane-a: 6.5rem;--pv-lane-b: 8rem}
+[data-app="productivity"] .pv-lane {display:grid;grid-template-columns:var(--pv-lane-a,6.5rem) minmax(0,1fr) var(--pv-lane-b,8rem);gap:var(--cx-space-3);align-items:center}
 [data-app="productivity"] .pv-lane__label {font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
 [data-app="productivity"] .pv-lane__status {font-size:var(--cx-text-sm);font-weight:var(--cx-weight-medium)}
 [data-app="productivity"] .pv-lane__bar {position:relative;block-size:14px;border-radius:var(--cx-radius-bar);background:var(--cx-status-neutral-bg);border:1px solid var(--cx-status-neutral-edge);overflow:hidden}
@@ -25,7 +31,7 @@
 [data-app="productivity"] .pv-lane[data-kind=reverted] .pv-lane__span {background:var(--cx-status-warn-edge)}
 [data-app="productivity"] .pv-lane[data-kind=pending] .pv-lane__span {background:repeating-linear-gradient(135deg,var(--cx-status-info-edge) 0 4px,transparent 4px 8px)}
 [data-app="productivity"] .pv-lane[data-kind=pending] .pv-lane__status {color:var(--cx-ink-3);font-weight:var(--cx-weight-regular)}
-[data-app="productivity"] .pv-strip__axis {display:flex;justify-content:space-between;gap:var(--cx-space-2);margin-inline:calc(6.5rem + var(--cx-space-3)) calc(8rem + var(--cx-space-3));font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
+[data-app="productivity"] .pv-strip__axis {display:flex;justify-content:space-between;gap:var(--cx-space-2);margin-inline:calc(var(--pv-lane-a,6.5rem) + var(--cx-space-3)) calc(var(--pv-lane-b,8rem) + var(--cx-space-3));font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
 
 @media (max-width:560px) {
 [data-app="productivity"] .pv-lane {grid-template-columns:minmax(0,1fr) auto;row-gap:2px}
@@ -54,6 +60,8 @@
 [data-app="productivity"] .pv-spark circle {fill:var(--cx-accent)}
 [data-app="productivity"] .pv-spark circle[data-partial] {fill:var(--cx-surface);stroke:var(--cx-accent);stroke-width:2}
 [data-app="productivity"] .pv-spark__vals {display:flex;justify-content:space-between;font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
+[data-app="productivity"] .pv-spark circle:focus-visible {outline:2px solid var(--cx-focus);outline-offset:2px}
+[data-app="productivity"] .spark i:focus-visible {outline:2px solid var(--cx-focus);outline-offset:1px}
 [data-app="productivity"] .pv-heat {overflow-x:auto;display:grid;gap:2px}
 [data-app="productivity"] .pv-heat__row {display:grid;grid-template-columns:2.5rem repeat(24,minmax(14px,1fr));gap:2px;min-inline-size:26rem}
 [data-app="productivity"] .pv-heat__h, [data-app="productivity"] .pv-heat__d {font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
@@ -84,8 +92,8 @@
 [data-app="productivity"] .tph-gridwrap {overflow-x:auto;padding:var(--cx-space-3)}
 [data-app="productivity"] .tph-grid {display:grid;gap:3px;min-inline-size:calc(9rem + var(--tph-n) * 13px);touch-action:none;user-select:none}
 [data-app="productivity"] .tph-row {display:grid;grid-template-columns:9rem repeat(var(--tph-n),minmax(10px,1fr));gap:1px;align-items:stretch}
-[data-app="productivity"] .tph-row--head {font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
-[data-app="productivity"] .tph-row--head .tph-hour {grid-column:span 4;padding-inline-start:2px;border-inline-start:1px solid var(--cx-line)}
+[data-app="productivity"] .cx-paintgrid-row--head {font-size:var(--cx-text-xs);color:var(--cx-ink-2)}
+[data-app="productivity"] .cx-paintgrid-row--head .tph-hour {grid-column:span 4;padding-inline-start:2px;border-inline-start:1px solid var(--cx-line)}
 [data-app="productivity"] .tph-name {font-size:var(--cx-text-sm);padding-inline-end:var(--cx-space-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
 [data-app="productivity"] .tph-cell {block-size:26px;padding:0;border:0;border-radius:2px;cursor:crosshair;background:var(--cx-surface-sunken);box-shadow:inset 0 0 0 1px var(--cx-line)}
 [data-app="productivity"] .tph-cell[data-hour] {margin-inline-start:3px}
@@ -93,7 +101,7 @@
 [data-app="productivity"] .tph-cell[data-ch][data-src=carried] {background:repeating-linear-gradient(135deg,var(--tph-c) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1px var(--tph-c)}
 [data-app="productivity"] .tph-cell[data-ch=off]:not([data-src=carried]) {background:repeating-linear-gradient(90deg,var(--tph-off) 0 2px,transparent 2px 5px)}
 [data-app="productivity"] .tph-cell[data-now] {outline:2px solid var(--cx-ink);outline-offset:1px}
-[data-app="productivity"] .tph-cell:disabled {cursor:default}
+[data-app="productivity"] .tph-grid[aria-readonly] .tph-cell {cursor:default}
 [data-app="productivity"] .tph-cell {position:relative}
 [data-app="productivity"] .tph-cell[data-calls]:after, [data-app="productivity"] .tph-swatch--calls {background:var(--cx-ink)}
 [data-app="productivity"] .tph-cell[data-calls]:after {content:"";position:absolute;inset-inline:0;inset-block-start:0;block-size:5px;border-radius:2px 2px 0 0}
@@ -215,8 +223,15 @@
 [data-app="productivity"] .tph-trend__col[data-now] .tph-trend__bar {background:var(--cx-ink)}
 [data-app="productivity"] .tph-trend__col[data-now] .tph-trend__axis {color:var(--cx-ink);font-weight:600}
 [data-app="productivity"] .tph-trend__val {font-size:var(--cx-text-xs);text-align:center;font-variant-numeric:tabular-nums;color:var(--cx-ink)}
+[data-app="productivity"] .tph-trend__col:focus-visible {outline:2px solid var(--cx-focus);outline-offset:2px}
 [data-app="productivity"] .tph-trend__axis {font-size:var(--cx-text-xs);color:var(--cx-ink-2);text-align:center;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
 
 @media (max-width:39.99rem) {
 [data-app="productivity"] .tph-trend--hours .tph-trend__axis:not([data-third]) {visibility:hidden}
 }
+[data-app="productivity"] h2.cx-section__title {margin:0}
+[data-app="productivity"] .pv-card--flat {box-shadow:none;margin-block-end:var(--cx-space-4)}
+[data-app="productivity"] .hr--compact {margin:.8rem 0}
+[data-app="productivity"] .spark--tall {height:var(--cx-space-7)}
+[data-app="productivity"] .pv-wyc {display:flex;flex-direction:column;gap:.55rem}
+[data-app="productivity"] .tph-date {width:9.5rem}

@@ -1,10 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useReducer, useState, type ReactNode } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
+import { usePageData } from '@/features/shared/lib/use-page-data'
+import { useSearchParamState } from '@/features/shared/lib/use-search-param-state'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { pageParams } from '@/features/shared/shell/gates'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Count, Empty, ErrMsg, Failed, Input, PageShell, Select, Skeleton, TableScroll, Textarea } from '@/features/shared/components/ui'
+import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 
 /* ------------------------------------------------------------------ *
  * TL performance — port of the legacy Desk page (TlPerformance.js):
@@ -83,126 +85,30 @@ const B = (v: string) => {
 const st = (v: string) => (v ? utc3(v).toISOString().slice(11, 16) : '')
 const V = (v: string) => (v ? `${B(v)}, ${st(v)}` : '')
 const LABEL: Record<string, string> = { below: 'Below', meets: 'Meets', exceeds: 'Exceeds' }
-const TONE: Record<string, string | undefined> = { below: 'bad', exceeds: 'ok' }
+const TONE: Record<string, ChipStatus | undefined> = { below: 'bad', exceeds: 'ok' }
+const ZONE_TONE: Record<string, string> = { below: 'bad', meets: 'warn', exceeds: 'ok' }
 const band = (v: number | null | undefined) => (v === null || v === undefined ? undefined : v >= 90 ? 'ok' : v >= 75 ? 'warn' : 'bad')
 const pct = (v: number | null) => (v === null ? '–' : `${v}%`)
 const dash = (v: number | null | undefined) => (v === null || v === undefined ? '–' : String(v))
 const mins = (v: number | null) => (v === null ? '–' : v >= 90 ? `${Math.round(v / 6) / 10} h` : `${v} min`)
 const PART: Record<string, string> = { team: 'team KPI', responsibilities: 'responsibilities' }
 const zone = (v: number, z: Zones) => (v >= z.exceeds ? 'exceeds' : v >= z.meets ? 'meets' : 'below')
-/* The ?tl=<email> param — '#/tl-performance?tl=' in the legacy, '/tl-performance?tl='
- * after the shim; pageParams reads both. */
-const hashTl = () => pageParams().get('tl') ?? ''
-
-const AR_NUM = '٠١٢٣٤٥٦٧٨٩'
-function arDigits(s: string) {
-  return typeof document !== 'undefined' && document.documentElement.lang !== 'ar'
-    ? s
-    : s.replace(/(\d)([.,])(?=\d)/g, (_m, d, sep) => d + (sep === '.' ? '٫' : '٬')).replace(/\d/g, (d) => AR_NUM[+d])
-}
-
-const NUM = /^(\D*?)(-?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(\D*)$/
-function Count({ v }: { v: string | number }) {
-  const text = v === null || v === undefined ? '' : String(v)
-  const m = NUM.exec(text)
-  const target = m ? Number(m[2] + m[3].replace(/,/g, '') + (m[4] ?? '')) : null
-  const ref = useRef<HTMLSpanElement>(null)
-  const [k, setK] = useState(1)
-  useEffect(() => {
-    if (target === null || target === 0) return
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-reduce-motion')) return
-    queueMicrotask(() => setK(0))
-    const el = ref.current
-    let raf = 0
-    let timer = 0
-    const start = () => {
-      const t0 = performance.now()
-      const step = (now: number) => {
-        const p = Math.min(1, (now - t0) / 900)
-        setK(p)
-        if (p < 1) raf = requestAnimationFrame(step)
-      }
-      raf = requestAnimationFrame(step)
-      timer = window.setTimeout(() => {
-        cancelAnimationFrame(raf)
-        setK(1)
-      }, 1100)
-    }
-    const io =
-      el && typeof IntersectionObserver === 'function'
-        ? new IntersectionObserver((es) => {
-            if (es.some((e) => e.isIntersecting)) {
-              io?.disconnect()
-              start()
-            }
-          })
-        : null
-    if (io && el) io.observe(el)
-    else if (!document.hidden) start()
-    return () => {
-      io?.disconnect()
-      cancelAnimationFrame(raf)
-      clearTimeout(timer)
-      setK(1)
-    }
-  }, [target])
-  const ease = 1 - (1 - k) ** 3
-  let live = text
-  if (m && target !== null && k < 1) {
-    const dec = m[4] ? m[4].length - 1 : 0
-    live = m[1] + (target * ease).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: m[3].includes(',') }) + m[5]
-  }
-  return (
-    <>
-      <span ref={ref} aria-hidden="true">
-        {arDigits(live)}
-      </span>
-      <span className="sr-only">{arDigits(text)}</span>
-    </>
-  )
-}
-
-function Skeleton() {
-  return (
-    <div aria-busy="true" aria-label="Loading" className="dk-skel">
-      {[92, 70, 84, 60, 76].map((w) => (
-        <span key={w} className="skeleton" style={{ width: `${w}%` }} />
-      ))}
-    </div>
-  )
-}
-
-function Failed({ message, retry }: { message: string; retry: () => void }) {
-  return (
-    <div className="dk-failed" role="alert">
-      <p>This page could not load: {message}</p>
-      <Button variant="primary" onClick={retry}>
-        Try again
-      </Button>
-    </div>
-  )
-}
-
 function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="page dk" aria-labelledby="page-title">
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-purpose">{route.purpose}</p>
-        </div>
-        {aside ? <div className="page-actions">{aside}</div> : null}
-      </header>
+    <PageShell
+      title={route.title}
+      purpose={route.purpose}
+      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      id="page-title"
+      className="dk"
+    >
       {children}
-    </section>
+    </PageShell>
   )
 }
 
-function Badge({ tone, children }: { tone?: string; children: ReactNode }) {
-  return <span className={tone ? `pill ${tone}` : 'pill'}>{children}</span>
+function Badge({ tone, children }: { tone?: ChipStatus; children: ReactNode }) {
+  return <Chip tone={tone}>{children}</Chip>
 }
 
 function Rating({ value, label }: { value: number | null; label: string }) {
@@ -215,26 +121,8 @@ function Rating({ value, label }: { value: number | null; label: string }) {
   )
 }
 
-function ErrMsg({ message }: { message: string }) {
-  return message ? (
-    <p className="dk-error" role="alert">
-      {message}
-    </p>
-  ) : null
-}
-
 function useLoaded<T>(load: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState('')
-  const reload = useCallback(() => {
-    setError('')
-    load().then(setData, (e) => setError(e instanceof Error ? e.message : String(e)))
-  }, [load])
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reload() only clears a stale error, then sets state in the async .then
-    reload()
-  }, [reload])
-  return { data, setData, error, reload }
+  return usePageData<T>(null, load, { cache: false })
 }
 
 function Slider({ id, value, note, zones, onSave }: { id: string; value: number | null; note: string; zones: Zones; onSave: (v: number, n: string) => Promise<void> }) {
@@ -259,7 +147,12 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
   }
   return (
     <div className="dk-rate">
-      <div className="dk-slider" style={{ '--p': rated ? v : 0 } as React.CSSProperties} data-label={rated ? g : 'none'}>
+      <div
+        className="dk-slider"
+        style={{ '--p': rated ? v : 0 } as React.CSSProperties}
+        data-label={rated ? g : 'none'}
+        data-zone={rated ? ZONE_TONE[g] : 'none'}
+      >
         <label className="sr-only" htmlFor={`dk-r-${id}`}>
           Rating, 0 to 100
         </label>
@@ -332,8 +225,8 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
   }
   return (
     <div className="dk-otd">
-      <div className="card card-pad">
-        <div className="dk-scroll">
+      <div className="cx-panel cx-panel--pad">
+        <TableScroll label="On-time delivery by month" minWidth="36rem">
           <table className="dk-table">
           <thead>
             <tr>
@@ -358,7 +251,7 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
             ))}
           </tbody>
         </table>
-        </div>
+        </TableScroll>
       </div>
       {canEdit ? (
         <div className="dk-otd__edit">
@@ -509,7 +402,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
       )}
       <h2 className="dk-h">Responsibilities, week of {B(p.week)}</h2>
       {areas.length ? (
-        <div className="card card-pad">
+        <div className="cx-panel cx-panel--pad">
         <ul className="dk-list">
           {areas.map((a) => (
             <li key={a.area}>
@@ -556,16 +449,14 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
         </ul>
         </div>
       ) : (
-        <div className="card">
-          <div className="empty">
-            <div className="s">No areas are set for {first}. Add them under Hub Admin, tlp_tl_areas.</div>
-          </div>
+        <div className="cx-panel">
+          <Empty title={`No areas are set for ${first}. Add them under Hub Admin, tlp_tl_areas.`} />
         </div>
       )}
       <h2 className="dk-h">Projects against your expectation</h2>
       <p className="dk-fine">Shown for the 1:1; not part of the overall score.</p>
       {projects.length ? (
-        <div className="card card-pad">
+        <div className="cx-panel cx-panel--pad">
         <ul className="dk-list">
           {projects.map((o) => (
             <li key={o.actionId}>
@@ -594,20 +485,16 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
         </ul>
         </div>
       ) : (
-        <div className="card">
-          <div className="empty">
-            <div className="s">No projects in the last 90 days.</div>
-          </div>
+        <div className="cx-panel">
+          <Empty title="No projects in the last 90 days." />
         </div>
       )}
       <h2 className="dk-h">
         While on queue, {B(p.from)} to {B(p.to)}
       </h2>
       {!p.queue || !p.queue.days.length ? (
-        <div className="card">
-          <div className="empty">
-            <div className="s">No queue-hour numbers for {first} these 7 days. The Hub writes them hourly from the TL scheduler.</div>
-          </div>
+        <div className="cx-panel">
+          <Empty title={`No queue-hour numbers for ${first} these 7 days. The Hub writes them hourly from the TL scheduler.`} />
         </div>
       ) : (
         <>
@@ -631,8 +518,8 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
               average response ({p.queue.total.respCount})
             </div>
           </div>
-          <div className="card card-pad">
-            <div className="dk-scroll">
+          <div className="cx-panel cx-panel--pad">
+            <TableScroll label="Queue performance by day" minWidth="32rem">
             <table className="dk-table">
               <thead>
                 <tr>
@@ -661,7 +548,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
                 ))}
               </tbody>
             </table>
-            </div>
+            </TableScroll>
           </div>
           <p className="dk-fine">
             Queue hours from the TL scheduler. Calls from Maqsam: answered = answered or completed, or any handling
@@ -675,10 +562,8 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
       )}
       <h2 className="dk-h">Mails to answer by the end of the shift</h2>
       {!p.mail || !p.mail.items.length ? (
-        <div className="card">
-          <div className="empty">
-            <div className="s">No MyFatoorah refund updates or chargeback mails for {first} these 7 days.</div>
-          </div>
+        <div className="cx-panel">
+          <Empty title={`No MyFatoorah refund updates or chargeback mails for ${first} these 7 days.`} />
         </div>
       ) : (
         <>
@@ -702,7 +587,7 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
               late{p.mail.open ? `, ${p.mail.open} open` : ''}
             </div>
           </div>
-          <div className="card card-pad">
+          <div className="cx-panel cx-panel--pad">
           <ul className="dk-list">
             {p.mail.items.map((m) => (
               <MailItem key={m.messageId} m={m} />
@@ -731,9 +616,10 @@ const ROUTE = {
 }
 
 export default function TlPerformancePage() {
-  const [tl, setTl] = useState(hashTl)
+  const [tl, setTl] = useSearchParamState('tl', '')
+  const [, bump] = useReducer((x: number) => x + 1, 0)
   useEffect(() => {
-    const onHash = () => setTl(hashTl())
+    const onHash = () => bump()
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -757,7 +643,7 @@ export default function TlPerformancePage() {
       {error ? (
         <Failed message={error} retry={() => void reload()} />
       ) : !data || (tl && data.tl !== tl) ? (
-        <Skeleton />
+        <Skeleton shape="rows" n={5} />
       ) : (
         <Body key={data.tl} p={data} reload={() => void reload()} />
       )}

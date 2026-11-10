@@ -7,7 +7,10 @@ import {
   type ShellPopup,
 } from '@/features/shared/shell/context'
 import { resolveLink } from '@/features/shared/shell/gates'
+import { usePoll } from '@/features/shared/lib/use-poll'
+import { useDialogModal } from '@/features/shared/lib/use-dialog-modal'
 import { timeAgo } from '@/features/shared/components/shell/ui'
+import { D } from '@/features/shared/shell/i18n'
 import OneOnOneAlerts, { chime } from '@/features/shared/components/shell/OneOnOneAlerts'
 import { Toasts } from '@/features/shared/components/shell/Toasts'
 
@@ -34,57 +37,43 @@ export default function Popups({
   const seen = useRef(new Set(initial.map((p) => p.id)))
   const popups = polled ?? initial
 
-  useEffect(() => {
-    let dead = false
-    let timer = 0
-    const poll = async () => {
-      if (dead) return
-      if (document.visibilityState === 'visible') {
-        try {
-          const data = await alertsApi.pollTick()
-          if (dead) return
-          const fresh = data.popups.filter((p) => !seen.current.has(p.id))
-          data.popups.forEach((p) => seen.current.add(p.id))
-          setPolled(data.popups)
-          setAlerts(data.alerts)
-          if (fresh.length && !chime()) {
-            const original = document.title
-            let tick = 0
-            const interval = window.setInterval(() => {
-              document.title = tick++ % 2 ? original : `New: ${fresh[0].title}`
-              if (tick > 10) {
-                window.clearInterval(interval)
-                document.title = original
-              }
-            }, 1e3)
+  const poll = async () => {
+    try {
+      const data = await alertsApi.pollTick()
+      const fresh = data.popups.filter((p) => !seen.current.has(p.id))
+      data.popups.forEach((p) => seen.current.add(p.id))
+      setPolled(data.popups)
+      setAlerts(data.alerts)
+      if (fresh.length && !chime()) {
+        const original = document.title
+        let tick = 0
+        const interval = window.setInterval(() => {
+          document.title = tick++ % 2 ? original : D('New: {title}', { title: fresh[0].title })
+          if (tick > 10) {
+            window.clearInterval(interval)
+            document.title = original
           }
-        } catch {
-          /* endpoint may not exist yet */
-        }
+        }, 1e3)
       }
-      timer = window.setTimeout(poll, POLL_MS)
+    } catch {
+      /* endpoint may not exist yet */
     }
-    timer = window.setTimeout(poll, 2500)
-    return () => {
-      dead = true
-      window.clearTimeout(timer)
-    }
-  }, [])
+  }
 
-  const dialogRef = useRef<HTMLDialogElement>(null)
+  /* __CC_BOOT__ already delivered popups — first refresh at the next
+     POLL_MS boundary, then every POLL_MS while the tab is visible. */
+  usePoll(POLL_MS, poll, { immediate: false })
+
   const current = popups.find((p) => !dismissed.has(p.id))
   const remaining = popups.filter((p) => !dismissed.has(p.id)).length
   const link = current?.link ? resolveLink(current.link) : null
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (current && !dialog.open) dialog.showModal()
-    if (!current && dialog.open) dialog.close()
-  }, [current])
-
   const later = () =>
     current && setDismissed((set) => new Set(set).add(current.id))
+
+  /* Shared dialog lifecycle: showModal/close sync, ESC → dismiss, focus
+     restore to the invoking element. */
+  const { dialogRef, onCancel } = useDialogModal(!!current, later)
 
   /* Topbar bell: re-open the reminder dialog by clearing dismissals
      (adjust-during-render, same pattern as prevRoutePath). */
@@ -104,23 +93,24 @@ export default function Popups({
         ref={dialogRef}
         className="popup"
         aria-labelledby="popup-title"
-        onCancel={(event) => {
-          event.preventDefault()
-          later()
-        }}
+        onCancel={onCancel}
       >
         {current ? (
           <div className="popup-body">
             <p className="popup-kicker">
-              {remaining > 1 ? `1 of ${remaining} reminders` : 'Reminder'}
-              {current.createdAt ? ` — raised ${timeAgo(current.createdAt)}` : ''}
+              {remaining > 1
+                ? D('1 of {n} reminders', { n: String(remaining) })
+                : D('Reminder')}
+              {current.createdAt
+                ? ` — ${D('raised {ago}', { ago: timeAgo(current.createdAt) })}`
+                : ''}
             </p>
             <h2 id="popup-title" className="popup-title">
               {current.title}
             </h2>
             <p className="popup-text">{current.body}</p>
             <p className="popup-note">
-              This comes back each time you open the tool until it is resolved.
+              {D('This comes back each time you open the tool until it is resolved.')}
             </p>
             <div className="popup-actions">
               {link && !link.missing ? (
@@ -130,12 +120,12 @@ export default function Popups({
                   target={link.external ? '_top' : undefined}
                   onClick={() => later()}
                 >
-                  {current.kind.startsWith('qa_') ? 'Open' : 'Log it now'}
+                  {current.kind.startsWith('qa_') ? D('Open') : D('Log it now')}
                 </a>
               ) : null}
               {/* kept raw: legacy .btn contract */}
               <button type="button" className="btn btn-quiet" onClick={later}>
-                Later
+                {D('Later')}
               </button>
             </div>
           </div>

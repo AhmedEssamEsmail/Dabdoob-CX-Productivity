@@ -22,7 +22,7 @@ import {
   routeOf,
 } from './pw'
 import { stagger } from '@/features/shared/components/shell/ui'
-import { Button, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
 
 /* I — the tasks facade (Tasks.js). */
 const api = {
@@ -214,17 +214,17 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
       <h2 id="assign-h" className="pw-h2">
         {data.me.role === 'admin' ? 'Assign a task' : 'Add a task for yourself'}
       </h2>
-      <div className="form-grid" style={{ marginTop: 12 }}>
-        <label className="field" style={{ gridColumn: '1 / -1' }}>
+      <div className="form-grid pw-mt-12">
+        <label className="field pw-span-all">
           <span className="field-label">Title</span>
           <Input className="input" value={form.title} onInput={(e) => patch({ title: e.currentTarget.value })} />
         </label>
-        <label className="field" style={{ gridColumn: '1 / -1' }}>
+        <label className="field pw-span-all">
           <span className="field-label">What done looks like</span>
           <Textarea className="pw-textarea" value={form.description} onInput={(e) => patch({ description: e.currentTarget.value })} />
         </label>
         {form.ownerEmail !== data.me.email ? (
-          <label className="field" style={{ gridColumn: '1 / -1' }}>
+          <label className="field pw-span-all">
             <span className="field-label">Your expectation: the result you will rate Below, Meets or Exceeds in the 1:1</span>
             <Textarea
               className="pw-textarea"
@@ -289,13 +289,12 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
           onChange={(v) => patch({ sourceLabel: v })}
         />
       </div>
-      <div style={{ marginTop: 16 }}>
+      <div className="pw-mt-16">
         <span className="field-label">Planned milestones (optional)</span>
         {(form.planned ?? []).map((m: any, i: number) => (
-          <div key={i} className="pw-inline" style={{ marginTop: 8 }}>
+          <div key={i} className="pw-inline pw-mt-8">
             <Input
-              className="input"
-              style={{ flex: '2 1 200px' }}
+              className="input pw-flex-200"
               placeholder="e.g. Draft SOP"
               aria-label={`Milestone ${i + 1}`}
               value={m.label}
@@ -304,8 +303,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
               }
             />
             <Input
-              className="input"
-              style={{ flex: '1 1 140px' }}
+              className="input pw-flex-140"
               type="date"
               aria-label={`Milestone ${i + 1} date`}
               value={m.targetDate}
@@ -324,7 +322,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
             </Button>
           </div>
         ))}
-        <div style={{ marginTop: 8 }}>
+        <div className="pw-mt-8">
           <Button
             size="sm"
             onClick={() => patch({ planned: [...(form.planned ?? []), { label: '', targetDate: form.deadlineAt }] })}
@@ -334,17 +332,17 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         </div>
       </div>
       {preview ? (
-        <p className="pw-panel pw-num" style={{ marginTop: 16 }} aria-live="polite">
+        <p className="pw-panel pw-num pw-mt-16" aria-live="polite">
           {hLabel(preview.free)} task hours free of {hLabel(preview.available)} working hours; estimate{' '}
           {hLabel(form.estHours)}:{' '}
-          <span className={`pill ${preview.fitStatus === 'fits' ? 'ok' : preview.fitStatus === 'tight' ? 'warn' : 'bad'}`}>
+          <Chip status={preview.fitStatus === 'fits' ? 'ok' : preview.fitStatus === 'tight' ? 'warn' : 'bad'}>
             {FIT_LABELS[preview.fitStatus]}
-          </span>
+          </Chip>
           {preview.estimated ? <span className="pw-small pw-muted"> Estimated: roster not published.</span> : null}
         </p>
       ) : null}
       {doesNotFit ? (
-        <div className="pw-panel pw-attention" role="alert" style={{ marginTop: 12 }}>
+        <div className="pw-panel pw-attention pw-mt-12" role="alert">
           <p>{doesNotFit}</p>
           <div className="pw-actions-bar">
             <Button variant="primary" onClick={() => create(true)}>
@@ -412,11 +410,11 @@ function GanttRow({
         <div className="pw-small pw-muted pw-num">
           {dayLabel(kwDate(t.startAt))} to {dayLabel(kwDate(t.deadlineAt))}{' '}
           {t.status === 'done' ? (
-            <span className="pill ok">Done</span>
+            <Chip status="ok">Done</Chip>
           ) : t.overdue ? (
-            <span className="pill bad">Overdue</span>
+            <Chip status="bad">Overdue</Chip>
           ) : t.atRisk ? (
-            <span className="pill warn">At risk</span>
+            <Chip status="warn">At risk</Chip>
           ) : null}
         </div>
       </div>
@@ -426,8 +424,11 @@ function GanttRow({
             key={f.i}
             className="pw-g-off"
             data-reason={f.reason ?? undefined}
+            role="img"
+            tabIndex={0}
+            aria-label={f.reason === 'holiday' ? 'Public holiday' : 'Day off'}
             title={f.reason === 'holiday' ? 'Public holiday' : 'Day off'}
-            style={{ left: `${(f.i / nDays) * 100}%`, width: `${100 / nDays}%` }}
+            style={{ insetInlineStart: `${(f.i / nDays) * 100}%`, width: `${100 / nDays}%` }}
           />
         ))}
         {/* eslint-disable-next-line -- kept raw: .pw-bar gantt bar is positioned family chrome, not a cx-btn */}
@@ -435,7 +436,7 @@ function GanttRow({
           type="button"
           className="pw-bar"
           data-tone={barTone(t)}
-          style={{ left: `${left}%`, width: `${width}%` }}
+          style={{ insetInlineStart: `${left}%`, width: `${width}%` }}
           onClick={onSelect}
           aria-label={aria}
         >
@@ -443,7 +444,7 @@ function GanttRow({
           <span className="pw-bar-label pw-num">{hoursText}</span>
         </button>
         {t.overdue && now > endMs ? (
-          <i className="pw-late-ext" style={{ left: `${pct(endMs)}%`, width: `${Math.max(0.5, pct(now) - pct(endMs))}%` }} />
+          <i className="pw-late-ext" style={{ insetInlineStart: `${pct(endMs)}%`, width: `${Math.max(0.5, pct(now) - pct(endMs))}%` }} />
         ) : null}
         {t.planned
           .filter((m: any) => !m.doneByUpdateId)
@@ -452,7 +453,10 @@ function GanttRow({
               key={m.milestoneId}
               className="pw-mark"
               data-kind="planned"
-              style={{ left: `${pct(Date.parse(m.targetDate + 'T12:00:00+03:00'))}%` }}
+              role="img"
+              tabIndex={0}
+              aria-label={`Planned milestone: ${m.label}, ${dayLabel(m.targetDate)}`}
+              style={{ insetInlineStart: `${pct(Date.parse(m.targetDate + 'T12:00:00+03:00'))}%` }}
               title={`Planned: ${m.label}, ${dayLabel(m.targetDate)}`}
             />
           ))}
@@ -462,11 +466,14 @@ function GanttRow({
             className="pw-mark"
             data-kind={m.kind}
             data-rag={m.rag || undefined}
-            style={{ left: `${pct(Date.parse(m.at))}%` }}
+            role="img"
+            tabIndex={0}
+            aria-label={`${m.kind === 'file' ? 'File uploaded' : 'Written update'}: ${m.kind === 'file' ? m.fileName : m.note}, ${dayTime(m.at)}`}
+            style={{ insetInlineStart: `${pct(Date.parse(m.at))}%` }}
             title={`${m.kind === 'file' ? m.fileName : m.note}, ${dayTime(m.at)}`}
           />
         ))}
-        <i className="pw-today" style={{ left: `${pct(now)}%` }} />
+        <i className="pw-today" style={{ insetInlineStart: `${pct(now)}%` }} />
       </div>
     </div>
   )
@@ -508,7 +515,7 @@ function Gantt({ data, tasks, selected, onSelect }: { data: any; tasks: any[]; s
   return (
     <>
       <div
-        className="card pw-gantt-wrap cc-chart"
+        className="cx-panel pw-gantt-wrap cc-chart"
         ref={wrapRef}
         tabIndex={0}
         role="region"
@@ -562,7 +569,7 @@ function Gantt({ data, tasks, selected, onSelect }: { data: any; tasks: any[]; s
           })}
         </div>
       </div>
-      <div className="pw-legend" aria-hidden="true">
+      <div className="pw-legend">
         <span>
           <i className="pw-mark" data-kind="file" /> File uploaded
         </span>
@@ -573,19 +580,11 @@ function Gantt({ data, tasks, selected, onSelect }: { data: any; tasks: any[]; s
           <i className="pw-mark" data-kind="planned" /> Planned milestone
         </span>
         <span>
-          <i
-            style={{
-              display: 'inline-block',
-              width: 22,
-              height: 10,
-              background: 'repeating-linear-gradient(135deg,var(--age-3) 0 3px,transparent 3px 7px)',
-              border: '1px solid var(--age-3)',
-            }}
-          />{' '}
+          <i className="pw-sw-late" />{' '}
           Past the deadline
         </span>
         <span>
-          <i style={{ display: 'inline-block', width: 2, height: 14, background: 'var(--signal)' }} /> Today
+          <i className="pw-sw-today" /> Today
         </span>
         <span>Hatched: the TL&apos;s day off or a public holiday in their country. Hours count only rostered shift time.</span>
       </div>
@@ -660,7 +659,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
     <section className="pw-detail" aria-label={`Task: ${t.title}`}>
       <div className="pw-panel">
         <h2 className="pw-h2">{t.title}</h2>
-        <p className="pw-small pw-muted" style={{ marginBottom: 12 }}>
+        <p className="pw-small pw-muted pw-mb-12">
           {t.ownerName}, {t.priority}, from {t.sourceLabel || 'ad hoc'}.{' '}
           {PROGRESS_LABELS[t.progressState] ?? t.progressState}.
         </p>
@@ -679,9 +678,9 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
           <dd>{hLabel(t.estHours)}</dd>
           <dt>Fit</dt>
           <dd>
-            <span className={`pill ${t.fitStatus === 'fits' ? 'ok' : t.fitStatus === 'tight' ? 'warn' : 'bad'}`}>
+            <Chip status={t.fitStatus === 'fits' ? 'ok' : t.fitStatus === 'tight' ? 'warn' : 'bad'}>
               {FIT_LABELS[t.fitStatus]}
-            </span>
+            </Chip>
           </dd>
           <dt>Hours used so far</dt>
           <dd>{hLabel(t.hours.elapsed)}</dd>
@@ -691,12 +690,12 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
           <dd>{t.lastUpdateAt ? dayTime(t.lastUpdateAt) : 'None yet'}</dd>
         </dl>
         {t.hours.estimated ? (
-          <p className="pw-small pw-muted" style={{ marginTop: 10 }}>
+          <p className="pw-small pw-muted pw-mt-10">
             Estimated: roster not published for part of this window.
           </p>
         ) : null}
         {t.assignedAnyway ? (
-          <p className="pw-small" style={{ marginTop: 6 }}>
+          <p className="pw-small pw-mt-6">
             Assigned anyway although the estimate did not fit.
           </p>
         ) : null}
@@ -711,7 +710,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
       <div className="pw-panel">
         <h2 className="pw-h2">Where {t.ownerName.split(' ')[0]} stands</h2>
         {t.milestones.length || t.planned.length ? (
-          <ul className="pw-timeline" style={{ marginTop: 10 }}>
+          <ul className="pw-timeline pw-mt-10">
             {[...t.milestones].reverse().map((m: any) => (
               <li key={m.updateId}>
                 <i className="pw-mark" data-kind={m.kind} data-rag={m.rag || undefined} />
@@ -743,9 +742,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
               ))}
           </ul>
         ) : (
-          <div className="empty">
-            <div className="s">No update yet.</div>
-          </div>
+          <Empty title="No update yet." />
         )}
       </div>
       {closed ? (
@@ -765,7 +762,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
       ) : (
         <div className="pw-panel">
           <h2 className="pw-h2">Post an update</h2>
-          <div className="pw-seg" role="group" aria-label="Update type" style={{ margin: '8px 0 12px' }}>
+          <div className="pw-seg pw-m-8-12" role="group" aria-label="Update type">
             {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
             <button type="button" aria-pressed={kind === 'status'} onClick={() => setKind('status')}>
               Written update
@@ -775,7 +772,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
               Upload a file
             </button>
           </div>
-          <div style={{ display: 'grid', gap: 12 }}>
+          <div className="pw-grid-12">
             {kind === 'file' ? (
               <label className="field">
                 <span className="field-label">File (up to 10 MB)</span>
@@ -789,7 +786,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
             {kind === 'status' ? (
               <>
                 <div className="pw-inline">
-                  <label className="field" style={{ flex: '0 1 120px' }}>
+                  <label className="field pw-flex-120">
                     <span className="field-label">% complete</span>
                     <Input
                       className="input"
@@ -800,7 +797,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                       onInput={(e) => setPercent(e.currentTarget.value === '' ? '' : Number(e.currentTarget.value))}
                     />
                   </label>
-                  <div className="field" style={{ flex: '1 1 auto' }}>
+                  <div className="field pw-flex-auto">
                     <span className="field-label">Status</span>
                     <div className="pw-seg" role="group" aria-label="Status">
                       {['on_track', 'at_risk', 'off_track'].map((r) => (
@@ -839,7 +836,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
               {kind === 'file' ? 'Upload file' : 'Post update'}
             </Button>
           </div>
-          <div className="pw-actions-bar" style={{ borderTop: '1px solid var(--line)', paddingTop: 14 }}>
+          <div className="pw-actions-bar pw-actions-top">
             {t.status === 'blocked' ? (
               <Button size="sm" disabled={busy.busy} onClick={() => setStatus('in_progress')}>
                 Unblock
@@ -864,8 +861,8 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
             ) : null}
           </div>
           {flow === 'deadline' ? (
-            <div className="pw-inline" style={{ marginTop: 10 }}>
-              <label className="field" style={{ flex: '0 1 170px' }}>
+            <div className="pw-inline pw-mt-10">
+              <label className="field pw-flex-170">
                 <span className="field-label">New deadline</span>
                 <Input className="input" type="date" value={newDeadline} onInput={(e) => setNewDeadline(e.currentTarget.value)} />
               </label>
@@ -878,7 +875,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
               </Button>
             </div>
           ) : flow ? (
-            <div className="pw-inline" style={{ marginTop: 10 }}>
+            <div className="pw-inline pw-mt-10">
               <label className="field">
                 <span className="field-label">
                   {flow === 'blocked' ? 'What is blocking it' : flow === 'done' ? 'Delivery link or file name' : 'Why it is cancelled'}
@@ -1001,15 +998,15 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
           {shown.length ? (
             <Gantt data={data} tasks={shown} selected={selected} onSelect={setSelected} />
           ) : (
-            <section className="card pw-section">
-              <div className="card-pad">
-                <div className="empty">
-                  <div className="s">
-                    {ownerFilter || priority || search.trim()
+            <section className="cx-panel pw-section">
+              <div className="cx-panel--pad">
+                <Empty
+                  title={
+                    ownerFilter || priority || search.trim()
                       ? 'No tasks match these filters. Clear one to see more.'
-                      : `No tasks here yet. Use ${data.me.role === 'admin' ? 'Assign a task' : 'Add a task'} to start one.`}
-                  </div>
-                </div>
+                      : `No tasks here yet. Use ${data.me.role === 'admin' ? 'Assign a task' : 'Add a task'} to start one.`
+                  }
+                />
               </div>
             </section>
           )}
