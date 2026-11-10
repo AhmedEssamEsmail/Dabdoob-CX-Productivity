@@ -30,6 +30,7 @@
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
     "three": "^0.186.1",
     "tsx": "^4.23.15"
   },
@@ -43,6 +44,7 @@
     "@vitest/ui": "^5.0.5",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "supabase": "^3.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^8.3.5",

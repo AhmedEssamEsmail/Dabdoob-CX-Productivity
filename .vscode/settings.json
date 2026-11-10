@@ -1,0 +1,15 @@
+{
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/out/**": true,
+    "**/coverage/**": true,
+    "**/test-results/**": true,
+    "**/playwright-report/**": true,
+    "**/.turbo/**": true,
+    "**/.vercel/**": true,
+    "**/.devin/work/**": true,
+    "**/logs/**": true
+  }
+}

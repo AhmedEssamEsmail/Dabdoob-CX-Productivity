@@ -154,12 +154,12 @@ tests/golden/scorecard.test.ts, e2e/nav-collapse.spec.ts.
 | qa-3 LOW (stray nul x2, tsc-FIX17/18 logs, .qa-tmp/; blocking per task) | reports/qa-3.md | FIX-22 (dev) | verified | 5 strays deleted; TL also removed worker-stray vitest-fix23.log |
 | qa-4 LOW (routes.test delete CRON_SECRET not restored; blocking per task) | reports/qa-3.md | FIX-23 (test-engineer) | verified | vi.stubEnv('CRON_SECRET','') in both tests; 401 asserts unchanged |
 
-## Blocked / needs user
-- NEEDS_APPROVAL: remote apply of migration 20261108204952_dedupe_uniques_prod_daily_layers_queue_submissions.sql (dedupe DELETEs + 2 unique indexes; destructive on duplicate rows). Spec convention: migration FILES only; remote apply needs user approval.
-- NEEDS_APPROVAL: remote apply of migration 20261108205258_lookup_indexes_prod_roster_agg.sql (6 indexes, non-destructive).
-- NEEDS_APPROVAL: remote apply of migration 20261108205536_lookup_indexes_tickets_refresh_queue.sql (5 indexes; CONCURRENTLY — must NOT run inside a transaction).
-- NEEDS_APPROVAL: remote apply of migration 20261108205645_app_cache_table.sql (new app_cache table; non-destructive).
-- NEEDS_APPROVAL: remote apply of migration 20261108205852_rls_lockdown_drop_app_all_policies.sql (drops app_all — denies anon/auth table access BY DESIGN; apply only after service-role code is deployed).
-- NEEDS_APPROVAL: provision DB settings `app.settings.app_url` + `app.settings.cron_secret` (ALTER DATABASE ... SET), THEN apply migration 20261108231643_job_data_tick_pg_cron.sql (now also schedules `cxh-job-data-tick-health`, FIX-07) — and it MUST land BEFORE the vercel.json deploy (FIX-02b removed the daily entry; reversing the order leaves job-data-tick unscheduled).
-- NEEDS_APPROVAL: remote apply of NEW migration 20261108234911_roster_email_unique.sql (FIX-12; dedupe DELETE on duplicate emails keep-latest + unique index; destructive on dup rows).
-- NOTE: FIX-10/FIX-11 edited the already-pending migrations 20261108204952 (dedupe survivor now keep-latest) and 20261108205536 (refresh_log index now on started_at) — the existing NEEDS_APPROVAL rows above cover the edited contents.
+## Remote apply log (2026-11-09, all resolved)
+- 20261108204952 / 20261108205258 / 20261108205536: applied earlier in post-FIX-10/11 form — verified remotely (idx_refresh_log_started_at + both unique indexes exist).
+- 20261108205645 app_cache_table: applied via Supabase MCP. Verified: table exists, RLS on, no policies.
+- 20261108234911 roster_email_unique: applied via Supabase MCP. Verified: roster_email_uidx exists (dedupe no-op — live table is email-PK shape).
+- 20261108205852 rls_lockdown: applied manually by owner in dashboard SQL editor after MCP destructive-confirm was declined and owner re-confirmed. Verified: 0 public policies, RLS on all public base tables. NOTE: applied BEFORE the service-role deploy — prod (main @ abda24f) still serves pre-S08 code, so anon/auth table reads in prod UI will fail until feat/cx-hub-ui-redesign merges and deploys. Owner accepted this window.
+- 20261108231643 job_data_tick_pg_cron: applied manually by owner, then RESCHEDULED via MCP — the hosted postgres role cannot ALTER DATABASE/ROLE SET "app.settings.*" (42501), so the cron command inlines app_url + rotated CRON_SECRET instead of current_setting() (same convention as 012_pg_cron_schedule placeholders). Verified: cxh-job-data-tick */15 + cxh-job-data-tick-health 7-59/15 both active, no current_setting/placeholder in command.
+- CRON_SECRET rotated 2026-11-09 (old value unrecoverable — Vercel sensitive env vars are write-only). New value set in Vercel production env via MCP and inlined in the cron command. REQUIRES a production redeploy to take effect in the running app — ticks will 401 (health job will flag) until the next prod deploy picks up the new env.
+- Bookkeeping: file-version rows inserted into supabase_migrations.schema_migrations for all four (the two MCP applies registered under run-date versions; file-version rows added for migration-list parity).
+- Remaining outside DB scope: merge feat/cx-hub-ui-redesign -> main + production deploy (required to end the RLS-lockdown breakage window and to activate the rotated CRON_SECRET).
