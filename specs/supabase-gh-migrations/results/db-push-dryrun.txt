@@ -1,4 +1,0 @@
-Target: project dabdoob-cx-productivity (uugeyulccyytvgcabzzx) · production
-Initialising login role...
-DRY RUN: migrations will *not* be pushed to the database.
-{"target":{"kind":"linked","project_ref":"uugeyulccyytvgcabzzx","project_name":"dabdoob-cx-productivity","environment":"production"},"_tag":"Error","error":{"code":"DbPushMissingRemoteError","message":"Found local migration files to be inserted before the last migration on remote database.","suggestion":"\nRerun the command with --include-all flag to apply these migrations:\nsupabase/migrations/20261109123839_before_user_created_domain_gate.sql\n"}}

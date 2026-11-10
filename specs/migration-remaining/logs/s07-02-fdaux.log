@@ -1,6 +1,0 @@
-◇ injected env (11) from .env.local
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-rows=13064
-keys=["agent name","status name","start time","end time","col_e","col_f","col_g"]
-col_e="abdelsamad.mohamed@dabdoob.com" col_f="2.93" col_g="7-Oct"
-sample row col_e="abdelsamad.mohamed@dabdoob.com" col_f="2.93" col_g="7-Oct"

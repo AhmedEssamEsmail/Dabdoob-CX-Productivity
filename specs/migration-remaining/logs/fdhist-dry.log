@@ -1,8 +1,0 @@
-◇ injected env (11) from .env.local
-mode=dry table=fd_activities tab='New Tickets Daily' tz=Asia/Kuwait (config) fd_window=[2026-07-02T16:08:22.000Z .. 2026-11-09T05:49:49.000Z] margin=1d
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-touch_archive: read=430055 in_gap=380451 outside_gap=49604 skipped=0 unique_so_far=380356 grid=430056
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-qa_engine_source: read=165461 in_gap=120522 outside_gap=44939 skipped=0 unique_so_far=495825 grid=165462
-TOTAL: sheets=2 read=595516 in_gap=500973 skipped=0 unique=495825
-would_write=495825 (dry run — pass --write to upsert)

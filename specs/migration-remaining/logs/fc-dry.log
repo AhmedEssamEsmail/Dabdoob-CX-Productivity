@@ -1,5 +1,0 @@
-◇ injected env (11) from .env.local
-mode=dry workbook=1Ll5BxooiYJhKooIr88p_g-ePRo9WI9lvLkWDXdju7V4 (config) data_tz=Africa/Cairo (config)
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-read=1742 skipped=140 unique=1602
-would_write=1602 (dry run — pass --write to upsert)

@@ -1,6 +1,0 @@
-◇ injected env (11) from .env.local
-probe since=2026-06-01 people=50
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-voice (Voice): rows=9230 would-import=4076 skipped=5154 unmatched=0
-The `credentials` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
-text (Texting): rows=4038 would-import=1709 skipped=2329 unmatched=0
