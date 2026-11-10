@@ -18,7 +18,7 @@ export const SettingsSection = forwardRef<
       ref={ref}
       id={id}
       aria-labelledby={headingId}
-      className={cx('cx-panel', className)}
+      className={cx('cx-panel cx-settings-section', className)}
       {...rest}
     >
       <h2 id={headingId}>{title}</h2>

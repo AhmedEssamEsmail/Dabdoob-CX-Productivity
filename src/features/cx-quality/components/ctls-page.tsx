@@ -44,10 +44,11 @@ function findOpenCtls(t: any[], n: string): any[] {
 function CtlAuditSide({ c, ticketUrl }: { c: any; ticketUrl: string }) {
   if (!c)
     return (
-      <p className="cx-muted">
-        Enter a ticket number or audit ID: the audit opens here with only the
-        questions that lost marks.
-      </p>
+      <div className="qa-ctlside__empty">
+        <strong>No audit selected</strong>
+        <p>Enter a ticket number or audit ID, or select an open CTL below.</p>
+        <p>The audit details and questions that lost marks will appear here.</p>
+      </div>
     )
   const a = c.audit
   return (
@@ -171,11 +172,15 @@ function CtlForm({
           </label>
           <Input
             id="ctl-ref"
+            name="ctl-ref"
             value={picked.ref}
+            spellCheck={false}
+            aria-describedby="ctl-ref-hint"
             autoComplete="off"
             placeholder="e.g. 701234 or QA-…"
             onInput={(k) => onPick({ ref: k.currentTarget.value, ctlId: '' })}
           />
+          <span className="qa-ctlform__hint" id="ctl-ref-hint">Find an open CTL to review before submitting.</span>
         </div>
         {g.length > 1 ? (
           <fieldset className="qa-pick">
@@ -219,8 +224,8 @@ function CtlForm({
               value={c}
               onChange={l}
               options={[
-                { value: 'acknowledged', label: 'Acknowledged' },
-                { value: 'dispute', label: 'Dispute' },
+                { value: 'acknowledged', label: <><strong>Acknowledged</strong><small>The agent accepts the findings</small></> },
+                { value: 'dispute', label: <><strong>Dispute</strong><small>Raise the agent’s case for review</small></> },
               ]}
               aria-labelledby="ctl-out-l"
             />
@@ -263,7 +268,8 @@ function CtlForm({
           <span className="cx-faint">The date and time are recorded when you submit.</span>
         </div>
       </form>
-      <aside className="cx-panel cx-panel--pad qa-ctlside" aria-label="The audit">
+      <aside className="qa-ctlside" aria-labelledby="ctl-audit-heading">
+        <h3 className="qa-ctlside__heading" id="ctl-audit-heading">Audit preview</h3>
         <CtlAuditSide c={y} ticketUrl={ticketUrl} />
       </aside>
     </div>
@@ -341,14 +347,15 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
       sub="Every audit under 100% opens a CTL — whoever is on shift may close it and submit the outcome."
     >
       {n ? (
-        <>
+        <div className="qa-ctls-layout">
           <div ref={l}>
             <section className="cx-panel" aria-labelledby="ctlf-h">
               <div className="cx-section__head">
                 <div>
-                  <div className="cx-section__title" id="ctlf-h">
+                  <h2 className="cx-section__title" id="ctlf-h">
                     Submit a CTL
-                  </div>
+                  </h2>
+                  <p className="qa-ctlform__intro">Review the audit, record the coaching session, then submit the outcome.</p>
                 </div>
               </div>
               <div className="cx-panel--pad">
@@ -497,7 +504,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
               </table>
             </div>
           </section>
-        </>
+        </div>
       ) : null}
     </QaPage>
   )

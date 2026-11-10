@@ -44,15 +44,19 @@
 [data-app="queue"] .hm-num { display: grid; grid-template-columns: minmax(0, 1fr) 6rem; /* px-exact: numeric label column */ gap: var(--cx-space-1) var(--cx-space-2); align-items: center; }
 [data-app="queue"] .hm-num label { font-size: var(--cx-text-md); }
 [data-app="queue"] .hm-num .hm-hint { grid-column: 1 / -1; margin: 0; }
-[data-app="queue"] .hm-num .input { min-height: var(--cx-target); padding: var(--cx-space-1) var(--cx-space-2); text-align: end; }
-[data-app="queue"] .hm-num-compact { grid-template-columns: minmax(0, 1fr); }
+[data-app="queue"] .hm-num .input { min-height: var(--cx-target); padding: var(--cx-space-1) var(--cx-space-2); text-align: end; box-sizing: border-box; inline-size: 100%; min-inline-size: 0; }
+[data-app="queue"] .hm-num input[type="time"] { min-height: 2rem; block-size: 2rem; font-size: var(--cx-text-sm); border-radius: var(--cx-radius-bar); }
+[data-app="queue"] .hm-num-compact { grid-template-columns: minmax(0, 1fr); min-inline-size: 0; }
+@media (pointer: coarse) {
+  [data-app="queue"] .hm-num input[type="time"] { min-height: 2.5rem; block-size: 2.5rem; }
+}
 [data-app="queue"] .hm-unit { color: var(--cx-ink-2); }
 [data-app="queue"] .hm-pair { display: grid; gap: var(--cx-space-2); }
 [data-app="queue"] .hm-toggle { display: flex; gap: var(--cx-space-2); align-items: flex-start; font-size: var(--cx-text-md); }
 [data-app="queue"] .hm-toggle input { margin-top: var(--cx-space-1); /* rounded 3px -> 4px nearest step */ }
 [data-app="queue"] .hm-shifts { border: 0; margin: 0; padding: 0; display: grid; gap: var(--cx-space-2); }
 [data-app="queue"] .hm-shifts legend { font-size: var(--cx-text-md); margin-bottom: var(--cx-space-1); }
-[data-app="queue"] .hm-shift { display: grid; grid-template-columns: var(--cx-space-8) 1fr 1fr; /* rounded 4.375rem -> 4rem nearest step */ gap: var(--cx-space-2); align-items: center; }
+[data-app="queue"] .hm-shift { display: grid; grid-template-columns: var(--cx-space-8) minmax(0, 1fr) minmax(0, 1fr); /* rounded 4.375rem -> 4rem nearest step */ gap: var(--cx-space-2); align-items: center; }
 [data-app="queue"] .hm-shift-name { font-weight: var(--cx-weight-strong); border-inline-start: 4px solid currentColor; padding-inline-start: var(--cx-space-2); }
 [data-app="queue"] .hm-shift-name.hm-shift-am { color: var(--hm-am); }
 [data-app="queue"] .hm-shift-name.hm-shift-pm { color: var(--hm-pm); }

@@ -105,7 +105,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
   const topCount = counts[counts.length - 1] ?? 0
   return (
     <section className="cxp page" aria-labelledby="page-title" aria-busy={!n && !error}>
-      <header className="page-head">
+      <header className="page-head aging-page-head">
         <div>
           <h1 id="page-title" className="page-title">
             {n?.scope === 'agent' ? D('My aging cases') : route.title}

@@ -25,6 +25,17 @@
 :root .page-actions {
   display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
 }
+:root .aging-page-head { display: grid; grid-template-columns: minmax(0, 1fr); }
+:root .aging-page-head .page-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) 12rem; min-inline-size: 0; }
+:root .aging-page-head .page-actions > .cx-section__hint { min-inline-size: 0; overflow-wrap: anywhere; }
+:root .aging-page-head .cx-refresh { display: contents; }
+:root .aging-page-head .cx-refresh > button { grid-column: 3; inline-size: 100%; min-inline-size: 0; }
+:root .aging-page-head .cx-refresh > [role="status"] { grid-column: 1 / -1; min-inline-size: 0; overflow-wrap: anywhere; }
+@media (max-width: 40rem) {
+  :root .aging-page-head .page-actions { grid-template-columns: minmax(0, 1fr) 11rem; }
+  :root .aging-page-head .page-actions > .cx-seg { grid-column: 1 / -1; justify-self: start; }
+  :root .aging-page-head .cx-refresh > button { grid-column: 2; }
+}
 
 :root .kicker {
   font-size: var(--cx-text-xs); font-weight: var(--w-strong); letter-spacing: .08em;

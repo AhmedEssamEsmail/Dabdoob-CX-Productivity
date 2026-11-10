@@ -14,7 +14,6 @@ import {
   Ft,
   Ln,
   Oo,
-  Pr,
   Ti,
   type ConfigRow,
 } from './hub-shared'
@@ -206,64 +205,6 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
   )
 }
 
-/* Im — Connected apps. */
-const Hr = 'hub'
-const APPS: Record<string, { title: string }> = {
-  hub: { title: 'Dabdoob CX' },
-  quality: { title: 'Dabdoob CX Quality' },
-  productivity: { title: 'Dabdoob CX Productivity' },
-  desk: { title: 'Dabdoob CX Desk' },
-  people: { title: 'Dabdoob CX People' },
-  operations: { title: 'Dabdoob CX Operations' },
-  queue: { title: 'Dabdoob CX Queue' },
-  fcr: { title: 'Dabdoob CX FCR' },
-}
-const Lm = Object.keys(APPS)
-
-/* Im — Connected apps, read-only per decision D1: one deployment serves every
- * app, so the per-app /exec URLs are retired. Same legacy block/field
- * vocabulary (block-title, block-text, form-grid, field, field-label, input,
- * field-hint incl. the not-connected line and the "(this app)" marker on hub);
- * the edit affordances (onInput, per-app errors, "Save link") are the only
- * things dropped. setAppUrl stays verbatim on the API surface. */
-function Im() {
-  const n = Pr()
-  const e = n?.appUrls ?? {}
-  return (
-    <SettingsSection id="connected-apps" title="Connected apps">
-      <p className="cx-section__hint">
-        Each system opens inside this one app now, so there are no web app URLs to connect.
-        The retired Apps Script addresses stay on record here, read-only.
-      </p>
-      <div className="form-grid">
-        {Lm.map((h) => {
-          const u = `app-url-${h}`
-          return (
-            <div className="field" key={h}>
-              <label className="field-label" htmlFor={u}>
-                {APPS[h].title}
-                {h === Hr ? ' (this app)' : ''}
-              </label>
-              <Input
-                id={u}
-                className="input"
-                type="url"
-                inputMode="url"
-                value={e[h] ?? ''}
-                readOnly
-                aria-label={APPS[h].title}
-              />
-              {e[h] ? null : (
-                <p className="field-hint">Not connected yet: links to this app are switched off.</p>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </SettingsSection>
-  )
-}
-
 /* Pf — the pending page shell (the unbuilt parts of Admin). */
 function Pf({ route: n, narrow: e, children: t }: { route: { title: string; purpose?: string; reqs?: number[] }; narrow?: boolean; children?: React.ReactNode }) {
   return (
@@ -419,12 +360,11 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
     Ln.getConfigRows().then(a, (l) => c(l.message))
   }, [])
   return (
-    <Pf route={n} narrow={!0}>
+    <Pf route={n}>
       <SettingsToc
         label="Admin sections"
         items={[
           { id: 'dropdown-choices', label: 'Dropdown choices' },
-          { id: 'connected-apps', label: 'Connected apps' },
           { id: 'reminders', label: 'Reminders' },
           { id: 'appearance', label: 'Appearance' },
           { id: 'settings', label: 'Settings' },
@@ -448,7 +388,6 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
           <Oo listKey="queue.channel" label="Channel" value={i} onChange={s} />
         </div>
       </SettingsSection>
-      <Im />
       <Rb rows={r} onSaved={a} />
       <SettingsSection id="appearance" title="Appearance">
         <Tm />
