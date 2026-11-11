@@ -11,3 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Database migrations (Supabase)
 
 Schema changes ship only as new timestamped migration files — `npx supabase migration new <name>` — which auto-apply to production on merge to `main` via the Supabase GitHub integration. Never apply DDL by hand in the dashboard SQL editor. Remote CLI ops need `--remote` (verify the `Target:` line) and, until the IDE stops injecting it, `env -u SUPABASE_ACCESS_TOKEN`; remote writes need explicit user approval.
+
+## Definition of done (UI)
+
+A page isn't done until the 8-question contract passes at 375/1024 px — see `specs/ux-ui-audit-v3/PLAN.md` Phase 2 and `e2e/page-contract.spec.ts`.

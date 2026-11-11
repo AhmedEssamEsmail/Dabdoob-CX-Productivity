@@ -70,12 +70,83 @@ const localDefRule = {
     };
   },
 };
+// P3-C34 (PLAN C3 + C4): Phase-1 class guards. All four ship "warn" and flip
+// to "error" in C34-02 once `npx eslint src` reports 0 warnings from them
+// (burn-in = Phase-1 fixes merged). Caveat: eslint sees no .css — B6/B5
+// inside stylesheets stay a Phase-1 sweep concern, not a rule.
+const stringRule = (re, message) => ({
+  meta: { type: "problem", schema: [], messages: { hit: message } },
+  create(context) {
+    const keys = context.sourceCode.visitorKeys;
+    const visit = (node) => {
+      if (!node || typeof node.type !== "string") return;
+      const value = node.type === "Literal" ? node.value : node.type === "TemplateElement" ? node.value.raw : null;
+      if (typeof value === "string" && re.test(value)) {
+        context.report({ node, messageId: "hit" });
+      }
+      for (const key of keys[node.type] ?? []) {
+        const child = node[key];
+        if (Array.isArray(child)) child.forEach(visit);
+        else visit(child);
+      }
+    };
+    return {
+      Program(node) {
+        visit(node);
+      },
+    };
+  },
+});
+const styleLiteralRule = (re, message) => ({
+  meta: { type: "problem", schema: [], messages: { hit: message } },
+  create(context) {
+    const keys = context.sourceCode.visitorKeys;
+    const visit = (node) => {
+      if (!node || typeof node.type !== "string") return;
+      const value = node.type === "Literal" ? node.value : node.type === "TemplateElement" ? node.value.raw : null;
+      if (typeof value === "string" && re.test(value)) {
+        context.report({ node, messageId: "hit" });
+      }
+      for (const key of keys[node.type] ?? []) {
+        const child = node[key];
+        if (Array.isArray(child)) child.forEach(visit);
+        else visit(child);
+      }
+    };
+    return {
+      JSXAttribute(node) {
+        if (node.name?.name === "style") visit(node.value);
+      },
+    };
+  },
+});
+const rawControlNames = new Set(["input", "select", "textarea", "button"]);
+const rawControlsRule = {
+  meta: { type: "problem", schema: [], messages: { raw: "Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)." } },
+  create(context) {
+    const marked = context.sourceCode.getAllComments()
+      .filter((c) => c.value.includes("intentionally raw"));
+    return {
+      JSXOpeningElement(node) {
+        const name = node.name?.name;
+        if (typeof name !== "string" || !rawControlNames.has(name)) return;
+        const line = node.loc.start.line;
+        if (marked.some((c) => c.loc.end.line <= line && line - c.loc.end.line <= 4)) return;
+        context.report({ node, messageId: "raw" });
+      },
+    };
+  },
+};
 const local = {
   rules: {
     "loser-classnames-error": loserRule(errorRe, null, "Deleted loser class vocabulary; use the canonical cx-* class."),
     "loser-classnames-warn": loserRule(warnRe, errorRe, "Loser class vocabulary is still migrating; prefer the canonical cx-* class."),
     "feature-boundary": boundaryRule,
     "local-defs": localDefRule,
+    "no-transition-all": stringRule(/transition\s*:\s*all/i, "transition: all banned; list explicit properties (B6)."),
+    "no-hex-classname": loserRule(/#(?:[0-9a-fA-F]{3,8})\b/, null, "Hex literal in className; use a semantic token class, not an arbitrary [#...] value (B5)."),
+    "no-raw-controls": rawControlsRule,
+    "no-style-token-literals": styleLiteralRule(/#(?:[0-9a-fA-F]{3,8})\b|\b\d+px\b|rgba?\(/i, "Hex/px/rgba literal in a style prop; use a token class or CSS var (C4/B4)."),
   },
 };
 
@@ -142,6 +213,28 @@ const eslintConfig = defineConfig([
       "src/features/shared/jobs/mirrors.ts",
     ],
     rules: { "no-restricted-imports": "off" },
+  },
+  {
+    // P3-C34 (B6/B5-lite/B3-lite, PLAN C3): warn backlog — burn in at warn;
+    // C34-02 flips to error once `npx eslint src` shows 0 of these warnings.
+    files: ["src/**/*.{ts,tsx}"],
+    plugins: { local },
+    rules: {
+      "local/no-transition-all": "warn",
+      "local/no-hex-classname": "warn",
+      "local/no-raw-controls": "warn",
+    },
+  },
+  {
+    // B3-lite: raw controls under shared/components/ui ARE the primitives — exempt.
+    files: ["src/features/shared/components/ui/**"],
+    rules: { "local/no-raw-controls": "off" },
+  },
+  {
+    // P3-C34 (C4/B4): style-prop hex/px/rgba literals — warn backlog.
+    files: ["src/features/**/*.{ts,tsx}"],
+    plugins: { local },
+    rules: { "local/no-style-token-literals": "warn" },
   },
 ]);
 
