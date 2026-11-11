@@ -58,16 +58,21 @@ function pwTally_(keys: string[]): string[] {
  * date, Kuwait time, length, who, and when the last one was held. Timing only,
  * never the record's notes or topics.
  */
-async function pwOwnOneOnOneCard_(user: HomeUser, dir: Directory, now: number): Promise<HomeCard | null> {
-  const booked = (
-    await pwRows_('one_on_one_schedule', (s) => {
+async function pwOwnOneOnOneCard_(
+  user: HomeUser,
+  dir: Directory,
+  now: number,
+  scheduleRows: Record<string, unknown>[]
+): Promise<HomeCard | null> {
+  const booked = scheduleRows
+    .filter((s) => {
       return (
         normEmail_(s.report_email) === user.email &&
         String(s.status) === 'scheduled' &&
         pwMs_(s.scheduled_at) + (Number(s.duration_min) || 30) * 60000 > now
       )
     })
-  ).sort((a, b) => pwMs_(a.scheduled_at) - pwMs_(b.scheduled_at))
+    .sort((a, b) => pwMs_(a.scheduled_at) - pwMs_(b.scheduled_at))
   const held = (await pwRows_('one_on_one_logs', (l) => normEmail_(l.report_email) === user.email))
     .map((l) => pwMs_(l.held_at))
     .filter((ms) => !isNaN(ms))
@@ -112,13 +117,14 @@ export async function peopleHomeCards_(user: HomeUser): Promise<HomeCard[]> {
   const today = pwToday_(now)
   const dir = await pwDirectory()
   const cards: HomeCard[] = []
+  const oneOnOnes = await pwRows_('one_on_one_schedule')
 
   if (user.role !== 'agent') {
-    const missed = (
-      await pwRows_('one_on_one_schedule', (s) => {
+    const missed = oneOnOnes
+      .filter((s) => {
         return String(s.status) === 'missed' && (user.role === 'admin' || normEmail_(s.manager_email) === user.email)
       })
-    ).sort((a, b) => pwMs_(a.scheduled_at) - pwMs_(b.scheduled_at))
+      .sort((a, b) => pwMs_(a.scheduled_at) - pwMs_(b.scheduled_at))
     if (missed.length) {
       cards.push({
         id: 'one-on-ones-missed',
@@ -138,7 +144,7 @@ export async function peopleHomeCards_(user: HomeUser): Promise<HomeCard[]> {
     }
   }
 
-  const own = await pwOwnOneOnOneCard_(user, dir, now)
+  const own = await pwOwnOneOnOneCard_(user, dir, now, oneOnOnes)
   if (own) cards.push(own)
 
   const actions = await pwRows_('actions', (a) => pwIsOpenStatus_(String(a.status || 'open')))

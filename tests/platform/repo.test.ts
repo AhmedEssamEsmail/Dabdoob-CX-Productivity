@@ -316,6 +316,23 @@ describe('updateRows (batched upsert)', () => {
     expect(db.calls.filter((c) => c.m === 'update')).toHaveLength(1)
   })
 
+  it('pages the .in() select so >pageSize matches all merge', async () => {
+    const page1 = Array.from({ length: 1000 }, (_, i) => ({ id: `k${i}` }))
+    const page2 = Array.from({ length: 500 }, (_, i) => ({ id: `k${1000 + i}` }))
+    const db = fakeDb([{ data: page1 }, { data: page2 }, { data: null, error: null }])
+    supa.from = db.from
+    const updates = Array.from({ length: 1500 }, (_, i) => ({ key: `k${i}`, patch: { v: i } }))
+    const out = await updateRows('things', 'id', updates, opts)
+    expect(out).toHaveLength(1500)
+    expect(out.every((r) => r !== null)).toBe(true)
+    expect(out[1499]).toMatchObject({ id: 'k1499', v: 1499, updated_by: 'agent@x.com' })
+    const inCalls = db.calls.filter((c) => c.m === 'in')
+    expect(inCalls.length).toBeGreaterThanOrEqual(3)
+    expect(inCalls.every((c) => c.args[0] === 'id')).toBe(true)
+    expect((inCalls[0].args[1] as unknown[]).length).toBe(500)
+    expect(db.awaited()).toBeGreaterThanOrEqual(4)
+  })
+
   it('single updates keep the direct per-row path', async () => {
     const db = fakeDb([
       { data: rows[0] },

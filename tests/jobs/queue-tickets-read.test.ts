@@ -76,6 +76,7 @@ vi.mock('@/features/cx-queue/lib/server', () => ({
 }))
 
 import { buildQueueAggregates_, buildAgentAggregates_ } from '@/features/cx-queue/lib/jobs'
+import { cacheGet, cachePut, cacheClear } from '@/features/shared/platform/repo'
 
 describe('buildQueueAggregates_ tickets read bound (perf-2)', () => {
   beforeEach(() => {
@@ -98,6 +99,15 @@ describe('buildQueueAggregates_ tickets read bound (perf-2)', () => {
     // The bound is yesterday-midnight business-tz minus nothing extra: a
     // superset of the counters' today window.
     expect(or).toMatch(/created_at\.gte\.\d{4}-\d{2}-\d{2}T/)
+  })
+
+  it('dqRewrite_ evicts live|<table> so dqCachedLive serves fresh aggregates (data-3)', async () => {
+    cacheClear()
+    cachePut('live|agg_queue_now', '[{}]', 45)
+    cachePut('live|aging_open_tickets', '[{}]', 45)
+    await buildQueueAggregates_(new Date('2026-10-15T09:30:00Z'))
+    expect(cacheGet('live|agg_queue_now')).toBeNull()
+    expect(cacheGet('live|aging_open_tickets')).toBeNull()
   })
 })
 

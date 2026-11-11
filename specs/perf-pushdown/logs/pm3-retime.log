@@ -1,0 +1,106 @@
+▲ Next.js 16.4.3
+- Local:         http://localhost:3100
+- Network:       http://192.168.6.50:3100
+✓ Ready in 213ms
+✓ Running next.config.ts took 39ms
+[pg] GET /rest/v1/config?select=*&order=key.asc&offset=0&limit=1000 498
+[pg] GET /rest/v1/view_as?select=action%2Ctarget_email&owner_email=eq.e2e.admin%40dabdoob.com&order=id.asc 127
+[pg] GET /rest/v1/roster?select=email%2Cname%2Crole%2Ctl_email%2Cactive&email=eq.e2e.admin%40dabdoob.com 133
+[pg] GET /rest/v1/aging_open_tickets?select=*&order=id.asc&offset=0&limit=1000 195
+[pg] GET /rest/v1/queue_submissions?select=*&slot_date=gte.2026-11-11&slot_date=lte.2026-11-11%EF%BF%BD&order=id.asc&offset=0&limit=1000 300
+[pg] GET /rest/v1/sc_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 313
+[pg] GET /rest/v1/dq_aging_flags?select=*&order=id.asc&offset=0&limit=1000 331
+[pg] GET /rest/v1/roster?select=*&order=email.asc&offset=0&limit=1000 336
+[pg] GET /rest/v1/prod_daily_layers?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 370
+[pg] GET /rest/v1/fcr_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=date.asc%2Cagent_email.asc&offset=0&limit=1000 434
+[pg] GET /rest/v1/action_planned_milestones?select=*&order=milestone_id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/action_task_details?select=*&order=action_id.asc&offset=0&limit=1000 113
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 118
+[pg] GET /rest/v1/roster?select=* 169
+[pg] GET /rest/v1/roster?select=* 174
+[pg] GET /rest/v1/action_updates?select=*&order=update_id.asc&offset=0&limit=1000 183
+[pg] GET /rest/v1/meeting_series?select=*&order=series_id.asc&offset=0&limit=1000 96
+[pg] GET /rest/v1/meetings?select=*&order=meeting_id.asc&offset=0&limit=1000 148
+[pg] GET /rest/v1/one_on_one_schedule?select=*&order=schedule_id.asc&offset=0&limit=1000 107
+[pg] GET /rest/v1/roster?select=email%2Crole%2Cdays_off%2Cbased_in_country 99
+[pg] GET /rest/v1/roster?select=email%2Crole%2Cdays_off%2Cbased_in_country 101
+[pg] GET /rest/v1/roster?select=email%2Crole%2Cdays_off%2Cbased_in_country 105
+[pg] GET /rest/v1/one_on_one_logs?select=*&order=log_id.asc&offset=0&limit=1000 104
+[pg] GET /rest/v1/holidays?select=country%2Cdate%2Cname%2Cdeleted_at 100
+[pg] GET /rest/v1/holidays?select=country%2Cdate%2Cname%2Cdeleted_at 107
+[pg] GET /rest/v1/holidays?select=country%2Cdate%2Cname%2Cdeleted_at 142
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 94
+[pg] GET /rest/v1/team_leads?select=* 100
+[pg] GET /rest/v1/tl_off_days?select=* 106
+[pg] GET /rest/v1/tl_shift_plan?select=* 109
+[pg] GET /rest/v1/tlp_shifts?select=* 94
+[pg] GET /rest/v1/sched_plan?select=* 109
+[pg] GET /rest/v1/sched_offdays?select=* 114
+[pg] GET /rest/v1/health?select=*&order=job.asc&offset=0&limit=1000 107
+[pg] GET /rest/v1/queue_snapshots?select=*&slot_date=eq.2026-11-11&order=id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/agg_queue_now?select=*&order=id.asc&offset=0&limit=1000 98
+[pg] GET /rest/v1/health?select=*&order=job.asc&offset=0&limit=1000 105
+[pg] GET /rest/v1/refresh_log?select=*&order=finished_at.desc&limit=400 280
+[pg] GET /rest/v1/agg_snapshots_today?select=*&order=id.asc&offset=0&limit=1000 107
+[perf] getHomePage total=2731 requireRole=845 configAll=0 read:aging_open_tickets=196 read:queue_submissions=304 read:sc_daily=317 read:dq_aging_flags=334 read:roster=338 read:prod_daily_layers=375 read:fcr_daily=439 e=269 e=481 e=720 dqLastRun=108 dqSetting=0 read:queue_snapshots=97 read:agg_queue_now=99 ecosystemHealth=502 tickets@1299 e@1569 e@1781 e@2020 ecosystem@2731
+[pg] GET /rest/v1/roster?select=email%2Cname%2Crole%2Ctl_email%2Cactive&email=eq.e2e.admin%40dabdoob.com 90
+[pg] GET /rest/v1/roster?select=*&order=email.asc&offset=0&limit=1000 94
+[pg] GET /rest/v1/fcr_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=date.asc%2Cagent_email.asc&offset=0&limit=1000 103
+[pg] GET /rest/v1/queue_submissions?select=*&slot_date=gte.2026-11-11&slot_date=lte.2026-11-11%EF%BF%BD&order=id.asc&offset=0&limit=1000 110
+[pg] GET /rest/v1/sc_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 131
+[pg] GET /rest/v1/aging_open_tickets?select=*&order=id.asc&offset=0&limit=1000 133
+[pg] GET /rest/v1/dq_aging_flags?select=*&order=id.asc&offset=0&limit=1000 140
+[pg] GET /rest/v1/prod_daily_layers?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 159
+[pg] GET /rest/v1/action_task_details?select=*&order=action_id.asc&offset=0&limit=1000 96
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 99
+[pg] GET /rest/v1/action_updates?select=*&order=update_id.asc&offset=0&limit=1000 103
+[pg] GET /rest/v1/action_planned_milestones?select=*&order=milestone_id.asc&offset=0&limit=1000 103
+[pg] GET /rest/v1/roster?select=* 150
+[pg] GET /rest/v1/roster?select=* 156
+[pg] GET /rest/v1/meeting_series?select=*&order=series_id.asc&offset=0&limit=1000 85
+[pg] GET /rest/v1/meetings?select=*&order=meeting_id.asc&offset=0&limit=1000 90
+[pg] GET /rest/v1/one_on_one_schedule?select=*&order=schedule_id.asc&offset=0&limit=1000 140
+[pg] GET /rest/v1/one_on_one_logs?select=*&order=log_id.asc&offset=0&limit=1000 96
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 90
+[pg] GET /rest/v1/agg_queue_now?select=*&order=id.asc&offset=0&limit=1000 90
+[pg] GET /rest/v1/queue_snapshots?select=*&slot_date=eq.2026-11-11&order=id.asc&offset=0&limit=1000 95
+[perf] getHomePage total=834 requireRole=95 configAll=0 read:roster=99 read:fcr_daily=104 read:queue_submissions=112 read:sc_daily=133 read:aging_open_tickets=134 read:dq_aging_flags=142 read:prod_daily_layers=162 e=167 e=191 e=480 dqLastRun=0 dqSetting=0 read:agg_queue_now=91 read:queue_snapshots=95 ecosystemHealth=0 tickets@258 e@426 e@450 e@739 ecosystem@834
+[pg] GET /rest/v1/roster?select=email%2Cname%2Crole%2Ctl_email%2Cactive&email=eq.e2e.admin%40dabdoob.com 87
+[pg] GET /rest/v1/sc_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 84
+[pg] GET /rest/v1/aging_open_tickets?select=*&order=id.asc&offset=0&limit=1000 89
+[pg] GET /rest/v1/prod_daily_layers?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=id.asc&offset=0&limit=1000 93
+[pg] GET /rest/v1/queue_submissions?select=*&slot_date=gte.2026-11-11&slot_date=lte.2026-11-11%EF%BF%BD&order=id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/roster?select=*&order=email.asc&offset=0&limit=1000 101
+[pg] GET /rest/v1/dq_aging_flags?select=*&order=id.asc&offset=0&limit=1000 111
+[pg] GET /rest/v1/fcr_daily?select=*&date=gte.2026-11-05&date=lte.2026-11-11&order=date.asc%2Cagent_email.asc&offset=0&limit=1000 148
+[pg] GET /rest/v1/action_task_details?select=*&order=action_id.asc&offset=0&limit=1000 89
+[pg] GET /rest/v1/action_planned_milestones?select=*&order=milestone_id.asc&offset=0&limit=1000 94
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/action_updates?select=*&order=update_id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/roster?select=* 107
+[pg] GET /rest/v1/roster?select=* 112
+[pg] GET /rest/v1/meetings?select=*&order=meeting_id.asc&offset=0&limit=1000 99
+[pg] GET /rest/v1/one_on_one_schedule?select=*&order=schedule_id.asc&offset=0&limit=1000 93
+[pg] GET /rest/v1/meeting_series?select=*&order=series_id.asc&offset=0&limit=1000 154
+[pg] GET /rest/v1/one_on_one_logs?select=*&order=log_id.asc&offset=0&limit=1000 101
+[pg] GET /rest/v1/actions?select=*&order=action_id.asc&offset=0&limit=1000 96
+[pg] GET /rest/v1/agg_queue_now?select=*&order=id.asc&offset=0&limit=1000 97
+[pg] GET /rest/v1/queue_snapshots?select=*&slot_date=eq.2026-11-11&order=id.asc&offset=0&limit=1000 195
+[perf] getHomePage total=844 requireRole=92 configAll=0 read:sc_daily=86 read:aging_open_tickets=90 read:prod_daily_layers=95 read:queue_submissions=98 read:roster=102 read:dq_aging_flags=112 read:fcr_daily=150 e=128 e=254 e=406 dqLastRun=0 dqSetting=0 read:agg_queue_now=97 read:queue_snapshots=195 ecosystemHealth=0 tickets@242 e@370 e@496 e@648 ecosystem@844
+
+# pm3-03 re-time — BUILD_ID OQ3PvVtUCyDf_oX63UwoY, PG_PROFILE=1 next start -p 3100
+# login e2e.admin@dabdoob.com; curl GET /api/hub/home x3
+run1 2.753381 200 7302
+run2 0.859148 200 7300
+run3 0.848310 200 7308
+# median of 3 = 0.859 s (0.848/0.859/2.753 cold) vs T0 1.459 s -> PASS
+# [perf] getHomePage lines above: provider window tickets@->last e@ = 258->480ms (run2), 242->496 (run3) vs ~1.4-2.2s before
+# [pg] call count this file: 81 total incl. login/bootstrap
+
+# build tail:
+ƒ Proxy (Middleware)
+
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+
+# vitest: npx vitest run tests/golden/ tests/perf/ -> 46 files / 975 tests passed (full log was pm3-vitest.log, folded here)

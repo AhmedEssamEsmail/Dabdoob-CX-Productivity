@@ -26,7 +26,7 @@ import {
   type Directory,
 } from '@/features/shared/lib/adapters'
 import { readStore } from '@/features/shared/platform/stores'
-import { db } from '@/features/shared/platform/repo'
+import { db, readAllPaged } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { requireRole, requireJobCaller, pwDirectory } from '@/features/shared/platform/identity'
 import { getConfig, setConfig, configAll } from '@/features/shared/platform/settings'
@@ -204,7 +204,12 @@ export function scBuildDaily_(
  * block-read did (an undated case sits in its month).
  */
 export async function scReadRange_(name: string, from: string, to: string): Promise<Record<string, unknown>[]> {
-  const { rows } = await readStore(name)
+  const rows = await readAllPaged(name, {
+    build:
+      name === 'sc_behaviour'
+        ? (q) => q.or(`date.is.null,date.eq.,and(date.gte.${from},date.lte.${to})`)
+        : (q) => q.gte('date', from).lte('date', to),
+  })
   return rows.filter((r) => {
     const d = dqKeyPart_('date', r.date)
     return d === '' ? name === 'sc_behaviour' : d >= from && d <= to

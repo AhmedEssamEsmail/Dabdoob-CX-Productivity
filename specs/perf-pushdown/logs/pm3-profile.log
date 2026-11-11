@@ -1,0 +1,39 @@
+# pm3-01 profile — GET /api/hub/home, instrumented build
+BUILD_ID=yHOmYNbIQEwnhd7H4c6zu  server: next start -p 3100 (stdout -> pm3-server.log)
+login: POST /api/auth/login e2e.admin@dabdoob.com -> 200 (1.240s)
+
+run1: 200 time_total=5.697559 size_download=7303  (cold)
+run2: 200 time_total=2.688151 size_download=7308
+run3: 200 time_total=1.902580 size_download=7293
+median warm = 2.290s (run2/run3 avg 2.295; T0 median 1.459 -> still ~+0.8s)
+
+## per-run stage=ms (perf line: durations `label=ms` are promise wall time; `x@n` lap marks are ms-since-start)
+
+run1 total=5681
+  requireRole=1032 configAll=0 dqLastRun=139 dqSetting=0 ecosystemHealth=692
+  reads(concurrent): aging_open_tickets=177 dq_aging_flags=342 roster=350 fcr_daily=358 queue_submissions=371 sc_daily=548 prod_daily_layers=976
+  admin reads(concurrent): agg_queue_now=101 queue_snapshots=102
+  laps: tickets@2027 people@3201 work@4430 plan@4745 ecosystem@5681
+  => providers span 2027->4745 (~2718ms); provider internals NOT instrumented
+
+run2 total=2681
+  requireRole=121 configAll=0 dqLastRun=0 dqSetting=0 ecosystemHealth=0
+  reads(concurrent): dq_aging_flags=93 fcr_daily=98 roster=104 aging_open_tickets=136 sc_daily=152 queue_submissions=187 prod_daily_layers=201
+  admin reads(concurrent): queue_snapshots=94 agg_queue_now=104
+  laps: tickets@323 people@1018 work@2317 plan@2575 ecosystem@2681
+  => providers span 323->2575 (~2252ms); people=695 work=1299 plan=258
+
+run3 total=1897
+  requireRole=119 configAll=0 dqLastRun=0 dqSetting=0 ecosystemHealth=0
+  reads(concurrent): dq_aging_flags=88 aging_open_tickets=102 roster=103 fcr_daily=112 queue_submissions=121 sc_daily=201 prod_daily_layers=212
+  admin reads(concurrent): queue_snapshots=94 agg_queue_now=114
+  laps: tickets@332 people@990 work@1556 plan@1783 ecosystem@1897
+  => providers span 332->1783 (~1451ms); people=658 work=566 plan=227
+
+## attribution vs T0 1.459s
+- All 9 direct store reads are fast warm (<=212ms, concurrent) — NOT the regression.
+- requireRole ~120ms, admin reads ~114ms concurrent, ecosystemHealth ~0 warm, dqLastRun/dqSetting ~0.
+- DOMINANT cost = DQ_HOME_PROVIDERS (peopleHomeCards_/workHomeCards_/planHomeCards_):
+  ~1451ms (run3) to ~2252ms (run2) of the ~1900-2700ms totals; their internal
+  reads are outside this leaf's instrumentation (home-cards.ts).
+- Delta is concentrated in provider span, not diffuse across the timed reads.

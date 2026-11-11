@@ -1,0 +1,89 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [31m❯[39m tests/perf/audit-queue-memo.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 21[2mms[22m[39m
+   [31m❯[39m AuditQueuePage memo deps [2m(4)[22m
+[31m     [31m×[31m does not re-sort queue/passed rows on re-render with unchanged payload fields[39m[32m 12[2mms[22m[39m
+[31m     [31m×[31m does not recompute when s identity changes but dep fields are unchanged[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m recomputes the queue sort when s.rows reference changes[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m recomputes the passed sort when s.passed reference changes[39m[32m 2[2mms[22m[39m
+ [31m❯[39m tests/perf/tph-grid-memo.test.tsx [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 12[2mms[22m[39m
+   [32m✓[39m Ga day-step dep stability [2m(2)[22m
+     [32m✓[39m does not recompute Va when d identity changes but d.table is unchanged[32m 3[2mms[22m[39m
+     [32m✓[39m recomputes Va when d.table reference changes[32m 0[2mms[22m[39m
+   [32m✓[39m Es paint-grid memo props [2m(2)[22m
+     [32m✓[39m hands PaintGrid identical row/style/handler props on re-render with unchanged inputs[32m 1[2mms[22m[39m
+     [32m✓[39m rebuilds rows when cells change (new d.cells reference)[32m 1[2mms[22m[39m
+   [31m❯[39m Xa memo deps [2m(3)[22m
+[31m     [31m×[31m does not recompute derived lists when d identity changes but dep fields are unchanged[39m[32m 4[2mms[22m[39m
+     [32m✓[39m recomputes missingMap and missingItems when dep field d.table changes[32m 0[2mms[22m[39m
+     [32m✓[39m recomputes missingItems on a narrowed-dep change (d.channels) while missingMap stays cached[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mdoes not re-sort queue/passed rows on re-render with unchanged payload fields
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m280:35[22m[39m
+    [90m278|[39m     /* New route element (unrelated prop identity) — payload fields un…
+    [90m279|[39m     const second = renderPage()
+    [90m280|[39m     expect(harness.applies.queue).toHaveBeenCalledTimes(1)
+    [90m   |[39m                                   [31m^[39m
+    [90m281|[39m     expect(harness.applies.passed).toHaveBeenCalledTimes(1)
+    [90m282|[39m     expect(collectTickets(second)).toEqual(collectTickets(first))
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mdoes not recompute when s identity changes but dep fields are unchanged
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m294:35[22m[39m
+    [90m292|[39m     harness.data.current = { ...base, mine: { week: 9, month: 9 }, imp…
+    [90m293|[39m     renderPage()
+    [90m294|[39m     expect(harness.applies.queue).toHaveBeenCalledTimes(1)
+    [90m   |[39m                                   [31m^[39m
+    [90m295|[39m     expect(harness.applies.passed).toHaveBeenCalledTimes(1)
+    [90m296|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mrecomputes the queue sort when s.rows reference changes
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m305:36[22m[39m
+    [90m303|[39m     renderPage()
+    [90m304|[39m     expect(harness.applies.queue).toHaveBeenCalledTimes(2)
+    [90m305|[39m     expect(harness.applies.passed).toHaveBeenCalledTimes(1)
+    [90m   |[39m                                    [31m^[39m
+    [90m306|[39m   })
+    [90m307|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mrecomputes the passed sort when s.passed reference changes
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m314:35[22m[39m
+    [90m312|[39m     harness.data.current = { ...base, passed: base.passed.slice() }
+    [90m313|[39m     renderPage()
+    [90m314|[39m     expect(harness.applies.queue).toHaveBeenCalledTimes(1)
+    [90m   |[39m                                   [31m^[39m
+    [90m315|[39m     expect(harness.applies.passed).toHaveBeenCalledTimes(2)
+    [90m316|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/tph-grid-memo.test.tsx[2m > [22mXa memo deps[2m > [22mdoes not recompute derived lists when d identity changes but dep fields are unchanged
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called 1 times, but got 2 times[39m
+[36m [2m❯[22m tests/perf/tph-grid-memo.test.tsx:[2m457:27[22m[39m
+    [90m455|[39m     const second = renderXa(d2)
+    [90m456|[39m     expect(vi.mocked(Ua)).toHaveBeenCalledTimes(1)
+    [90m457|[39m     expect(vi.mocked(We)).toHaveBeenCalledTimes(1)
+    [90m   |[39m                           [31m^[39m
+    [90m458|[39m     expect(collectItemTexts(second)).toEqual(collectItemTexts(first))
+    [90m459|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 11:21:44
+[2m   Duration [22m 352ms[2m (transform 53%, import 32%, tests 12%, worker 4%)[22m
+

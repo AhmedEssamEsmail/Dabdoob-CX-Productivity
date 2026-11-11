@@ -9,7 +9,6 @@
  * storage_mode flip, WP-F6).
  */
 import 'server-only'
-import { google } from 'googleapis'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { MAPPINGS as QQ_MAPPINGS, ROW_TRANSFORMS as QQ_TRANSFORMS, SUGGESTED_INT_COLS as QQ_INT, SUGGESTED_NUM_COLS as QQ_NUM, SUGGESTED_JSON_COLS as QQ_JSON, DECISIONS as QQ_DECISIONS } from './mappings/queue-quality'
 import { MAPPINGS as PC_MAPPINGS } from './mappings/people-core'
@@ -95,9 +94,17 @@ Object.entries(NULL_AS_EMPTY).forEach(([t, cols]) => { NULL_AS_EMPTY_MAP[t] = ne
 export const MODULE_MAPPINGS: TableMapping[] = [...QQ_MAPPINGS, ...PC_MAPPINGS, ...DO_MAPPINGS, ...HCT_MAPPINGS, ...V1_MAPPINGS, ...V1S_MAPPINGS, ...V1P_MAPPINGS, ...V1M_MAPPINGS, ...OT_MAPPINGS]
 export const MAPPING_DECISIONS = [...QQ_DECISIONS, ...DO_DECISIONS, ...HCT_DECISIONS, ...V1_DECISIONS, ...V1S_DECISIONS, ...V1P_DECISIONS, ...V1M_DECISIONS, ...OT_DECISIONS]
 
-let sheetsClient: ReturnType<typeof google.sheets> | null = null
-function getSheetsClient() {
+type GoogleApi = typeof import('googleapis')['google']
+let googleApiPromise: Promise<GoogleApi> | null = null
+function getGoogleApi(): Promise<GoogleApi> {
+  googleApiPromise ??= import('googleapis').then((m) => m.google)
+  return googleApiPromise
+}
+
+let sheetsClient: ReturnType<GoogleApi['sheets']> | null = null
+async function getSheetsClient() {
   if (!sheetsClient) {
+    const google = await getGoogleApi()
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -117,7 +124,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * the Sheets per-minute read limit turned un-paced full runs into dropped
  * tabs (dry-run §3 ops note; same treatment validate.ts's readTabError got). */
 async function readSheetRaw(spreadsheetId: string, sheetName: string): Promise<unknown[][]> {
-  const sheets = getSheetsClient()
+  const sheets = await getSheetsClient()
   for (let attempt = 0; attempt < 3; attempt++) {
     const wait = 700 - (Date.now() - lastSheetCall)
     if (wait > 0) await sleep(wait)

@@ -9,7 +9,7 @@
 
 import 'server-only'
 
-import { appendRow, db, cachePut } from '@/features/shared/platform/repo'
+import { appendRow, db, cachePut, cacheRemove } from '@/features/shared/platform/repo'
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
@@ -70,13 +70,16 @@ export async function dqMarkRun_(job: string): Promise<void> {
 async function dqRewrite_(table: string, rows: Record<string, unknown>[]): Promise<void> {
   const { error: delErr } = await db().from(table).delete().not('id', 'is', null)
   if (delErr) throw described(delErr, { table })
+  // Evict the 45s live cache so dqCachedLive never serves pre-rewrite rows;
+  // best-effort — a cache failure must not abort the rewrite.
+  try { cacheRemove('live|' + table) } catch { /* best-effort */ }
   if (!rows.length) return
   const { error } = await db().from(table).insert(rows)
   if (error) throw described(error, { table })
 }
 
 async function rosterPeople_(): Promise<ReturnType<typeof dqPeopleIndex_>> {
-  const { data } = await db().from('roster').select('*')
+  const { data } = await db().from('roster').select('email,name,tl_email,freshdesk_id,freshdesk_name,maqsam_name,source')
   const roster = dqRosterPeople_((data as Record<string, unknown>[] | null) || null)
   const headcount = (roster || []).map((p) => ({ email: p.email, name: p.name, fdId: p.fdId, fdName: p.fdName, tlEmail: p.tlEmail, tlName: p.tlName }))
   return dqPeopleIndex_(headcount, await cfg_())
@@ -286,7 +289,13 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
   const due = cps.filter((cp) => now > cp.dueAt && now.getTime() - cp.dueAt.getTime() < 12 * 3600000)
   if (!due.length) return
   const dueDates = due.map((c) => c.date)
-  const { data: subRows, error: subErr } = await db().from(DQ_QUEUE_SUBMISSIONS_TABLE).select('*').in('slot_date', dueDates)
+  const lo = dueDates.reduce((a, b) => (b < a ? b : a))
+  const hi = dueDates.reduce((a, b) => (b > a ? b : a))
+  const { data: subRows, error: subErr } = await db()
+    .from(DQ_QUEUE_SUBMISSIONS_TABLE)
+    .select('*')
+    .gte('slot_date', lo)
+    .lte('slot_date', hi + String.fromCharCode(0xfffd))
   const subs = dqSubmissionsFor_(subErr ? null : ((subRows || []) as Record<string, unknown>[]), dueDates)
   const done: Record<string, boolean> = {}
   subs.forEach((s) => {

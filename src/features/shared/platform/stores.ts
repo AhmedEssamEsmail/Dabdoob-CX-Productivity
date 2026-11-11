@@ -5,8 +5,9 @@
  *   readStore / dqCachedLive   dqReadObjects_(.., { missingOk: true }) / dqCachedLive_:
  *                              a whole table as objects, [] when the store is not there.
  *                              The GAS version cached Live aggregates in the script cache
- *                              versioned by cache_stamps; Postgres reads are direct, so the
- *                              cache layer is dropped (same data, no staleness window).
+ *                              versioned by cache_stamps; Postgres reads are direct, so
+ *                              dqCachedLive reuses that layer with a short TTL instead of
+ *                              the per-page-run stamp versioning.
  *   dqReadTail                 dqReadTail_: the last n rows of an append-ordered table.
  *   dqLastRun                  dqLastRun_: Script Property DQ_LAST_<job> -> the config
  *                              dq_last_* keys (the same stand-in hbEvidence_ reads), then
@@ -14,7 +15,7 @@
  */
 
 import 'server-only'
-import { db, readRows, cacheGet, cachePut } from './repo'
+import { db, readRows, readAllPaged, cacheGet, cachePut, cacheRemove, PK_OVERRIDES } from './repo'
 import { configAll } from './settings'
 
 export interface StoreRead {
@@ -26,19 +27,19 @@ export interface StoreRead {
 /** Whole-table read; exists=false when the store is absent (dqReadObjects_ missingOk). */
 export async function readStore(name: string): Promise<StoreRead> {
   try {
-    const { data, error } = await db().from(name).select('*')
-    if (error) return { rows: [], exists: false }
-    return { rows: (data || []) as Record<string, unknown>[], exists: true }
+    return { rows: await readAllPaged(name), exists: true }
   } catch {
     return { rows: [], exists: false }
   }
 }
 
-/** PostgREST filters for readStoreFiltered: eq / in / is on real columns. */
+/** PostgREST filters for readStoreFiltered: eq / in / is / gte / lte on real columns. */
 export interface StoreFilter {
   eq?: Record<string, unknown>
   in?: Record<string, unknown[]>
   is?: Record<string, null>
+  gte?: Record<string, unknown>
+  lte?: Record<string, unknown>
 }
 
 /**
@@ -48,40 +49,73 @@ export interface StoreFilter {
  */
 export async function readStoreFiltered(name: string, filter: StoreFilter = {}): Promise<StoreRead> {
   try {
-    let q = db().from(name).select('*')
-    const eq = filter.eq || {}
-    Object.keys(eq).forEach((k) => {
-      q = q.eq(k, eq[k])
+    const rows = await readAllPaged(name, {
+      build: (q) => {
+        const eq = filter.eq || {}
+        Object.keys(eq).forEach((k) => {
+          q = q.eq(k, eq[k])
+        })
+        const inF = filter.in || {}
+        Object.keys(inF).forEach((k) => {
+          q = q.in(k, inF[k])
+        })
+        const isF = filter.is || {}
+        Object.keys(isF).forEach((k) => {
+          q = q.is(k, null)
+        })
+        const gte = filter.gte || {}
+        Object.keys(gte).forEach((k) => {
+          q = q.gte(k, gte[k])
+        })
+        const lte = filter.lte || {}
+        Object.keys(lte).forEach((k) => {
+          q = q.lte(k, lte[k])
+        })
+        return q
+      },
     })
-    const inF = filter.in || {}
-    Object.keys(inF).forEach((k) => {
-      q = q.in(k, inF[k])
-    })
-    const isF = filter.is || {}
-    Object.keys(isF).forEach((k) => {
-      q = q.is(k, null)
-    })
-    const { data, error } = await q
-    if (error) return { rows: [], exists: false }
-    return { rows: (data || []) as Record<string, unknown>[], exists: true }
+    return { rows, exists: true }
   } catch {
     return { rows: [], exists: false }
   }
 }
 
-/** dqCachedLive_: a Live aggregate table as objects; [] when the store is absent. */
+const DQ_LIVE_TTL_S = 45
+
+/**
+ * dqCachedLive_: a Live aggregate table as objects; [] when the store is absent.
+ * Repeat reads within DQ_LIVE_TTL_S come from the process cache under 'live|<name>'
+ * (the family flushWrites invalidates after writes); cache failures are best-effort.
+ */
 export async function dqCachedLive(name: string): Promise<Record<string, unknown>[]> {
-  return (await readStore(name)).rows
+  const key = 'live|' + name
+  const hit = cacheGet(key)
+  if (hit !== null) {
+    try {
+      return JSON.parse(hit) as Record<string, unknown>[]
+    } catch {
+      cacheRemove(key)
+    }
+  }
+  const rows = (await readStore(name)).rows
+  try {
+    cachePut(key, JSON.stringify(rows), DQ_LIVE_TTL_S)
+  } catch {
+    /* too big or unavailable — same best-effort rule as the script cache */
+  }
+  return rows
 }
 
 /** dqReadTail_: the last n rows of an append-ordered table, oldest first (as appended). */
 export async function dqReadTail(name: string, n: number): Promise<Record<string, unknown>[]> {
   try {
-    const { data, error } = await db()
-      .from(name)
-      .select('*')
-      .order('id', { ascending: false })
-      .limit(n)
+    const pk = PK_OVERRIDES[name] ?? 'id'
+    const pks = Array.isArray(pk) ? pk : [pk]
+    let query = db().from(name).select('*')
+    pks.forEach((k) => {
+      query = query.order(k, { ascending: false })
+    })
+    const { data, error } = await query.limit(n)
     if (error) return []
     return ((data || []) as Record<string, unknown>[]).reverse()
   } catch {

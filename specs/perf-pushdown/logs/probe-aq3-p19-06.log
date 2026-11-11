@@ -1,0 +1,26 @@
+INFO {"wi":0,"empty":["Loading the roster…","Nothing to do in today’s queue.","Pick a queue item to start auditing."],"segBtns":["Done"]}
+PAYLOAD keys today,rows,forms,failMemory,ticketUrl,isAdmin,importedAt,engineLive,unmatched,passed,passReasons,requests,canRequest,canWaive,channels,auditTypes,weekStart,quota,quotaWeeks,mine,readOnly,viewing,auditors,selfEmail
+  today string
+  rows array[213]
+  forms array[5]
+  failMemory object
+  ticketUrl string
+  isAdmin boolean
+  importedAt string
+  engineLive boolean
+  unmatched array[0]
+  passed array[300]
+  passReasons array[4]
+  requests array[0]
+  canRequest boolean
+  canWaive boolean
+  channels array[4]
+  auditTypes array[1]
+  weekStart string
+  quota array[39]
+  quotaWeeks array[8]
+  mine object
+  readOnly boolean
+  viewing object
+  auditors array[6]
+  selfEmail string

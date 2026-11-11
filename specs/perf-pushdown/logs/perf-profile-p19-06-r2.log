@@ -1,0 +1,9 @@
+/tph-grid: 8 long entries, 8 >50ms
+  interaction "switch to grid tab": ran
+  interaction "step back one day": ran
+  interaction "paged-list next page": skipped (not present)
+/audit-queue: 0 long entries, 0 >50ms
+  interaction "seg filter: done": ran
+  interaction "select first work item": skipped (not present)
+  interaction "search/filter input": skipped (not present)
+wrote C:\Users\AHMED\KPIs\CX-Hub\specs\perf-pushdown\logs\perf-profile.json

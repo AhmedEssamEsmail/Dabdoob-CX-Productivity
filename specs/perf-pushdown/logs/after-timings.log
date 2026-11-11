@@ -1,0 +1,76 @@
+# after-timing-01 raw timings — 2026-11-11T01:59:26+02:00
+# method: curl -w time_total/size_download/http_code, 3 runs, cookie session e2e.admin@dabdoob.com, next start -p 3100 (reused .next BUILD XmwNC6nOQaYMaeSTp-xcn)
+
+## GET /api/prod/analytics
+run1 time=0.001675 size=0 http=000
+run2 time=0.000012 size=0 http=000
+run3 time=0.000013 size=0 http=000
+  body_head: 
+
+## GET /api/tph/page
+run1 time=0.000013 size=0 http=000
+run2 time=0.000013 size=0 http=000
+run3 time=0.000012 size=0 http=000
+  body_head: 
+
+## GET /api/hub/home
+run1 time=0.000015 size=0 http=000
+run2 time=0.000013 size=0 http=000
+run3 time=0.000014 size=0 http=000
+  body_head: 
+
+## GET /api/queue/aging
+run1 time=0.000020 size=0 http=000
+run2 time=0.000014 size=0 http=000
+run3 time=0.000013 size=0 http=000
+  body_head: 
+
+## GET /api/queue/analytics
+run1 time=0.000018 size=0 http=000
+run2 time=0.000013 size=0 http=000
+run3 time=0.000013 size=0 http=000
+  body_head: 
+
+## POST /api/tph/slots {}
+run1 time=1.459875 size=37 http=500
+run2 time=0.329377 size=37 http=500
+run3 time=0.282015 size=37 http=500
+  body_head: {"error":"Pick a date (yyyy-MM-dd)."}
+
+## GET /api/qa/getQaScoresPage?args=["2026-11-04","2026-11-11","interaction"]
+run1 time=4.816971 size=7975 http=200
+run2 time=0.124774 size=7989 http=200
+run3 time=0.091252 size=7989 http=200
+  body_head: {"from":"2026-11-04","to":"2026-11-11","days":8,"bucket":"day","prevFrom":"2026-10-27","prevTo":"2026-11-03","basis":"in
+
+# --- rerun: 5 GET endpoints (corrected loop) ---
+## GET /api/prod/analytics
+run1 time=1.884023 size=75 http=500
+run2 time=0.674389 size=75 http=500
+run3 time=0.346673 size=75 http=500
+  body_head: {"error":"column prod_daily_layers.productiveMinResolution does not exist"}
+
+## GET /api/tph/page
+run1 time=0.444967 size=95961 http=200
+run2 time=0.374215 size=95961 http=200
+run3 time=0.325076 size=95961 http=200
+  body_head: {"date":"2026-11-11","today":"2026-11-11","slotMin":15,"hours":[8,9,10,11,12,13,
+
+## GET /api/hub/home
+run1 time=2.234350 size=7084 http=200
+run2 time=1.296028 size=7084 http=200
+run3 time=1.291982 size=7090 http=200
+  body_head: {"now":"2026-11-10T23:59:47.332Z","role":"admin","specialist":false,"name":"E2E 
+
+## GET /api/queue/aging
+run1 time=0.189890 size=704 http=200
+run2 time=0.192792 size=704 http=200
+run3 time=0.205699 size=704 http=200
+  body_head: {"now":"2026-11-10T23:59:49.284Z","dataAsOf":"2026-11-06T00:00:00.000Z","syncedA
+
+## GET /api/queue/analytics
+run1 time=0.210012 size=20496 http=200
+run2 time=0.186564 size=20496 http=200
+run3 time=0.182762 size=20496 http=200
+  body_head: {"today":"2026-11-11","dataAsOf":"2026-11-06T00:00:00.000Z","channels":["call","
+

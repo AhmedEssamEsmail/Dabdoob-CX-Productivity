@@ -1,0 +1,280 @@
+{
+  "generatedAt": "2026-11-10T23:54:24.716Z",
+  "baseURL": "http://localhost:3000",
+  "pages": {
+    "/tph-grid": {
+      "route": "/tph-grid",
+      "meta": {
+        "url": "/tph",
+        "title": "Dabdoob CX",
+        "workitems": 0,
+        "tphTabs": 6,
+        "alerts": []
+      },
+      "entries": [
+        {
+          "type": "longtask",
+          "duration": 81,
+          "startTime": 734,
+          "attribution": [
+            "unknown"
+          ]
+        },
+        {
+          "type": "long-animation-frame",
+          "duration": 88.6,
+          "startTime": 727,
+          "attribution": [
+            "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+          ]
+        },
+        {
+          "type": "longtask",
+          "duration": 169,
+          "startTime": 1666,
+          "attribution": [
+            "unknown"
+          ]
+        },
+        {
+          "type": "long-animation-frame",
+          "duration": 187.2,
+          "startTime": 1657,
+          "attribution": [
+            "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+          ]
+        },
+        {
+          "type": "longtask",
+          "duration": 110,
+          "startTime": 3109,
+          "attribution": [
+            "unknown"
+          ]
+        },
+        {
+          "type": "long-animation-frame",
+          "duration": 113.6,
+          "startTime": 3109,
+          "attribution": [
+            "http://localhost:3000/_next/static/chunks/_0wtkrvduq-tbb._.js:OneOnOneAlerts.useEffect.unlock"
+          ]
+        },
+        {
+          "type": "longtask",
+          "duration": 58,
+          "startTime": 4109,
+          "attribution": [
+            "unknown"
+          ]
+        },
+        {
+          "type": "long-animation-frame",
+          "duration": 59.8,
+          "startTime": 4109,
+          "attribution": [
+            "http://localhost:3000/_next/static/chunks/1daa_next_dist_compiled_react-dom_cjs_react-dom-client_development_0mp0cp_t-ezj9.js:dispatchDiscreteEvent"
+          ]
+        },
+        {
+          "type": "longtask",
+          "duration": 139,
+          "startTime": 4533,
+          "attribution": [
+            "unknown"
+          ]
+        },
+        {
+          "type": "long-animation-frame",
+          "duration": 162.3,
+          "startTime": 4533,
+          "attribution": [
+            "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+          ]
+        }
+      ],
+      "interactions": [
+        {
+          "label": "switch to grid tab",
+          "ran": true,
+          "at": 3093
+        },
+        {
+          "label": "step back one day",
+          "ran": true,
+          "at": 4068
+        },
+        {
+          "label": "paged-list next page",
+          "ran": false,
+          "reason": "not present"
+        }
+      ],
+      "segments": [
+        {
+          "label": "initial-render",
+          "entries": [
+            {
+              "type": "longtask",
+              "duration": 81,
+              "startTime": 734,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 88.6,
+              "startTime": 727,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            },
+            {
+              "type": "longtask",
+              "duration": 169,
+              "startTime": 1666,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 187.2,
+              "startTime": 1657,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "switch to grid tab",
+          "ran": true,
+          "at": 3093
+        },
+        {
+          "label": "step back one day",
+          "ran": true,
+          "at": 4068
+        },
+        {
+          "label": "paged-list next page",
+          "ran": false
+        }
+      ]
+    },
+    "/audit-queue": {
+      "route": "/audit-queue",
+      "meta": {
+        "url": "/audit-queue",
+        "title": "Audit Desk · Dabdoob CX Quality",
+        "workitems": 0,
+        "tphTabs": 0,
+        "alerts": []
+      },
+      "entries": [],
+      "interactions": [
+        {
+          "label": "seg filter: done",
+          "ran": true,
+          "at": 7490
+        },
+        {
+          "label": "select first work item",
+          "ran": false,
+          "reason": "not present"
+        },
+        {
+          "label": "search/filter input",
+          "ran": false,
+          "reason": "not present"
+        }
+      ],
+      "segments": [
+        {
+          "label": "initial-render",
+          "entries": [
+            {
+              "type": "longtask",
+              "duration": 81,
+              "startTime": 525,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "longtask",
+              "duration": 81,
+              "startTime": 525,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 92.2,
+              "startTime": 516,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 92.2,
+              "startTime": 516,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            },
+            {
+              "type": "longtask",
+              "duration": 204,
+              "startTime": 6671,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "longtask",
+              "duration": 204,
+              "startTime": 6671,
+              "attribution": [
+                "unknown"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 252,
+              "startTime": 6665,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            },
+            {
+              "type": "long-animation-frame",
+              "duration": 252,
+              "startTime": 6665,
+              "attribution": [
+                "http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_1amofcmz--cdp._.js:performWorkUntilDeadline"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "seg filter: done",
+          "ran": true,
+          "at": 7490
+        },
+        {
+          "label": "select first work item",
+          "ran": false
+        },
+        {
+          "label": "search/filter input",
+          "ran": false
+        }
+      ]
+    }
+  }
+}

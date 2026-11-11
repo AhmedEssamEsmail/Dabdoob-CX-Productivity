@@ -23,5 +23,5 @@ Size gate: PASS
 
 Serial file chains preserved: S04->S08->S09 (`cx-quality/lib/server.ts`); S10-01->S11-01->S11-02->S12 (`stores.ts`, `env.ts`); S02-01->S12-02 (`repo.ts`); S05-01->S06-01 (`route.ts` consumers share `pwDirectory`). Same-file writers are always ordered via Depends.
 Ready work: S01-01 (needs approval), S02-01, S04-01, S13-01, S13-02, S14-02, S15-01 — max 4 workers.
-NEEDS_USER: (1) approve remote read-only SELECTs for S01-01 (T0) — dashboard max-rows read + 4 SELECTs; (2) PLAN.md says planning only — confirm BUILD may proceed after this spec.
+NEEDS_USER: RESOLVED 2026-11-11 — user approved BUILD and S01-01 remote read-only SELECTs; PostgREST max-rows unknown (record "default 1000 assumed").
 Size gate evidence: manual review vs LIMITS.md — every leaf <=10 files / <=10 actions / <=2000 lines / <=10 min; largest: S06-01 (~250 lines est, 10 min). Run check_shards.py before dispatch.

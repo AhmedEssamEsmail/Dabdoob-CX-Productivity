@@ -52,7 +52,7 @@ import { prodNowIso_, prodToday_ } from '@/features/cx-productivity/lib/prod/eng
 import { prodIntervalKey_, type ProdInterval } from '@/features/cx-productivity/lib/prod/validation'
 import { tphBuildCallMinutes_, tphBuildCases_, tphBuildTouches_, tphClock_, tphHourMs_ } from '@/features/cx-productivity/lib/tph'
 import { describeDbError } from '@/features/shared/lib/errors'
-import { db, newId as repoNewId, readRows } from '@/features/shared/platform/repo'
+import { cacheRemove, db, newId as repoNewId, readAllPaged, readRows } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
 import { hbBeat as platformHbBeat, hbFlush as platformHbFlush } from '@/features/shared/platform/health'
 import { getGmailReadAdapter, sendMail, type GmailReadAdapter, type MailMessage, type SendResult } from '@/features/shared/platform/mail'
@@ -252,6 +252,28 @@ export interface BuildJobEnvOptions {
 }
 
 /**
+ * P-12: per-table date bound for job preloads — the column each loader filters
+ * on. The bound VALUE is intervalBound (opts.intervalSince for backfills, else
+ * today-45d, widened earlier by ensureIntervals): every JobEnv reader of these
+ * tables filters rows to the job's own dates, which never precede it; tickets
+ * get one extra day because tphBuildCases_ reads `since = earliest date - 1`.
+ * Deliberately absent (read unbounded): prod_flags (auto-accept scans every row
+ * for prodIsAutoDue_ and the flag_id map ignores dates), prod_flag_analytics
+ * (quarterly reads an arbitrary quarter), prod_window_hist and the agg_*
+ * mirrors (readers take whole sets).
+ */
+const TABLE_BOUNDS: Record<string, { col: string }> = {
+  prod_intervals: { col: 'date' },
+  prod_tph_days: { col: 'date' },
+  prod_tph_tasks: { col: 'date' },
+  prod_tph_cases: { col: 'date' },
+  prod_tph_touches: { col: 'date' },
+  prod_tph_calls: { col: 'date' },
+  prod_daily_layers: { col: 'date' },
+  tickets: { col: 'created_at' },
+}
+
+/**
  * Loads the shared run context (config, roster/directory, opts.tables) once —
  * legacy's per-execution globals. Supabase reads are missingOk ([] on error),
  * matching dqReadObjects_(..., { missingOk: true }). Prod tables are NOT
@@ -269,14 +291,20 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
   const tableErrors: Record<string, string> = {}
   const today = prodToday_(cfg, opts.now)
   let intervalBound = opts.intervalSince || dqAddDays_(today, -45)
+  /** P-01/P-12: paged read + per-table date bound (TABLE_BOUNDS). missingOk
+   *  semantics stay with the callers: errors land in tableErrors, rows in []. */
+  const loadTable = async (name: string): Promise<Row[]> => {
+    const b = TABLE_BOUNDS[name]
+    const value = b ? (name === 'tickets' ? dqAddDays_(intervalBound, -1) : intervalBound) : null
+    const rows = await readAllPaged(name, {
+      build: b && value ? (q) => q.gte(b.col, value) : undefined,
+    })
+    return rows as Row[]
+  }
   await Promise.all(
     (opts.tables || []).map(async (name) => {
       try {
-        let q = db().from(name).select('*').limit(200000)
-        if (name === 'prod_intervals') q = q.gte('date', intervalBound)
-        const { data, error } = await q
-        if (error) tableErrors[name] = describeDbError(error, { table: name }).message
-        tables[name] = error ? [] : ((data || []) as Row[])
+        tables[name] = await loadTable(name)
       } catch (e) {
         tableErrors[name] = describeDbError(e, { table: name }).message
         tables[name] = []
@@ -390,6 +418,11 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
         const op = ops.shift()!
         try {
           await applyOp(op)
+          try {
+            cacheRemove('live|' + op.table)
+          } catch {
+            /* the live| cache is best-effort; eviction must not abort the drain */
+          }
         } catch (e) {
           if (op.soft) {
             console.log('soft write failed (' + op.table + '): ' + ((e as Error)?.message || e))
@@ -478,11 +511,7 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
         names.map(async (name) => {
           if (tables[name]) return
           try {
-            let q = db().from(name).select('*').limit(200000)
-            if (name === 'prod_intervals') q = q.gte('date', intervalBound)
-            const { data, error } = await q
-            if (error) tableErrors[name] = describeDbError(error, { table: name }).message
-            tables[name] = error ? [] : ((data || []) as Row[])
+            tables[name] = await loadTable(name)
           } catch (e) {
             tableErrors[name] = describeDbError(e, { table: name }).message
             tables[name] = []
@@ -495,8 +524,9 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
       if (!min || min >= intervalBound) return
       intervalBound = min
       try {
-        const { data, error } = await db().from('prod_intervals').select('*').gte('date', min).limit(200000)
-        if (!error) tables['prod_intervals'] = (data || []) as Row[]
+        tables['prod_intervals'] = (await readAllPaged('prod_intervals', {
+          build: (q) => q.gte('date', min),
+        })) as Row[]
       } catch {
         /* keep the narrower window */
       }
@@ -577,6 +607,15 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
 
 // ---------------------------------------------------------------- apply ops
 
+const upsertFallbackLogged = new Set<string>()
+
+function logUpsertFallbackOnce(table: string, keys: string[]): void {
+  const sig = table + '|' + keys.join(',')
+  if (upsertFallbackLogged.has(sig)) return
+  upsertFallbackLogged.add(sig)
+  console.log(`upsert fallback: ${table} (${keys.join(',')}) — add unique index`)
+}
+
 async function applyOp(op: WriteOp): Promise<void> {
   if (op.kind === 'append') {
     if (!op.rows.length) return
@@ -600,18 +639,20 @@ async function applyOp(op: WriteOp): Promise<void> {
   // batches into one .in() delete; composite keys delete per distinct tuple so
   // rows outside the write set (e.g. an agent absent from today's analytics)
   // survive, like the legacy row-by-row match.
-  const { error } = await db().from(op.table).upsert(op.rows, { onConflict: op.keys.join(',') })
+  const rows = dedupeRows_(op.keys, op.rows)
+  const { error } = await db().from(op.table).upsert(rows, { onConflict: op.keys.join(',') })
   if (!error) return
   if (!/constraint|conflict|42P10/i.test(error.message)) throw new Error(op.table + ' upsert: ' + error.message)
+  logUpsertFallbackOnce(op.table, op.keys)
   if (op.keys.length === 1) {
-    const vals = [...new Set(op.rows.map((r) => r[op.keys[0]]))]
+    const vals = [...new Set(rows.map((r) => r[op.keys[0]]))]
     const { error: delErr } = await db()
       .from(op.table)
       .delete()
       .in(op.keys[0], vals as never[])
     if (delErr) throw new Error(op.table + ' delete: ' + delErr.message)
   } else {
-    for (const tuple of tuplesOf(op.keys, op.rows)) {
+    for (const tuple of tuplesOf(op.keys, rows)) {
       let del = db().from(op.table).delete()
       op.keys.forEach((k, i) => {
         del = del.eq(k, tuple[i] as never)
@@ -620,10 +661,18 @@ async function applyOp(op: WriteOp): Promise<void> {
       if (delErr) throw new Error(op.table + ' delete: ' + delErr.message)
     }
   }
-  if (op.rows.length) {
-    const { error: insErr } = await db().from(op.table).insert(op.rows)
+  if (rows.length) {
+    const { error: insErr } = await db().from(op.table).insert(rows)
     if (insErr) throw new Error(op.table + ' insert: ' + insErr.message)
   }
+}
+
+function dedupeRows_(keys: string[], rows: Row[]): Row[] {
+  const byKey = new Map<string, Row>()
+  rows.forEach((r) => {
+    byKey.set(JSON.stringify(keys.map((k) => r[k])), r)
+  })
+  return [...byKey.values()]
 }
 
 function tuplesOf(keys: string[], rows: Row[]): unknown[][] {

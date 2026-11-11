@@ -19,6 +19,7 @@ import {
   configAll,
   getConfig,
   readStore,
+  readStoreFiltered,
   requireRole,
   setConfig,
   updateRow,
@@ -540,9 +541,9 @@ export async function setPersonV2Fields(
     { actor: user.email }
   )
   if (!row) {
-    const hit = (await readStore(ROSTER_TABLE)).rows.filter(
-      (r) => normEmail_(r.email) === normEmail_(email)
-    )[0]
+    const hit = (
+      await readStoreFiltered(ROSTER_TABLE, { eq: { email: normEmail_(email) } })
+    ).rows.filter((r) => normEmail_(r.email) === normEmail_(email))[0]
     if (!hit) throw new Error('No roster row for ' + email + '.')
     row = await updateRow(
       ROSTER_TABLE,
@@ -557,9 +558,13 @@ export async function setPersonV2Fields(
 }
 
 async function dqIsHoliday_(country: string, date: string): Promise<boolean> {
-  return (await readStore(DQ_HOLIDAYS_TABLE)).rows.some(
+  return (
+    await readStoreFiltered(DQ_HOLIDAYS_TABLE, {
+      eq: { date },
+      is: { deleted_at: null },
+    })
+  ).rows.some(
     (h) =>
-      !h.deleted_at &&
       dqKeyPart_('date', h.date).slice(0, 10) === date &&
       String(h.country).trim().toLowerCase() === country.trim().toLowerCase()
   )
@@ -602,10 +607,14 @@ export async function addHoliday(h: {
 export async function removeHoliday(id: string): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin'])
   await assertWritable()
-  const rows = (await readStore(DQ_HOLIDAYS_TABLE)).rows
   // updateRow_ matches holiday_id whatever deleted_at holds — a repeat removal
-  // still returns { id } (the row stays, deleted_at overwritten again).
-  const hit = rows.filter((h) => String(h.holiday_id || h.id) === String(id))[0]
+  // still returns { id } (the row stays, deleted_at overwritten again). The DB
+  // `holidays` table has no holiday_id column, so the JS `holiday_id || id` key
+  // is always `id`: eq on it is an exact superset-safe bound. `is deleted_at`
+  // is deliberately NOT applied — it would break the repeat-removal contract.
+  const hit = (
+    await readStoreFiltered(DQ_HOLIDAYS_TABLE, { eq: { id } })
+  ).rows.filter((h) => String(h.holiday_id || h.id) === String(id))[0]
   if (!hit) throw new Error('That holiday no longer exists.')
   await updateRow(
     DQ_HOLIDAYS_TABLE,

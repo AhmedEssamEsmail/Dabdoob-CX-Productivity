@@ -1,0 +1,26 @@
+# after-timings-qa1.log — qa1-02 re-measure GET /api/prod/analytics post-layers-fix-01
+# date: 2026-11-11 10:47:18
+# NOTE on rebuild: contract asked `npm run build` because stale build XmwNC6nOQaYMaeSTp-xcn predated layers-fix-01.
+# Current .next BUILD_ID=j9VYURDOIBrw5keTFlR1Sv (mtime 2026-11-11 02:06:37) POSTDATES the fix file
+# src/app/api/prod/analytics/route.ts (mtime 02:01:52). Rebuild skipped: 21 src files are mid-edit by
+# parallel fix leaves (identity.ts/scorecard-server.ts/one-on-ones-page.ts touched <1min ago) — a build
+# now would compile in-flight work or fail + clobber .next. Only dep-chain diff (prod/analytics.ts) is
+# a comment-only eslint line — zero runtime effect. Reusing existing build = clean post-fix measurement.
+# server: next start -p 3100, .next BUILD_ID=j9VYURDOIBrw5keTFlR1Sv
+# login: POST /api/auth/login e2e.admin@dabdoob.com
+login http_code=200 time=1.187457
+run1 GET /api/prod/analytics http_code=500 time_total=4.395004 size_download=31
+run2 GET /api/prod/analytics http_code=500 time_total=1.817205 size_download=31
+run3 GET /api/prod/analytics http_code=500 time_total=1.782658 size_download=31
+run4 GET /api/prod/analytics http_code=500 time_total=2.184950 size_download=31
+#
+# SUMMARY: 500 x4, body {"error":"from is not defined"} (31 B)
+# times: 4.395(cold) 1.817 1.783 2.185 -> median(first3)=1.817, warm runs ~1.8-2.2
+# schema-drift error (prod_daily_layers.productiveMinResolution) GONE post layers-fix-01;
+# residual 500 = preserved legacy bug: eval('from') ReferenceError in prodAnalytics_
+# (src/features/cx-productivity/lib/prod/analytics.ts:293-295, admin full=true hist path)
+▲ Next.js 16.4.3
+- Local:         http://localhost:3100
+- Network:       http://192.168.6.50:3100
+✓ Ready in 694ms
+✓ Running next.config.ts took 208ms

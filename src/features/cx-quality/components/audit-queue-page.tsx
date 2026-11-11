@@ -14,7 +14,7 @@
  *   wiTone/wiPill → audit-queue-helpers.ts.
  * Shared: P/useSe/QaPage(de)/QaSection(D)/Chips(E,ae,Ie,oe,U)/TicketRef(ne)/
  *   AuditForm(Zn)/SortTh(M)/useQaSort(_e)/dates(dl,he,ul,Rt)/toast(Q). */
-import { Fragment, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
 import { getBoot } from '@/features/shared/shell/context'
 import { Button, Empty, PageShell, Seg, Select } from '@/features/shared/components/ui'
@@ -166,37 +166,66 @@ function AuditQueuePage({
       (A) => (r(''), Q(A.message, 'error'))
     )
   }
-  const _ =
-    s && l
-      ? (s.rows.find((w: any) => w.queueId === l.queueId) ??
-        s.requests.find((w: any) => w.queueId === l.queueId))
-      : null
+  const sRows = s?.rows
+  const sRequests = s?.requests
+  const sToday = s?.today
+  const sPassed = s?.passed
+  const _ = useMemo(
+    () =>
+      l && sRows
+        ? (sRows.find((w: any) => w.queueId === l.queueId) ??
+          (sRequests ?? []).find((w: any) => w.queueId === l.queueId))
+        : null,
+    [sRows, sRequests, l]
+  )
   const T = _ && 'auditType' in _ ? _ : ({} as any)
   const k =
     _ && s
       ? (s.forms.find((w: any) => w.channel === _.channel) ??
         (T.auditType ? undefined : s.forms.find((w: any) => w.channel === '*')))
       : undefined
-  const C = s ? s.rows.filter((w: any) => !w.auditType && w.source !== 'offqueue') : []
-  const O = C.filter((w: any) => w.date === s.today && w.status !== 'passed')
+  const C = useMemo(
+    () => (sRows ? sRows.filter((w: any) => !w.auditType && w.source !== 'offqueue') : []),
+    [sRows]
+  )
+  const O = useMemo(
+    () => C.filter((w: any) => w.date === sToday && w.status !== 'passed'),
+    [C, sToday]
+  )
   const v = O.filter((w: any) => w.status === 'done').length
   /* mock-06 "Today's queue": open requests first, then today's sample rows. */
-  const wiAll = s
-    ? [
-        ...s.requests
-          .filter((r: any) => r.status === 'open' || r.status === 'in_progress')
-          .map((r: any) => ({ ...r, requested: true })),
-        ...O.map((w: any) => ({ ...w, requested: false })),
-      ]
-    : []
-  const wiCounts = {
-    todo: wiAll.filter((w: any) => w.status === 'open').length,
-    doing: wiAll.filter((w: any) => w.status === 'in_progress').length,
-    done: wiAll.filter((w: any) => w.status === 'done').length,
-  }
-  const wiList = wiAll.filter((w: any) =>
-    seg === 'todo' ? w.status === 'open' : seg === 'doing' ? w.status === 'in_progress' : w.status === 'done'
+  const wiAll = useMemo(
+    () => [
+      ...(sRequests ?? [])
+        .filter((r: any) => r.status === 'open' || r.status === 'in_progress')
+        .map((r: any) => ({ ...r, requested: true })),
+      ...O.map((w: any) => ({ ...w, requested: false })),
+    ],
+    [sRequests, O]
   )
+  const wiCounts = useMemo(
+    () => ({
+      todo: wiAll.filter((w: any) => w.status === 'open').length,
+      doing: wiAll.filter((w: any) => w.status === 'in_progress').length,
+      done: wiAll.filter((w: any) => w.status === 'done').length,
+    }),
+    [wiAll]
+  )
+  const wiList = useMemo(
+    () =>
+      wiAll.filter((w: any) =>
+        seg === 'todo'
+          ? w.status === 'open'
+          : seg === 'doing'
+            ? w.status === 'in_progress'
+            : w.status === 'done'
+      ),
+    [wiAll, seg]
+  )
+  const { apply: applyQueue } = f
+  const { apply: applyPassed } = g
+  const sortedQueue = useMemo(() => applyQueue(C), [C, applyQueue])
+  const sortedPassed = useMemo(() => applyPassed(sPassed ?? []), [sPassed, applyPassed])
   return (
     <PageShell
       id="page-title"
@@ -435,7 +464,7 @@ function AuditQueuePage({
                 </thead>
                 <tbody>
                   {C.length ? (
-                    f.apply(C).map((w: any) => (
+                    sortedQueue.map((w: any) => (
                       <Fragment key={w.queueId}>
                         <tr>
                           <td className="cx-num">
@@ -581,7 +610,7 @@ function AuditQueuePage({
                     </tr>
                   </thead>
                   <tbody>
-                    {g.apply(s.passed).map((w: any) => (
+                    {sortedPassed.map((w: any) => (
                       <tr key={w.queueId}>
                         <td className="cx-num">
                           {w.passedAt ? w.passedAt.slice(0, 16).replace('T', ' ') : w.date}

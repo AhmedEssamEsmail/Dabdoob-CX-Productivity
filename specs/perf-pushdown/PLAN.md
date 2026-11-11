@@ -1,9 +1,11 @@
 # PLAN: perf-pushdown
-Type: feature (perf/data remediation)   Status: spec
+Type: feature (perf/data remediation)   Status: BUILD approved 2026-11-11
 Date: 2026-11-10   Project root: C:\Users\AHMED\KPIs\CX-Hub
 Source audit: `docs/PERFORMANCE_PLAN.md` (items P-01..P-22, tasks T0..T13). That file is the
-authoritative item list; this plan adds criteria, flags and gates. Planning only: user asked
-for a spec, NOT implementation. Do not dispatch BUILD until the user approves.
+authoritative item list; this plan adds criteria, flags and gates.
+APPROVALS (2026-11-11): user approved BUILD + S01-01 remote read-only SELECTs (pg_stat_user_tables,
+pg_indexes, 2 precondition COUNTs; SELECT-only). PostgREST max-rows unknown -> record
+"unknown — default 1000 assumed" in PERF_BASELINE.md.
 Prior related work: `specs/perf-remediation/` (Nov-8 audit; already shipped getClaims, lazy
 job env, poller merge, some uniques). Do not redo or regress it; check its TRACKER before
 re-touching the same functions.

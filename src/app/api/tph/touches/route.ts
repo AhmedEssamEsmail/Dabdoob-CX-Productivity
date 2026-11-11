@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     const user = await requireRole(['admin', 'tl'])
     void user
     const { searchParams } = new URL(req.url)
-    const store = await tphLoadStore_(searchParams.get('date'))
+    const store = await tphLoadStore_(searchParams.get('date'), { window: 'day' })
     const d = String(searchParams.get('date') || '')
     if (!/^\d{4}-\d\d-\d\d$/.test(d) || d > prodToday_(store.cfg))
       return NextResponse.json({ error: 'Pick a day up to today (yyyy-MM-dd).' }, { status: 400 })

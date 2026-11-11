@@ -69,7 +69,31 @@ function selectCols(rows: Record<string, unknown>[], cols: string): Record<strin
   })
 }
 
-/** A minimal thenable supabase query: select/eq/order/limit/insert/update/upsert/delete/maybeSingle. */
+/** The ''<->null storage seam (see `is`): empty cell values behave as NULL. */
+const NULLISH = (v: unknown) => v === null || v === undefined || v === ''
+
+/**
+ * Three-way compare for the comparison ops and multi-key ordering, matching
+ * the fake's string-safe style: real numbers and numeric strings (ts_ms
+ * fixtures stored as text vs number filter args) compare numerically,
+ * everything else compares by String() so ISO date keys order correctly.
+ * Nullish sorts last on ascending (PostgreSQL default); filter ops guard
+ * with NULLISH so null rows fail gte/gt/lte/lt like SQL.
+ */
+function cmpVals(a: unknown, b: unknown): number {
+  const an = NULLISH(a)
+  const bn = NULLISH(b)
+  if (an || bn) return an === bn ? 0 : an ? 1 : -1
+  if (typeof a === 'number' && typeof b === 'number') return a < b ? -1 : a > b ? 1 : 0
+  const as = String(a)
+  const bs = String(b)
+  const af = !Number.isNaN(Number(as)) ? Number(as) : null
+  const bf = !Number.isNaN(Number(bs)) ? Number(bs) : null
+  if (af !== null && bf !== null) return af < bf ? -1 : af > bf ? 1 : 0
+  return as < bs ? -1 : as > bs ? 1 : 0
+}
+
+/** A minimal thenable supabase query: select/eq/order/limit/range/insert/update/upsert/delete/maybeSingle. */
 function mkQuery(table: string) {
   if (hubDb.missing.has(table)) {
     const err = { message: 'relation "public.' + table + '" does not exist', code: '42P01' }
@@ -78,6 +102,11 @@ function mkQuery(table: string) {
       eq() { return dead },
       order() { return dead },
       limit() { return dead },
+      range() { return dead },
+      gte() { return dead },
+      gt() { return dead },
+      lte() { return dead },
+      lt() { return dead },
       insert() { return dead },
       update() { return dead },
       delete() { return dead },
@@ -116,21 +145,26 @@ function mkQuery(table: string) {
     } else {
       rows = out.filter((r) => filters.every((f) => f(r)))
     }
-    if (orderCol) {
-      const dir = orderAsc ? 1 : -1
+    if (orderSpecs.length) {
+      // PostgREST: chained .order() calls APPEND sort keys (orderBy-then-pk
+      // paging relies on the pk tiebreaker), they do not replace.
       rows = rows.slice().sort((a, b) => {
-        const av = a[orderCol as string]
-        const bv = b[orderCol as string]
-        return av === bv ? 0 : (av as never) < (bv as never) ? -dir : dir
+        for (const o of orderSpecs) {
+          const c = cmpVals(a[o.col], b[o.col])
+          if (c !== 0) return o.asc ? c : -c
+        }
+        return 0
       })
     }
+    if (rangeFrom !== null && rangeTo !== null) rows = rows.slice(rangeFrom, rangeTo + 1)
     if (limitN !== null) rows = rows.slice(0, limitN)
     return rows
   }
 
-  let orderCol: string | null = null
-  let orderAsc = true
+  const orderSpecs: { col: string; asc: boolean }[] = []
   let limitN: number | null = null
+  let rangeFrom: number | null = null
+  let rangeTo: number | null = null
   let patchObj: Record<string, unknown> = {}
 
   const builder: Record<string, unknown> = {
@@ -168,12 +202,33 @@ function mkQuery(table: string) {
       return builder
     },
     order(col: string, opts?: { ascending?: boolean }) {
-      orderCol = col
-      orderAsc = !opts || opts.ascending !== false
+      orderSpecs.push({ col, asc: !opts || opts.ascending !== false })
       return builder
     },
     limit(n: number) {
       limitN = n
+      return builder
+    },
+    range(from: number, to: number) {
+      // PostgREST .range is an inclusive slice applied after filters + order.
+      rangeFrom = from
+      rangeTo = to
+      return builder
+    },
+    gte(col: string, v: unknown) {
+      filters.push((r) => !NULLISH(r[col]) && !NULLISH(v) && cmpVals(r[col], v) >= 0)
+      return builder
+    },
+    gt(col: string, v: unknown) {
+      filters.push((r) => !NULLISH(r[col]) && !NULLISH(v) && cmpVals(r[col], v) > 0)
+      return builder
+    },
+    lte(col: string, v: unknown) {
+      filters.push((r) => !NULLISH(r[col]) && !NULLISH(v) && cmpVals(r[col], v) <= 0)
+      return builder
+    },
+    lt(col: string, v: unknown) {
+      filters.push((r) => !NULLISH(r[col]) && !NULLISH(v) && cmpVals(r[col], v) < 0)
       return builder
     },
     insert(rows: unknown) {
@@ -282,6 +337,11 @@ export function authModule() {
         eq(c: string, v: unknown): Q
         order(c: string, o: { ascending: boolean }): Q
         limit(n: number): Q
+        range(from: number, to: number): Q
+        gte(c: string, v: unknown): Q
+        gt(c: string, v: unknown): Q
+        lte(c: string, v: unknown): Q
+        lt(c: string, v: unknown): Q
         single(): Promise<{ data: Record<string, unknown> | null; error: unknown }>
       }
       const { data: viewAsRecord } = await (mkQuery('view_as') as unknown as Q)

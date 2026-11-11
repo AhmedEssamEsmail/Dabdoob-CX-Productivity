@@ -1,5 +1,7 @@
 import { requireRole } from '@/features/shared/lib/auth'
-import { db } from '@/features/shared/platform/repo'
+import { readAllPaged, cacheGet, cachePut, type ReadAllPagedOptions } from '@/features/shared/platform/repo'
+import { configAll } from '@/features/shared/platform/settings'
+import { pwDirectory } from '@/features/shared/platform/identity'
 import { prodAnalyticsFor_, prodRuleView_, prodScope_ } from '@/features/cx-productivity/lib/prod/engine'
 import { prodAnalytics_, prodWeekStart_ } from '@/features/cx-productivity/lib/prod/analytics'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
@@ -19,58 +21,80 @@ export async function GET(req: Request) {
     const m = e instanceof Error ? e.message : 'Unable to authorize request'
     return NextResponse.json({ error: m }, { status: m === 'Unauthorized' ? 401 : 403 })
   }
-  const supabase = db()
   const today = prodToday_({})
   const weekParam = new URL(req.url).searchParams.get('week') || ''
   const week = /^\d{4}-\d\d-\d\d$/.test(weekParam) ? prodWeekStart_(weekParam) : prodWeekStart_(today)
   const full = user.role === 'admin'
-
-  const [rosterRes, configRes] = await Promise.all([
-    supabase.from('roster').select('email, name, tl_email'),
-    supabase.from('config').select('key, value'),
-  ])
-  if (rosterRes.error) return NextResponse.json({ error: rosterRes.error.message }, { status: 500 })
-
-  const cfg: Cfg = {}
-  ;(configRes.data || []).forEach((r: { key: string; value: string }) => {
-    cfg[r.key] = r.value
-  })
-  const dirBy: Record<string, { name: string; tlEmail: string }> = {}
-  ;(rosterRes.data || []).forEach((r: { email: string; name: string; tl_email: string | null }) => {
-    dirBy[String(r.email).toLowerCase()] = { name: r.name, tlEmail: r.tl_email || '' }
-  })
-  const dir = {
-    by: dirBy,
-    name: (e: string) => dirBy[String(e).toLowerCase()]?.name || '',
-    managerOf: (e: string) => dirBy[String(e).toLowerCase()]?.tlEmail || null,
+  const cacheKey = `prod_an|${week}|${String(user.email).toLowerCase()}|${full}`
+  const hit = cacheGet(cacheKey)
+  if (hit) {
+    try {
+      return NextResponse.json({ ...(JSON.parse(hit) as Record<string, unknown>), cached: true })
+    } catch {
+      /* corrupt entry: fall through and recompute */
+    }
   }
-  const u = { role: String(user.role), email: String(user.email || '').toLowerCase() }
-  const scope = prodScope_(u, dir)
+  try {
+    const [cfg, dirAll] = await Promise.all([configAll(), pwDirectory()])
+    const dirBy: Record<string, { name: string; tlEmail: string }> = {}
+    Object.keys(dirAll.by).forEach((e) => {
+      const p = dirAll.by[e]
+      dirBy[e] = { name: p.name, tlEmail: p.tlEmail || '' }
+    })
+    const dir = {
+      by: dirBy,
+      name: (e: string) => dirBy[String(e).toLowerCase()]?.name || '',
+      managerOf: (e: string) => dirBy[String(e).toLowerCase()]?.tlEmail || null,
+    }
+    const u = { role: String(user.role), email: String(user.email || '').toLowerCase() }
+    const scope = prodScope_(u, dir)
 
-  const weeksFrom = dqAddDays_(week, -21)
-  const to = dqAddDays_(week, 6)
-  const [intervalsRes, flagsRes, layersRes, histRes] = await Promise.all([
-    supabase.from('prod_intervals').select('*').gte('date', weeksFrom).lte('date', to).limit(50000),
-    supabase.from('prod_flags').select('*').gte('date', weeksFrom).lte('date', to).limit(20000),
-    supabase.from('prod_daily_layers').select('*').gte('date', weeksFrom).lte('date', to).limit(50000),
-    full ? supabase.from('prod_window_hist').select('*').limit(50000) : Promise.resolve({ data: [] }),
-  ])
-  for (const r of [intervalsRes, flagsRes, layersRes])
-    if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 })
+    const weeksFrom = dqAddDays_(week, -21)
+    const to = dqAddDays_(week, 6)
+    const inWindow = (q: Parameters<NonNullable<ReadAllPagedOptions['build']>>[0]) =>
+      q.gte('date', weeksFrom).lte('date', to)
+    const [intervals, flags, layers, hist] = await Promise.all([
+      readAllPaged('prod_intervals', {
+        columns: 'date,agent_email,agent_name,status,start_at,end_at,minutes',
+        build: inWindow,
+      }),
+      readAllPaged('prod_flags', {
+        columns:
+          'agent_email,date,decision,tl_email,decided_at,created_at,review_open_ms,validated_status,suggested_status,raw_status,spans_json,interval_start',
+        build: inWindow,
+      }),
+      readAllPaged('prod_daily_layers', {
+        columns:
+          'date,email,layer,"productiveMinResolution":productive_min_resolution,"productiveMinAux":productive_min_aux',
+        build: inWindow,
+      }),
+      full
+        ? readAllPaged('prod_window_hist', {
+            columns: 'date,class,counts_json',
+            build: inWindow,
+          })
+        : Promise.resolve([] as Record<string, unknown>[]),
+    ])
 
-  const tables: Record<string, Record<string, unknown>[]> = {
-    prod_intervals: (intervalsRes.data || []) as Record<string, unknown>[],
-    prod_flags: (flagsRes.data || []) as Record<string, unknown>[],
-    prod_daily_layers: (layersRes.data || []) as Record<string, unknown>[],
-    prod_window_hist: ((histRes as { data?: unknown[] }).data || []) as Record<string, unknown>[],
+    const tables: Record<string, Record<string, unknown>[]> = {
+      prod_intervals: intervals,
+      prod_flags: flags,
+      prod_daily_layers: layers,
+      prod_window_hist: hist,
+    }
+    const io = { prodRows: (name: string) => tables[name] || [] }
+    const out = prodAnalyticsFor_(
+      cfg as Cfg, io, dir, week, scope, full,
+      prodAnalytics_ as (inp: unknown) => Record<string, unknown>
+    )
+    out.isAdmin = full
+    out.rule = prodRuleView_(cfg as Cfg)
+    out.thisWeek = prodWeekStart_(today)
+    out.cached = false
+    cachePut(cacheKey, JSON.stringify(out), 120)
+    return NextResponse.json(out)
+  } catch (e) {
+    const m = e instanceof Error ? e.message : 'Unable to load analytics'
+    return NextResponse.json({ error: m }, { status: 500 })
   }
-  const io = { prodRows: (name: string) => tables[name] || [] }
-  const out = prodAnalyticsFor_(
-    cfg, io, dir, week, scope, full,
-    prodAnalytics_ as (inp: unknown) => Record<string, unknown>
-  )
-  out.isAdmin = full
-  out.rule = prodRuleView_(cfg)
-  out.thisWeek = prodWeekStart_(today)
-  return NextResponse.json(out)
 }

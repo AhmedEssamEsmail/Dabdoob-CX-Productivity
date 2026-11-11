@@ -1,0 +1,11 @@
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+page.waitForLoadState: Timeout 30000ms exceeded.
+    at [eval]:6:58 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v24.14.1

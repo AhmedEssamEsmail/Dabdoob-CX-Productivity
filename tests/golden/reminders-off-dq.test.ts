@@ -86,4 +86,19 @@ describe('dqRemindMissedCheckins_ reminders_enabled gate', () => {
       status: 'dry_run',
     })
   })
+
+  it('a T-suffixed slot_date row counts as submitted (prefix-superset read)', async () => {
+    seed(true)
+    hubDb.tables.queue_submissions.push({
+      submission_id: 'qs_t1',
+      slot_date: '2026-10-15T08:00',
+      slot: '14:00',
+      status: 'submitted',
+      submitted_by: 'tl@dabdoob.com',
+      submitted_at: '2026-10-15T10:50:00Z',
+    })
+    await dqRemindMissedCheckins_(NOW, CPS)
+    expect(hubDb.tables.popups).toEqual([])
+    expect(hubDb.tables.mail_log).toEqual([])
+  })
 })

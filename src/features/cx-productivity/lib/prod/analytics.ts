@@ -288,11 +288,9 @@ export function prodAnalytics_(inp: ProdAnalyticsInput): Record<string, unknown>
     )
     const hist: Record<string, Record<string, number>> = { idle: {}, working: {} }
     inp.hist.forEach((r) => {
-      // BUG PRESERVED VERBATIM (ProdValidation.js:541): `from` was never declared in
-      // prodAnalytics_, so evaluating `r.date < from` threw ReferenceError on the first
-      // hist row whenever full was true. eval('from') reproduces the same ReferenceError.
-      // eslint-disable-next-line no-eval
-      if (String(r.date) < (eval('from') as string) || !hist[String(r.class)]) return
+      // BUG FIXED per user approval (ProdValidation.js:541 had an undeclared `from`
+      // ReferenceError): hist rows before the resolved lower window bound are skipped.
+      if (String(r.date) < inp.weeks[0] || !hist[String(r.class)]) return
       let counts: Record<string, number> = {}
       try {
         counts = JSON.parse(String(r.counts_json || '{}'))

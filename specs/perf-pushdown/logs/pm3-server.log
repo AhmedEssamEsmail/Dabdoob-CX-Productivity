@@ -1,0 +1,9 @@
+▲ Next.js 16.4.3
+- Local:         http://localhost:3100
+- Network:       http://192.168.6.50:3100
+✓ Ready in 211ms
+✓ Running next.config.ts took 35ms
+[perf] getHomePage total=5681 requireRole=1032 configAll=0 read:aging_open_tickets=177 read:dq_aging_flags=342 read:roster=350 read:fcr_daily=358 read:queue_submissions=371 read:sc_daily=548 read:prod_daily_layers=976 dqLastRun=139 dqSetting=0 read:agg_queue_now=101 read:queue_snapshots=102 ecosystemHealth=692 tickets@2027 e@3201 e@4430 e@4745 ecosystem@5681
+[perf] getHomePage total=2681 requireRole=121 configAll=0 read:dq_aging_flags=93 read:fcr_daily=98 read:roster=104 read:aging_open_tickets=136 read:sc_daily=152 read:queue_submissions=187 read:prod_daily_layers=201 dqLastRun=0 dqSetting=0 read:queue_snapshots=94 read:agg_queue_now=104 ecosystemHealth=0 tickets@323 e@1018 e@2317 e@2575 ecosystem@2681
+[perf] getHomePage total=1897 requireRole=119 configAll=0 read:dq_aging_flags=88 read:aging_open_tickets=102 read:roster=103 read:fcr_daily=112 read:queue_submissions=121 read:sc_daily=201 read:prod_daily_layers=212 dqLastRun=0 dqSetting=0 read:queue_snapshots=94 read:agg_queue_now=114 ecosystemHealth=0 tickets@332 e@990 e@1556 e@1783 ecosystem@1897
+[perf] getHomePage total=2612 requireRole=670 configAll=0 read:aging_open_tickets=157 read:dq_aging_flags=224 read:roster=231 read:prod_daily_layers=248 read:queue_submissions=252 read:sc_daily=415 read:fcr_daily=422 dqLastRun=0 dqSetting=0 read:queue_snapshots=98 read:agg_queue_now=118 ecosystemHealth=0 tickets@1094 e@1624 e@2294 e@2493 ecosystem@2612

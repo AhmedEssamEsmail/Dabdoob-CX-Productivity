@@ -114,7 +114,7 @@ function Ya({ tab, select, badges }: { tab: string; select: (t: string, focus?: 
 
 /* --- Ga — the tab router ---------------------------------------------------------- */
 
-function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: string) => void }) {
+export function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: string) => void }) {
   const [, setTabParam] = useSearchParamState('tab', 'overview', { push: true })
   const tab = Yt()
   const [, bump] = useReducer((x: number) => x + 1, 0)
@@ -139,7 +139,7 @@ function Ga({ d, reload, go }: { d: TphData; reload: () => void; go: (date: stri
     setTabParam(m)
     if (focus) requestAnimationFrame(() => document.getElementById(`tph-panel-${m}`)?.focus())
   }
-  const sum = useMemo(() => Va(d.table, Ka), [d])
+  const sum = useMemo(() => Va(d.table, Ka), [d.table])
   const past = d.date < d.today
   const u = !d.hasCases && past
   const c = !d.touchesReady && past

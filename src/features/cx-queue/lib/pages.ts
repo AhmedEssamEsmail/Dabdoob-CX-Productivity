@@ -10,7 +10,7 @@ import 'server-only'
 
 import { appendRow, updateRow, findRow, db, newId, cacheGet, cachePut, cacheRemove } from '@/features/shared/platform/repo'
 import { configAll, getConfig } from '@/features/shared/platform/settings'
-import { requireRole } from '@/features/shared/platform/identity'
+import { requireRole, pwDirectory } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { dqCachedLive, dqLastRun, readStore, readStoreFiltered } from '@/features/shared/platform/stores'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
@@ -28,10 +28,13 @@ async function cfg_(): Promise<Cfg> {
   return (await configAll()) as Cfg
 }
 
-async function rosterRows_(): Promise<Record<string, unknown>[] | null> {
-  const { data, error } = await db().from('roster').select('*')
-  if (error) return null
-  return data as Record<string, unknown>[]
+async function rosterRowsFromDir_(): Promise<Record<string, unknown>[] | null> {
+  try {
+    const dir = await pwDirectory()
+    return Object.values(dir.by).map((p) => ({ email: p.email, name: p.name, tl_email: p.tlEmail || '' }))
+  } catch {
+    return null
+  }
 }
 
 // ---------------------------------------------------------------- getAgingPage (QueuePages.js:43)
@@ -40,14 +43,22 @@ async function rosterRows_(): Promise<Record<string, unknown>[] | null> {
 export async function getAgingPage(): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin', 'tl', 'agent'])
   const cfg = await cfg_()
-  let rows = dqWithCurrentTl_(await dqCachedLive('aging_open_tickets'), await rosterRows_())
+  const [agingRows, queueRows, flagStore, rosterRows, lastRunAgg, lastRunSync] = await Promise.all([
+    dqCachedLive('aging_open_tickets'),
+    dqCachedLive('agg_queue_now'),
+    readStore(DQ_AGING_FLAGS_TABLE),
+    rosterRowsFromDir_(),
+    dqLastRun('queue_aggregates'),
+    dqLastRun('freshdesk_sync'),
+  ])
+  let rows = dqWithCurrentTl_(agingRows, rosterRows)
   if (user.role === 'agent') rows = rows.filter((r) => r.agent_email === user.email)
   const list = rows.slice(0, DQ_AGING_LIST_CAP).map((r) => {
     const mine = user.role === 'tl' ? r.tl_email === user.email : user.role === 'agent'
     return [String(r.ticket_id), String(r.queue), String(r.status), r.actionable === true || r.actionable === 'TRUE' || r.actionable === 'true',
       String(r.country), dqNum_(r.age_h), dqNum_(r.band), String(r.agent_name), String(r.tl_name), mine, String(r.contact_type_1)]
   })
-  let queues = (await dqCachedLive('agg_queue_now'))
+  let queues = queueRows
     .filter((q) => q.kind === 'ticket')
     .map((q) => dqQueueView_(q, undefined, cfg))
   if (user.role === 'agent') {
@@ -62,12 +73,11 @@ export async function getAgingPage(): Promise<Record<string, unknown>> {
     })
     queues = Object.keys(mineQ).map((k) => mineQ[k])
   }
-  const flagStore = await readStore(DQ_AGING_FLAGS_TABLE)
   const flags = dqOpenAgingFlags_(flagStore.exists ? flagStore.rows : null, rows).filter(
     (f) => user.role !== 'agent' || f.by === user.email
   )
   return {
-    now: new Date().toISOString(), dataAsOf: await dqLastRun('queue_aggregates'), syncedAt: (await dqLastRun('freshdesk_sync')) || '',
+    now: new Date().toISOString(), dataAsOf: lastRunAgg, syncedAt: lastRunSync || '',
     bands: dqBandInfo_(cfg), fields: DQ_AGING_FIELDS, flags, you: user.email,
     tickets: list, total: rows.length, capped: rows.length > DQ_AGING_LIST_CAP, queues, scope: user.role,
     ticketUrl: 'https://' + String(dqSetting_(cfg, 'freshdesk_domain')) + '/a/tickets/', excludedGroups: dqSetting_(cfg, 'inflow_excluded_groups'),
@@ -94,13 +104,19 @@ export async function getAnalyticsPage(): Promise<Record<string, unknown>> {
     })
     return { periods: Object.keys(periods).sort(), partial: Object.keys(partial), rows: out }
   }
-  const day = pack(await dqCachedLive('agg_inflow_daily'), 'date', dqAddDays_(today, -119))
+  const [dailyStore, weekRows, monthRows, lastRun] = await Promise.all([
+    readStoreFiltered('agg_inflow_daily', { gte: { date: dqAddDays_(today, -119) } }),
+    dqCachedLive('agg_inflow_weekly'),
+    dqCachedLive('agg_inflow_monthly'),
+    dqLastRun('inflow'),
+  ])
+  const day = pack(dailyStore.rows, 'date', dqAddDays_(today, -119))
   day.partial = day.periods.indexOf(today) !== -1 ? [today] : []
   return {
-    today, dataAsOf: await dqLastRun('inflow'), channels: DQ_CHANNELS,
+    today, dataAsOf: lastRun, channels: DQ_CHANNELS,
     day,
-    week: pack(await dqCachedLive('agg_inflow_weekly'), 'period', dqWeekStart_(dqAddDays_(today, -7 * 25))),
-    month: pack(await dqCachedLive('agg_inflow_monthly'), 'period', dqAddDays_(today, -366).slice(0, 7)),
+    week: pack(weekRows, 'period', dqWeekStart_(dqAddDays_(today, -7 * 25))),
+    month: pack(monthRows, 'period', dqAddDays_(today, -366).slice(0, 7)),
     countries: Object.keys(countries).sort(), excludedGroups: dqSetting_(cfg, 'inflow_excluded_groups'),
   }
 }
@@ -116,7 +132,11 @@ export async function getCheckinsPage(slotArg?: string | null): Promise<Record<s
   const today = dqDateKey_(now, tz)
   const yesterday = dqAddDays_(today, -1)
   const cps = dqCheckpoints_(today, cfg)
-  const subStore = await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { in: { slot_date: [today, yesterday] } })
+  // Prefix bound (data-2): contiguous [yesterday, today] range keeps 'YYYY-MM-DD…' variants.
+  const subStore = await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, {
+    gte: { slot_date: yesterday },
+    lte: { slot_date: today + String.fromCharCode(0xfffd) },
+  })
   const subs = dqSubmissionsFor_(subStore.exists ? subStore.rows : null, [today])
   const bySlot: Record<string, Record<string, unknown>> = {}
   subs.forEach((s) => {
@@ -217,7 +237,7 @@ export async function submitCheckin(payload: Record<string, unknown>): Promise<R
     queues_json: rec.queues, corrections_json: rec.corrections, correction_reason: rec.correctionReason,
     general_note: rec.generalNote, help_needed: rec.helpNeeded, help_note: rec.helpNote,
   }
-  const existing = dqSubmissionsFor_((await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { in: { slot_date: [today, yesterday] } })).rows, [today]).filter((s) => s.slot === rec.slot)[0]
+  const existing = dqSubmissionsFor_((await readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { gte: { slot_date: yesterday }, lte: { slot_date: today + String.fromCharCode(0xfffd) } })).rows, [today]).filter((s) => s.slot === rec.slot)[0]
   let saved: Record<string, unknown> | null
   if (existing) {
     saved = await updateRow(DQ_QUEUE_SUBMISSIONS_TABLE, 'submission_id', existing.submission_id, row, { actor: user.email })
@@ -293,7 +313,7 @@ export async function agingFlagTicket(ticketId: unknown, note: unknown): Promise
   const id = String(ticketId || '').trim()
   const text = String(note || '').trim().slice(0, 1000)
   if (!text) throw new InputError('Say what is blocking it and what help you need.')
-  const row = dqWithCurrentTl_(await dqCachedLive('aging_open_tickets'), await rosterRows_()).filter(
+  const row = dqWithCurrentTl_(await dqCachedLive('aging_open_tickets'), await rosterRowsFromDir_()).filter(
     (r) => String(r.ticket_id) === id
   )[0]
   if (!row) throw new InputError('Ticket ' + id + ' is not on the aging board any more.', 404)

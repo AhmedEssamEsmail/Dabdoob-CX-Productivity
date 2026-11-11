@@ -1,0 +1,25 @@
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\dq-live-cache.test.ts
+  13:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\fallback-log.test.ts
+  13:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\flush-invalidate.test.ts
+  13:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\job-preload.test.ts
+  13:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\prod-analytics.test.ts
+  11:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\qa-pushdown.test.ts
+  186:11  warning  'asOf' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  186:17  warning  'cached' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\read-all-paged.test.ts
+  13:10  warning  '_table' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)
+

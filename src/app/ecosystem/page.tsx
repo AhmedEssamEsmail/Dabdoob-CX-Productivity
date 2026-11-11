@@ -1,7 +1,7 @@
 /* verbatim port of the legacy Ecosystem page — thin route entry. */
 import '@/app/styles/hub.css'
-import { EcosystemPage } from '@/features/cx-hub/components/ecosystem-page'
+import { EcosystemDynamic } from '@/features/cx-hub/components/ecosystem-dynamic'
 
 export default function Page() {
-  return <EcosystemPage />
+  return <EcosystemDynamic />
 }

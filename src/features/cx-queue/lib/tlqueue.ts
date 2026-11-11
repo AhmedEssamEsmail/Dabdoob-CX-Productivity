@@ -33,7 +33,7 @@
 
 import 'server-only'
 
-import { db, appendRow } from '@/features/shared/platform/repo'
+import { db, appendRow, readAllPaged } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
 import { requireJobCaller, requireRole } from '@/features/shared/platform/identity'
 import { readStore } from '@/features/shared/platform/stores'
@@ -607,21 +607,10 @@ async function tlqIo_(): Promise<TlqIo> {
       return (data || []) as Row[]
     },
     maqsamRows: async (fromMs, toMs) => {
-      const { data, error } = await db()
-        .from('maqsam_calls')
-        .select('dedupe_key,ts_ms,cols')
-        .gte('ts_ms', fromMs - 86400000)
-        .lt('ts_ms', toMs + 86400000)
-      if (error) throw described(error, { table: 'maqsam_calls' })
-      return (data || []) as Row[]
+      return (await readAllPaged('maqsam_calls', { columns: 'dedupe_key,ts_ms,cols', build: (q) => q.gte('ts_ms', fromMs - 86400000).lt('ts_ms', toMs + 86400000) })) as Row[]
     },
     fdActivityRows: async (fromMs) => {
-      const { data, error } = await db()
-        .from('fd_activities')
-        .select('dedupe_key,ts_ms,cols')
-        .gte('ts_ms', fromMs - 86400000)
-      if (error) throw described(error, { table: 'fd_activities' })
-      return (data || []) as Row[]
+      return (await readAllPaged('fd_activities', { columns: 'dedupe_key,ts_ms,cols', build: (q) => q.gte('ts_ms', fromMs - 86400000) })) as Row[]
     },
     trackerRecords: async (trackerId) => {
       const { data, error } = await db().from('tracker_records').select('*').eq('tracker_id', trackerId).order('row_n', { ascending: true })

@@ -1,6 +1,8 @@
 import 'server-only'
 
-import { db } from '@/features/shared/platform/repo'
+import { db, readAllPaged } from '@/features/shared/platform/repo'
+import { configAll } from '@/features/shared/platform/settings'
+import { pwDirectory } from '@/features/shared/platform/identity'
 import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { describeDbError } from '@/features/shared/lib/errors'
@@ -126,54 +128,77 @@ export interface TphStore {
   storeErrors: string[]
 }
 
-export async function tphLoadStore_(dateParam?: string | null): Promise<TphStore> {
-  const cfgRes = await db().from('config').select('key, value')
-  const cfg: Cfg = {}
-  ;(cfgRes.data || []).forEach((r: { key: string; value: unknown }) => {
-    cfg[r.key] = r.value
+export interface TphStoreOpts {
+  window?: 'day' | 'trend'
+  refreshLog?: boolean
+}
+
+// P-03 projections: only the columns the TPH readers (page/run/write) consume.
+const TPH_DAYS_COLS = 'date, agent_email, slots_json, sources_json'
+const TPH_CASES_COLS = 'date, source, cases_json, at'
+const TPH_TOUCHES_COLS = 'date, touches_json, computed_at'
+const TPH_CALLS_COLS = 'date, calls_json, computed_at'
+const TPH_TASKS_COLS = 'task_id, date, agent_email, channel, "start", "end", "by", removed'
+
+const TPH_EMPTY_DIR: TphStore['dir'] = { by: {}, name: () => '' }
+
+function tphDirFrom_(directory: Awaited<ReturnType<typeof pwDirectory>>): TphStore['dir'] {
+  const by: TphStore['dir']['by'] = {}
+  Object.keys(directory.by).forEach((k) => {
+    const p = directory.by[k]
+    by[k] = { email: p.email, name: p.name, tlEmail: p.tlEmail || '', role: p.role, active: p.active }
   })
+  return { by, name: (e: string) => by[normEmail_(e)]?.name || '' }
+}
+
+export async function tphLoadStore_(dateParam?: string | null, opts: TphStoreOpts = {}): Promise<TphStore> {
+  const [cfg, dirRes] = await Promise.all([
+    configAll() as Promise<Cfg>,
+    pwDirectory()
+      .then((d) => ({ dir: tphDirFrom_(d), error: null as string | null }))
+      .catch((e) => ({ dir: TPH_EMPTY_DIR, error: describeDbError(e, { table: 'roster' }).message })),
+  ])
   const today = prodToday_(cfg)
   const dp = /^\d{4}-\d\d-\d\d$/.test(String(dateParam || '')) ? String(dateParam) : today
   const back = Math.max(Number(prodSetting_(cfg, 'tph_eligible_days') || 28), TPH_TREND_MAX_DAYS)
-  const lo = dp < dqAddDays_(today, -back) ? dp : dqAddDays_(today, -back)
+  const dayMode = opts.window === 'day'
+  const lo = dayMode ? dp : dp < dqAddDays_(today, -back) ? dp : dqAddDays_(today, -back)
   const supabase = db()
-  const [rosterRes, daysRes, casesRes, touchesRes, callsRes, tasksRes, logRes] =
-    await Promise.all([
-      supabase.from('roster').select('email, name, tl_email, role, active'),
-      supabase.from('prod_tph_days').select('*').gte('date', lo).limit(20000),
-      supabase.from('prod_tph_cases').select('*').gte('date', lo).limit(5000),
-      supabase.from('prod_tph_touches').select('*').gte('date', lo).limit(5000),
-      supabase.from('prod_tph_calls').select('*').gte('date', lo).limit(5000),
-      supabase.from('prod_tph_tasks').select('*').gte('date', lo).limit(10000),
-      supabase.from('refresh_log').select('*').order('started_at', { ascending: false }).limit(300),
-    ])
-  const storeErrors: string[] = []
-  const mark = (table: string, res: { error: { message?: string } | null }) => {
-    if (res.error) storeErrors.push(describeDbError(res.error, { table }).message)
-  }
-  mark('config', cfgRes)
-  mark('roster', rosterRes)
-  mark('prod_tph_days', daysRes)
-  mark('prod_tph_cases', casesRes)
-  mark('prod_tph_touches', touchesRes)
-  mark('prod_tph_calls', callsRes)
-  mark('prod_tph_tasks', tasksRes)
-  mark('refresh_log', logRes)
-  const by: TphStore['dir']['by'] = {}
-  ;(rosterRes.data || []).forEach((r: { email: string; name: string; tl_email: string | null; role: string; active: boolean }) => {
-    by[normEmail_(r.email)] = {
-      email: normEmail_(r.email), name: r.name, tlEmail: r.tl_email || '', role: r.role, active: r.active,
+  const readTable = async (table: string, columns: string): Promise<{ rows: Row[]; error: string | null }> => {
+    try {
+      const rows = await readAllPaged(table, {
+        columns,
+        build: (q) => (dayMode ? q.gte('date', dp).lte('date', dp) : q.gte('date', lo)),
+      })
+      return { rows: rows as Row[], error: null }
+    } catch (e) {
+      return { rows: [], error: describeDbError(e, { table }).message }
     }
+  }
+  const [daysRes, casesRes, touchesRes, callsRes, tasksRes, logRes] = await Promise.all([
+    readTable('prod_tph_days', TPH_DAYS_COLS),
+    readTable('prod_tph_cases', TPH_CASES_COLS),
+    readTable('prod_tph_touches', TPH_TOUCHES_COLS),
+    readTable('prod_tph_calls', TPH_CALLS_COLS),
+    readTable('prod_tph_tasks', TPH_TASKS_COLS),
+    opts.refreshLog === true
+      ? supabase.from('refresh_log').select('*').order('started_at', { ascending: false }).limit(300)
+      : Promise.resolve({ data: [] as Row[], error: null }),
+  ])
+  const storeErrors: string[] = []
+  if (dirRes.error) storeErrors.push(dirRes.error)
+  ;[daysRes, casesRes, touchesRes, callsRes, tasksRes].forEach((r) => {
+    if (r.error) storeErrors.push(r.error)
   })
-  const dir = { by, name: (e: string) => by[normEmail_(e)]?.name || '' }
+  if (logRes.error) storeErrors.push(describeDbError(logRes.error, { table: 'refresh_log' }).message)
   return {
-    cfg, dir,
-    days: daysRes.data || [],
-    cases: casesRes.data || [],
-    touches: touchesRes.data || [],
-    callsRows: callsRes.data || [],
-    tasks: tasksRes.data || [],
-    refreshLog: logRes.data || [],
+    cfg, dir: dirRes.dir,
+    days: daysRes.rows,
+    cases: casesRes.rows,
+    touches: touchesRes.rows,
+    callsRows: callsRes.rows,
+    tasks: tasksRes.rows,
+    refreshLog: (logRes.data || []) as Row[],
     storeErrors,
   }
 }

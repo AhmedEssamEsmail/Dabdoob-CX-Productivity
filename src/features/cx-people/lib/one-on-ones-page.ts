@@ -575,7 +575,7 @@ export async function pwOneOnOneContext_(
   const slots = await part(
     'Check-ins',
     async () => {
-      const subs = await readStore('queue_status_submissions')
+      const subs = await readStore('queue_submissions')
       return dqSlotsToday_(now, cfg, subs.exists ? subs.rows : null)
     },
     [] as Record<string, any>[],
@@ -1083,7 +1083,14 @@ export async function pwRaiseEscalation_(
   if (!esc.length) return
   const topicsText = esc.map((c) => c.def.label || c.def.id).join(', ')
   const who = dir.name(pair.report)
-  const admins = Object.keys(dir.by).filter((e) => dir.by[e].role === 'admin' && dir.by[e].active && e !== user.email)
+  const adminEmails = new Set(dir.admins.map((e) => String(e || '').trim().toLowerCase()))
+  Object.keys(dir.by).forEach((e) => {
+    if (dir.by[e].role === 'admin') adminEmails.add(e)
+  })
+  const admins = [...adminEmails].filter((e) => {
+    const p = dir.person(e)
+    return p && p.role === 'admin' && p.active && e !== user.email
+  })
   for (const admin of admins) {
     await raisePopup(
       {

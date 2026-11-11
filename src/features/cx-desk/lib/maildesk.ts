@@ -600,8 +600,14 @@ export async function mailDeskPage() {
     const cut = new Date(Date.now() - 14 * 86400000).toISOString()
     approvals = (await rowsOf('mail_approvals'))
       .filter((r) => r.status === 'pending' || r.status === 'sending' || String(r.decided_at) >= cut)
+      .sort(
+        (a, b) =>
+          Number(b.status === 'pending') - Number(a.status === 'pending') ||
+          (String(a.received_at) < String(b.received_at) ? 1 : String(a.received_at) > String(b.received_at) ? -1 : 0) ||
+          (String(a.updated_at) > String(b.updated_at) ? -1 : String(a.updated_at) < String(b.updated_at) ? 1 : 0) ||
+          (String(a.thread_id) < String(b.thread_id) ? -1 : String(a.thread_id) > String(b.thread_id) ? 1 : 0),
+      )
       .map((r) => mdApprovalOut_(r, dir))
-      .sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending') || (a.receivedAt < b.receivedAt ? 1 : -1))
   }
   const drySetting = await mdSetting_('mail_approval_dry_run')
   return {

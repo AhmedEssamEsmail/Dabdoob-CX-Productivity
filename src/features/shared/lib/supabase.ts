@@ -9,9 +9,29 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 let client: SupabaseClient | null = null
 
+async function pgFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const started = performance.now()
+  try {
+    return await globalThis.fetch(input, init)
+  } finally {
+    const ms = Math.round(performance.now() - started)
+    try {
+      const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      const url = new URL(raw)
+      const method = init?.method ?? (input instanceof Request ? input.method : 'GET')
+      console.log(`[pg] ${method} ${url.pathname}${url.search} ${ms}`)
+    } catch {
+      console.log(`[pg] ? ? ${ms}`)
+    }
+  }
+}
+
 function getClient(): SupabaseClient {
   if (!client) {
-    client = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey)
+    client =
+      process.env.PG_PROFILE === '1'
+        ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, { global: { fetch: pgFetch } })
+        : createSupabaseClient(supabaseUrl, supabaseServiceRoleKey)
   }
   return client
 }

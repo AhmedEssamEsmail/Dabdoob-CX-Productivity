@@ -1,0 +1,7 @@
+{
+ "wi": 0,
+ "alerts": [],
+ "body": "Skip to content\nDabdoob CX\nOperations console\nSearch or jump to…\nCtrl K\nHUB\nMy day\nHome\nPeople & holidays\nAdmin\nQUALITY\nTeam scores\nAudit Desk\nCTLs\nDisputes\nCalibration\nKB gaps\nMy auditor work\nQuality analytics\nAudit forms\nPRODUCTIVITY\nQUEUE & WORKFORCE\nPEOPLE & PERFORMANCE\nOPERATIONS & TRACKERS\nTL DESK\nFCR\nView as\nEA\n\nE2E Admin\n\nAdmin\n\nQuality\nEA\nAudit Desk\n\nTickets to audit today: audits team leads asked for first, then the daily sample of four per agent. Start audit opens the form with the ticket, agent and team lead filled in, and records when you started. Under 100% opens a CTL for the te"
+}
+QA: 200 http://localhost:3000/api/qa/getQaQueuePage | 200 http://localhost:3000/api/qa/getQaQueuePage
+done

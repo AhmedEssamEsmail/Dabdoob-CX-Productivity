@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const user = await requireRole(['admin', 'tl'])
     await viewAsGuard()
     const body = await req.json()
-    const store = await tphLoadStore_(body?.date)
+    const store = await tphLoadStore_(body?.date, { window: 'day' })
     const out = await saveTphTask(
       store,
       { role: String(user.role), email: String(user.email || '').toLowerCase() },

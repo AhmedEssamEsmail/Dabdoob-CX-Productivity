@@ -1,0 +1,33 @@
+diff --git a/src/features/cx-people/lib/work-core.ts b/src/features/cx-people/lib/work-core.ts
+index 1ece4c3..f4392d2 100644
+--- a/src/features/cx-people/lib/work-core.ts
++++ b/src/features/cx-people/lib/work-core.ts
+@@ -90,6 +90,15 @@ export async function pwTaskContext_(): Promise<TaskContext> {
+     pwRows_('action_planned_milestones'),
+     configAll(),
+   ])
++  // Legacy readTable_ returned sheet append order; readAllPaged now returns
++  // pk-asc. The store's implicit serial id carries the append order where it
++  // exists; rows without one keep the read order (stable sort).
++  actions.sort((x, y) => {
++    const xi = Number(x.id)
++    const yi = Number(y.id)
++    if (!Number.isFinite(xi) || !Number.isFinite(yi)) return 0
++    return xi - yi
++  })
+   const now = Date.now()
+   const today = pwToday_(now)
+   const detailBy = new Set(details.map((d) => String(d.action_id)))
+diff --git a/src/features/shared/platform/calendar.ts b/src/features/shared/platform/calendar.ts
+index ac7f358..d841b08 100644
+--- a/src/features/shared/platform/calendar.ts
++++ b/src/features/shared/platform/calendar.ts
+@@ -73,7 +73,7 @@ async function wcState(): Promise<WcState> {
+   if (hit) return hit
+   const roster: Record<string, Record<string, unknown>> = {}
+   try {
+-    const { data } = await db().from('roster').select('*')
++    const { data } = await db().from('roster').select('email,role,days_off,based_in_country')
+     ;(data || []).forEach((r) => {
+       const e = normEmail(r.email)
+       if (e) roster[e] = r as Record<string, unknown>

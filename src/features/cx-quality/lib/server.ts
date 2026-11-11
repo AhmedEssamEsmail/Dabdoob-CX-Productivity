@@ -13,7 +13,7 @@
  */
 
 import 'server-only'
-import { appendRow, cacheGet, cachePut, db, newId, readRows, sanitizeInput } from '@/features/shared/platform/repo'
+import { appendRow, cacheGet, cachePut, db, newId, readAllPaged, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
@@ -46,12 +46,12 @@ import {
   qaNonTicketClash_, qaNonTicketRow_, qaCleanPassReason_,
   qaAuditorVia_, qaKbItem_, qaWeekQuota_, qaSquash_, qaTimesAsText_, qaTextTime_,
   qaQueueFields_, qaQueueClosed_, QA_REQUEST_OPEN, QA_PASS_REASONS, qaPeriods_,
-  qaCoverage_, qaCheckRange_, QA_COVERAGE_DAYS,
+  qaCoverage_, qaCheckRange_, qaDaysBetween_, QA_COVERAGE_DAYS,
 } from './pure'
 import {
   QE_LOG_HEADERS, QE_OLD_DATA_SS_ID,
   qeSettingsFrom_, qeFmt_, qeWeekKeyFor_, qeCanonAgent_, qeQuotaFor_, qeGroupToChannel_,
-  qeStatusKey_, qeCleanSamplingInput_, qeWithSampling_, qeMergeSettings_, qeLocal_,
+  qeStatusKey_, qeCleanSamplingInput_, qeWithSampling_, qeMergeSettings_, qeLocal_, qeRetentionWindow_,
   QE_FD_STATUS_NAMES,
 } from './engine'
 import { qaAnalytics_, qaDrill_, qaScoresRange_, qaDeriveBasis_, qaFailMemory_ } from './analytics'
@@ -91,18 +91,22 @@ async function qaRows_(name: string): Promise<Row[]> {
 }
 
 /** qaRowsWhere_ verbatim: qaRows_ narrowed by server-side predicates; [] when the table is absent. */
-async function qaRowsWhere_(name: string, filter: { eq?: Record<string, unknown>; in?: Record<string, unknown[]>; is?: Record<string, null>; gte?: Record<string, unknown> }): Promise<Row[]> {
+async function qaRowsWhere_(name: string, filter: { eq?: Record<string, unknown>; in?: Record<string, unknown[]>; is?: Record<string, null>; gte?: Record<string, unknown>; lte?: Record<string, unknown>; or?: string }): Promise<Row[]> {
   try {
     const f = filter || {}
     for (const list of Object.values(f.in || {})) if (!list.length) return []
-    let q = db().from(name).select('*')
-    for (const [k, v] of Object.entries(f.eq || {})) q = q.eq(k, v as string)
-    for (const [k, list] of Object.entries(f.in || {})) q = q.in(k, list)
-    for (const k of Object.keys(f.is || {})) q = q.is(k, null)
-    for (const [k, v] of Object.entries(f.gte || {})) q = q.gte(k, v as string)
-    const { data, error } = await q
-    if (error) throw error
-    return (data || []) as Row[]
+    return (await readAllPaged(name, {
+      build: (q) => {
+        let query = q
+        for (const [k, v] of Object.entries(f.eq || {})) query = query.eq(k, v as string)
+        for (const [k, list] of Object.entries(f.in || {})) query = query.in(k, list)
+        for (const k of Object.keys(f.is || {})) query = query.is(k, null)
+        for (const [k, v] of Object.entries(f.gte || {})) query = query.gte(k, v as string)
+        for (const [k, v] of Object.entries(f.lte || {})) query = query.lte(k, v as string)
+        if (f.or) query = query.or(f.or)
+        return query
+      },
+    })) as Row[]
   } catch (e) {
     const err = e as { code?: string; status?: number }
     if (err.code === '42P01' || err.status === 404) return []
@@ -123,9 +127,15 @@ async function qaRowBy_(name: string, col: string, value: unknown, extra?: [stri
   }
 }
 
-/** dqUpsertIn_ verbatim: update rows matching every key field, insert the rest. */
+/** dqUpsertIn_ verbatim: one onConflict upsert when the keys match a unique constraint; the per-row update/insert loop only on 42P10-class errors. */
 async function qaUpsertIn_(name: string, keys: string[], rows: Row[]): Promise<number> {
   const clean = rows.map((r) => sanitizeInput(r)) as Row[]
+  if (clean.length) {
+    const { error } = await db().from(name).upsert(clean, { onConflict: keys.join(',') })
+    if (!error) return clean.length
+    const msg = String(error.message || error.code || error)
+    if (!/constraint|conflict|42P10/i.test(msg)) throw described(error, { table: name })
+  }
   let n = 0
   for (const row of clean) {
     let q = db().from(name).select(keys.join(',')).limit(1)
@@ -362,20 +372,16 @@ function qeLogRowToValues_(r: Row): unknown[] {
 }
 
 /** qeQueueValues_: the Queue Log as a values[][] grid (header row + rows). */
-async function qeQueueValues_(): Promise<unknown[][]> {
+export async function qeQueueValues_(sinceKey?: string): Promise<unknown[][]> {
   if (!(await qaEngineLive_())) {
     const tabs = await fetchWorkbookTabs(QE_OLD_DATA_SS_ID, ['Queue Log'])
     return tabs['Queue Log'] || []
   }
-  const rows = (await readRows(QE_TBL_LOG, { orderBy: 'queued_date', ascending: false, limit: 60000 }).catch(() => [] as Row[])) as Row[]
-  return [QE_LOG_HEADERS.slice() as unknown[]].concat(rows.map(qeLogRowToValues_))
-}
-
-/** qeSetLogField_: one Queue Log cell (Key + Queued Date); live mode only. */
-async function qeSetLogField_(key: string, queuedDate: string, header: string, value: unknown): Promise<void> {
-  if (!(await qaEngineLive_())) return
-  const { error } = await db().from(QE_TBL_LOG).update({ [qeLogField_(header)]: value }).eq('key', String(key)).eq('queued_date', String(queuedDate))
-  if (error) throw described(error, { table: QE_TBL_LOG })
+  const rows = await readAllPaged(QE_TBL_LOG, {
+    build: sinceKey ? (q) => q.gte('queued_date', sinceKey) : undefined,
+  }).catch(() => [] as Row[])
+  rows.sort((a, b) => String(b.queued_date || '').localeCompare(String(a.queued_date || '')))
+  return [QE_LOG_HEADERS.slice() as unknown[]].concat(rows.slice(0, 60000).map(qeLogRowToValues_))
 }
 
 /** qeMarkLogAudited_ verbatim: State='audited' + Audited At + Audited By. */
@@ -391,8 +397,8 @@ async function qeMarkLogAudited_(key: string, queuedDate: string, auditedAt: str
 }
 
 /** qeReadOutcomes_ verbatim: Build Outcomes rows on/after a week key. */
-async function qeReadOutcomes_(fromKey: string): Promise<Row[]> {
-  const rows = (await readRows(QE_TBL_OUTCOMES).catch(() => [] as Row[])) as Row[]
+export async function qeReadOutcomes_(fromKey: string): Promise<Row[]> {
+  const rows = await readAllPaged(QE_TBL_OUTCOMES, { build: (q) => q.gte('queued_date', fromKey) }).catch(() => [] as Row[])
   return rows
     .filter((r) => String(r.queued_date || '') >= String(fromKey || ''))
     .map((r) => ({ date: String(r.queued_date || ''), ranAt: String(r.ran_at || ''), mode: String(r.mode || ''), outcomes: qaParse_(r.outcomes, {}) as Row }))
@@ -413,8 +419,15 @@ async function qeReadRecentBuilds_(n: number): Promise<Row[]> {
  * candidates. Returns { replacement | null, reason, notInLog? }.
  */
 async function qePassAndReplace_(key: string, queuedDate: string, reason: string, by: string, now: Date, ticketId: string): Promise<{ replacement: Row | null; reason: string; notInLog?: boolean }> {
-  const S = await qeSettings_()
-  const all = (await readRows(QE_TBL_LOG).catch(() => [] as Row[])) as Row[]
+  // Day-bounded read: the find and blocked loops below only ever use this build's
+  // queued_date day (every state), so the whole table is never needed (P-06).
+  let all: Row[] = []
+  try {
+    const { data: logRows, error: logErr } = await db().from(QE_TBL_LOG).select('*')
+      .gte('queued_date', String(queuedDate)).lt('queued_date', dqAddDays_(String(queuedDate), 1))
+    if (logErr) throw logErr
+    all = (logRows || []) as Row[]
+  } catch { all = [] }
   const canon = (v: unknown) => qeCanonAgent_(v)
   const tid = String(ticketId || String(key).split('|')[0]).trim()
   const agent = canon(String(key).split('|').slice(1).join('|'))
@@ -822,7 +835,7 @@ export async function resendQaAuditEmail(auditId: string, again: unknown): Promi
   const forms = qaForms_(await qaRows_('qa_forms'))
   const f = forms.byKey[String(a.form_id) + '|' + a.form_version]
   const lost = f ? qaLostQuestions_(f as never, qaParse_(a.answers_json, {}) as Record<string, string>).map((q) => q.text) : []
-  const ctl = (await qaRows_('qa_ctls')).filter((c) => c.audit_id === id && c.status !== 'cancelled')[0] || null
+  const ctl = (await qaRowsWhere_('qa_ctls', { eq: { audit_id: id } })).filter((c) => c.audit_id === id && c.status !== 'cancelled')[0] || null
   const view = Object.assign({}, a, { fatal: qaBool_(a.fatal) })
   const msg = qaAuditMail_(view, lost, String(a.comment || ''), dir.name(String(a.auditor_email)), ctl, dir as never, qaBool_(await qaSetting_('qa_audit_email_enabled'))) as never as { n: NotifyInput | null; skip: string }
   if (msg.skip) await qaLogMailSkip_('qa_audit', id, msg.skip)
@@ -911,7 +924,7 @@ async function qaTicketTarget_(input: Row, dir: Directory): Promise<{ ticket: st
 async function qaTicketClash_(ticket: string, dir: Directory): Promise<void> {
   const done = (await qaRowsWhere_('qa_audits', { eq: { ticket_id: ticket } })).filter((a) => String(a.ticket_id) === ticket && a.kind !== 'calibration')[0]
   if (done) throw new Error('Ticket #' + ticket + ' was audited already, on ' + String(done.audit_date).slice(0, 10) + ' by ' + dir.name(String(done.auditor_email)) + '.')
-  const open = (await qaRows_('qa_queue')).filter((q) => String(q.ticket_id) === ticket && QA_REQUEST_OPEN.indexOf(String(q.status)) !== -1)[0]
+  const open = (await qaRowsWhere_('qa_queue', { eq: { ticket_id: ticket }, in: { status: QA_REQUEST_OPEN } })).filter((q) => String(q.ticket_id) === ticket && QA_REQUEST_OPEN.indexOf(String(q.status)) !== -1)[0]
   if (open && open.source === 'request') throw new Error('Ticket #' + ticket + ' was already requested by ' + dir.name(String(open.requested_by)) + ' on ' + String(open.requested_at).slice(0, 10) + '.')
   if (open && open.source === 'offqueue') throw new Error('Ticket #' + ticket + ' was already added off-queue by ' + dir.name(String(open.requested_by)) + ' on ' + String(open.requested_at).slice(0, 10) + '.')
   if (open) throw new Error('Ticket #' + ticket + ' is already in the audit queue (' + open.queue_date + ').')
@@ -1012,7 +1025,7 @@ export async function getQaMyAuditsPage(): Promise<Row> {
   const dir = await pwDirectory()
   const forms = qaForms_(await qaRows_('qa_forms'))
   const today = qaToday_()
-  const ctls = (await qaRows_('qa_ctls')).filter((c) => normEmail(c.agent_email) === user.email)
+  const ctls = (await qaRowsWhere_('qa_ctls', { eq: { agent_email: user.email } })).filter((c) => normEmail(c.agent_email) === user.email)
   const ctlBy: Record<string, Row> = {}
   ctls.forEach((c) => {
     if (c.status !== 'cancelled' || !ctlBy[String(c.audit_id)]) ctlBy[String(c.audit_id)] = c
@@ -1589,7 +1602,7 @@ export async function getQaKbGapsPage(): Promise<Row> {
   if (user.role === 'agent' && !isAud && !isEditor) throw new Error('The KB-gaps tracker is for auditors, team leads, admins and the people who update the knowledge base.')
   const since = dqAddDays_(qaToday_(), -14)
   const myAudits = isAud
-    ? (await qaRows_('qa_audits'))
+    ? (await qaRowsWhere_('qa_audits', { eq: { kind: 'audit', auditor_email: user.email }, gte: { audit_date: since } }))
         .filter((a) => a.kind === 'audit' && normEmail(a.auditor_email) === user.email && String(a.audit_date) >= since)
         .sort((a, b) => String(b.submitted_at).localeCompare(String(a.submitted_at)))
         .map((a) => ({ auditId: String(a.audit_id), ticketId: qaItemId_(a), agentName: dir.name(String(a.agent_email)), auditDate: String(a.audit_date), score: Number(a.score) }))
@@ -1673,8 +1686,13 @@ export async function getQaMyAuditorKpis(month: string): Promise<Row> {
   if (!(await qaIsAuditor_(user, dir))) throw new Error('This page is for quality auditors.')
   const today = qaToday_()
   month = /^\d{4}-\d{2}$/.test(String(month || '')) ? String(month) : today.slice(0, 7)
-  const audits = await qaRows_('qa_audits')
-  const kpis = qaAuditorKpis_(audits, await qaRows_('qa_disputes'), await qaRows_('qa_calibrations'), await qaRows_('qa_kb_gaps'), month) as Record<string, Row>
+  const [audits, disputes, calibrations, kbGaps] = await Promise.all([
+    qaRowsWhere_('qa_audits', { eq: { auditor_email: user.email } }),
+    qaRowsWhere_('qa_disputes', { eq: { auditor_email: user.email } }),
+    qaRowsWhere_('qa_calibrations', {}),
+    qaRowsWhere_('qa_kb_gaps', {}),
+  ])
+  const kpis = qaAuditorKpis_(audits, disputes, calibrations, kbGaps, month) as Record<string, Row>
   const k = (kpis[user.email] || { audits: 0, disputes: 0, upheld: 0, open: 0, disputePct: null, alignmentPct: null, calibrations: 0, kbGaps: 0, kbSameDay: 0 }) as Row
   let S: Row
   try {
@@ -1696,7 +1714,7 @@ export async function getQaMyAuditorKpis(month: string): Promise<Row> {
   months[today.slice(0, 7)] = true
   const since = dqAddDays_(today, -90)
   const dispBy: Record<string, Row> = {}
-  ;(await qaRows_('qa_disputes')).forEach((d) => {
+  ;(await qaRowsWhere_('qa_disputes', { eq: { auditor_email: user.email } })).forEach((d) => {
     if (normEmail(d.auditor_email) === user.email) dispBy[String(d.audit_id)] = d
   })
   const mine = audits
@@ -1748,7 +1766,10 @@ export async function getQaScoresPage(from: string, to: string, basis: string): 
     }
   }
   const dir = await pwDirectory()
-  const out = qaScoresRange_(await qaRows_('qa_audits'), from, to, { basis: b, weekStartsOn: startsOn, nameOf: (e: string) => dir.name(e) }) as Row
+  const audits = b === 'audit'
+    ? await qaRowsWhere_('qa_audits', { gte: { audit_date: dqAddDays_(from, -(qaDaysBetween_(from, to) + 1)) }, lte: { audit_date: to } })
+    : await qaRowsWhere_('qa_audits', {})
+  const out = qaScoresRange_(audits, from, to, { basis: b, weekStartsOn: startsOn, nameOf: (e: string) => dir.name(e) }) as Row
   out.asOf = qaNowIso_()
   try {
     cachePut(key, JSON.stringify(out), 600)
@@ -1790,10 +1811,14 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
   } catch (eQ) {
     console.log('quota not read: ' + ((eQ as Error)?.message || eQ))
   }
+  const [audits, formsRows, disputes, ctls, calibrations, kbGaps, volume, handledOf] = await Promise.all([
+    qaRows_('qa_audits'), qaRows_('qa_forms'), qaRows_('qa_disputes'), qaRows_('qa_ctls'), qaRows_('qa_calibrations'), qaRows_('qa_kb_gaps'),
+    qaRows_('qa_volume'), qaHandledOf_(),
+  ])
   const out = qaAnalytics_(
-    await qaRows_('qa_audits'), qaForms_(await qaRows_('qa_forms')), await qaRows_('qa_disputes'), await qaRows_('qa_ctls'), await qaRows_('qa_calibrations'), await qaRows_('qa_kb_gaps'),
+    audits, qaForms_(formsRows), disputes, ctls, calibrations, kbGaps,
     g, p, today, (e: string) => dir.name(e),
-    { weekStartsOn: startsOn, volume: await qaRows_('qa_volume'), quota: quota as never, handledOf: await qaHandledOf_(), basis: b }
+    { weekStartsOn: startsOn, volume, quota: quota as never, handledOf, basis: b }
   ) as Row
   out.periods = periods
   out.targets = { alignment: Number(await qaSetting_('qa_alignment_target')), disputePass: Number(await qaSetting_('qa_dispute_pass_target')), ctlSla: Number(await qaSetting_('qa_ctl_sla_target')) }
@@ -1811,15 +1836,33 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
 export async function getQaAnalyticsAudits(grain: string, period: string, agentEmail: string, questionKey: string, basis: string): Promise<Row> {
   await qaRequireRole_(['admin', 'tl'])
   const g = grain === 'week' || grain === 'range' ? grain : 'month'
+  const b = basis === 'audit' ? 'audit' : 'interaction'
+  let from = ''
+  let to = ''
   if (g === 'range') {
     const r = String(period || '').split('..')
     qaCheckRange_(r[0] || '', r[1] || '')
+    from = r[0] || ''
+    to = r[1] || ''
+  } else if (g === 'month') {
+    from = String(period || '') + '-01'
+    to = String(period || '') + '-31'
   }
+  const filter: { eq?: Record<string, unknown>; gte?: Record<string, unknown>; lte?: Record<string, unknown> } = {}
+  // audit_date bounds are a strict superset only on the audit basis: on the
+  // interaction basis qaScoreDate_ prefers interaction_at, which can fall in a
+  // different month than audit_date (same exception as the scores read).
+  if (b === 'audit' && from) {
+    filter.gte = { audit_date: from }
+    filter.lte = { audit_date: to }
+  }
+  const agent = normEmail(agentEmail || '')
+  if (agent) filter.eq = { agent_email: agent }
   const S = await qeSettings_()
   const dir = await pwDirectory()
   return qaDrill_(
-    await qaRows_('qa_audits'), qaForms_(await qaRows_('qa_forms')), g, String(period || ''), Number(S.weekStartsOn) === 1 ? 1 : 0,
-    normEmail(agentEmail || ''), String(questionKey || ''), (e: string) => dir.name(e), await qaTicketUrl_(), basis === 'audit' ? 'audit' : 'interaction'
+    await qaRowsWhere_('qa_audits', filter), qaForms_(await qaRows_('qa_forms')), g, String(period || ''), Number(S.weekStartsOn) === 1 ? 1 : 0,
+    agent, String(questionKey || ''), (e: string) => dir.name(e), await qaTicketUrl_(), b
   ) as Row
 }
 
@@ -1836,7 +1879,8 @@ async function qaCoverageCached_(): Promise<Row> {
     }
   }
   const live = await qaEngineLive_()
-  const values = await qeQueueValues_()
+  const from = dqAddDays_(today, -(QA_COVERAGE_DAYS - 1))
+  const values = await qeQueueValues_(live ? from : undefined)
   const dir = await pwDirectory()
   const people = qaImportablePeople_(dir).map((p) => ({ email: p.email, name: p.name, role: p.role, tlEmail: p.tlEmail }))
   const headcount = await qaHeadcount_()
@@ -1848,7 +1892,6 @@ async function qaCoverageCached_(): Promise<Row> {
   }
   let hist: { outcomes: { date: string; ranAt: string; outcomes: Row }[]; builds: Record<string, boolean> } | null = null
   if (live) {
-    const from = dqAddDays_(today, -(QA_COVERAGE_DAYS - 1))
     const builds: Record<string, boolean> = {}
     ;(await qeReadRecentBuilds_(400)).forEach((b) => {
       builds[String(b.ranAt).slice(0, 10)] = true
@@ -2031,7 +2074,7 @@ async function qaRequestedTaken_(): Promise<Record<string, number>> {
 /** qaImportQueue_ verbatim: the Queue Log -> qa_queue (new rows, refresh, expire). */
 async function qaImportQueue_(): Promise<{ added: number; expired: number; noDate?: number; date: string; unmatched: string[]; note: string; build?: Row }> {
   const live = await qaEngineLive_()
-  const values = await qeQueueValues_()
+  const values = await qeQueueValues_(live ? qeRetentionWindow_(await qeSettings_(), new Date()) : undefined)
   if (!values || !values.length) throw new Error('The old Quality Queue data spreadsheet has no "Queue Log" tab.')
   const dir = await pwDirectory()
   const people = qaImportablePeople_(dir).map((p) => ({ email: p.email, name: p.name, tlEmail: p.tlEmail || undefined }))
@@ -2154,7 +2197,7 @@ export async function qaCtlReminders(): Promise<Row> {
     const on = await remindersOn()
     const today = qaToday_()
     const dir = await pwDirectory()
-    const open = (await qaRows_('qa_ctls')).filter((c) => c.status === 'open')
+    const open = (await qaRowsWhere_('qa_ctls', { eq: { status: 'open' } })).filter((c) => c.status === 'open')
     const raised = on ? await qaEnsureCtlPopups_() : 0
     const due = open.filter((c) => String(c.due_date) <= today && String(c.reminded_date) !== today)
     for (const c of on ? due : []) {
@@ -2175,7 +2218,7 @@ export async function qaCtlReminders(): Promise<Row> {
         due.forEach((c) => {
           ids[String(c.ctl_id)] = true
         })
-        const fresh = (await qaRows_('qa_ctls')).filter((c) => ids[String(c.ctl_id)])
+        const fresh = (await qaRowsWhere_('qa_ctls', { in: { ctl_id: Object.keys(ids) } })).filter((c) => ids[String(c.ctl_id)])
         fresh.forEach((c) => {
           c.reminded_date = today
         })
@@ -2189,7 +2232,7 @@ export async function qaCtlReminders(): Promise<Row> {
 
 /** qaEnsureCtlPopups_ verbatim: raise the qa_ctl_due popup for each open CTL that has none. */
 async function qaEnsureCtlPopups_(): Promise<number> {
-  const openCtls = (await qaRows_('qa_ctls')).filter((c) => c.status === 'open')
+  const openCtls = (await qaRowsWhere_('qa_ctls', { eq: { status: 'open' } })).filter((c) => c.status === 'open')
   if (!openCtls.length) return 0
   const have: Record<string, boolean> = {}
   try {
@@ -2201,7 +2244,8 @@ async function qaEnsureCtlPopups_(): Promise<number> {
     /* popups store absent */
   }
   const auditsBy: Record<string, Row> = {}
-  ;(await qaRows_('qa_audits')).forEach((a) => {
+  const auditIds = Array.from(new Set(openCtls.map((c) => String(c.audit_id)).filter((id) => id && id !== 'undefined' && id !== 'null')))
+  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: auditIds } })).forEach((a) => {
     auditsBy[String(a.audit_id)] = a
   })
   const dir = await pwDirectory()
@@ -2230,7 +2274,7 @@ export async function backfillQaSampleBasis(): Promise<string> {
   await qaRequireRole_(['admin'])
   await assertWritable()
   const out = await qaTx_(async () => {
-    const rows = (await qaRows_('qa_audits')).filter((a) => String(a.kind || 'audit') === 'audit' && !String(a.sample_basis || '').trim())
+    const rows = (await qaRowsWhere_('qa_audits', { eq: { kind: 'audit' } })).filter((a) => String(a.kind || 'audit') === 'audit' && !String(a.sample_basis || '').trim())
     const by: Record<string, number> = {}
     for (const a of rows) {
       a.sample_basis = qaDeriveBasis_(a)
@@ -2253,7 +2297,7 @@ export async function backfillQaInteractionDates(): Promise<string> {
       const t = qaTextTime_(q.interaction_at)
       if (t && q.queue_id) at[String(q.queue_id)] = t
     })
-    const blank = (await qaRows_('qa_audits')).filter((a) => String(a.queue_id || '') && !qaWhen_(a.interaction_at))
+    const blank = (await qaRowsWhere_('qa_audits', { or: 'interaction_at.is.null,interaction_at.eq.' })).filter((a) => String(a.queue_id || '') && !qaWhen_(a.interaction_at))
     const rows = blank.filter((a) => at[String(a.queue_id)])
     rows.forEach((a) => {
       a.interaction_at = at[String(a.queue_id)]

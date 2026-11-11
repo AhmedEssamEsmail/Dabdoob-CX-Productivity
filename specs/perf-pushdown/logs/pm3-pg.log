@@ -1,0 +1,21 @@
+# pm3-02 profile â€” GET /api/hub/home, PG_PROFILE=1 build
+BUILD_ID=nKw_wIFHL-2fnPfpkG6II  server: PG_PROFILE=1 next start -p 3100 (stdout -> pm3-pg-server.log)
+login: POST /api/auth/login e2e.admin@dabdoob.com -> 200 (1.221s)
+
+run1 http_code=200 time_total=2.704928 size_download=7302
+run2 http_code=200 time_total=1.828999 size_download=7309
+run3 http_code=200 time_total=2.170298 size_download=7297
+
+## per-run [pg] harvest (41-42 calls/run warm; sum of call ms exceeds wall => partial concurrency)
+run1 (cold batch): 53 calls incl. config x1=3292ms, view_as=775ms
+run2-3 (first batch warm): provider-span calls = schedule set x3
+run4 (timed run1, 2699ms): roster x4=705 actions x3=346 team_leads x3=417 tl_off_days x3=394 tl_shift_plan x3=462 tlp_shifts x3=332 sched_offdays x3=297 sched_plan x3=378 one_on_one_schedule x2=203; [pg] sum=6859ms
+run5 (timed run2, 1823ms): same x3 pattern; sched_offdays x3=792ms single worst; sum=5159ms
+run6 (timed run3, 2165ms): same x3 pattern; sum=4964ms
+## attribution: provider span (people/work/plan) issues ~27 calls = 9 schedule/calendar tables
+## (team_leads, tl_off_days, tl_shift_plan, tlp_shifts, sched_plan, sched_offdays,
+##  one_on_one_schedule x2, actions, roster) EACH fetched 3x — once per provider —
+## all `select=*` unpredicated full-table reads via getWorkingCalendar/wcTlScheduleSourceV1.
+## No single slow query, no retry loop; cost is breadth x latency (~150-300ms/call remote).
+## CPU-bound? NO — DB-bound on repeated identical reads.
+

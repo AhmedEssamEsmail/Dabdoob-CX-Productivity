@@ -208,7 +208,8 @@ export function Xa({ d, sum, runner, trend, select, go }: {
         key: channel,
         text: `${We(d, channel)}: ${hours.map(F).join(', ')}`,
       })),
-    [d, missingMap]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- We(d,…) reads only d.off/d.channels/d.activities; narrowed deps keep the memo stable on new `d` identity
+    [missingMap, d.off, d.channels, d.activities]
   )
   const callItems = useMemo(
     () =>
@@ -473,6 +474,8 @@ export function Xa({ d, sum, runner, trend, select, go }: {
 
 /* --- es — the paintable grid --------------------------------------------------- */
 
+const EsPaintGrid = memo(PaintGrid)
+
 export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
   const [brush, setBrush] = useState(d.channels[0]?.key ?? d.off)
   const [cells, setCells] = useState(d.cells)
@@ -522,6 +525,7 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
   }, [brush, d.date, onSaved])
   const n = (d.hours.length * 60) / d.slotMin
   const columnHeaders = useMemo(() => d.hours.map((h) => ({ label: F(h), span: 4, className: 'tph-hour' })), [d.hours])
+  const gridStyle = useMemo(() => ({ '--tph-n': n } as CSSProperties), [n])
   const rows = useMemo(
     () =>
       d.agents.map((a) => ({
@@ -611,9 +615,9 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
           </div>
         </div>
         <div className="tph-gridwrap">
-          <PaintGrid
+          <EsPaintGrid
             className="tph-grid"
-            style={{ '--tph-n': n } as CSSProperties}
+            style={gridStyle}
             aria-label={`Channel per agent, ${d.slotMin}-minute slots`}
             columnHeaders={columnHeaders}
             cornerLabel="Agent"

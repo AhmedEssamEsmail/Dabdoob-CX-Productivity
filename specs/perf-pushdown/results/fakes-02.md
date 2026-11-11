@@ -1,0 +1,8 @@
+# fakes-02 — triage the 6 golden residuals (ordering parity)
+Status: done — all 6 are APP-SIDE root causes; zero edits (hub-fakes semantics match PostgREST: pk-asc `.order` is what readAllPaged really sends).
+Checks: `npx vitest run tests/golden/{desk,operations,people-jobs}.test.ts` → 6 failed / 356 passed, exactly the recorded residuals; `npx tsc --noEmit` exit 0.
+Root causes (old order = sheet/insertion order via legacy readStore; new = PK_OVERRIDES pk asc via repo.ts:182 `.order(pk)`):
+1. desk.test.ts:716/723 + :1823/1834 — `src/features/cx-desk/lib/maildesk.ts:601-604`: approvals read now arrives thread_id-asc; the sort comparator `Number(pending diff) || (a.receivedAt < b.receivedAt ? 1 : -1)` never returns 0 and all fixture rows share received_at → tie order is an unstable-sort artifact of input order. Old approvals[1]='t6' (sheet order); new 't-stuck'/'t-fresh-send' (pk order). Fix leaf: deterministic tiebreak (e.g. `|| 0` + secondary key).
+2. operations.test.ts:1085 — `src/features/cx-operations/lib/trackers.ts:184-191,1011`: `trackerRegistry_.order` follows readStore row order; setupTrackers emits per-tracker lines in it. Old: insertion (Promocodes first); new: tracker_id asc (blocked_customers, customer_strikes, operational_loss, promocodes, refund_ledger).
+3. people-jobs.test.ts:549 — `src/features/cx-people/lib/work-core.ts:88` + `reminders.ts:193-199`: digest lines follow `pwTasksOut_` order = actions read order; old sheet order put T-OD first, new action_id asc puts T-HALF first.
+Handoff: three fix leaves needed — explicit secondary sorts at maildesk.ts:604, trackerRegistry_/setupTrackers order, and digest line ordering (or accept pk order + update oracle).

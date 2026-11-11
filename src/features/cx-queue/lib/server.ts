@@ -76,7 +76,11 @@ export async function getQueueHealthPage(): Promise<Record<string, unknown>> {
   const today = dqDateKey_(now, String(dqSetting_(cfg, 'business_tz')))
   const [snapStore, subStore] = await Promise.all([
     readStoreFiltered('agg_snapshots_today', { eq: { slot_date: today } }),
-    readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, { eq: { slot_date: today } }),
+    // Prefix bound (data-2): keeps stored 'YYYY-MM-DD…' variants; dqSubmissionsFor_ re-filters.
+    readStoreFiltered(DQ_QUEUE_SUBMISSIONS_TABLE, {
+      gte: { slot_date: today },
+      lte: { slot_date: today + String.fromCharCode(0xfffd) },
+    }),
   ])
   const snaps = dqTodaySnapshots_(now, cfg, snapStore.rows)
   const queues = dqSortQueues_(
@@ -292,8 +296,10 @@ export async function submitQueueCheckin(body: Record<string, unknown>, actor: s
   const { data: existing, error } = await db()
     .from(DQ_QUEUE_SUBMISSIONS_TABLE)
     .select('*')
-    .eq('slot_date', input.slot_date)
+    .gte('slot_date', input.slot_date)
+    .lte('slot_date', input.slot_date + String.fromCharCode(0xfffd))
     .eq('slot', input.slot)
+    .order('slot_date', { ascending: true })
     .limit(1)
     .maybeSingle()
   if (error) throw new Error(error.message)

@@ -73,7 +73,7 @@ async function wcState(): Promise<WcState> {
   if (hit) return hit
   const roster: Record<string, Record<string, unknown>> = {}
   try {
-    const { data } = await db().from('roster').select('*')
+    const { data } = await db().from('roster').select('email,role,days_off,based_in_country')
     ;(data || []).forEach((r) => {
       const e = normEmail(r.email)
       if (e) roster[e] = r as Record<string, unknown>
@@ -82,6 +82,7 @@ async function wcState(): Promise<WcState> {
     /* no roster: everyone works the default pattern */
   }
   const st: WcState = { roster, holidays: await dqHolidayIndex(), tl: null, hours: {} }
+  cacheRemove('wc_tl_sched_v1')
   cachePut('wc_state_v1', JSON.stringify(st), WC_STATE_TTL_S)
   return st
 }
@@ -228,11 +229,23 @@ export async function wcDay(email: string, date: string): Promise<WorkingDay> {
 
 // ---------------------------------------------------------------- TL schedule source (adapter)
 
+let wcTlInflight: Promise<TlSchedule> | null = null
+
 function wcTlSchedule(st: WcState): Promise<TlSchedule> {
-  if (!st.tl) {
-    return wcTlScheduleSource().then((s) => (st.tl = s))
+  if (st.tl) return Promise.resolve(st.tl)
+  if (!wcTlInflight) {
+    wcTlInflight = wcTlScheduleSource().then(
+      (s) => {
+        wcTlInflight = null
+        return s
+      },
+      (e) => {
+        wcTlInflight = null
+        throw e
+      }
+    )
   }
-  return Promise.resolve(st.tl)
+  return wcTlInflight.then((s) => (st.tl = s))
 }
 
 /** TLOffDays weekdays for a TL on a date: the month's row beats the standing default (wcTlOffDays_). */
@@ -280,6 +293,14 @@ const EMPTY_SCHEDULE: TlSchedule = { shifts: {}, offDays: {} }
  * tables (schSavedSource_ equivalent) — later layers win where they have a row.
  */
 async function defaultTlScheduleSource(): Promise<TlSchedule> {
+  const hit = cacheGet('wc_tl_sched_v1')
+  if (hit) {
+    try {
+      return JSON.parse(hit) as TlSchedule
+    } catch {
+      /* rebuild */
+    }
+  }
   const merged: TlSchedule = { shifts: {}, offDays: {} }
   const srcs: (TlSchedule | null)[] = [await wcTlScheduleSourceV1(), await tlpShiftsSource(), await schedSavedSource()]
   srcs.forEach((src) => {
@@ -291,6 +312,7 @@ async function defaultTlScheduleSource(): Promise<TlSchedule> {
       merged.offDays[k] = src.offDays[k]
     })
   })
+  cachePut('wc_tl_sched_v1', JSON.stringify(merged), 600)
   return merged
 }
 

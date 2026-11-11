@@ -11,7 +11,7 @@
 import 'server-only'
 
 import { db, newId } from '@/features/shared/platform/repo'
-import { readStore } from '@/features/shared/platform/stores'
+import { readStore, readStoreFiltered } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'
 import { normEmail, pwDirectory, requireRole, type Directory, type PlatformUser } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
@@ -161,7 +161,9 @@ export async function kpiLogRemove(kind: string, id: string) {
   const user = await requireRole(['admin', 'tl'])
   const t = KL_TABLES[kind]
   if (!t) throw new Error('Unknown log.')
-  const r = (await readStore(t[0])).rows.filter((x) => String(x[t[1]]) === String(id) && !x.removed_at)[0]
+  const r = (
+    await readStoreFiltered(t[0], { eq: { [t[1]]: id }, is: { removed_at: null } })
+  ).rows.filter((x) => String(x[t[1]]) === String(id) && !x.removed_at)[0]
   if (!r) throw new Error('That entry is no longer there.')
   if (user.role !== 'admin' && normEmail(r.logged_by) !== user.email) {
     throw new Error('Only the person who logged it, or an admin, can remove it.')

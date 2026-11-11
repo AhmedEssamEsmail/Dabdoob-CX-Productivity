@@ -92,10 +92,19 @@ export async function roleForEmail(email: string): Promise<PlatformUser> {
     .split(',')
     .map(normEmail)
     .filter(String)
-  const { data: rosterRows, error: rosterErr } = await db()
+  // roster_email_uidx makes .eq exact; baseline precondition (0 non-lower emails)
+  // means ilike's case-insensitive miss was never exercised — kept only as an
+  // error fallback so a failed eq still gets the legacy path.
+  let { data: rosterRows, error: rosterErr } = await db()
     .from('roster')
-    .select('*')
-    .ilike('email', email)
+    .select('email,name,role,tl_email,active')
+    .eq('email', email)
+  if (rosterErr) {
+    ;({ data: rosterRows, error: rosterErr } = await db()
+      .from('roster')
+      .select('*')
+      .ilike('email', email))
+  }
   if (rosterErr) throw described(rosterErr, { table: 'roster' })
   const row = (rosterRows || []).find((r) => normEmail(r.email) === email)
   const active = !row || (row.active !== false && String(row.active).toLowerCase() !== 'false')
@@ -182,7 +191,7 @@ export interface Directory {
  * People are matched by email only, never by name. managerOf: agent -> their TL
  * (roster tl_email); TL -> the first admin.
  */
-export async function pwDirectory(): Promise<Directory> {
+export const pwDirectory = cache(async (): Promise<Directory> => {
   const admins = String((await getConfig('admin_emails', '')) || '')
     .split(',')
     .map(normEmail)
@@ -205,18 +214,28 @@ export async function pwDirectory(): Promise<Directory> {
   })
   admins.forEach((a) => {
     if (by[a]) by[a].role = 'admin'
-    else by[a] = { email: a, name: a, role: 'admin', tlEmail: null, active: true, position: '' }
   })
+  // `by` stays roster-only so Object.keys/values enumerations match the raw
+  // roster; config admins absent from the roster resolve on lookup instead.
+  const lookup = (e: string): DirectoryPerson | null => {
+    const key = normEmail(e)
+    const p = by[key]
+    if (p) return p
+    if (admins.indexOf(key) !== -1) {
+      return { email: key, name: key, role: 'admin', tlEmail: null, active: true, position: '' }
+    }
+    return null
+  }
   return {
     by,
     admins,
-    person: (e: string) => by[normEmail(e)] || null,
+    person: (e: string) => lookup(e),
     name: (e: string) => {
-      const p = by[normEmail(e)]
+      const p = lookup(e)
       return p ? p.name : String(e || '')
     },
     managerOf: (e: string) => {
-      const p = by[normEmail(e)]
+      const p = lookup(e)
       if (!p) return null
       if (p.role === 'agent' || p.role === 'specialist') return p.tlEmail
       if (p.role === 'tl') return admins[0] || null
@@ -230,7 +249,7 @@ export async function pwDirectory(): Promise<Directory> {
     },
     tls: () => Object.keys(by).map((k) => by[k]).filter((p) => p.role === 'tl' && p.active),
   }
-}
+})
 
 /** pwIsManagerOf_: `user` manages `email` — admin, or the email's direct manager. */
 export function pwIsManagerOf(user: { email?: string | null; role: string }, email: string, dir: Directory): boolean {

@@ -178,10 +178,28 @@ function trackerFromRow_(r: Row): Tracker {
   }
 }
 
+/**
+ * The trackers registry order is the store's physical row order — the legacy
+ * "Trackers" sheet order. No column encodes insertion order, and `order` is
+ * user-visible (setupTrackers lines, getTrackersPage list), so this table is
+ * read UNORDERED like the pre-pushdown readStore did; readAllPaged's pk-asc
+ * would reorder it. The registry is tiny, so a single select cannot hit
+ * PostgREST max-rows.
+ */
+async function readTrackersRegistry_(): Promise<{ rows: Record<string, unknown>[]; exists: boolean }> {
+  try {
+    const { data, error } = await db().from(TRACKERS_TABLE).select('*')
+    if (error) return { rows: [], exists: false }
+    return { rows: (data || []) as Record<string, unknown>[], exists: true }
+  } catch {
+    return { rows: [], exists: false }
+  }
+}
+
 /** { order: [ids], byId: {id: tracker with fields} }. Missing tables = empty registry. */
 export async function trackerRegistry_(): Promise<{ order: string[]; byId: Record<string, Tracker> }> {
   const reg: { order: string[]; byId: Record<string, Tracker> } = { order: [], byId: {} }
-  const [tStore, fStore] = await Promise.all([readStore(TRACKERS_TABLE), readStore(TRACKER_FIELDS_TABLE)])
+  const [tStore, fStore] = await Promise.all([readTrackersRegistry_(), readStore(TRACKER_FIELDS_TABLE)])
   if (!tStore.exists || !fStore.exists) return reg
   tStore.rows.forEach((r) => {
     const t = trackerFromRow_(r)

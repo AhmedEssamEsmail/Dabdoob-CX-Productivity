@@ -16,6 +16,7 @@ vi.mock('@/features/shared/lib/auth', async () => (await import('./hub-fakes')).
 import { hubDb, hubDbReset, hubSetTables, hubSetUser } from './hub-fakes'
 import { dqValidateCheckin_ } from '@/features/cx-queue/lib'
 import { submitCheckin } from '@/features/cx-queue/lib/pages'
+import { submitQueueCheckin } from '@/features/cx-queue/lib/server'
 import type { Cfg } from '@/features/shared/lib/adapters'
 
 // ---------------------------------------------------------------- shared state
@@ -351,5 +352,40 @@ describe('checkin: submitCheckin end-to-end vs oracle', () => {
       expect(port.err !== undefined || (port as { ok?: unknown }).ok !== undefined, label).toBe(true)
       expect(hubDb.tables['queue_submissions'].length, 'no row written: ' + label).toBe(0)
     }
+  })
+
+  it('T-suffixed stored slot_date takes the update path (no duplicate append)', async () => {
+    seedHub({
+      submissions: [
+        {
+          submission_id: 'qs_seedT',
+          slot_date: '2026-10-15T08:00',
+          slot: '14:00',
+          snapshot_key: '2026-10-15|14:00',
+          status: 'submitted',
+          queues_json: '[]',
+          corrections_json: '{}',
+          correction_reason: '',
+          general_note: '',
+          help_needed: false,
+          help_note: '',
+          submitted_by: 'tl@dabdoob.com',
+          submitted_at: '2026-10-15T10:50:00Z',
+          updated_by: '',
+          updated_at: '',
+        },
+      ],
+    })
+    await submitQueueCheckin(
+      {
+        slot_date: '2026-10-15',
+        slot: '14:00',
+        status: 'submitted',
+        queues_json: [{ queue: 'Ops QA Gift', agents: 5, status: 'On track' }],
+      },
+      'tl@dabdoob.com'
+    )
+    expect(hubDb.tables['queue_submissions']).toHaveLength(1)
+    expect(hubDb.tables['queue_submissions'][0].submission_id).toBe('qs_seedT')
   })
 })

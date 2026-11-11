@@ -16,6 +16,7 @@ import {
   dqSetting,
   ecosystemHealth,
   readStore,
+  readStoreFiltered,
   requireRole,
   type StoreRead,
 } from '@/features/shared/platform'
@@ -49,17 +50,39 @@ import {
   type HomeUser,
 } from './home-cards'
 
-/** perf_ — the GAS perf timer; kept as a no-op lap recorder so lap marks stay 1:1. */
-function perf_(name: string): { lap(mark: string): void; end(): void } {
+/** perf_ — the GAS perf timer; lap marks + per-promise durations emitted as one line. */
+function perf_(name: string): {
+  lap(mark: string): void
+  time<T>(label: string, p: Promise<T>): Promise<T>
+  end(): void
+} {
   const t = Date.now()
   const marks: [string, number][] = []
+  const durs: [string, number][] = []
   return {
     lap(mark: string) {
       marks.push([mark, Date.now() - t])
     },
+    time<T>(label: string, p: Promise<T>): Promise<T> {
+      const s = Date.now()
+      const rec = () => {
+        durs.push([label, Date.now() - s])
+      }
+      return p.then(
+        (v) => {
+          rec()
+          return v
+        },
+        (e) => {
+          rec()
+          throw e
+        }
+      )
+    },
     end() {
-      void name
-      void marks
+      const parts = durs.map(([l, ms]) => l + '=' + ms)
+      marks.forEach(([m, ms]) => parts.push(m + '@' + ms))
+      console.log('[perf] ' + name + ' total=' + (Date.now() - t) + ' ' + parts.join(' '))
     },
   }
 }
@@ -154,20 +177,38 @@ const DQ_SUBMISSIONS_TABLE = 'queue_submissions'
 /** getHomePage verbatim — the injected rows stand in for the GAS sheet reads. */
 export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   const perf = perf_('getHomePage')
-  const user = await requireRole(['admin', 'tl', 'agent'])
+  const user = await perf.time('requireRole', requireRole(['admin', 'tl', 'agent']))
   const now = new Date()
-  if (!cfg) cfg = await configAll()
+  if (!cfg) cfg = await perf.time('configAll', configAll())
   const bands = dqBandInfo_(cfg)
   const top = (bands.edges as unknown[]).length
+  const pulseTo = dqDateKey_(now, cfg)
+  const pulseFrom = dqAddDays_(pulseTo, -6)
   const [agingRows, rosterRows, submissionRows, flagRows, scDaily, prodLayers, fcrDaily] =
     await Promise.all([
-      readStore('aging_open_tickets'),
-      readStore('roster'),
-      readStore(DQ_SUBMISSIONS_TABLE),
-      readStore(DQ_FLAGS_TABLE),
-      readStore('sc_daily'),
-      readStore('prod_daily_layers'),
-      readStore('fcr_daily'),
+      perf.time('read:aging_open_tickets', readStore('aging_open_tickets')),
+      perf.time('read:roster', readStore('roster')),
+      // Prefix bound (data-2): keeps stored 'YYYY-MM-DD…' variants; dqSubmissionsFor_ re-filters.
+      perf.time(
+        'read:queue_submissions',
+        readStoreFiltered(DQ_SUBMISSIONS_TABLE, {
+          gte: { slot_date: pulseTo },
+          lte: { slot_date: pulseTo + String.fromCharCode(0xfffd) },
+        })
+      ),
+      perf.time('read:dq_aging_flags', readStore(DQ_FLAGS_TABLE)),
+      perf.time(
+        'read:sc_daily',
+        readStoreFiltered('sc_daily', { gte: { date: pulseFrom }, lte: { date: pulseTo } })
+      ),
+      perf.time(
+        'read:prod_daily_layers',
+        readStoreFiltered('prod_daily_layers', { gte: { date: pulseFrom }, lte: { date: pulseTo } })
+      ),
+      perf.time(
+        'read:fcr_daily',
+        readStoreFiltered('fcr_daily', { gte: { date: pulseFrom }, lte: { date: pulseTo } })
+      ),
     ])
   const roster = rosterRows.exists ? rosterRows.rows : null
   const submissions = submissionRows.exists ? submissionRows.rows : null
@@ -320,16 +361,28 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   }
   perf.lap('tickets')
   const homeUser = user as unknown as HomeUser
-  for (const fn of DQ_HOME_PROVIDERS) {
-    try {
-      ;((await fn(homeUser)) || []).forEach((c: HomeCard) => {
-        needs.push(c as unknown as Record<string, unknown>)
-      })
-    } catch (e) {
-      console.log(fn.name + ' failed: ' + (e as Error).message)
-    }
-    perf.lap(fn.name)
-  }
+  const providerCards = await Promise.all(
+    DQ_HOME_PROVIDERS.map((fn) =>
+      perf
+        .time(fn.name, fn(homeUser))
+        .then(
+          (cards) => (cards || []) as HomeCard[],
+          (e) => {
+            console.log(fn.name + ' failed: ' + (e as Error).message)
+            return [] as HomeCard[]
+          }
+        )
+        .then((cards) => {
+          perf.lap(fn.name)
+          return cards
+        })
+    )
+  )
+  providerCards.forEach((cards) => {
+    cards.forEach((c) => {
+      needs.push(c as unknown as Record<string, unknown>)
+    })
+  })
   needs.sort(
     (a, b) =>
       Number(b.status === 'bad') - Number(a.status === 'bad') ||
@@ -340,8 +393,6 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   oldest.forEach((r) => {
     ladder[dqNum_(r.band)]++
   })
-  const pulseTo = dqDateKey_(now, cfg)
-  const pulseFrom = dqAddDays_(pulseTo, -6)
   let pulseEmails: Set<string> | null = null
   if (user.role !== 'admin') {
     pulseEmails = new Set([normEmail_(user.email)])
@@ -357,9 +408,12 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
     role: user.role,
     specialist: !!user.specialist,
     name: user.name,
-    dataAsOf: await dqLastRun('queue_aggregates'),
+    dataAsOf: await perf.time('dqLastRun', dqLastRun('queue_aggregates')),
     bands,
-    ticketUrl: 'https://' + String(await dqSetting('freshdesk_domain')) + '/a/tickets/',
+    ticketUrl:
+      'https://' +
+      String(await perf.time('dqSetting', dqSetting('freshdesk_domain'))) +
+      '/a/tickets/',
     needs,
     slots,
     ladder,
@@ -370,8 +424,11 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   }
   if (user.role === 'admin') {
     const [snapRows, queueNow] = await Promise.all([
-      readStore('queue_snapshots'),
-      readStore('agg_queue_now'),
+      perf.time(
+        'read:queue_snapshots',
+        readStoreFiltered('queue_snapshots', { eq: { slot_date: pulseTo } })
+      ),
+      perf.time('read:agg_queue_now', readStore('agg_queue_now')),
     ])
     const snaps = dqTodaySnapshots_(now, cfg, snapRows.rows)
     out.queues = dqSortQueues_(
@@ -384,7 +441,7 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   // Hub home: the ecosystem diagram rides on this call; never throws.
   if (user.role === 'admin' || user.role === 'tl') {
     try {
-      out.ecosystem = await ecosystemHealth()
+      out.ecosystem = await perf.time('ecosystemHealth', ecosystemHealth())
     } catch (e) {
       console.log('ecosystem health failed: ' + (e as Error).message)
       out.ecosystem = null

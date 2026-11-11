@@ -118,17 +118,123 @@ export interface ReadOptions {
   orderBy?: string
   ascending?: boolean
   limit?: number
+  pk?: string
+}
+
+type TableQuery = ReturnType<ReturnType<SupabaseClient['from']>['select']>
+
+/**
+ * Ordering column for tables whose primary key is not `id` (verified against
+ * supabase/migrations). kpi_behaviour_log orders on its unique log_id.
+ */
+export const PK_OVERRIDES: Record<string, string | string[]> = {
+  // Pre-existing remote tables that never got the migration's `id` column
+  // (schema drift — evidence per key in specs/perf-pushdown/results/pk-drift-01.md).
+  // A string[] orders by each key in sequence (PostgREST multi-order tiebreak).
+  qa_queue: 'queue_id',
+  qa_audits: 'audit_id',
+  qa_ctls: 'ctl_id',
+  qa_disputes: 'dispute_id',
+  qa_calibrations: 'calibration_id',
+  qa_kb_gaps: 'gap_id',
+  prod_tph_tasks: 'task_id',
+  prod_tph_touches: 'date',
+  prod_tph_calls: 'date',
+  prod_tph_days: ['date', 'agent_email'],
+  prod_tph_cases: ['date', 'source'],
+  prod_quarterly_reports: 'report_id',
+  prod_flags: 'flag_id',
+  kpi_ol_cases: 'key',
+  refresh_log: 'log_id',
+  config: 'key',
+  roster: 'email',
+  popups: 'popup_id',
+  health: 'job',
+  one_on_one_schedule: 'schedule_id',
+  cache_stamps: 'key',
+  app_cache: 'key',
+  kpi_behaviour_log: 'log_id',
+  sc_months: 'month',
+  pw_reminder_log: 'dedupe_key',
+  people_signals: 'signal_id',
+  my_notes: 'note_id',
+  meetings: 'meeting_id',
+  meeting_series: 'series_id',
+  one_on_one_logs: 'log_id',
+  action_planned_milestones: 'milestone_id',
+  action_task_details: 'action_id',
+  action_reviews: 'review_id',
+  action_updates: 'update_id',
+  actions: 'action_id',
+  trackers: 'tracker_id',
+  tlp_resp_ratings: 'rating_id',
+  tlp_kb: 'kb_id',
+  tlp_otd: 'key',
+  tlp_ticket_exclusions: 'key',
+  mail_sla: 'message_id',
+  mail_approvals: 'thread_id',
+  mail_approval_log: 'log_id',
+  v1_task_occurrences: 'occurrence_id',
+  // pk-scan-01 remote verdicts (docs/perf/pk-drift-evidence.md).
+  prod_intervals: 'interval_key',
+  prod_flag_log: 'log_id',
+  prod_flag_analytics: ['date', 'agent_email'],
+  fcr_daily: ['date', 'agent_email'],
+  fcr_weekly: ['week', 'agent_email'],
+  fcr_monthly: ['month', 'agent_email'],
+}
+
+export interface ReadAllPagedOptions {
+  pk?: string
+  pageSize?: number
+  columns?: string
+  /** Caller filters applied before ordering/paging. */
+  build?: (q: TableQuery) => TableQuery
+}
+
+/**
+ * P-01: PK-ordered .range pager — PostgREST caps a single response at max-rows,
+ * so unbounded reads page until a short page instead of silently truncating.
+ */
+export async function readAllPaged(name: string, opts: ReadAllPagedOptions = {}): Promise<Record<string, unknown>[]> {
+  const pk = PK_OVERRIDES[name] ?? opts.pk ?? 'id'
+  const pks = Array.isArray(pk) ? pk : [pk]
+  const pageSize = opts.pageSize && opts.pageSize > 0 ? Math.floor(opts.pageSize) : 1000
+  const columns = opts.columns || '*'
+  const rows: Record<string, unknown>[] = []
+  for (let from = 0; ; from += pageSize) {
+    let query = db().from(name).select(columns) as TableQuery
+    if (opts.build) query = opts.build(query)
+    pks.forEach((k) => {
+      query = query.order(k, { ascending: true })
+    })
+    const { data, error } = await query.range(from, from + pageSize - 1)
+    if (error) throw new Error(error.message)
+    const page = (data || []) as Record<string, unknown>[]
+    rows.push(...page)
+    if (page.length < pageSize) return rows
+  }
 }
 
 /**
  * readTable_ equivalent: rows of a table as plain objects, optionally filtered.
  * Tables ported through this helper are small (options, popups, mail_log, health,
  * holidays, view_as, roster, config), so filtering in memory keeps semantics exact.
+ * Without opts.limit the read pages through readAllPaged so max-rows never truncates.
  */
 export async function readRows(table: string, opts: ReadOptions = {}): Promise<Record<string, unknown>[]> {
+  if (!opts.limit) {
+    const rows = await readAllPaged(table, {
+      pk: opts.pk,
+      build: opts.orderBy
+        ? (q) => q.order(opts.orderBy as string, { ascending: opts.ascending !== false })
+        : undefined,
+    })
+    return opts.where ? rows.filter(opts.where) : rows
+  }
   let query = db().from(table).select('*')
   if (opts.orderBy) query = query.order(opts.orderBy, { ascending: opts.ascending !== false })
-  if (opts.limit) query = query.limit(opts.limit)
+  query = query.limit(opts.limit)
   const { data, error } = await query
   if (error) throw new Error(error.message)
   const rows = (data || []) as Record<string, unknown>[]
@@ -189,6 +295,15 @@ export interface UpdateOptions {
   actor: string
 }
 
+const upsertFallbackLogged = new Set<string>()
+
+function logUpsertFallbackOnce(table: string, keys: string[]): void {
+  const sig = table + '|' + keys.join(',')
+  if (upsertFallbackLogged.has(sig)) return
+  upsertFallbackLogged.add(sig)
+  console.log(`upsert fallback: ${table} (${keys.join(',')}) — add unique index`)
+}
+
 /**
  * updateRows_ equivalent: one entry per update — the updated row, or null when no
  * row matched. Patches may not change the key or the submitted_* stamps;
@@ -205,16 +320,17 @@ export async function updateRows(
   const now = new Date().toISOString()
   const stampUpdates = opts.stampUpdates !== false
   const keys = [...new Set(updates.map((u) => u.key))]
-  const { data: currentRows, error: selErr } = await db()
-    .from(table)
-    .select('*')
-    .in(keyField, keys as never[])
-  if (selErr) throw new Error(selErr.message)
   const byKey = new Map<unknown, Record<string, unknown>>()
-  ;(currentRows || []).forEach((r) => {
-    const row = r as Record<string, unknown>
-    byKey.set(row[keyField], row)
-  })
+  for (let i = 0; i < keys.length; i += 500) {
+    const chunk = keys.slice(i, i + 500)
+    const currentRows = await readAllPaged(table, {
+      build: (q) => q.in(keyField, chunk as never[]),
+    })
+    currentRows.forEach((r) => {
+      const row = r as Record<string, unknown>
+      byKey.set(row[keyField], row)
+    })
+  }
   const out: (Record<string, unknown> | null)[] = []
   const mergedByKey = new Map<unknown, Record<string, unknown>>()
   const patchByKey = new Map<unknown, Record<string, unknown>>()
@@ -253,6 +369,7 @@ export async function updateRows(
     }
   } catch (err) {
     if (err instanceof Error && /constraint|conflict|42P10/i.test(err.message)) {
+      logUpsertFallbackOnce(table, [keyField])
       return updateRowsOneByOne(table, keyField, updates, opts)
     }
     throw err

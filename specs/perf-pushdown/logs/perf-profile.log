@@ -1,0 +1,12 @@
+  api/qa 500 http://localhost:3000/api/qa/getQaQueuePage :: {"error":"column qa_queue.id does not exist"}
+  api/qa 500 http://localhost:3000/api/qa/getQaQueuePage :: {"error":"column qa_queue.id does not exist"}
+/tph-grid: 9 long entries, 9 >50ms
+  interaction "switch to grid tab": ran
+  interaction "step back one day": ran
+  interaction "paged-list next page": skipped (not present)
+/audit-queue: 0 long entries, 0 >50ms
+  interaction "seg filter: done": skipped (not present)
+  interaction "select first work item": skipped (not present)
+  interaction "search/filter input": skipped (not present)
+wrote C:\Users\AHMED\KPIs\CX-Hub\specs\perf-pushdown\logs\perf-profile.json
+EXIT=0

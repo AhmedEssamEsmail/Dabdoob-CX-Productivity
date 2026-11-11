@@ -1,0 +1,189 @@
+
+> cx-hub@0.1.0 test:e2e
+> playwright test
+
+
+Running 180 tests using 10 workers
+
+[1/180] [chromium] › e2e\auth.spec.ts:5:7 › Authentication Flow › user can log in with valid credentials
+[2/180] [chromium] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1024px
+[3/180] [chromium] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1440px
+[4/180] [chromium] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 375px
+[5/180] [chromium] › e2e\auth.spec.ts:28:7 › Authentication Flow › user can log out
+[6/180] [chromium] › e2e\auth.spec.ts:22:7 › Authentication Flow › user is redirected to login when accessing protected route
+[7/180] [chromium] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 768px
+[8/180] [chromium] › e2e\auth.spec.ts:11:7 › Authentication Flow › user cannot log in with invalid credentials
+[9/180] [chromium] › e2e\auth.spec.ts:40:7 › Authentication Flow › session persists across page reloads
+[10/180] [chromium] › e2e\auth.spec.ts:65:7 › Google sign-in › Continue with Google button is visible on the login page
+[11/180] [chromium] › e2e\auth.spec.ts:71:7 › Google sign-in › ?error=denied shows the roster denial banner
+[12/180] [chromium] › e2e\auth.spec.ts:80:7 › Google sign-in › clicking Continue with Google fires POST /api/auth/google
+[13/180] [chromium] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 320px
+[14/180] [chromium] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px
+[15/180] [chromium] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 768px
+[16/180] [chromium] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 1440px
+[17/180] [chromium] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px with touch
+[18/180] [chromium] › e2e\my-status.spec.ts:12:7 › My Status Page › agent can view own productivity score
+[19/180] [chromium] › e2e\my-status.spec.ts:21:7 › My Status Page › productivity score displays correctly
+[20/180] [chromium] › e2e\my-status.spec.ts:37:7 › My Status Page › intervals list displays correctly
+[21/180] [chromium] › e2e\my-status.spec.ts:54:7 › My Status Page › status colors match design
+[22/180] [chromium] › e2e\nav-collapse.spec.ts:48:7 › Unified collapsible nav › group headers toggle their submenus
+[23/180] [chromium] › e2e\nav-collapse.spec.ts:74:7 › Unified collapsible nav › open-set persists in sessionStorage across client nav
+[24/180] [chromium] › e2e\nav-collapse.spec.ts:102:7 › Unified collapsible nav › nav links route client-side — no reload, no BootSplash
+[25/180] [chromium] › e2e\nav-collapse.spec.ts:126:7 › Unified collapsible nav › mobile nav-open + group toggle still works at 375px
+[26/180] [chromium] › e2e\responsive.spec.ts:5:7 › Responsive Design › layout works on mobile (375px)
+[27/180] [chromium] › e2e\responsive.spec.ts:13:7 › Responsive Design › layout works on tablet (768px)
+[28/180] [chromium] › e2e\responsive.spec.ts:20:7 › Responsive Design › layout works on desktop (1280px)
+[29/180] [chromium] › e2e\responsive.spec.ts:29:7 › Responsive Design › navigation adapts to screen size
+[30/180] [chromium] › e2e\status-validation.spec.ts:11:7 › Status Validation Page › TL sees the GAS-style status validation shell
+[31/180] [chromium] › e2e\status-validation.spec.ts:25:7 › Status Validation Page › pending flags show the agent, interval, suggestion and review deadline
+[32/180] [chromium] › e2e\status-validation.spec.ts:41:7 › Status Validation Page › opening a flag shows the strip, cases and decision form
+[33/180] [chromium] › e2e\status-validation.spec.ts:65:7 › Status Validation Page › accepting a flag records the decision and toasts
+[34/180] [chromium] › tests\e2e\a11y-keyboard.spec.ts:15:7 › a11y keyboard models › Tabs: one tab stop, arrows/Home/End move selection and focus
+[35/180] [chromium] › tests\e2e\a11y-keyboard.spec.ts:47:7 › a11y keyboard models › PaintGrid on /tph: one tab stop, arrows move inside the grid
+[36/180] [chromium] › tests\e2e\a11y-keyboard.spec.ts:83:7 › a11y keyboard models › palette close returns focus to the invoker
+[37/180] [firefox] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 375px
+[38/180] [firefox] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 768px
+[39/180] [firefox] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1440px
+[40/180] [firefox] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1024px
+[41/180] [firefox] › e2e\auth.spec.ts:5:7 › Authentication Flow › user can log in with valid credentials
+[42/180] [firefox] › e2e\auth.spec.ts:11:7 › Authentication Flow › user cannot log in with invalid credentials
+[43/180] [firefox] › e2e\auth.spec.ts:22:7 › Authentication Flow › user is redirected to login when accessing protected route
+[44/180] [firefox] › e2e\auth.spec.ts:28:7 › Authentication Flow › user can log out
+[45/180] [firefox] › e2e\auth.spec.ts:40:7 › Authentication Flow › session persists across page reloads
+[46/180] [firefox] › e2e\auth.spec.ts:65:7 › Google sign-in › Continue with Google button is visible on the login page
+[47/180] [firefox] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 320px
+[48/180] [firefox] › e2e\auth.spec.ts:71:7 › Google sign-in › ?error=denied shows the roster denial banner
+[49/180] [firefox] › e2e\auth.spec.ts:80:7 › Google sign-in › clicking Continue with Google fires POST /api/auth/google
+[50/180] [firefox] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 768px
+[51/180] [firefox] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px
+[52/180] [firefox] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px with touch
+[53/180] [firefox] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 1440px
+[54/180] [firefox] › e2e\my-status.spec.ts:21:7 › My Status Page › productivity score displays correctly
+[55/180] [firefox] › e2e\my-status.spec.ts:37:7 › My Status Page › intervals list displays correctly
+[56/180] [firefox] › e2e\my-status.spec.ts:54:7 › My Status Page › status colors match design
+[57/180] [firefox] › e2e\my-status.spec.ts:12:7 › My Status Page › agent can view own productivity score
+[58/180] [firefox] › e2e\nav-collapse.spec.ts:48:7 › Unified collapsible nav › group headers toggle their submenus
+[59/180] [firefox] › e2e\nav-collapse.spec.ts:74:7 › Unified collapsible nav › open-set persists in sessionStorage across client nav
+[60/180] [firefox] › e2e\nav-collapse.spec.ts:102:7 › Unified collapsible nav › nav links route client-side — no reload, no BootSplash
+[61/180] [firefox] › e2e\nav-collapse.spec.ts:126:7 › Unified collapsible nav › mobile nav-open + group toggle still works at 375px
+[62/180] [firefox] › e2e\responsive.spec.ts:5:7 › Responsive Design › layout works on mobile (375px)
+[63/180] [firefox] › e2e\responsive.spec.ts:13:7 › Responsive Design › layout works on tablet (768px)
+[64/180] [firefox] › e2e\responsive.spec.ts:20:7 › Responsive Design › layout works on desktop (1280px)
+[65/180] [firefox] › e2e\responsive.spec.ts:29:7 › Responsive Design › navigation adapts to screen size
+[66/180] [firefox] › e2e\status-validation.spec.ts:11:7 › Status Validation Page › TL sees the GAS-style status validation shell
+[67/180] [firefox] › e2e\status-validation.spec.ts:25:7 › Status Validation Page › pending flags show the agent, interval, suggestion and review deadline
+[68/180] [firefox] › e2e\status-validation.spec.ts:41:7 › Status Validation Page › opening a flag shows the strip, cases and decision form
+[69/180] [firefox] › e2e\status-validation.spec.ts:65:7 › Status Validation Page › accepting a flag records the decision and toasts
+[70/180] [firefox] › tests\e2e\a11y-keyboard.spec.ts:15:7 › a11y keyboard models › Tabs: one tab stop, arrows/Home/End move selection and focus
+[71/180] [firefox] › tests\e2e\a11y-keyboard.spec.ts:47:7 › a11y keyboard models › PaintGrid on /tph: one tab stop, arrows move inside the grid
+[72/180] [firefox] › tests\e2e\a11y-keyboard.spec.ts:83:7 › a11y keyboard models › palette close returns focus to the invoker
+[73/180] [webkit] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 375px
+[74/180] [webkit] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 768px
+[75/180] [webkit] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1024px
+[76/180] [webkit] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1440px
+[77/180] [webkit] › e2e\auth.spec.ts:5:7 › Authentication Flow › user can log in with valid credentials
+[78/180] [webkit] › e2e\auth.spec.ts:11:7 › Authentication Flow › user cannot log in with invalid credentials
+[79/180] [webkit] › e2e\auth.spec.ts:22:7 › Authentication Flow › user is redirected to login when accessing protected route
+[80/180] [webkit] › e2e\auth.spec.ts:65:7 › Google sign-in › Continue with Google button is visible on the login page
+[81/180] [webkit] › e2e\auth.spec.ts:28:7 › Authentication Flow › user can log out
+[82/180] [webkit] › e2e\auth.spec.ts:40:7 › Authentication Flow › session persists across page reloads
+[83/180] [webkit] › e2e\auth.spec.ts:71:7 › Google sign-in › ?error=denied shows the roster denial banner
+[84/180] [webkit] › e2e\auth.spec.ts:80:7 › Google sign-in › clicking Continue with Google fires POST /api/auth/google
+[85/180] [webkit] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 320px
+[86/180] [webkit] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 768px
+[87/180] [webkit] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 1440px
+[88/180] [webkit] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px with touch
+[89/180] [webkit] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px
+[90/180] [webkit] › e2e\my-status.spec.ts:12:7 › My Status Page › agent can view own productivity score
+[91/180] [webkit] › e2e\my-status.spec.ts:21:7 › My Status Page › productivity score displays correctly
+[92/180] [webkit] › e2e\my-status.spec.ts:54:7 › My Status Page › status colors match design
+[93/180] [webkit] › e2e\nav-collapse.spec.ts:48:7 › Unified collapsible nav › group headers toggle their submenus
+[94/180] [webkit] › e2e\nav-collapse.spec.ts:74:7 › Unified collapsible nav › open-set persists in sessionStorage across client nav
+[95/180] [webkit] › e2e\my-status.spec.ts:37:7 › My Status Page › intervals list displays correctly
+[96/180] [webkit] › e2e\nav-collapse.spec.ts:102:7 › Unified collapsible nav › nav links route client-side — no reload, no BootSplash
+[97/180] [webkit] › e2e\nav-collapse.spec.ts:126:7 › Unified collapsible nav › mobile nav-open + group toggle still works at 375px
+[98/180] [webkit] › e2e\responsive.spec.ts:5:7 › Responsive Design › layout works on mobile (375px)
+[99/180] [webkit] › e2e\responsive.spec.ts:13:7 › Responsive Design › layout works on tablet (768px)
+[100/180] [webkit] › e2e\responsive.spec.ts:20:7 › Responsive Design › layout works on desktop (1280px)
+[101/180] [webkit] › e2e\responsive.spec.ts:29:7 › Responsive Design › navigation adapts to screen size
+[102/180] [webkit] › e2e\status-validation.spec.ts:11:7 › Status Validation Page › TL sees the GAS-style status validation shell
+[103/180] [webkit] › e2e\status-validation.spec.ts:25:7 › Status Validation Page › pending flags show the agent, interval, suggestion and review deadline
+[104/180] [webkit] › e2e\status-validation.spec.ts:41:7 › Status Validation Page › opening a flag shows the strip, cases and decision form
+[105/180] [webkit] › e2e\status-validation.spec.ts:65:7 › Status Validation Page › accepting a flag records the decision and toasts
+[106/180] [webkit] › tests\e2e\a11y-keyboard.spec.ts:15:7 › a11y keyboard models › Tabs: one tab stop, arrows/Home/End move selection and focus
+[107/180] [webkit] › tests\e2e\a11y-keyboard.spec.ts:47:7 › a11y keyboard models › PaintGrid on /tph: one tab stop, arrows move inside the grid
+[108/180] [webkit] › tests\e2e\a11y-keyboard.spec.ts:83:7 › a11y keyboard models › palette close returns focus to the invoker
+[109/180] [mobile] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 375px
+[110/180] [mobile] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 768px
+[111/180] [mobile] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1024px
+[112/180] [mobile] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1440px
+[113/180] [mobile] › e2e\auth.spec.ts:5:7 › Authentication Flow › user can log in with valid credentials
+[114/180] [mobile] › e2e\auth.spec.ts:11:7 › Authentication Flow › user cannot log in with invalid credentials
+[115/180] [mobile] › e2e\auth.spec.ts:22:7 › Authentication Flow › user is redirected to login when accessing protected route
+[116/180] [mobile] › e2e\auth.spec.ts:28:7 › Authentication Flow › user can log out
+[117/180] [mobile] › e2e\auth.spec.ts:40:7 › Authentication Flow › session persists across page reloads
+[118/180] [mobile] › e2e\auth.spec.ts:65:7 › Google sign-in › Continue with Google button is visible on the login page
+[119/180] [mobile] › e2e\auth.spec.ts:71:7 › Google sign-in › ?error=denied shows the roster denial banner
+[120/180] [mobile] › e2e\auth.spec.ts:80:7 › Google sign-in › clicking Continue with Google fires POST /api/auth/google
+[121/180] [mobile] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 320px
+[122/180] [mobile] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px
+[123/180] [mobile] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 768px
+[124/180] [mobile] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 1440px
+[125/180] [mobile] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px with touch
+[126/180] [mobile] › e2e\my-status.spec.ts:12:7 › My Status Page › agent can view own productivity score
+[127/180] [mobile] › e2e\my-status.spec.ts:37:7 › My Status Page › intervals list displays correctly
+[128/180] [mobile] › e2e\my-status.spec.ts:21:7 › My Status Page › productivity score displays correctly
+[129/180] [mobile] › e2e\my-status.spec.ts:54:7 › My Status Page › status colors match design
+[130/180] [mobile] › e2e\nav-collapse.spec.ts:48:7 › Unified collapsible nav › group headers toggle their submenus
+[131/180] [mobile] › e2e\nav-collapse.spec.ts:102:7 › Unified collapsible nav › nav links route client-side — no reload, no BootSplash
+[132/180] [mobile] › e2e\nav-collapse.spec.ts:74:7 › Unified collapsible nav › open-set persists in sessionStorage across client nav
+[133/180] [mobile] › e2e\nav-collapse.spec.ts:126:7 › Unified collapsible nav › mobile nav-open + group toggle still works at 375px
+[134/180] [mobile] › e2e\responsive.spec.ts:5:7 › Responsive Design › layout works on mobile (375px)
+[135/180] [mobile] › e2e\responsive.spec.ts:13:7 › Responsive Design › layout works on tablet (768px)
+[136/180] [mobile] › e2e\responsive.spec.ts:20:7 › Responsive Design › layout works on desktop (1280px)
+[137/180] [mobile] › e2e\responsive.spec.ts:29:7 › Responsive Design › navigation adapts to screen size
+[138/180] [mobile] › e2e\status-validation.spec.ts:11:7 › Status Validation Page › TL sees the GAS-style status validation shell
+[139/180] [mobile] › e2e\status-validation.spec.ts:25:7 › Status Validation Page › pending flags show the agent, interval, suggestion and review deadline
+[140/180] [mobile] › e2e\status-validation.spec.ts:41:7 › Status Validation Page › opening a flag shows the strip, cases and decision form
+[141/180] [mobile] › e2e\status-validation.spec.ts:65:7 › Status Validation Page › accepting a flag records the decision and toasts
+[142/180] [mobile] › tests\e2e\a11y-keyboard.spec.ts:15:7 › a11y keyboard models › Tabs: one tab stop, arrows/Home/End move selection and focus
+[143/180] [mobile] › tests\e2e\a11y-keyboard.spec.ts:47:7 › a11y keyboard models › PaintGrid on /tph: one tab stop, arrows move inside the grid
+[144/180] [mobile] › tests\e2e\a11y-keyboard.spec.ts:83:7 › a11y keyboard models › palette close returns focus to the invoker
+[145/180] [tablet] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 375px
+[146/180] [tablet] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 768px
+[147/180] [tablet] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1024px
+[148/180] [tablet] › e2e\aging-refresh-layout.spec.ts:10:7 › aging toolbar stays anchored through refresh states at 1440px
+[149/180] [tablet] › e2e\auth.spec.ts:5:7 › Authentication Flow › user can log in with valid credentials
+[150/180] [tablet] › e2e\auth.spec.ts:11:7 › Authentication Flow › user cannot log in with invalid credentials
+[151/180] [tablet] › e2e\auth.spec.ts:22:7 › Authentication Flow › user is redirected to login when accessing protected route
+[152/180] [tablet] › e2e\auth.spec.ts:28:7 › Authentication Flow › user can log out
+[153/180] [tablet] › e2e\auth.spec.ts:40:7 › Authentication Flow › session persists across page reloads
+[154/180] [tablet] › e2e\auth.spec.ts:65:7 › Google sign-in › Continue with Google button is visible on the login page
+[155/180] [tablet] › e2e\auth.spec.ts:80:7 › Google sign-in › clicking Continue with Google fires POST /api/auth/google
+[156/180] [tablet] › e2e\auth.spec.ts:71:7 › Google sign-in › ?error=denied shows the roster denial banner
+[157/180] [tablet] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 320px
+[158/180] [tablet] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 768px
+[159/180] [tablet] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px
+[160/180] [tablet] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 1440px
+[161/180] [tablet] › e2e\my-status.spec.ts:12:7 › My Status Page › agent can view own productivity score
+[162/180] [tablet] › e2e\my-status.spec.ts:21:7 › My Status Page › productivity score displays correctly
+[163/180] [tablet] › e2e\my-status.spec.ts:37:7 › My Status Page › intervals list displays correctly
+[164/180] [tablet] › e2e\heatmap-time-layout.spec.ts:10:7 › heatmap times are compact and contained at 375px with touch
+[165/180] [tablet] › e2e\my-status.spec.ts:54:7 › My Status Page › status colors match design
+[166/180] [tablet] › e2e\nav-collapse.spec.ts:48:7 › Unified collapsible nav › group headers toggle their submenus
+[167/180] [tablet] › e2e\nav-collapse.spec.ts:74:7 › Unified collapsible nav › open-set persists in sessionStorage across client nav
+[168/180] [tablet] › e2e\nav-collapse.spec.ts:102:7 › Unified collapsible nav › nav links route client-side — no reload, no BootSplash
+[169/180] [tablet] › e2e\nav-collapse.spec.ts:126:7 › Unified collapsible nav › mobile nav-open + group toggle still works at 375px
+[170/180] [tablet] › e2e\responsive.spec.ts:5:7 › Responsive Design › layout works on mobile (375px)
+[171/180] [tablet] › e2e\responsive.spec.ts:13:7 › Responsive Design › layout works on tablet (768px)
+[172/180] [tablet] › e2e\responsive.spec.ts:20:7 › Responsive Design › layout works on desktop (1280px)
+[173/180] [tablet] › e2e\responsive.spec.ts:29:7 › Responsive Design › navigation adapts to screen size
+[174/180] [tablet] › e2e\status-validation.spec.ts:11:7 › Status Validation Page › TL sees the GAS-style status validation shell
+[175/180] [tablet] › e2e\status-validation.spec.ts:25:7 › Status Validation Page › pending flags show the agent, interval, suggestion and review deadline
+[176/180] [tablet] › e2e\status-validation.spec.ts:41:7 › Status Validation Page › opening a flag shows the strip, cases and decision form
+[177/180] [tablet] › e2e\status-validation.spec.ts:65:7 › Status Validation Page › accepting a flag records the decision and toasts
+[178/180] [tablet] › tests\e2e\a11y-keyboard.spec.ts:15:7 › a11y keyboard models › Tabs: one tab stop, arrows/Home/End move selection and focus
+[179/180] [tablet] › tests\e2e\a11y-keyboard.spec.ts:47:7 › a11y keyboard models › PaintGrid on /tph: one tab stop, arrows move inside the grid
+[180/180] [tablet] › tests\e2e\a11y-keyboard.spec.ts:83:7 › a11y keyboard models › palette close returns focus to the invoker
+  10 skipped
+  170 passed (2.5m)

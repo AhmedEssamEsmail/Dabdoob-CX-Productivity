@@ -1,17 +1,35 @@
 import { describe, it, expect, vi } from 'vitest'
 
 // Empty-store supabase stub: every chained call returns the query proxy, which
-// awaits to { data: [], error: null } — so calendar code sees an empty roster,
-// no holidays and config defaults, without any network.
+// awaits to the next queued result (default { data: [], error: null }) — so
+// calendar code sees an empty roster, no holidays and config defaults, without
+// any network. Select strings are recorded per table for projection asserts.
+const supa = vi.hoisted(() => ({
+  results: [] as { data: unknown; error: { message: string } | null }[],
+  calls: [] as { table: string; select: string }[],
+}))
 vi.mock('@/features/shared/lib/supabase', () => {
-  const res = Promise.resolve({ data: [], error: null })
-  const proxy: Record<string, unknown> = new Proxy(
-    {},
-    {
-      get: (_t, prop) => (prop === 'then' ? res.then.bind(res) : () => proxy),
-    }
-  )
-  return { supabase: { from: () => proxy }, createClient: () => ({ from: () => proxy }) }
+  const from = (table: string): unknown => {
+    const call = { table, select: '' }
+    supa.calls.push(call)
+    const proxy: Record<string, unknown> = new Proxy(
+      {},
+      {
+        get: (_t, prop) => {
+          if (prop === 'then') {
+            const res = Promise.resolve(supa.results.shift() ?? { data: [], error: null })
+            return res.then.bind(res)
+          }
+          return (...args: unknown[]) => {
+            if (prop === 'select' && typeof args[0] === 'string') call.select = String(args[0])
+            return proxy
+          }
+        },
+      }
+    )
+    return proxy
+  }
+  return { supabase: { from }, createClient: () => ({ from }) }
 })
 import {
   dqParseDaysOff, dqIsHoliday, pwDayHours, getWorkingCalendar, wcReset, setTlScheduleSource,
@@ -85,5 +103,39 @@ describe('getWorkingCalendar with unreachable storage', () => {
     expect(days.map((d) => d.date)).toEqual(['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'])
     expect(days.every((d) => d.working && d.estimated && d.reason === null)).toBe(true)
     expect(WC_WEEKDAYS[5]).toBe('Fri') // 2026-10-09 is a Friday
+  }, 30000)
+})
+
+describe('wcState roster read (P-21)', () => {
+  it('projects only the columns the work calendar reads', async () => {
+    wcReset()
+    supa.results = [
+      {
+        data: [
+          {
+            email: 'a@dabdoob.com',
+            name: 'Agent A',
+            role: 'agent',
+            days_off: 'Fri',
+            based_in_country: 'Kuwait',
+          },
+        ],
+        error: null,
+      }, // roster
+      {
+        data: [{ country: 'Kuwait', date: '2026-10-08', name: 'National Day', deleted_at: null }],
+        error: null,
+      }, // holidays
+    ]
+    supa.calls = []
+    const days = await getWorkingCalendar('a@dabdoob.com', '2026-10-07', '2026-10-09')
+    const rosterRead = supa.calls.find((c) => c.table === 'roster')
+    expect(rosterRead?.select).toBe('email,role,days_off,based_in_country')
+    // unchanged behaviour: projected days_off / based_in_country still drive the calendar
+    expect(days.map((d) => [d.date, d.working, d.reason])).toEqual([
+      ['2026-10-07', true, null],
+      ['2026-10-08', false, 'holiday'],
+      ['2026-10-09', false, 'off'],
+    ])
   }, 30000)
 })

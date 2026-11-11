@@ -1,5 +1,3 @@
-import { google } from 'googleapis'
-
 export const maxDuration = 60
 
 async function checkAdminAuth(request: Request): Promise<boolean> {
@@ -17,6 +15,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const { google } = await import('googleapis')
     const body = await request.json().catch(() => ({}))
     const sheetId = body.sheetId || process.env.GOOGLE_SHEET_ID
 

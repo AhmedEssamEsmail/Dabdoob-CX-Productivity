@@ -1,0 +1,11 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [32m✓[39m tests/golden/reminders-off-dq.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-checkin.test.ts [2m([22m[2m40 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 11:49:59
+[2m   Duration [22m 369ms[2m (import 53%, tests 24%, transform 20%, worker 2%)[22m
+

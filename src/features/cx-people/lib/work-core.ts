@@ -27,7 +27,7 @@ import {
 } from './scorecard'
 import { pwDirectory, type Directory } from '@/features/shared/platform/identity'
 import { getWorkingCalendar, type WorkingDay } from '@/features/shared/platform/calendar'
-import { readStore } from '@/features/shared/platform/stores'
+import { readStore, type StoreRead } from '@/features/shared/platform/stores'
 import { configAll } from '@/features/shared/platform/settings'
 import {
   normEmail_,
@@ -43,11 +43,21 @@ import {
 
 // ---------------------------------------------------------------- reading tables (PeopleCore)
 
+/** Concurrent same-table reads share one fetch; the promise drops on settle (no completed-result caching). */
+const pwRowsInflight_ = new Map<string, Promise<StoreRead>>()
+
 /** pwRows_: rows of a table; [] when it does not exist. `one_on_one_logs` hides soft-deleted rows. */
 export async function pwRows_(name: string, where?: (r: Record<string, unknown>) => boolean): Promise<Record<string, unknown>[]> {
-  const { rows, exists } = await readStore(name)
+  let p = pwRowsInflight_.get(name)
+  if (!p) {
+    p = readStore(name)
+    pwRowsInflight_.set(name, p)
+    const drop = () => pwRowsInflight_.delete(name)
+    p.then(drop, drop)
+  }
+  const { rows, exists } = await p
   if (!exists) return []
-  let out = rows
+  let out = rows.slice()
   if (name === 'one_on_one_logs') out = out.filter((r) => !r.deleted_at)
   return where ? out.filter(where) : out
 }
@@ -90,6 +100,15 @@ export async function pwTaskContext_(): Promise<TaskContext> {
     pwRows_('action_planned_milestones'),
     configAll(),
   ])
+  // Legacy readTable_ returned sheet append order; readAllPaged now returns
+  // pk-asc. The store's implicit serial id carries the append order where it
+  // exists; rows without one keep the read order (stable sort).
+  actions.sort((x, y) => {
+    const xi = Number(x.id)
+    const yi = Number(y.id)
+    if (!Number.isFinite(xi) || !Number.isFinite(yi)) return 0
+    return xi - yi
+  })
   const now = Date.now()
   const today = pwToday_(now)
   const detailBy = new Set(details.map((d) => String(d.action_id)))
