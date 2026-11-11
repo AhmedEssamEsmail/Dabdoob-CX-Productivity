@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Field, Input } from '@/features/shared/components/ui'
 
@@ -82,11 +83,14 @@ export default function LoginPage() {
     <main className="login-wrap">
       <div className="login-card">
         <div className="brand-row">
-          <img
+          <Image
             className="brand-logo"
             src="/assets/dabdoob-logo.png"
             alt=""
             aria-hidden="true"
+            width={640}
+            height={372}
+            preload
           />
           <div>
             <div className="brand-name">Dabdoob CX</div>

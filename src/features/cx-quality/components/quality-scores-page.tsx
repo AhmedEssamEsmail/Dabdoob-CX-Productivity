@@ -514,7 +514,6 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               {qaDayLabel(i.from)} to {qaDayLabel(i.to)}
             </span>
             <label className="qs-check">
-              {/* eslint-disable-next-line -- kept raw: qs-check shows a native checkbox; Toggle hides its input */}
               <input
                 type="checkbox"
                 checked={p}

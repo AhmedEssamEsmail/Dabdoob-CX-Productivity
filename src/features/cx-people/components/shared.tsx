@@ -11,15 +11,16 @@ import { pageParams } from '@/features/shared/shell/gates'
 export { FetchError }
 
 /** Legacy (url, body?) auto-POST signature kept for cx-people call sites. */
-export function fetchJson(url: string, body?: unknown) {
-  return body === undefined ? sharedFetchJson(url) : postJson(url, body)
-}
+const fetchJsonLegacy = (url: string, body?: unknown) =>
+  body === undefined ? sharedFetchJson(url) : postJson(url, body)
+export { fetchJsonLegacy as fetchJson }
 
 /** useSe(name, load, deps) — name-cache loader over the canonical usePageData. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- verbatim legacy port
-export function useSe<T = any>(name: string, load: () => Promise<T>, deps: unknown[] = []) {
+function useSeLegacy<T = any>(name: string, load: () => Promise<T>, deps: unknown[] = []) {
   return usePageData(name, load, { deps })
 }
+export { useSeLegacy as useSe }
 
 export { LinesSkeleton as Skeleton, Failed as LoadError }
 

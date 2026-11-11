@@ -271,7 +271,6 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
           const d = u.type === 'dependent' && !n.length
           return (
             <label key={u.type} className={`trk-kind ${e.type === u.type ? 'is-on' : ''} ${d ? 'is-off' : ''}`}>
-              {/* eslint-disable-next-line -- kept raw: visually-hidden radio covering the .trk-kind card (CSS: .trk-kind input) */}
               <input type="radio" name={`${a}-k`} value={u.type} checked={e.type === u.type} disabled={d}
                 onChange={() => i({ type: u.type })} />
               <span className="trk-kind-name">{u.name}</span>
@@ -347,7 +346,6 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
         </Fragment>
       ) : null}
       <label className="trk-check">
-        {/* eslint-disable-next-line -- kept raw: native checkbox inside .trk-check label */}
         <input type="checkbox" checked={e.required} onChange={(u) => i({ required: u.currentTarget.checked })} />
         People must fill this in
       </label>
@@ -710,7 +708,6 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
               <th key={a.id} scope="col" className={a.type === 'number' || a.type === 'money' ? 'trk-num' : undefined}>
                 {s && Wn(a) ? (
                   <>
-                    {/* eslint-disable-next-line -- kept raw: .trk-th-edit is an all:unset inline header button, not a cx-btn */}
                     <button type="button" className="trk-th-edit" onClick={() => s(a)} title="Edit this field">{a.label}</button>
                   </>
                 ) : (
@@ -858,7 +855,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
             <div className="trk-records">
               <div className="trk-tools">
                 <label className="trk-search">
-                  <span className="sr-only">Search records</span>
+                  <span className="cx-sr">Search records</span>
                   <Input className="input" type="search" placeholder="Search records" value={_} onInput={(p) => l(p.currentTarget.value)} />
                 </label>
                 <p className="trk-count">

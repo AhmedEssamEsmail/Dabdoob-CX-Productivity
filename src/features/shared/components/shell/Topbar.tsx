@@ -66,7 +66,7 @@ export default function Topbar({
             </span>
           ) : null}
         </button>
-        <span className="sr-only" role="status" aria-live="polite">
+        <span className="cx-sr" role="status" aria-live="polite">
           {notifStatus}
         </span>
         <button

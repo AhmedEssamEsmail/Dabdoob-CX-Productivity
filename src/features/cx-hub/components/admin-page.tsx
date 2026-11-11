@@ -263,7 +263,6 @@ function Tm() {
         <div className="ap-themes">
           {bm.map(([i, s]) => (
             <label className="ap-theme" key={i}>
-              {/* eslint-disable-next-line -- kept raw: ap-theme CSS hides the native radio and styles the sibling swatch */}
               <input type="radio" name="ap-theme" value={i} checked={n.theme === i} onChange={() => t({ theme: i })} />
               <span className="ap-swatch" data-t={i} aria-hidden="true" />
               {D(s)}
@@ -277,7 +276,6 @@ function Tm() {
         <div className="ap-dots">
           {Em.map(([i, s]) => (
             <label className="ap-dot" title={s} key={i}>
-              {/* eslint-disable-next-line -- kept raw: ap-dot CSS hides the native radio and styles the sibling swatch */}
               <input type="radio" name="ap-accent" value={i} checked={n.accent === i} onChange={() => t({ accent: i })} aria-label={s} />
               <span data-accent-preview={i} />
             </label>
@@ -285,12 +283,10 @@ function Tm() {
         </div>
       </fieldset>
       <label className="ap-check">
-        {/* eslint-disable-next-line -- kept raw: native checkbox inside ap-check label */}
         <input type="checkbox" checked={n.solid} onChange={(i) => t({ solid: i.target.checked })} />
         {D('Reduce transparency')}
       </label>
       <label className="ap-check">
-        {/* eslint-disable-next-line -- kept raw: native checkbox inside ap-check label */}
         <input type="checkbox" checked={n.still} onChange={(i) => t({ still: i.target.checked })} />
         {D('Reduce motion')}
       </label>
@@ -299,7 +295,6 @@ function Tm() {
         <div className="ap-themes">
           {wm.map(([i, s]) => (
             <label className="ap-check" lang={i} key={i}>
-              {/* eslint-disable-next-line -- kept raw: native radio inside ap-check label */}
               <input type="radio" name="ap-lang" value={i} checked={n.lang === i} onChange={() => t({ lang: i })} />
               {s}
             </label>

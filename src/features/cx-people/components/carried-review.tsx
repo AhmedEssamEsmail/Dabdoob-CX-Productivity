@@ -61,7 +61,7 @@ export function CarriedReview({
             </div>
             <div className="pw-seg" role="group" aria-label={`Outcome for ${a.title}`}>
               {REVIEW_OUTCOMES.map((o) => (
-                // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+                 
                 <button
                   key={o.id}
                   type="button"

@@ -100,7 +100,7 @@ function AnimSpan({ live, final, spanRef }: { live: string; final: string; spanR
       <span ref={spanRef} aria-hidden="true">
         {localizeNum(live)}
       </span>
-      <span className="sr-only">{localizeNum(final)}</span>
+      <span className="cx-sr">{localizeNum(final)}</span>
     </>
   )
 }
@@ -494,7 +494,7 @@ function PeriodMetric({
     <div className="oo-period">
       <div className="oo-period-bar">
         <label className="oo-period-pick">
-          <span className="sr-only">{label} period</span>
+          <span className="cx-sr">{label} period</span>
           <Select className="select" value={pick} onChange={(e) => choose(e.currentTarget.value)}>
             {PERIODS.map((p) => (
               <option key={p.id} value={p.id}>
@@ -721,7 +721,7 @@ function QueueBlock({ ctx }: { ctx: any }) {
                 <th scope="col">7 days</th>
                 <th scope="col">7 before</th>
                 <th scope="col">
-                  <span className="sr-only">Change</span>
+                  <span className="cx-sr">Change</span>
                 </th>
               </tr>
             </thead>
@@ -810,7 +810,7 @@ function ProjStatusForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) =>
     <div className="oo-proj-form">
       <div className="pw-seg" role="group" aria-label="Status">
         {PROJ_STATUS.map((b) => (
-          // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+           
           <button key={b.id} type="button" aria-pressed={status === b.id} onClick={() => setStatus(b.id)}>
             {b.label}
           </button>
@@ -1334,7 +1334,7 @@ function TopicSection({
         </h3>
         <div className="pw-seg" role="group" aria-label="Raised by">
           {raisers.map((r) => (
-            // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+             
             <button key={r} type="button" aria-pressed={state.raisedBy === r} onClick={() => onChange({ raisedBy: r })}>
               {raiserLabel[r]}
             </button>
@@ -1369,7 +1369,7 @@ function TopicSection({
               <span className="field-label">{f.label}</span>
               <div className="pw-seg" role="group" aria-label={f.label}>
                 {['yes', 'no'].map((v) => (
-                  // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+                   
                   <button
                     key={v}
                     type="button"
@@ -1421,7 +1421,7 @@ function TopicSection({
               <span className="field-label">Was the standard shown to them before?</span>
               <div className="pw-seg" role="group" aria-label="Was the standard shown before?">
                 {['yes', 'no', 'unsure'].map((v) => (
-                  // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+                   
                   <button key={v} type="button" aria-pressed={ev.shownBefore === v} onClick={() => setEv('shownBefore', v)}>
                     {v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure'}
                   </button>
@@ -1602,7 +1602,6 @@ function LogForm({
               {start.suggestions.map((s: any) => (
                 <div key={s.topic} className="pw-suggest">
                   <label className="pw-check">
-                    {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
                     <input type="checkbox" checked={topics.includes(s.topic)} onChange={() => toggleTopic(s.topic)} />
                     <strong>{s.label}</strong>
                   </label>
@@ -1624,7 +1623,7 @@ function LogForm({
           ) : null}
           <div className="pw-chips" role="group" aria-label="Topics">
             {library.map((d: any) => (
-              // eslint-disable-next-line -- kept raw: .pw-chip aria-pressed toggle chip (family chrome)
+               
               <button
                 key={d.id}
                 type="button"

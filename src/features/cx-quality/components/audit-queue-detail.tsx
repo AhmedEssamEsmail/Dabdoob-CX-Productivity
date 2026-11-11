@@ -438,8 +438,7 @@ export function RequestedAudits({
     () => requests.filter((x: any) => x.status === 'open' || x.status === 'in_progress').length,
     [requests]
   )
-  const sortState = r.s
-  const sortedRequests = useMemo(() => r.apply(requests), [requests, sortState])
+  const sortedRequests = useMemo(() => r.apply(requests), [requests, r])
   const onStartRef = useRef(onStart)
   const reloadRef = useRef(reload)
   useEffect(() => {
@@ -503,7 +502,7 @@ export function RequestedAudits({
                   Audit
                 </SortTh>
                 <th scope="col">
-                  <span className="sr-only">Action</span>
+                  <span className="cx-sr">Action</span>
                 </th>
               </tr>
             </thead>
@@ -754,8 +753,7 @@ export function NonTicketAudits({
     () => rows.filter((h: any) => h.status === 'open' || h.status === 'in_progress').length,
     [rows]
   )
-  const sortState = u.s
-  const sortedRows = useMemo(() => u.apply(rows), [rows, sortState])
+  const sortedRows = useMemo(() => u.apply(rows), [rows, u])
   const onStartRef = useRef(onStart)
   const onRemovedRef = useRef(onRemoved)
   const reloadRef = useRef(reload)
@@ -816,7 +814,7 @@ export function NonTicketAudits({
                   Audit
                 </SortTh>
                 <th scope="col">
-                  <span className="sr-only">Action</span>
+                  <span className="cx-sr">Action</span>
                 </th>
               </tr>
             </thead>
@@ -1021,7 +1019,7 @@ export function OffQueueAudits({
                 <th scope="col">Ticket</th>
                 <th scope="col">Audit</th>
                 <th scope="col">
-                  <span className="sr-only">Action</span>
+                  <span className="cx-sr">Action</span>
                 </th>
               </tr>
             </thead>
@@ -1272,7 +1270,6 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                   <td>
                     <div className="qa-actions">
                       <label className="cx-toggle">
-                        {/* eslint-disable-next-line -- kept raw: Toggle drops aria-label; label text alone is ambiguous here */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets whose status now is ${v.name}`}
@@ -1282,7 +1279,6 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                         <span>Status now</span>
                       </label>
                       <label className="cx-toggle">
-                        {/* eslint-disable-next-line -- kept raw: Toggle drops aria-label; label text alone is ambiguous here */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets the agent set to ${v.name}`}
@@ -1432,7 +1428,7 @@ export function AccessPanel() {
                   <th scope="col">Position</th>
                   <th scope="col">Audit access</th>
                   <th scope="col">
-                    <span className="sr-only">Change</span>
+                    <span className="cx-sr">Change</span>
                   </th>
                 </tr>
               </thead>

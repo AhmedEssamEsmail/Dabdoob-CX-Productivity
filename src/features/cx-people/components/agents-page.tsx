@@ -369,7 +369,7 @@ function ScorecardAdmin() {
                   <th scope="col">What was read</th>
                   <th scope="col">Last read</th>
                   <th scope="col">
-                    <span className="sr-only">Actions</span>
+                    <span className="cx-sr">Actions</span>
                   </th>
                 </tr>
               </thead>

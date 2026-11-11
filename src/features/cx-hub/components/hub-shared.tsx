@@ -75,19 +75,19 @@ export function Om(): void {
 
 /* ----------------------------------------------------------------- fetchJson */
 export { FetchError, postJson }
-export function fetchJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
-  return sharedFetchJson(url, init)
-}
+const hubFetchJson = <T = unknown>(url: string, init?: RequestInit): Promise<T> =>
+  sharedFetchJson(url, init)
+export { hubFetchJson as fetchJson }
 const post = <T = any>(url: string, body?: unknown) => postJson(url, body ?? {}) as Promise<T>
 
 /* --------------------------------------------------------------- api objects */
 export const Of = {
-  queueHealth: () => fetchJson<any>('/api/queue/health'),
+  queueHealth: () => hubFetchJson<any>('/api/queue/health'),
   refreshNow: () => post<any>('/api/queue/refresh'),
 }
 export const Vi = {
-  home: () => fetchJson<any>('/api/hub/home'),
-  rosterAdmin: () => fetchJson<any>('/api/hub/roster'),
+  home: () => hubFetchJson<any>('/api/hub/home'),
+  rosterAdmin: () => hubFetchJson<any>('/api/hub/roster'),
   setPerson: (email: string, fields: unknown) =>
     post('/api/hub/roster', { action: 'setPerson', email, fields }),
   addHoliday: (h: unknown) => post('/api/hub/roster', { action: 'addHoliday', h }),
@@ -97,29 +97,29 @@ export const Vi = {
     post('/api/hub/roster', { action: 'setOverrides', email, o }),
 }
 export const Ln = {
-  getBootstrap: () => fetchJson('/api/bootstrap'),
+  getBootstrap: () => hubFetchJson('/api/bootstrap'),
   getDropdownOptions: (listKey: string) =>
-    fetchJson<{ options: string[] }>('/api/options/' + encodeURIComponent(listKey)).then((r) => r.options),
+    hubFetchJson<{ options: string[] }>('/api/options/' + encodeURIComponent(listKey)).then((r) => r.options),
   addDropdownOption: (listKey: string, value: string) =>
     post('/api/options/' + encodeURIComponent(listKey), { value }),
-  getConfig: () => fetchJson<Record<string, unknown>>('/api/hub/admin?fn=config'),
+  getConfig: () => hubFetchJson<Record<string, unknown>>('/api/hub/admin?fn=config'),
   setConfig: (key: string, value: unknown) =>
     post('/api/hub/admin', { action: 'setConfig', key, value }),
-  getConfigRows: () => fetchJson<ConfigRow[]>('/api/hub/admin'),
+  getConfigRows: () => hubFetchJson<ConfigRow[]>('/api/hub/admin'),
   saveConfigSetting: (key: string, value: unknown) =>
     post<ConfigRow[]>('/api/hub/admin', { action: 'saveConfig', key, value }),
   setAppUrl: (app: string, url: string) =>
     post<Record<string, string>>('/api/hub/admin', { action: 'setAppUrl', app, url }),
-  getViewAsPeople: () => fetchJson<unknown[]>('/api/view-as/people'),
+  getViewAsPeople: () => hubFetchJson<unknown[]>('/api/view-as/people'),
   startViewAs: (email: string) => post('/api/view-as', { email }),
-  stopViewAs: () => fetchJson('/api/view-as', { method: 'DELETE' }),
-  getViewAsState: () => fetchJson<{ target?: unknown }>('/api/view-as'),
+  stopViewAs: () => hubFetchJson('/api/view-as', { method: 'DELETE' }),
+  getViewAsState: () => hubFetchJson<{ target?: unknown }>('/api/view-as'),
 }
 export const Fs = {
   myDay: (refresh = false) =>
-    fetchJson<any>('/api/hub/my-day' + (refresh ? '?refresh=1' : '')),
+    hubFetchJson<any>('/api/hub/my-day' + (refresh ? '?refresh=1' : '')),
   myDayPart: (part: string, refresh = false) =>
-    fetchJson<any>(
+    hubFetchJson<any>(
       '/api/hub/my-day?part=' + encodeURIComponent(part) + (refresh ? '&refresh=1' : '')
     ),
   searchMail: (query: string) => post('/api/hub/my-day', { action: 'searchMail', query }),
@@ -131,7 +131,7 @@ export const Fs = {
     post('/api/hub/my-day', { action: 'followUpDone', threadId, lastAtMs }),
   installDigest: () => post('/api/hub/my-day', { action: 'installDigest' }),
 }
-export const Ug = { get: () => fetchJson<any>('/api/health') }
+export const Ug = { get: () => hubFetchJson<any>('/api/health') }
 
 export interface ConfigRow {
   key: string
@@ -264,7 +264,7 @@ export function Jl({ live, final, spanRef }: { live: string; final: string; span
       <span ref={spanRef as React.RefObject<HTMLSpanElement>} aria-hidden="true">
         {uu(live)}
       </span>
-      <span className="sr-only">{uu(final)}</span>
+      <span className="cx-sr">{uu(final)}</span>
     </Ft>
   )
 }
@@ -436,7 +436,7 @@ export function Wf({
       {tipEl}
       <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
         {counts.map((o, c) => {
-          // eslint-disable-next-line -- kept raw: cx-ladder__seg is a data-viz segment sized by --n, a control only when onPick is set
+           
           const Tag: any = onPick ? 'button' : 'span'
           return (
             <Tag
@@ -492,7 +492,7 @@ export function rg({
 }) {
   const sel = (name: string, c: FilterCtl) => (
     <label key={name} className="cx-filter">
-      <span className="sr-only">{name}</span>
+      <span className="cx-sr">{name}</span>
       <Select className="select" value={c.value} onChange={(l) => c.onChange(l.target.value)}>
         <option value="">{c.all}</option>
         {c.options.map((l) => (
@@ -521,7 +521,7 @@ export function rg({
       ) : null}
       {search ? (
         <label className="cx-filter cx-filter--search">
-          <span className="sr-only">Search</span>
+          <span className="cx-sr">Search</span>
           <Input
             className="input"
             type="search"

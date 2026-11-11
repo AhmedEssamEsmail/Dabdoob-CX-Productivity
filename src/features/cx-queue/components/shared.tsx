@@ -57,14 +57,15 @@ export function AsOfHint({ iso, what = 'Freshdesk' }: { iso?: string | null; wha
 
 /** Legacy (url, body?) facade over the canonical fetch-json: a second arg
     auto-POSTs JSON via postJson; RequestInit callers use postJson/baseFetchJson. */
-export function fetchJson(url: string, body?: unknown): Promise<any> {
-  return body === undefined ? baseFetchJson(url) : postJson(url, body)
-}
+const fetchJsonLegacy = (url: string, body?: unknown): Promise<any> =>
+  body === undefined ? baseFetchJson(url) : postJson(url, body)
+export { fetchJsonLegacy as fetchJson }
 
 /** The vt() loader from the bundles: cached data, error, reload — usePageData. */
-export function useSe<T = any>(name: string, load: () => Promise<T>, deps: unknown[] = []) {
+function useSeLegacy<T = any>(name: string, load: () => Promise<T>, deps: unknown[] = []) {
   return usePageData<T>(name, load, { deps })
 }
+export { useSeLegacy as useSe }
 
 export function useHashParams(): URLSearchParams {
   /* The legacy read the params off '#/path?…'; the shim moves them to
@@ -216,7 +217,7 @@ export function CountSpans({ live, final, spanRef }: { live: string; final: stri
       <span ref={spanRef as React.RefObject<HTMLSpanElement>} aria-hidden="true">
         {arDigits(live)}
       </span>
-      <span className="sr-only">{arDigits(final)}</span>
+      <span className="cx-sr">{arDigits(final)}</span>
     </Fragment>
   )
 }
@@ -309,7 +310,7 @@ export function CxFilters({
 }) {
   const sel = (name: string, p: FilterPick) => (
     <label className="cx-filter" key={name}>
-      <span className="sr-only">{name}</span>
+      <span className="cx-sr">{name}</span>
       <Select className="select" value={p.value} onChange={(e) => p.onChange(e.target.value)}>
         <option value="">{p.all}</option>
         {p.options.map((o) => (
@@ -340,7 +341,7 @@ export function CxFilters({
       ) : null}
       {search ? (
         <label className="cx-filter cx-filter--search">
-          <span className="sr-only">Search</span>
+          <span className="cx-sr">Search</span>
           <Input
             className="input"
             type="search"
@@ -367,7 +368,7 @@ export function RefreshNow({ onDone }: { onDone: () => void }) {
   const go = () => {
     setBusy(true)
     setMsg('')
-    fetchJson('/api/queue/refresh', {}).then(
+    fetchJsonLegacy('/api/queue/refresh', {}).then(
       (c) => {
         setBusy(false)
         const o = c.refreshed && c.synced_to ? `Freshdesk changes up to ${hm(c.synced_to)} Kuwait time.` : ''

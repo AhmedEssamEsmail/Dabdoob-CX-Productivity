@@ -117,7 +117,7 @@ function FilterBar({
 }) {
   const sel = (srLabel: string, p: NonNullable<typeof owner>) => (
     <label className="cx-filter">
-      <span className="sr-only">{srLabel}</span>
+      <span className="cx-sr">{srLabel}</span>
       <Select className="select" value={p.value} onChange={(e) => p.onChange(e.currentTarget.value)}>
         <option value="">{p.all}</option>
         {p.options.map((o) => (
@@ -134,12 +134,11 @@ function FilterBar({
       {team ? sel('Team', team) : null}
       {priority ? (
         <div className="pw-seg" role="group" aria-label="Priority">
-          {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
           <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
             Any priority
           </button>
           {priority.options.map((p) => (
-            // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+             
             <button
               key={p}
               type="button"
@@ -153,7 +152,7 @@ function FilterBar({
       ) : null}
       {search ? (
         <label className="cx-filter cx-filter--search">
-          <span className="sr-only">Search</span>
+          <span className="cx-sr">Search</span>
           <Input
             className="input"
             type="search"
@@ -249,7 +248,7 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
           <span className="field-label">Priority</span>
           <div className="pw-seg" role="group" aria-label="Priority">
             {['P1', 'P2', 'P3'].map((p) => (
-              // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+               
               <button key={p} type="button" aria-pressed={form.priority === p} onClick={() => patch({ priority: p })}>
                 {p}
               </button>
@@ -403,7 +402,6 @@ function GanttRow({
   return (
     <div className="pw-g-row" aria-current={selected}>
       <div className="pw-g-label">
-        {/* eslint-disable-next-line -- kept raw: .pw-g-label button family chrome (ellipsis title pick) */}
         <button type="button" onClick={onSelect} title={t.title}>
           {t.title}
         </button>
@@ -431,7 +429,6 @@ function GanttRow({
             style={{ insetInlineStart: `${(f.i / nDays) * 100}%`, width: `${100 / nDays}%` }}
           />
         ))}
-        {/* eslint-disable-next-line -- kept raw: .pw-bar gantt bar is positioned family chrome, not a cx-btn */}
         <button
           type="button"
           className="pw-bar"
@@ -763,11 +760,9 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
         <div className="pw-panel">
           <h2 className="pw-h2">Post an update</h2>
           <div className="pw-seg pw-m-8-12" role="group" aria-label="Update type">
-            {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
             <button type="button" aria-pressed={kind === 'status'} onClick={() => setKind('status')}>
               Written update
             </button>
-            {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control) */}
             <button type="button" aria-pressed={kind === 'file'} onClick={() => setKind('file')}>
               Upload a file
             </button>
@@ -801,7 +796,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                     <span className="field-label">Status</span>
                     <div className="pw-seg" role="group" aria-label="Status">
                       {['on_track', 'at_risk', 'off_track'].map((r) => (
-                        // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+                         
                         <button key={r} type="button" aria-pressed={rag === r} onClick={() => setRag(r)}>
                           {RAG_LABELS[r]}
                         </button>
@@ -984,11 +979,9 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
               search={{ value: search, onChange: setSearch, placeholder: 'Search task titles' }}
             >
               <div className="pw-seg" role="group" aria-label="Show">
-                {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option buttons (family chrome, not a form control) */}
                 <button type="button" aria-pressed={show === 'open'} onClick={() => setShow('open')}>
                   Open
                 </button>
-                {/* eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control) */}
                 <button type="button" aria-pressed={show === 'all'} onClick={() => setShow('all')}>
                   Include done, last 30 days
                 </button>

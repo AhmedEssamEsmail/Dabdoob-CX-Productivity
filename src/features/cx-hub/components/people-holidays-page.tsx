@@ -175,7 +175,6 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
         <div className="dq-days">
           {t.map((x) => (
             <label className="cx-toggle" key={x}>
-              {/* eslint-disable-next-line -- kept raw: cx-toggle CSS hides the native checkbox */}
               <input
                 type="checkbox"
                 checked={o.includes(x)}
@@ -290,7 +289,6 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 </div>
               </div>
               <label className="cx-toggle">
-                {/* eslint-disable-next-line -- kept raw: cx-toggle CSS hides the native checkbox */}
                 <input type="checkbox" checked={y} onChange={(S) => v(S.currentTarget.checked)} />
                 <span>Show people who left</span>
               </label>

@@ -408,7 +408,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
                   <th scope="col">Version</th>
                   <th scope="col">State</th>
                   <th scope="col">
-                    <span className="sr-only">Edit</span>
+                    <span className="cx-sr">Edit</span>
                   </th>
                 </tr>
               </thead>

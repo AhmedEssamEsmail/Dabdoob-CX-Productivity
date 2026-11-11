@@ -1,5 +1,5 @@
 'use client'
-/* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
+ 
 /* I — the one-on-ones + tasks facade — extracted from one-on-ones-page.tsx (verbatim move, S13-03). */
 /* I — the one-on-ones + tasks facade. */
 import { fetchJson } from './shared'

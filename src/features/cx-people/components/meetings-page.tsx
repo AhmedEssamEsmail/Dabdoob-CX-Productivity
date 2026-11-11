@@ -184,7 +184,6 @@ function ActionRows({
           {allowTask ? (
             <div className="pw-inline pw-mt-4">
               <label className="pw-check">
-                {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
                 <input
                   type="checkbox"
                   checked={!!row.trackAsTask}
@@ -638,7 +637,6 @@ function MeetingView({
         <div className="pw-panel pw-attend">
           {view.attendees.map((a: any) => (
             <label key={a.email} className="pw-check">
-              {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
               <input
                 type="checkbox"
                 disabled={!canEdit}
@@ -713,7 +711,7 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
           <span className="field-label">Type</span>
           <div className="pw-seg" role="group" aria-label="Type">
             {(admin ? ['WBR', 'BR', 'team', 'adhoc'] : ['team', 'adhoc']).map((t) => (
-              // eslint-disable-next-line -- kept raw: .pw-seg aria-pressed option button (family chrome, not a form control)
+               
               <button key={t} type="button" aria-pressed={type === t} onClick={() => setType(t)}>
                 {TYPE_LABELS[t]}
               </button>
@@ -747,7 +745,6 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
             .filter((p: any) => p.email !== chair)
             .map((p: any) => (
               <label key={p.email} className="pw-check">
-                {/* eslint-disable-next-line -- kept raw: native checkbox inside .pw-check label */}
                 <input
                   type="checkbox"
                   checked={attendees.includes(p.email)}
@@ -849,7 +846,7 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
             <div className="pw-two">
               <nav className="pw-rows" aria-label="Meeting series">
                 {data.series.map((s: any) => (
-                  // eslint-disable-next-line -- kept raw: .pw-series-btn family nav button (aria-current list picker)
+                   
                   <button
                     key={s.seriesId}
                     type="button"

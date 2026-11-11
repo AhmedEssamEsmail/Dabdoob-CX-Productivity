@@ -142,7 +142,7 @@ export function Count({
       <span ref={ref} aria-hidden="true">
         {arDigits(live)}
       </span>
-      <span className="sr-only">{arDigits(final)}</span>
+      <span className="cx-sr">{arDigits(final)}</span>
     </>
   )
 }

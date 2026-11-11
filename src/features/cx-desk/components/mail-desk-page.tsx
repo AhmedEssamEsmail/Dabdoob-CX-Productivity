@@ -462,7 +462,7 @@ export default function MailDeskPage() {
                   <th scope="col">On queue</th>
                   <th scope="col">Reply</th>
                   <th scope="col">
-                    <span className="sr-only">Flags</span>
+                    <span className="cx-sr">Flags</span>
                   </th>
                 </tr>
               </thead>

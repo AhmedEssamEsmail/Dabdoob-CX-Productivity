@@ -4,7 +4,9 @@ import nextTs from "eslint-config-next/typescript";
 
 const boundary = String.raw`(?:^|[^\w-])`;
 const end = String.raw`(?:[^\w-]|$)`;
-const warnLosers = String.raw`${boundary}(?:cx-sr(?:-[\w-]+)?|sr-only(?:-[\w-]+)?)${end}`;
+// `cx-sr` is the canonical visually-hidden class (cx-kit.css :root .cx-sr);
+// only its `-` suffixed variants and the legacy `sr-only` vocabulary warn.
+const warnLosers = String.raw`${boundary}(?:cx-sr-[\w-]+|sr-only(?:-[\w-]+)?)${end}`;
 // dq-editor, dq-days and dq-holform stay exempt per the keep-documented verdict in results/dq-map.md.
 const errorLosers = String.raw`${boundary}(?:empty(?:-[\w-]+)?|card(?:-[\w-]+)?|pill(?:-[\w-]+)?|note(?:-[\w-]+)?|agechip(?:-[\w-]+)?|tabs(?:-[\w-]+)?|brand-mark(?:-[\w-]+)?|nav-link--off(?:-[\w-]+)?|nav-ext(?:-[\w-]+)?|cx-toast(?:-[\w-]+)?|tag(?:-[\w-]+)?|tbl(?:-[\w-]+)?|seg(?:-[\w-]+)?|page-sub(?:-[\w-]+)?|pw-dialog(?:-[\w-]+)?|dq-(?!(?:editor|days|holform)(?:-[\w-]+|__[\w-]+)?${end})[\w-]+)${end}`;
 const warnRe = new RegExp(warnLosers);

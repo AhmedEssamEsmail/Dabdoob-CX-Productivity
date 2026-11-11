@@ -153,10 +153,9 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
         data-label={rated ? g : 'none'}
         data-zone={rated ? ZONE_TONE[g] : 'none'}
       >
-        <label className="sr-only" htmlFor={`dk-r-${id}`}>
+        <label className="cx-sr" htmlFor={`dk-r-${id}`}>
           Rating, 0 to 100
         </label>
-        {/* eslint-disable-next-line -- kept raw: .dk-slider input[type=range] needs native pseudo-element styling */}
         <input
           id={`dk-r-${id}`}
           type="range"
@@ -186,7 +185,7 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
       </p>
       {rated ? (
         <>
-          <label className="sr-only" htmlFor={`dk-note-${id}`}>
+          <label className="cx-sr" htmlFor={`dk-note-${id}`}>
             Note
           </label>
           <Textarea
@@ -628,7 +627,7 @@ export default function TlPerformancePage() {
   const aside =
     data && data.tls.length > 1 ? (
       <label className="dk-pick">
-        <span className="sr-only">Team lead</span>
+        <span className="cx-sr">Team lead</span>
         <Select className="select" value={data.tl} onChange={(e) => setTl(e.currentTarget.value)}>
           {data.tls.map((t) => (
             <option key={t.email} value={t.email}>

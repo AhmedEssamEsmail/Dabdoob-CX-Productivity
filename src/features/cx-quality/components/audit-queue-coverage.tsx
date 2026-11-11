@@ -101,8 +101,7 @@ export const WeekCoverage = memo(function WeekCoverage({ d }: { d: any }) {
     }),
     [rows]
   )
-  const sortState = n.s
-  const sortedRows = useMemo(() => (week ? n.apply(rows) : []), [week, rows, sortState])
+  const sortedRows = useMemo(() => (week ? n.apply(rows) : []), [week, rows, n])
   if (!week || !rows.length) return null
   const currentWeek = a === 0
   return (

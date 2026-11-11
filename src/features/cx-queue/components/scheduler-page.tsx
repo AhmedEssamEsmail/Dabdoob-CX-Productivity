@@ -452,7 +452,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
               <th scope="col">Request</th>
               <th scope="col">Status</th>
               <th scope="col">
-                <span className="sr-only">Actions</span>
+                <span className="cx-sr">Actions</span>
               </th>
             </tr>
           </thead>
@@ -895,7 +895,7 @@ function TimelineTab({ res, admin, date, setDate, onChanged }: { res: any; admin
         <Button variant="quiet" disabled={d <= 0} onClick={() => setDate(r.days[d - 1].key)} aria-label="Previous day">
           ‹
         </Button>
-        <label className="sr-only" htmlFor="sch-date">
+        <label className="cx-sr" htmlFor="sch-date">
           Day
         </label>
         <Select

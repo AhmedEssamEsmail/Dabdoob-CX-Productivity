@@ -296,7 +296,7 @@ function HmTime({ label, value, onChange, compact }: { label: string; value: str
   const l = useId()
   return (
     <div className={`hm-num ${compact ? 'hm-num-compact' : ''}`}>
-      <label htmlFor={l} className={compact ? 'sr-only' : undefined}>
+      <label htmlFor={l} className={compact ? 'cx-sr' : undefined}>
         {label}
       </label>
       <Input id={l} className="input" type="time" step={1800} value={value} onChange={(r) => r.currentTarget.value && onChange(r.currentTarget.value)} />
@@ -474,7 +474,7 @@ function CountOut({ live, final, spanRef }: { live: string; final: string; spanR
       <span ref={spanRef} aria-hidden="true">
         {hmAr_(live)}
       </span>
-      <span className="sr-only">{hmAr_(final)}</span>
+      <span className="cx-sr">{hmAr_(final)}</span>
     </>
   )
 }
@@ -553,7 +553,7 @@ function HmResult({ plan, meta, hm }: { plan: any; meta: any; hm: any }) {
   const l = meta?.window ?? hm.window
   return (
     <section className="hm-result" aria-labelledby="hm-res">
-      <h2 id="hm-res" className="sr-only">Result</h2>
+      <h2 id="hm-res" className="cx-sr">Result</h2>
       <div className="hm-total">
         <span className="hm-total-n">
           <Count v={a.hires} />
@@ -670,7 +670,7 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
           <div className="cx-section__hint">Needed agents per half hour — pick a layer to compare rostered, on-floor and scheduled coverage.</div>
         </div>
         <fieldset className="hm-chips">
-          <legend className="sr-only">Show</legend>
+          <legend className="cx-sr">Show</legend>
           {c.map((f) => (
             <label key={f.id} className={`hm-chip ${layer === f.id ? 'is-on' : ''}`}>
               {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
@@ -687,7 +687,7 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
             <tr>
               <th scope="col" className="hm-gt">Kuwait time</th>
               <th scope="col" className="hm-gs">
-                <span className="sr-only">Shifts on duty</span>
+                <span className="cx-sr">Shifts on duty</span>
               </th>
               {plan.requirement.days.map((f: any) => (
                 <th scope="col" key={f.day}>{f.day}</th>

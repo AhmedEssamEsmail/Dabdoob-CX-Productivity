@@ -62,8 +62,9 @@ export const CHANNEL_LABELS: Record<string, string> = {
  * function-identity cacheKey; anonymous loaders stay uncached, exactly
  * like the legacy tick-only refetch.
  */
-export const useSe = <T,>(fn: () => Promise<T>) =>
+const useSeLoader = <T,>(fn: () => Promise<T>) =>
   usePageData<T>(fn.name || null, fn, { cacheKey: fn.name ? fn : null })
+export { useSeLoader as useSe }
 
 /* --- kt — the three-lane strip ----------------------------------------- */
 

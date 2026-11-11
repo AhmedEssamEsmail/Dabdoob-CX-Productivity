@@ -189,7 +189,6 @@ function CtlForm({
             </legend>
             {g.map((k) => (
               <label key={k.ctlId}>
-                {/* eslint-disable-next-line -- kept raw: fieldset/legend radio pick; Seg has no legend slot */}
                 <input
                   type="radio"
                   name="ctl-pick"
