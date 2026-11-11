@@ -5,7 +5,7 @@
  *   Ms → WeekCoverage, ws → WEEK_COLS, Zn → AuditForm entry block. */
 import { memo, useMemo, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
-import { Button } from '@/features/shared/components/ui'
+import { Button, TableScroll } from '@/features/shared/components/ui'
 import {
   AuditForm,
   P,
@@ -121,7 +121,7 @@ export const WeekCoverage = memo(function WeekCoverage({ d }: { d: any }) {
           Next week
         </Button>
       </div>
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Weekly audit coverage" className="cx-panel cx-tablewrap">
         <table className="cx-table qa-cov">
           <thead>
             <tr>
@@ -156,7 +156,7 @@ export const WeekCoverage = memo(function WeekCoverage({ d }: { d: any }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </QaSection>
   )
 })

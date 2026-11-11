@@ -1,3 +1,5 @@
+'use client'
+
 import type { ReactNode } from 'react'
 import type { RouteDef } from '@/features/shared/components/shell/registry'
 import { D } from '@/features/shared/shell/i18n'

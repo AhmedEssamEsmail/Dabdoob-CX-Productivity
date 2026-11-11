@@ -3,7 +3,7 @@
 /* verbatim port of the legacy Analytics page (analytics.closure.js symbols
  * Za/Sa/ke/el/tl/nl; Ja/ht vocabulary; Xe skeletons + an/_t/wt from ./shared). */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Empty, Seg, Toggle } from '@/features/shared/components/ui'
+import { Button, Empty, Seg, TableScroll, Toggle } from '@/features/shared/components/ui'
 import { AsOfHint, Count, Head, LoadError, Xe, fetchJson, fmt, sweepStyle, useSe, useSweep, useTip } from './shared'
 
 const Ja: [string, string][] = [
@@ -199,10 +199,9 @@ function RankPanel({
         <h2 className="cx-section__title" id="rank-h" ref={r} tabIndex={-1}>
           {l ? (
             <>
-              {/* kept raw:cx-crumb is a bespoke inline crumb button, not a ui/Button */}
-              <button type="button" className="cx-crumb" onClick={() => i(null)}>
+              <Button className="cx-crumb" onClick={() => i(null)}>
                 All inflow
-              </button>
+              </Button>
               <span aria-hidden="true"> › </span>
               {l}
             </>
@@ -212,10 +211,9 @@ function RankPanel({
         </h2>
         {a ? (
           <>
-            {/* kept raw:cx-rank__chip is a bespoke chip-styled button, not a ui/Button */}
-            <button type="button" className="cx-chip cx-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
+            <Button className="cx-chip cx-rank__chip" onClick={h} aria-label={`Clear ${ke(s, n)}`}>
               {ke(s, n)} <span aria-hidden="true">×</span>
-            </button>
+            </Button>
           </>
         ) : (
           <span className="cx-faint">{ke(s, n)}</span>
@@ -232,7 +230,7 @@ function RankPanel({
             const b = (
               <>
                 <span className="cx-rank__n cx-num">{f + 1}</span>
-                <span className="cx-rank__name">{g}</span>
+                <span className="cx-rank__name" title={String(g)}>{g}</span>
                 <span className="cx-rank__track">
                   <i className="cc-sweep-bar" style={{ inlineSize: `${(o / d) * 100}%`, ...sweepStyle(f) }} />
                 </span>
@@ -246,7 +244,7 @@ function RankPanel({
                   <div className="cx-rank__row">{b}</div>
                 ) : (
                   <>
-                    {/* kept raw:cx-rank__row is a bespoke rank-row button, not a ui/Button */}
+                    {/* intentionally raw: metric-row widget (full ranked row acting as a drill button); Button's cx-btn chrome would break the row grid */}
                     <button type="button" className="cx-rank__row" onClick={() => i(c)} aria-label={`${g}: ${fmt(o)}, ${m}%. Show its channels`}>
                       {b}
                     </button>
@@ -315,12 +313,11 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
       return M
     })
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!n && !s}>
-      <Head
-        title={route.title}
-        sub="Contacts coming in: inbound calls, chats and internal escalations raised outside CX. Weeks start on Sunday."
-        aside={n ? <AsOfHint iso={n.dataAsOf} what="Inflow" /> : null}
-      />
+    <Head
+      title={route.title}
+      sub="Contacts coming in: inbound calls, chats and internal escalations raised outside CX. Weeks start on Sunday."
+      aside={n ? <AsOfHint iso={n.dataAsOf} what="Inflow" /> : null}
+    >
       {s ? <LoadError message={s} onRetry={a} /> : null}
       {!n || !c ? (
         <>
@@ -390,7 +387,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
           </section>
           <details className="cx-panel cx-details">
             <summary>Show the numbers as a table</summary>
-            <div className="cx-tablewrap">
+            <TableScroll label="Inflow contacts by period" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -427,10 +424,10 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
                     ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </details>
         </>
       )}
-    </section>
+    </Head>
   )
 }

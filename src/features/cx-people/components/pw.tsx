@@ -128,7 +128,6 @@ export function PwShell({
   route,
   children,
   aside,
-  narrow,
   busy,
   error,
   onRetry,
@@ -136,7 +135,6 @@ export function PwShell({
   route: { title: ReactNode; purpose?: ReactNode }
   children?: ReactNode
   aside?: ReactNode
-  narrow?: boolean
   busy?: boolean
   error?: string | null
   onRetry?: () => void
@@ -146,7 +144,6 @@ export function PwShell({
       title={route.title}
       purpose={route.purpose}
       aside={aside}
-      narrow={narrow}
       busy={busy}
       error={error}
       onRetry={onRetry}
@@ -370,12 +367,14 @@ export function PwDialog({
       <p className="pw-sub">This is what happens:</p>
       {loading ? (
         <p className="pw-muted">Working out what goes with it…</p>
-      ) : (
+      ) : lines.length ? (
         <ul className="pw-del-list">
           {lines.map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
+      ) : (
+        <p className="pw-muted">Nothing else is affected.</p>
       )}
       <label className="field">
         <span className="field-label">Reason (kept with the deleted record)</span>

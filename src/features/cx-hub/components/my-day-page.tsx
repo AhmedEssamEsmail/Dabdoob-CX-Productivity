@@ -7,7 +7,7 @@
  * files, the meetings-done ring and the settings/digest card. */
 
 import { useEffect, useId, useRef, useState } from 'react'
-import { Button, Chip, Empty, Input, Seg } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Seg } from '@/features/shared/components/ui'
 import { toUserText } from '@/features/shared/lib/error-copy'
 import { D } from '@/features/shared/shell/i18n'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
@@ -45,7 +45,7 @@ const Vm = 15e3
 const Wm = 10 * 6e4
 const ta = ['core', 'mail', 'files', 'followups']
 const er = (n: any) => !!n && typeof n === 'object' && Array.isArray(n.data)
-const Wo = (n: string) => new Error(`My day ${n}. Run debugMyDay in the Apps Script editor and send the log.`)
+const Wo = (n: string) => new Error(`My day ${n}. Send this log to an admin.`)
 
 function useIsAdmin(): boolean {
   return useBootSelector(() => getBoot()?.user.role === 'admin', [])
@@ -154,6 +154,15 @@ function Gr({ section: n, empty: e }: { section: Section; empty: string }) {
   )
 }
 
+function RingSkeleton() {
+  return (
+    <span
+      className="md-skel md-skel--ring"
+      aria-hidden="true"
+    />
+  )
+}
+
 function Jm({ ev: n }: { ev: Q }) {
   return (
     <li
@@ -175,7 +184,7 @@ function Jm({ ev: n }: { ev: Q }) {
             {n.source === 'one_on_one'
               ? `Booked in the 1:1s page with ${n.meeting.person || 'your report'}, not in Calendar. `
               : `With ${n.meeting.person || 'your report'}. `}
-            {n.meeting.link ? <a href={n.meeting.link}>Open the 1:1</a> : null}
+            {n.meeting.link ? <a className="cx-link" href={n.meeting.link}>Open the 1:1</a> : null}
           </p>
         ) : (
           <p className="md-ev-meta">
@@ -290,10 +299,10 @@ function Zl({ label: n, tone: e, items: t, open: i }: { label: string; tone: str
         {t.map((s) => (
           <li key={s.id} className="workitem">
             <div className="wi-main">
-              <a className="wi-t" href={s.url} target="_blank" rel="noopener">
+              <a className="wi-t" href={s.url} target="_blank" rel="noopener" title={s.subject}>
                 {s.subject}
               </a>
-              <div className="wi-s">
+              <div className="wi-s" title={`${s.from}, ${s.hoursWaiting} h${s.starred && s.unread ? ', also unread' : e === 'results' ? (s.starred ? ', starred' : s.unread ? ', unread' : '') : ''}`}>
                 {s.from}, {s.hoursWaiting} h
                 {s.starred && s.unread ? ', also unread' : e === 'results' ? (s.starred ? ', starred' : s.unread ? ', unread' : '') : ''}
               </div>
@@ -381,10 +390,10 @@ function ih({ id: n, label: e, count: t, open: i, onToggle: s }: {
 }) {
   return (
     <div className="cx-section__head" id={n}>
-      <button type="button" className="md-cardtoggle" aria-expanded={i} aria-controls={i ? `${n}-body` : undefined} onClick={s}>
+      <Button className="md-cardtoggle" aria-expanded={i} aria-controls={i ? `${n}-body` : undefined} onClick={s}>
         <span className="cx-section__title">{e}</span>
         {!i && t ? <Chip>{t}</Chip> : null}
-      </button>
+      </Button>
     </div>
   )
 }
@@ -425,10 +434,10 @@ function FilesCard({ section: n }: { section: Section }) {
               {n.data.map((i: Q) => (
                 <li key={i.id} className="workitem">
                   <div className="wi-main">
-                    <a className="wi-t" href={i.url} target="_blank" rel="noopener">
+                    <a className="wi-t" href={i.url} target="_blank" rel="noopener" title={i.name}>
                       {i.name}
                     </a>
-                    <div className="wi-s">
+                    <div className="wi-s" title={wo(new Date(i.updatedAt)) ? new Date(i.updatedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: bo }) : ''}>
                       {wo(new Date(i.updatedAt))
                         ? new Date(i.updatedAt).toLocaleString('en-GB', {
                             weekday: 'short',
@@ -462,8 +471,8 @@ function DeadlinesCard({ section: n }: { section: Section }) {
               {n.data.map((i: Q) => (
                 <li key={i.id} className="workitem">
                   <div className="wi-main">
-                    <div className="wi-t">{i.title}</div>
-                    <div className="wi-s">
+                    <div className="wi-t" title={i.title}>{i.title}</div>
+                    <div className="wi-s" title={`${co(i.due)} · ${i.mine ? 'You' : `Assigned to ${String(i.owner || '').split('@')[0]}`}`}>
                       {co(i.due)} · {i.mine ? 'You' : `Assigned to ${String(i.owner || '').split('@')[0]}`}
                     </div>
                   </div>
@@ -520,10 +529,10 @@ function FollowUpsCard({ section: n }: { section: Section }) {
               {c.map((u: Q) => (
                 <li key={u.id} className={`workitem ${u.hoursWaiting >= 48 ? 'md-late' : u.hoursWaiting >= 24 ? 'md-warn' : ''}`}>
                   <div className="wi-main">
-                    <a className="wi-t" href={u.url} target="_blank" rel="noopener">
+                    <a className="wi-t" href={u.url} target="_blank" rel="noopener" title={u.subject}>
                       {u.subject}
                     </a>
-                    <div className="wi-s">
+                    <div className="wi-s" title={`${u.from}, ${u.hoursWaiting} h without a reply`}>
                       {u.from}, {u.hoursWaiting} h without a reply
                     </div>
                   </div>
@@ -540,6 +549,22 @@ function FollowUpsCard({ section: n }: { section: Section }) {
         </div>
       ) : null}
     </section>
+  )
+}
+
+function SettingsSkeleton() {
+  return (
+    <details className="cx-panel">
+      <summary>
+        <div className="cx-section__head">
+          <div className="cx-section__title">Settings and morning email</div>
+        </div>
+      </summary>
+      <div className="cx-panel--pad" aria-hidden="true">
+        <div className="md-skel" />
+        <div className="md-skel" />
+      </div>
+    </details>
   )
 }
 
@@ -694,7 +719,13 @@ function TimelineCard({ day, dayKey, nowMs }: { day: Q | null; dayKey: 'today' |
         <div className="cx-section__hint">Kuwait time{isFinite(nowMs) ? ` · now ${Wn(nowMs)}` : ''}</div>
       </div>
       <div className="cx-panel--pad agenda">
-        {rows.length ? (
+        {!day ? (
+          <div aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <div className="md-skel" key={i} />
+            ))}
+          </div>
+        ) : rows.length ? (
           rows.map((r) => (
             <div className="ag-row" key={r.key}>
               <div className="ag-t">{r.time}</div>
@@ -754,7 +785,7 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
       })
     })
   items.sort((a, b) => b.waited - a.waited)
-  const loading = !mail && !followups
+  const loading = !mail || !followups
   return (
     <section className="cx-panel" aria-labelledby="md-waiting">
       <div className="cx-section__head">
@@ -802,8 +833,8 @@ function WaitingCard({ mail, followups }: { mail: Section; followups: Section })
                 )}
               </span>
               <div className="wi-main">
-                <div className="wi-t">{it.title}</div>
-                <div className="wi-s">{it.sub}</div>
+                <div className="wi-t" title={it.title}>{it.title}</div>
+                <div className="wi-s" title={it.sub}>{it.sub}</div>
               </div>
               <div className="wi-side">
                 <div className="t">{it.waited} h</div>
@@ -873,7 +904,7 @@ function FocusBlocksCard({ day, dayKey, nowMs, onBooked }: {
             const isNow = isFinite(s) && s <= nowMs && nowMs < e
             return (
               <div key={key}>
-                {idx ? <hr className="hr" style={{ margin: '.7rem 0' }} /> : null}
+                {idx ? <hr className="hr hr--tight" /> : null}
                 <div className="between small">
                   <span>
                     <b>
@@ -973,17 +1004,14 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
   const b = ta.some((D) => p[D])
   if (u && !e)
     return (
-      <section className="page md-page" aria-labelledby="page-title">
-        <h1 id="page-title" className="page-title">
-          {n.title}
-        </h1>
+      <PageShell title={n.title} className="md-page" id="page-title">
         <p className="md-refused" role="alert">
           {toUserText(u, { isAdmin, feature: 'My day' })}
         </p>
         <Button type="button" className="btn btn-primary" disabled={b} onClick={() => void C('core', !0)}>
           {b ? 'Trying again…' : 'Try again'}
         </Button>
-      </section>
+      </PageShell>
     )
   const w = e
   const S = ta.map((D) => l[D]).filter((D) => !!D).sort()[0]
@@ -1013,15 +1041,21 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
     }
   }
   return (
-    <section className="page md-page" aria-labelledby="page-title">
-      <header className="page-head md-head">
-        <div>
-          <p className="kicker">{w ? Hm(w.today) : ' '}</p>
-          <h1 id="page-title" className="page-title">
-            {n.title}
-          </h1>
-          {w ? <p className="page-purpose">{$m(w, _)}</p> : null}
-        </div>
+    <PageShell
+      title={
+        <>
+          {w ? (
+            <span className="kicker kicker--block">
+              {Hm(w.today)}
+            </span>
+          ) : (
+            ' '
+          )}
+          {n.title}
+        </>
+      }
+      purpose={w ? $m(w, _) : undefined}
+      aside={
         <div className="page-actions md-head-actions">
           <Button
             type="button"
@@ -1041,7 +1075,7 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
               { value: 'week', label: D('Week') },
             ]}
           />
-          {w?.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
+          {!w ? <RingSkeleton /> : w.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
           {T ? <If item={T} /> : null}
           {S ? (
             <span className="md-fresh" role="status">
@@ -1052,7 +1086,8 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
             {b ? 'Refreshing…' : 'Refresh'}
           </Button>
         </div>
-      </header>
+      }
+    >
       {u && w ? (
         <p className="md-banner" role="alert">
           {toUserText(u, { isAdmin, feature: 'My day' })}
@@ -1063,13 +1098,13 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           {w ? 'Still refreshing' : 'Still loading'}: reading your calendar, inbox and Drive can take
           a while.
           {isAdmin
-            ? ' If nothing changes, run debugMyDay in the Apps Script editor and send the log.'
+            ? ' If nothing changes, send this log to an admin.'
             : ' If nothing changes, try again in a moment.'}
         </p>
       ) : null}
       <div className="md-layout">
         <div className="md-main">
-          {w ? <TimelineCard day={w} dayKey={pd} nowMs={_} /> : null}
+          <TimelineCard day={w} dayKey={pd} nowMs={_} />
           {T ? <Nf item={T} /> : null}
           <DaySection title="Today" section={w?.events.today} gaps={w ? R(w.today) : []} onBooked={() => void C("core", !0)} />
           <DaySection
@@ -1087,10 +1122,10 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           <FollowUpsCard section={o} />
           <MailCard section={i} hours={Number(w?.settings.assistant_reply_after_hours ?? 24)} />
           <FilesCard section={r} />
-          {w ? <SettingsCard day={w} onSaved={x} /> : null}
+          {w ? <SettingsCard day={w} onSaved={x} /> : <SettingsSkeleton />}
         </aside>
       </div>
-    </section>
+    </PageShell>
   )
 }
 export default MyDayPage

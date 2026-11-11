@@ -7,8 +7,7 @@ import {
   type ViewAsPerson,
 } from '@/features/shared/shell/context'
 import { displayRole, ROLE_LABELS } from '@/features/shared/shell/gates'
-import { useDialogModal } from '@/features/shared/lib/use-dialog-modal'
-import { Button, Input } from '@/features/shared/components/ui'
+import { Button, Dialog, Input } from '@/features/shared/components/ui'
 import { D } from '@/features/shared/shell/i18n'
 
 /**
@@ -42,9 +41,7 @@ export function ViewAsBanner({ user }: { user: ShellUser }) {
         {D('Viewing as')} <strong>{user.name}</strong> ({D(displayRole(user))}) —{' '}
         {D('read-only')}
         {error ? (
-          <span className="va-banner-error" style={{ color: 'var(--signal-ink)' }}>
-            {error}
-          </span>
+          <span className="va-banner-error">{error}</span>
         ) : null}
       </p>
       <ViewAsPicker label="Switch person" quiet />
@@ -81,9 +78,8 @@ export function ViewAsPicker({
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
 
-  /* Shared dialog lifecycle: showModal/close sync, ESC → close, focus
-     restore to the invoking element. */
-  const { dialogRef, onCancel } = useDialogModal(open, () => setOpen(false))
+  /* Shared dialog lifecycle (showModal/close sync, ESC → close, focus
+     restore) is provided by the Dialog primitive below. */
 
   useEffect(() => {
     if (open) inputRef.current?.focus()
@@ -125,6 +121,7 @@ export function ViewAsPicker({
           <span className="va-open-text">{D(label)}</span>
         </Button>
       ) : (
+        // intentionally raw: rail picker trigger; bespoke .va-open icon+label chrome
         <button
           type="button"
           className="va-open"
@@ -138,17 +135,16 @@ export function ViewAsPicker({
           <span className="va-open-text">{D(label)}</span>
         </button>
       )}
-      <dialog
-        ref={dialogRef}
-        className="popup va-picker"
-        aria-labelledby="va-title"
+      <Dialog
+        open={open}
         onClose={() => setOpen(false)}
-        onCancel={onCancel}
+        labelledby="va-title"
+        className="va-picker"
       >
         <div className="popup-body">
-          <h2 id="va-title" className="popup-title">
+          <p id="va-title" className="popup-title">
             {D('View as')}
-          </h2>
+          </p>
           <p className="popup-text">
             {D(
               'Pick a person to see every app as they do: their pages, their data and their pop-ups. Nothing can be changed until you exit.'
@@ -187,6 +183,7 @@ export function ViewAsPicker({
             <ul className="va-list" aria-label={D('People')}>
               {matches.map((person) => (
                 <li key={person.email}>
+                  {/* intentionally raw: roster row; bespoke .va-person list chrome */}
                   <button
                     type="button"
                     className="va-person"
@@ -223,7 +220,7 @@ export function ViewAsPicker({
             </Button>
           </div>
         </div>
-      </dialog>
+      </Dialog>
     </>
   )
 }

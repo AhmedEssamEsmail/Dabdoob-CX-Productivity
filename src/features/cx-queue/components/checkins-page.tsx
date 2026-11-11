@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Check-ins page (checkins.closure.js symbol Xa). */
 import { useEffect, useState } from 'react'
-import { Button, Chip, Empty, Field, Input, Textarea } from '@/features/shared/components/ui'
-import { AgeChip, Head, ListSelect, LoadError, Skeleton, fetchJson, hm, useHashParams, useSe } from './shared'
+import { Button, Chip, Empty, Field, Input, TableScroll, Textarea, Toggle } from '@/features/shared/components/ui'
+import { AgeChip, Head, ListSelect, LoadError, Skeleton, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 
 const STATUS_ORDER = (t: string) => {
   const n = t.toLowerCase()
@@ -14,8 +14,8 @@ const STATUS_ORDER = (t: string) => {
 }
 const byStatusLine = (t: Record<string, number>) => {
   const n = Object.entries(t || {})
-  const s = n.filter(([l]) => STATUS_ORDER(l) < 40).sort((l, r) => STATUS_ORDER(l[0]) - STATUS_ORDER(r[0]) || r[1] - l[1]).map(([l, r]) => `${l === l.toUpperCase() ? l.charAt(0) + l.slice(1).toLowerCase() : l} ${r.toLocaleString('en-US')}`).join(' · ')
-  const a = n.filter(([l]) => STATUS_ORDER(l) >= 40).map(([l, r]) => `${l} ${r.toLocaleString('en-US')}`)
+  const s = n.filter(([l]) => STATUS_ORDER(l) < 40).sort((l, r) => STATUS_ORDER(l[0]) - STATUS_ORDER(r[0]) || r[1] - l[1]).map(([l, r]) => `${l === l.toUpperCase() ? l.charAt(0) + l.slice(1).toLowerCase() : l} ${fmt(r)}`).join(' · ')
+  const a = n.filter(([l]) => STATUS_ORDER(l) >= 40).map(([l, r]) => `${l} ${fmt(r)}`)
   return a.length ? `${s} (also ${a.join(', ')})` : s
 }
 const delta = (t: number | null) => (t === null ? '–' : t > 0 ? `+${t}` : t < 0 ? `−${Math.abs(t)}` : '0')
@@ -104,8 +104,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
     }
   }
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!a && !error}>
-      <Head title={route.title} sub={cur ? `Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait. This one is ${cur.slot}, ${String(cur.name).toLowerCase()} (${cur.cairo} Cairo).` : 'Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait time.'} />
+    <Head title={route.title} sub={cur ? `Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait. This one is ${cur.slot}, ${String(cur.name).toLowerCase()} (${cur.cairo} Cairo).` : 'Four times a day: 09:30, 13:00, 18:30 and 22:00 Kuwait time.'}>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {!a || !cur ? <><Skeleton tall lines={2} /><Skeleton lines={10} /></> : (
         <>
@@ -121,8 +120,8 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
             </div>
           ) : null}
           <div className="cx-split cx-split--narrow">
-            <form className="cx-panel" onSubmit={submit} noValidate>
-              <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)', borderBlockEnd: '1px solid var(--cx-line)' }}>
+            <form className="cx-panel chk-form" onSubmit={submit} noValidate>
+              <div className="cx-panel--pad chk-head-pad">
                 {notOpen ? (
                   <div className="cx-note" data-status="neutral"><div><strong>The {cur.slot} check-in opens at {hm(cur.opensAt)}.</strong> The numbers below are live and will change.</div></div>
                 ) : (
@@ -150,8 +149,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                       <span><b className="cx-num">{k.open}</b> open</span>
                       {a.previousSlot ? <span className="cx-delta">{delta(k.delta)} since {a.previousSlot}</span> : null}
                       <span className="cx-lock">{k.kind === 'chat' ? `From the daily report${k.sourceAsOf ? `, ${hm(k.sourceAsOf)}` : ''}` : `From Freshdesk${a.dataAsOf ? `, ${hm(a.dataAsOf)}` : ''}`}</span>
-                      {/* kept raw:cx-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
-                      <label className="cx-correct"><input type="checkbox" checked={draft[k.queue].correct} onChange={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], correct: (e.target as HTMLInputElement).checked } }))} /> Correct the count</label>
+                      <Toggle className="cx-correct" checked={draft[k.queue].correct} onChange={(c) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], correct: c } }))}>Correct the count</Toggle>
                       {draft[k.queue].correct ? <Input className="cx-num" type="number" min={0} aria-label={`Correct open count for ${k.queue}`} value={draft[k.queue].openCorrected} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], openCorrected: (e.target as HTMLInputElement).value } }))} /> : null}
                     </div>
                     <div className="cx-readout">
@@ -159,51 +157,50 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                       {k.open ? <AgeChip hours={k.oldestH} band={k.oldestBand} /> : <span>–</span>}
                       <span className="cx-delta">{k.unassigned} not assigned</span>
                     </div>
-                    <div style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+                    <div className="chk-grid">
                       <Field label={`Agents on it now`}>
                         <Input id={`q-${k.queue.replace(/\W+/g, '-')}-ag`} type="number" min={0} inputMode="numeric" className="cx-num" value={draft[k.queue].agents} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], agents: (e.target as HTMLInputElement).value } }))} />
                       </Field>
                       <ListSelect listKey="queue.status" label="How is it going?" value={draft[k.queue].status} onChange={(s) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], status: s } }))} />
                     </div>
                     <Field
-                      label={<>What is driving it? <span className="cx-faint" style={{ fontWeight: 400, visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></>}
+                      label={<>What is driving it? <span className="cx-faint chk-faint" style={{ visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></>}
                       error={errs[k.queue]}
                     >
-                      <Textarea id={`q-${k.queue.replace(/\W+/g, '-')}-n`} style={{ minHeight: '6.2rem' }} placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
+                      <Textarea id={`q-${k.queue.replace(/\W+/g, '-')}-n`} className="chk-note" placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
                     </Field>
                   </fieldset>
                 ) : null
               )}
-              <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)', borderBlockStart: '1px solid var(--cx-line)' }}>
+              <div className="cx-panel--pad chk-foot-pad">
                 {needsReason ? (
                   <Field label="Why did you change a count from Freshdesk?"><Input id="reason" value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} /></Field>
                 ) : null}
-                <Field label={<>Anything the next shift or Mohamed should know? <span className="cx-faint" style={{ fontWeight: 400 }}>Optional</span></>}>
+                <Field label={<>Anything the next shift or Mohamed should know? <span className="cx-faint chk-faint">Optional</span></>}>
                   <Textarea id="gen" value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} />
                 </Field>
-                {/* kept raw:cx-correct is a bespoke inline checkbox label, not a ui/Toggle pill */}
-                <label className="cx-correct"><input type="checkbox" checked={help} onChange={(e) => setHelp((e.target as HTMLInputElement).checked)} /> I need help from Mohamed now</label>
+                <Toggle className="cx-correct" checked={help} onChange={setHelp}>I need help from Mohamed now</Toggle>
                 {help ? (
                   <Field label="What help do you need?" hint="Mohamed gets an email and a card on his Home as soon as you submit."><Textarea id="help" value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /></Field>
                 ) : null}
                 {err ? <p className="cx-error" role="alert">{err}</p> : null}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--cx-space-3)', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="chk-actions">
                   <p className="cx-hint">Submitting as <span className="cx-isolate">{a.you}</span>. Saved to the {cur.slot} slot with the time you press the button.</p>
                   <Button variant="primary" type="submit" disabled={busy || notOpen}>{busy ? 'Submitting…' : done ? `Update ${cur.slot} check-in` : `Submit ${cur.slot} check-in`}</Button>
                 </div>
               </div>
             </form>
-            <div style={{ display: 'grid', gap: 'var(--cx-space-4)', alignContent: 'start' }}>
+            <div className="chk-side">
               {a.earlier.length ? a.earlier.map((k: any) => (
                 <section key={(k.date ?? '') + k.slot} className="cx-panel">
                   <div className="cx-section__head">
-                    <h2 className="cx-section__title" style={{ margin: 0 }}>{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
+                    <h2 className="cx-section__title chk-earlier-title">{k.date && k.date !== a.today ? `Last night, ${k.slot}` : `Earlier today, ${k.slot}`}</h2>
                     <span className="cx-section__hint">{String(k.by).split('@')[0]}{k.late ? ' (late)' : ''}</span>
                   </div>
-                  <div className="cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+                  <div className="cx-panel--pad chk-grid">
                     {k.helpNeeded ? <p className="cx-note" data-status="bad"><span><strong>Asked Mohamed for help:</strong> {k.helpNote || 'no note'}</span></p> : null}
                     {k.generalNote ? <p className="cx-note" data-status="info"><span><strong>Handoff note:</strong> {k.generalNote}</span></p> : null}
-                    <div className="cx-tablewrap">
+                    <TableScroll label="Earlier check-in queue statuses" className="cx-tablewrap">
                       <table className="cx-table">
                         <thead><tr><th scope="col">Queue</th><th scope="col" className="cx-num-col">Agents</th><th scope="col">Status given</th></tr></thead>
                         <tbody>
@@ -212,7 +209,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </TableScroll>
                   </div>
                 </section>
               )) : (
@@ -226,6 +223,6 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
           </div>
         </>
       )}
-    </section>
+    </Head>
   )
 }

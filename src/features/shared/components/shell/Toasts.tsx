@@ -88,6 +88,7 @@ function Toast({ item, onDone }: { item: ToastItem; onDone: (id: number) => void
       onBlur={resume}
     >
       <span className="toast-text">{item.text}</span>
+      {/* intentionally raw: toast chrome; bespoke .toast-dismiss styling */}
       <button
         type="button"
         className="toast-dismiss"

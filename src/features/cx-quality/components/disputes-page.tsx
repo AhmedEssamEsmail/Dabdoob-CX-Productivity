@@ -7,7 +7,7 @@
  *   P.disputesPage / P.decideDispute.
  */
 import { useState } from 'react'
-import { Button, Chip, Empty, Input, Seg, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Seg, TableScroll, Textarea } from '@/features/shared/components/ui'
 import {
   AuditFails,
   P,
@@ -150,7 +150,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                       <summary>
                         <svg className="qa-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="m9 6 6 6-6 6" /></svg>
                         <ScoreChip score={l.oldScore} fatal={l.audit?.fatal} />
-                        <strong className="qa-name">{l.agentName}</strong>
+                        <strong className="qa-name" title={l.agentName}>{l.agentName}</strong>
                         <span className="qa-meta qa-meta--full">
                           {l.audit ? (
                             <span>
@@ -221,7 +221,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                 </div>
               </div>
             </div>
-            <div className="cx-tablewrap">
+            <TableScroll label="Disputes per auditor" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -265,7 +265,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
           {c.length ? (
             <section className="cx-panel" aria-labelledby="dspc-h">
@@ -276,7 +276,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                   </div>
                 </div>
               </div>
-              <div className="cx-tablewrap">
+              <TableScroll label="Decided disputes" className="cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -314,7 +314,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             </section>
           ) : null}
         </>

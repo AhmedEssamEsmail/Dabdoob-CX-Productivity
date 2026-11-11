@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { fetchJson, useSe } from './shared'
 import { PwShell, PwLate, PwSkel, PwErr, routeOf } from './pw'
-import { Button, Chip, Empty, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Select, TableScroll, Textarea } from '@/features/shared/components/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 
 /* I — the coaching facade. */
@@ -52,7 +52,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
       {error ? <PwLate message={error} retry={reload} /> : null}
       {data ? (
         <>
-          <form className="cx-panel cx-panel--pad" onSubmit={submit} style={{ display: 'grid', gap: 'var(--cx-space-3)' }}>
+          <form className="cx-panel cx-panel--pad cs-form" onSubmit={submit}>
             <div className="cx-field">
               <label className="cx-label" htmlFor="cs-p">
                 Person
@@ -91,7 +91,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
               />
             </div>
             {formError ? <PwErr message={formError} /> : null}
-            <Button type="submit" variant="primary" disabled={busy} style={{ justifySelf: 'start' }}>
+            <Button type="submit" variant="primary" disabled={busy} className="cs-form__submit">
               {busy ? 'Sending…' : 'Send to their team lead'}
             </Button>
           </form>
@@ -102,7 +102,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
               </h2>
             </div>
             {data.signals.length ? (
-              <div className="cx-tablewrap">
+              <TableScroll label="Coaching signals sent" className="cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -131,7 +131,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             ) : (
               <Empty
                 title="Nothing sent yet."

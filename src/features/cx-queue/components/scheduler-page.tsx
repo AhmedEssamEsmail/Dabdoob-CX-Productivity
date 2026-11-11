@@ -4,7 +4,7 @@
  * Z/xt/Es/$l/In/zt/jl/Bl/Dl/El/Fl/Pl/Rl/Hl/Il/Ol/ql/Nl/Ll. */
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Chip, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Input, PageShell, Select, TableScroll, Textarea } from '@/features/shared/components/ui'
 import { fetchJson, sweepStyle, useSweep } from './shared'
 
 /** Z — the scheduler API object (google.script.run facade). */
@@ -139,7 +139,7 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
         <p className="block-text">
           Team leads come from People &amp; holidays (role team lead). A date here limits the months a lead is rostered; blank means always.
         </p>
-        <div className="sch-scroll">
+        <TableScroll label="Joining and leaving dates" className="sch-scroll">
           <table className="sch-table">
             <thead>
               <tr>
@@ -149,6 +149,11 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
               </tr>
             </thead>
             <tbody>
+              {!n.team.length ? (
+                <tr>
+                  <td colSpan={3}>No team leads yet — add them in People &amp; holidays.</td>
+                </tr>
+              ) : null}
               {n.team.map((o: any) => (
                 <tr key={o.email}>
                   <th scope="row">{o.display}</th>
@@ -182,7 +187,7 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       </div>
       <div className="block">
         <h2 className="block-title">Paste a roster</h2>
@@ -220,14 +225,14 @@ function SettingsTab({ onChanged }: { onChanged: () => void }) {
           </p>
         ) : null}
         {d ? (
-          <p className="block-text" role={d.ok ? 'status' : 'alert'} style={{ whiteSpace: 'pre-line', fontWeight: 600 }}>
+          <p className="block-text sch-result" role={d.ok ? 'status' : 'alert'}>
             {d.text}
           </p>
         ) : null}
       </div>
     </Fragment>
   ) : (
-    <div className="skeleton" style={{ height: '200px' }} />
+    <div className="skeleton sch-skel-import" />
   )
 }
 
@@ -247,7 +252,7 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
   ) : l ? (
     <Fragment>
       <p className="block-text">Two consecutive rest days, set per month. A lead left on &quot;rotation&quot; gets a block that walks forward each week.</p>
-      <div className="sch-scroll">
+      <TableScroll label={`Rest days for ${l.monthName}`} className="sch-scroll">
         <table className="sch-table">
           <thead>
             <tr>
@@ -256,6 +261,11 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
             </tr>
           </thead>
           <tbody>
+            {!l.tls.length ? (
+              <tr>
+                <td colSpan={2}>No team leads to roster this month.</td>
+              </tr>
+            ) : null}
             {l.tls.map((d: string) => {
               const u = l.offDays[d]
               const c = u && u.length === 2 ? u.join(',') : ''
@@ -300,8 +310,9 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
             })}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       <h2 className="block-title sch-sub">Cover by weekday if these hold</h2>
+      {l.coverage.length ? (
       <ul className="sch-cover">
         {l.coverage.map((d: any) => (
           <li key={d.dow} className={d.availableIfFixed < 2 ? 'low' : ''}>
@@ -311,9 +322,12 @@ function RestDaysTab({ year, month, admin, onChanged }: { year: number; month: n
           </li>
         ))}
       </ul>
+      ) : (
+        <p className="block-text">No weekday cover data for this month.</p>
+      )}
     </Fragment>
   ) : (
-    <div className="skeleton" style={{ height: '160px' }} />
+    <div className="skeleton sch-skel-offdays" />
   )
 }
 
@@ -444,7 +458,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
           Send request
         </Button>
       </div>
-      <div className="sch-scroll">
+      <TableScroll label="Shift requests" className="sch-scroll">
         <table className="sch-table">
           <thead>
             <tr>
@@ -456,8 +470,18 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
               </th>
             </tr>
           </thead>
-          <tbody>
-            {s?.rows.length ? null : (
+          <tbody aria-busy={!s}>
+            {!s ? (
+              [0, 1, 2].map((r) => (
+                <tr key={r} aria-hidden="true">
+                  {[0, 1, 2, 3].map((c) => (
+                    <td key={c}>
+                      <span className="skeleton sch-skel-inline" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : s.rows.length ? null : (
               <tr>
                 <td colSpan={4}>No requests.</td>
               </tr>
@@ -502,7 +526,7 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </Fragment>
   )
 }
@@ -534,7 +558,7 @@ function DayEdit({ plan, tl, date, onClose, onSaved }: { plan: any; tl: string; 
           <Input className="input" value={p} onInput={(o) => d((o.target as HTMLInputElement).value)} />
         </label>
         <label className="sch-check">
-          {/* kept raw:sch-check is a bespoke inline checkbox, not a ui/Toggle pill */}
+          {/* intentionally raw:sch-check is a bespoke inline checkbox, not a ui/Toggle pill */}
           <input type="checkbox" checked={u} onChange={(o) => c((o.target as HTMLInputElement).checked)} /> Working from home
         </label>
       </div>
@@ -619,7 +643,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
   return (
     <Fragment>
       {admin ? <PlanWarns plan={l} /> : null}
-      <div className="sch-scroll">
+      <TableScroll label="Roster by team lead and day" className="sch-scroll">
         <table className="sch-grid-table">
           <thead>
             <tr>
@@ -628,7 +652,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
               </th>
               {l.days.map((h: any) => (
                 <th key={h.key} scope="col" className={`sch-day${h.dow === 5 || h.dow === 6 ? ' wk' : ''}`}>
-                  {/* kept raw:sch-day-btn is a bespoke day-header button, not a ui/Button */}
+                  {/* intentionally raw:sch-day-btn is a bespoke day-header button, not a ui/Button */}
                   <button type="button" className="sch-day-btn" onClick={() => onOpenDay(h.key)} title="Open this day hour by hour">
                     <span>{DOW[h.dow]}</span>
                     <b>{h.dom}</b>
@@ -640,6 +664,11 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
             </tr>
           </thead>
           <tbody>
+            {!l.tls.length ? (
+              <tr>
+                <td colSpan={l.days.length + 3}>No team leads rostered this month.</td>
+              </tr>
+            ) : null}
             {l.tls.map((h: string) => (
               <tr key={h}>
                 <th scope="row" className="sch-sticky">
@@ -651,7 +680,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
                   const c = `${l.names[h]} · ${p.key} · ${d.shift === 'OFF' ? (d.leave ? 'leave' : 'off') : `${d.shift} ${d.start}-${d.end}${d.wfh ? ' · working from home' : ''}`}${d.reason ? ' · ' + d.reason : ''}`
                   return (
                     <td key={p.key} className="sch-cell-td">
-                      {/* kept raw: sch-cell is a bespoke roster grid cell (sch-* kind classes + manual ring), not a ui/Button */}
+                      {/* intentionally raw: sch-cell is a bespoke roster grid cell (sch-* kind classes + manual ring), not a ui/Button */}
                       <button
                         type="button"
                         className={`sch-cell sch-${d.shift.toLowerCase()}${d.manual ? ' manual' : ''}`}
@@ -671,7 +700,7 @@ function MonthGrid({ res, admin, onOpenDay, onChanged }: { res: any; admin: bool
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       <p className="sch-hint">
         Click a day number for the hour-by-hour graph. {admin ? 'Click a cell to move that lead for that day.' : ''} A small H is working from home; L is
         leave; a ring marks a hand change.
@@ -1029,16 +1058,12 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
   ]
   if (m) v.push(['settings', 'Settings'])
   return (
-    <section className="page sch-page" aria-labelledby="page-title">
-      <header className="page-head sch-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          <p className="page-purpose">
-            Who works which shift, and what each lead is doing in every hour.
-          </p>
-        </div>
+    <PageShell
+      id="page-title"
+      className="sch-page"
+      title={route.title}
+      purpose="Who works which shift, and what each lead is doing in every hour."
+      aside={
         <div className="sch-controls">
           <div className="sch-month" role="group" aria-label="Month">
             <Button variant="quiet" onClick={() => b(-1)} aria-label="Previous month">
@@ -1089,7 +1114,8 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
             </Fragment>
           ) : null}
         </div>
-      </header>
+      }
+    >
       {l ? (
         <p className="sch-variant">
           Roster variant {l.plan.variant}
@@ -1103,7 +1129,7 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
       ) : null}
       <div className="sch-tabs" role="tablist" aria-label="Scheduler views">
         {v.map(([y, w]) => (
-          // kept raw:sch-tab is a bespoke tab button (sch-tab/.on classes + sch-panel aria hooks), not a ui/Tabs
+          // intentionally raw:sch-tab is a bespoke tab button (sch-tab/.on classes + sch-panel aria hooks), not a ui/Tabs
           <button
             key={y}
             type="button"
@@ -1126,7 +1152,7 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
           </div>
         </div>
         <div className="cx-panel--pad">
-        {!l && !i ? <div className="skeleton" style={{ height: '220px' }} /> : null}
+        {!l && !i ? <div className="skeleton sch-skel-main" /> : null}
         {l && u === 'month' ? <MonthGrid res={l} admin={!!m} onOpenDay={(y) => { f(y); c('timeline') }} onChanged={() => g()} /> : null}
         {l && u === 'timeline' ? <TimelineTab res={l} admin={!!m} date={o} setDate={f} onChanged={() => g()} /> : null}
         {l && u === 'off' ? <RestDaysTab year={s.year} month={s.month} admin={!!m} onChanged={() => g()} /> : null}
@@ -1134,6 +1160,6 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
         {l && u === 'settings' && m ? <SettingsTab onChanged={() => g()} /> : null}
         </div>
       </div>
-    </section>
+    </PageShell>
   )
 }

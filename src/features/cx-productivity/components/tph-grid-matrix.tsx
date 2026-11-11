@@ -1,8 +1,8 @@
 'use client'
 
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, memo, useCallback, useMemo, useState } from 'react'
 import { Chip, Section } from '@/features/shared/components/shell/ui'
-import { Button, Seg } from '@/features/shared/components/ui'
+import { Button, Dialog, Seg, TableScroll } from '@/features/shared/components/ui'
 import {
   F,
   P,
@@ -182,7 +182,7 @@ export function Cs({ d }: { d: TphData }) {
         onChange={setMetric}
         options={ls.map(([k, label]) => ({ value: k, label }))}
       />
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="TPH grid by agent and hour" className="cx-panel cx-tablewrap">
         <table className="cx-table tph-hg">
           <thead>
             <tr>
@@ -201,7 +201,7 @@ export function Cs({ d }: { d: TphData }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       {sel ? (
         <AgentDialog
           d={d}
@@ -223,11 +223,6 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
   byHour: Map<number, { r: TphTableRow; a: TphAgentRow }[]>
   total: TphDayTotal | undefined; pick: (s: HgSel | null) => void
 }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const m = ref.current
-    if (m && !m.open) m.showModal()
-  }, [])
   const chName = (k: string) => We(d, k)
   const close = () => pick(null)
   const rows = sel.hour == null ? [] : (byHour.get(sel.hour) ?? [])
@@ -249,22 +244,19 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
   }
   const visible = touches?.data ? touches.data.touches.filter((m) => touches.hour == null || m.hour === touches.hour) : []
   return (
-    <dialog
-      ref={ref}
-      className="popup tph-dialog"
-      aria-labelledby="tph-hg-h"
+    <Dialog
+      open
+      className="tph-dialog"
+      labelledby="tph-hg-h"
       onClose={close}
-      onCancel={close}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) close()
-      }}
+      lightDismiss
     >
       <div className="popup-body">
         <h2 id="tph-hg-h" className="popup-title">
           {sel.hour == null ? `${name}, ${d.date}` : `${name}, ${F(sel.hour)} to ${F(sel.hour + 1)}`}
         </h2>
         {sel.hour != null ? (
-          <div className="cx-tablewrap">
+          <TableScroll label="Agent channels for the hour" className="cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -280,6 +272,13 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                 </tr>
               </thead>
               <tbody>
+                {!rows.length ? (
+                  <tr>
+                    <td colSpan={9} className="cx-faint">
+                      No channels logged in this hour.
+                    </td>
+                  </tr>
+                ) : null}
                 {rows.map(({ r: m, a: f }) => (
                   <tr key={m.channel}>
                     <th scope="row">{chName(m.channel)}</th>
@@ -320,10 +319,10 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                 ) : null}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         ) : (
           <Fragment>
-            <div className="cx-tablewrap">
+            <TableScroll label="Agent hours for the day" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -337,6 +336,13 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                   </tr>
                 </thead>
                 <tbody>
+                  {!byHour.size ? (
+                    <tr>
+                      <td colSpan={7} className="cx-faint">
+                        No hours logged for this agent on this day.
+                      </td>
+                    </tr>
+                  ) : null}
                   {[...byHour]
                     .sort(([m], [f]) => m - f)
                     .map(([m, f]) => {
@@ -377,7 +383,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                     })}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             {total ? (
               <dl className="tph-card__agent" aria-label="Day totals">
                 <div>
@@ -454,7 +460,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                         : ''}
                     </p>
                     {visible.length ? (
-                      <div className="cx-tablewrap tph-touches__wrap">
+                      <TableScroll label="Touches counted in the hour" className="cx-tablewrap tph-touches__wrap">
                         <table className="cx-table">
                           <thead>
                             <tr>
@@ -477,7 +483,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                             ))}
                           </tbody>
                         </table>
-                      </div>
+                      </TableScroll>
                     ) : (
                       <p className="cx-muted">No touches in this hour in the current Freshdesk activity.</p>
                     )}
@@ -494,6 +500,6 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
           <Button variant="primary" onClick={close}>Close</Button>
         </div>
       </div>
-    </dialog>
+    </Dialog>
   )
 }

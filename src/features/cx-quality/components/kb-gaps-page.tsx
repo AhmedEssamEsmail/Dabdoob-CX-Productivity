@@ -167,7 +167,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                     {n.gaps.map((g: any) => (
                       <tr key={g.gapId}>
                         <td className="cx-num">{g.createdDate}</td>
-                        <td>{g.topic}</td>
+                        <td className="qa-kbgaps__type">{g.topic}</td>
                         <td>
                           {g.description}
                           {g.suggestion ? (

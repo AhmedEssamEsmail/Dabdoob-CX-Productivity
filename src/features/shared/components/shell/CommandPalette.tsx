@@ -19,6 +19,7 @@ import {
   type RouteDef,
 } from '@/features/shared/components/shell/registry'
 import NavIcon from '@/features/shared/components/shell/NavIcon'
+import { Input } from '@/features/shared/components/ui/Input'
 
 const MAX_ITEMS = 20
 
@@ -193,7 +194,7 @@ export default function CommandPalette({
         aria-label={D('Search pages')}
         onKeyDown={onKeyDown}
       >
-        <input
+        <Input
           className="cpk-input"
           role="combobox"
           aria-expanded="true"

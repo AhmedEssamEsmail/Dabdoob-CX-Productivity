@@ -6,7 +6,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { AsOfHint, LoadError, fetchJson, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
-import { Button, Chip, Input, Select, Tabs } from '@/features/shared/components/ui'
+import { Button, Chip, Input, PageShell, Select, TableScroll, Tabs, Toggle } from '@/features/shared/components/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 import { useBoot } from '@/features/shared/shell/context'
 
@@ -90,7 +90,7 @@ function TrendCell({ trend }: { trend: any }) {
           typeof v === 'number' && isFinite(v) ? (
             <i key={i} style={{ height: `${Math.min(100, Math.max(4, v))}%` }} />
           ) : (
-            <i key={i} style={{ height: '6%', background: 'var(--cx-line-2)' }} />
+            <i key={i} className="spark-nil" />
           )
         )}
       </div>
@@ -156,7 +156,7 @@ function KpiBuild({ k, raw }: { k: any; raw: any }) {
   return (
     <>
       <h3 className="cx-section__title">How the score is built</h3>
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="How the score is built" className="cx-panel cx-tablewrap">
         <table className="cx-table cx-table--nowrap">
           <thead>
             <tr>
@@ -225,7 +225,7 @@ function KpiBuild({ k, raw }: { k: any; raw: any }) {
             </tr>
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       {k.incomplete ? (
         <p className="cx-hint">
           Incomplete (missing: {k.missing.map((m: string) => KPI_LABELS[m]).join(', ')}): counted as 0 points, not
@@ -359,7 +359,7 @@ function ScorecardAdmin() {
               </div>
             </div>
           ) : null}
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label="Productivity workbook per month" className="cx-panel cx-tablewrap">
             <table className="cx-table cx-table--nowrap">
               <thead>
                 <tr>
@@ -430,7 +430,7 @@ function ScorecardAdmin() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </>
       ) : (
         <LinesSkeleton lines={4} />
@@ -563,21 +563,18 @@ export function AgentsPage({ route }: { route: { title: string } }) {
   ]
 
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!data && !error}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {route.title}
-          </h1>
-          {data ? (
-            <p className="page-purpose">
-              {teamView
-                ? D('Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.')
-                : D('Your scorecard from the monthly productivity workbook.')}
-            </p>
-          ) : null}
-        </div>
-        {data ? (
+    <PageShell
+      className="cxp"
+      title={route.title}
+      purpose={
+        data
+          ? teamView
+            ? D('Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.')
+            : D('Your scorecard from the monthly productivity workbook.')
+          : undefined
+      }
+      aside={
+        data ? (
           <div className="page-actions">
             <Input
               id="sc-from"
@@ -609,8 +606,10 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             ) : null}
             <AsOfHint iso={data.dataAsOf} what={D('Workbook')} />
           </div>
-        ) : null}
-      </header>
+        ) : null
+      }
+      busy={!data && !error}
+    >
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
@@ -681,11 +680,9 @@ export function AgentsPage({ route }: { route: { title: string } }) {
               />
               {data.scope === 'tl' && view === 'rank' ? (
                 <div className="cx-filters">
-                  <label className="cx-switch">
-                    <span>My team only</span>
-                    <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.currentTarget.checked)} />
-                    <span className="cx-switch__track" aria-hidden="true" />
-                  </label>
+                  <Toggle checked={mineOnly} onChange={setMineOnly}>
+                    My team only
+                  </Toggle>
                 </div>
               ) : null}
             </>
@@ -700,7 +697,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                   {agents.length} agent{agents.length === 1 ? '' : 's'}
                 </span>
               </div>
-              <div className="cx-tablewrap">
+              <TableScroll label="Stack ranking" className="cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -779,7 +776,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
               {agents.some((a: any) => a.kpi.incomplete) ? (
                 <p className="cx-hint">
                   &quot;incomplete&quot; means a KPI had no data for that agent; it counts as 0 points, the rest are not
@@ -815,7 +812,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 ) : detail ? (
                   detail.totals ? (
                     <>
-                      <div className="cx-panel cx-tablewrap">
+                      <TableScroll label="Agent totals" className="cx-panel cx-tablewrap">
                         <table className="cx-table cx-table--nowrap">
                           <thead>
                             <tr>
@@ -838,11 +835,11 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                             </tr>
                           </tbody>
                         </table>
-                      </div>
+                      </TableScroll>
                       <KpiBuild k={detail.totals.kpi} raw={detail.totals} />
                       <h3 className="cx-section__title">Day by day</h3>
                       {activeDays.length ? (
-                        <div className="cx-panel cx-tablewrap">
+                        <TableScroll label="Day by day" className="cx-panel cx-tablewrap">
                           <table className="cx-table cx-table--nowrap">
                             <thead>
                               <tr>
@@ -865,7 +862,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                        </TableScroll>
                       ) : (
                         <p className="cx-hint">No activity on any day in this period.</p>
                       )}
@@ -906,6 +903,6 @@ export function AgentsPage({ route }: { route: { title: string } }) {
       ) : (
         <LinesSkeleton lines={10} />
       )}
-    </section>
+    </PageShell>
   )
 }

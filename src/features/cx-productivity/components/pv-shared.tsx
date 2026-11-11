@@ -3,6 +3,7 @@
 import { Fragment, useRef, type CSSProperties } from 'react'
 import { Chip, stagger, useEnterAnim, useTip, vsPrev } from '@/features/shared/components/shell/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
+import { TableScroll } from '@/features/shared/components/ui'
 import { usePageData } from '@/features/shared/lib/use-page-data'
 import { daysUntil, type FlagView } from '@/features/cx-productivity/lib/prod-validation'
 
@@ -119,15 +120,19 @@ export function CasesLine({ f, ticketUrl }: { f: FlagView; ticketUrl: string }) 
         {f.distinctCases} distinct {f.distinctCases === 1 ? 'case' : 'cases'}
       </strong>
       <span className="cx-muted"> ({f.caseCount} events) in the flagged time: </span>
-      {f.cases.map((c, i) => (
-        <span key={c.id}>
-          {i ? ', ' : ''}
-          <a href={ticketUrl + c.id} target="_blank" rel="noopener noreferrer">
-            #{c.id}
-          </a>
-          <span className="cx-faint"> {CHANNEL_LABELS[c.channel] ?? c.channel}</span>
-        </span>
-      ))}
+      {f.cases.length ? (
+        f.cases.map((c, i) => (
+          <span key={c.id}>
+            {i ? ', ' : ''}
+            <a className="cx-link" href={ticketUrl + c.id} target="_blank" rel="noopener noreferrer">
+              #{c.id}
+            </a>
+            <span className="cx-faint"> {CHANNEL_LABELS[c.channel] ?? c.channel}</span>
+          </span>
+        ))
+      ) : (
+        <span className="cx-faint">no cases listed</span>
+      )}
     </p>
   )
 }
@@ -212,6 +217,7 @@ export function CalibrationChart({
         Share of {windowMin}-minute windows by distinct cases in them. A good X sits where IDLE
         windows end and working windows start.
       </p>
+      <TableScroll label="Calibration windows by distinct cases">
       <table className="cx-table">
         <thead>
           <tr>
@@ -221,6 +227,13 @@ export function CalibrationChart({
           </tr>
         </thead>
         <tbody>
+          {!keys.length ? (
+            <tr>
+              <td colSpan={3} className="cx-muted">
+                No calibration windows yet.
+              </td>
+            </tr>
+          ) : null}
           {keys.map((i, h) => (
             <tr key={i}>
               <td className="cx-num">{i}</td>
@@ -244,6 +257,7 @@ export function CalibrationChart({
           ))}
         </tbody>
       </table>
+      </TableScroll>
     </div>
   )
 }
@@ -277,6 +291,14 @@ export function Xe({
   const lo = Math.min(...h, 0)
   const u = (m: number) => 12 + (m * 176) / Math.max(points.length - 1, 1)
   const c = (d: number) => 60 - ((d - lo) / Math.max(p - lo, 1e-9)) * 48
+  if (!points.length)
+    return (
+      <figure ref={ref} className="pv-spark cx-panel cx-panel--pad cc-chart">
+        {tipEl}
+        <figcaption>{title}</figcaption>
+        <p className="cx-faint">No weeks to show yet.</p>
+      </figure>
+    )
   const g = i
     .map((d, m) => (d === null ? '' : `${u(m)},${c(d)}`))
     .filter(Boolean)

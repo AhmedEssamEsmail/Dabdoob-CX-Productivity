@@ -253,7 +253,7 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
                   Open the 1:1
                 </a>
               ) : null}
-              {/* kept raw: legacy .btn contract */}
+              {/* intentionally raw: legacy .btn contract */}
               <button
                 type="button"
                 className="btn btn-quiet btn-small"
@@ -261,6 +261,7 @@ export default function OneOnOneAlerts({ incoming }: { incoming: OneOnOneAlert[]
               >
                 Dismiss
               </button>
+              {/* intentionally raw: legacy .btn contract; aria-pressed toggle */}
               <button
                 type="button"
                 className="btn btn-quiet btn-small"

@@ -14,6 +14,7 @@ import { FetchError, fetchJson as baseFetchJson, postJson } from '@/features/sha
 import { useOptions } from '@/features/shared/lib/use-options'
 import { usePageData } from '@/features/shared/lib/use-page-data'
 import { usePoll } from '@/features/shared/lib/use-poll'
+import { fmt } from '@/features/shared/lib/format'
 
 export { FetchError, postJson }
 export { Failed as LoadError, LinesSkeleton as Skeleton, Skeleton as Xe } from '@/features/shared/components/ui/PageStates'
@@ -31,7 +32,7 @@ export const ageRank = (t: number, n = 13) => {
 }
 export const bandTop = (t: number) => (t >= 24 && t % 24 === 0 ? `${t / 24} d` : `${t} h`)
 export const humanH = (t: number) => (t < 1 ? `${Math.max(1, Math.round(t * 60))} min` : t < 24 ? `${Math.floor(t)} h` : `${Math.floor(t / 24)} d ${Math.floor(t % 24)} h`)
-export const fmt = (n: number) => n.toLocaleString('en-US')
+export { fmt } from '@/features/shared/lib/format'
 
 export function AgeChip({ hours, band }: { hours: number; band: number }) {
   return (
@@ -41,8 +42,12 @@ export function AgeChip({ hours, band }: { hours: number; band: number }) {
   )
 }
 
-export function Head({ title, sub, aside }: { title: string; sub: string; aside?: React.ReactNode }) {
-  return <PageShell title={title} purpose={sub} aside={aside} id="page-title" />
+export function Head({ title, sub, aside, className, children }: { title: string; sub: string; aside?: React.ReactNode; className?: string; children?: React.ReactNode }) {
+  return (
+    <PageShell title={title} purpose={sub} aside={aside} className={className} id="page-title">
+      {children}
+    </PageShell>
+  )
 }
 
 export function AsOfHint({ iso, what = 'Freshdesk' }: { iso?: string | null; what?: string }) {
@@ -275,9 +280,9 @@ export function statusLine(t: Record<string, number> | null | undefined): string
   const s = n
     .filter(([l]) => statusRank(l) < 40)
     .sort((l, r) => statusRank(l[0]) - statusRank(r[0]) || r[1] - l[1])
-    .map(([l, r]) => `${statusTitle(l)} ${r.toLocaleString('en-US')}`)
+    .map(([l, r]) => `${statusTitle(l)} ${fmt(r)}`)
     .join(' · ')
-  const a = n.filter(([l]) => statusRank(l) >= 40).map(([l, r]) => `${l} ${r.toLocaleString('en-US')}`)
+  const a = n.filter(([l]) => statusRank(l) >= 40).map(([l, r]) => `${l} ${fmt(r)}`)
   return a.length ? `${s} (also ${a.join(', ')})` : s
 }
 
@@ -327,12 +332,12 @@ export function CxFilters({
       {team ? sel('Team', team) : null}
       {priority ? (
         <div className="pw-seg" role="group" aria-label="Priority">
-          {/* kept raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg */}
+          {/* intentionally raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg */}
           <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
             Any priority
           </button>
           {priority.options.map((o) => (
-            // kept raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg
+            // intentionally raw:pw-seg toggle group (aria-pressed, deselectable) is not expressible by ui/Seg
             <button key={o} type="button" aria-pressed={priority.value === o} onClick={() => priority.onChange(priority.value === o ? '' : o)}>
               {o}
             </button>
@@ -417,7 +422,7 @@ export function AgeLadder({
       {tipEl}
       <div className="cx-ladder cc-sweep-bar" role="group" aria-label="Open tickets by age">
         {counts.map((h, p) => (
-          // kept raw:cx-ladder__seg is a bespoke age-ramp segment (data-age/--n sizing), not a ui/Button
+          // intentionally raw:cx-ladder__seg is a bespoke age-ramp segment (data-age/--n sizing), not a ui/Button
           <button
             key={p}
             type="button"

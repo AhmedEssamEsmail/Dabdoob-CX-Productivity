@@ -262,7 +262,7 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
     )
   }
   return (
-    <PwShell route={routeOf('notes', route)} narrow>
+    <PwShell route={routeOf('notes', route)}>
       <datalist id="note-tags">
         {tags.map((t) => (
           <option key={t} value={t} />

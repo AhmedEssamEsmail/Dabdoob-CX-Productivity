@@ -1,13 +1,12 @@
 'use client'
 
 /* port of the legacy Nm admin page: the Pf pending shell with the
- * built blocks — Dropdown choices (oo x2), Connected apps (Im — read-only
- * per decision D1, the only deviation from verbatim), Appearance
+ * built blocks — Dropdown choices (oo x2), Appearance
  * (Tm + the ap-* localStorage theme controls) and Settings (Dm + Pm editor,
  * fed by getConfigRows/saveConfigSetting). */
 
-import { useEffect, useState } from 'react'
-import { Button, Chip, Empty, Input, Select, SettingsSection, SettingsToc, Textarea } from '@/features/shared/components/ui'
+import { useCallback, useEffect, useState } from 'react'
+import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, SettingsToc, Textarea, Toggle } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -27,6 +26,12 @@ const Am = (n: ConfigRow): string =>
       : n.value === '' || n.value === null || n.value === undefined
         ? '(blank)'
         : String(n.value)
+const Sm = (n: ConfigRow): string | null => {
+  const v = n.value
+  if (typeof v !== 'string') return null
+  const t = v.trim()
+  return /^https?:\/\//i.test(t) ? t : null
+}
 const Cm = (n: ConfigRow): string =>
   n.kind === 'list' || n.kind === 'json'
     ? JSON.stringify(n.value, null, 2)
@@ -135,10 +140,12 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
         {l.length} of {rows.length}. A change applies here at once and in the other apps within 5 minutes.
       </p>
       <dl className="kv">
-        {l.map((h) => (
+        {l.map((h) => {
+          const url = Sm(h)
+          return (
           <div className="kv-row" key={h.key}>
             <dt>
-              <span className="setting-key">{h.key}</span>
+              <span className="setting-key" title={h.key}>{h.key}</span>
               {h.description ? <span className="setting-desc">{h.description}</span> : null}
             </dt>
             <dd>
@@ -153,7 +160,15 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
                 />
               ) : (
                 <div className="setting-view">
-                  <span className="setting-value">{Am(h)}</span>
+                  <span className="setting-value">
+                    {url ? (
+                      <a className="cx-link" href={url} target="_blank" rel="noopener noreferrer" title={url}>
+                        {h.key.startsWith('app_url_') ? `Open the ${h.key.slice(8) || 'app'} app` : 'Open link'}
+                      </a>
+                    ) : (
+                      Am(h)
+                    )}
+                  </span>
                   {h.kind === 'boolean' ? (
                     <Button
                       type="button"
@@ -190,7 +205,8 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
               ) : null}
             </dd>
           </div>
-        ))}
+          )
+        })}
       </dl>
       {l.length === 0 ? (
         <Empty
@@ -206,19 +222,11 @@ function Dm({ rows, onSaved }: { rows: ConfigRow[]; onSaved: (rows: ConfigRow[])
 }
 
 /* Pf — the pending page shell (the unbuilt parts of Admin). */
-function Pf({ route: n, narrow: e, children: t }: { route: { title: string; purpose?: string; reqs?: number[] }; narrow?: boolean; children?: React.ReactNode }) {
+function Pf({ route: n, children: t }: { route: { title: string; purpose?: string; reqs?: number[] }; children?: React.ReactNode }) {
   return (
-    <section className={e ? 'page page-narrow' : 'page'} aria-labelledby="page-title">
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {n.title}
-          </h1>
-          <p className="page-purpose">{n.purpose}</p>
-        </div>
-      </header>
+    <PageShell title={n.title} purpose={n.purpose} id="page-title">
       {t}
-    </section>
+    </PageShell>
   )
 }
 
@@ -263,6 +271,7 @@ function Tm() {
         <div className="ap-themes">
           {bm.map(([i, s]) => (
             <label className="ap-theme" key={i}>
+              {/* intentionally raw: swatch radio, styled by .ap-theme/.ap-swatch with focus ring */}
               <input type="radio" name="ap-theme" value={i} checked={n.theme === i} onChange={() => t({ theme: i })} />
               <span className="ap-swatch" data-t={i} aria-hidden="true" />
               {D(s)}
@@ -276,25 +285,25 @@ function Tm() {
         <div className="ap-dots">
           {Em.map(([i, s]) => (
             <label className="ap-dot" title={s} key={i}>
+              {/* intentionally raw: swatch radio, styled by .ap-dot/[data-accent-preview] with focus ring */}
               <input type="radio" name="ap-accent" value={i} checked={n.accent === i} onChange={() => t({ accent: i })} aria-label={s} />
               <span data-accent-preview={i} />
             </label>
           ))}
         </div>
       </fieldset>
-      <label className="ap-check">
-        <input type="checkbox" checked={n.solid} onChange={(i) => t({ solid: i.target.checked })} />
+      <Toggle className="ap-check" checked={n.solid} onChange={(v) => t({ solid: v })}>
         {D('Reduce transparency')}
-      </label>
-      <label className="ap-check">
-        <input type="checkbox" checked={n.still} onChange={(i) => t({ still: i.target.checked })} />
+      </Toggle>
+      <Toggle className="ap-check" checked={n.still} onChange={(v) => t({ still: v })}>
         {D('Reduce motion')}
-      </label>
+      </Toggle>
       <fieldset>
         <legend>{D('Language')}</legend>
         <div className="ap-themes">
           {wm.map(([i, s]) => (
             <label className="ap-check" lang={i} key={i}>
+              {/* intentionally raw: swatch radio, styled by .ap-check label + lang attr */}
               <input type="radio" name="ap-lang" value={i} checked={n.lang === i} onChange={() => t({ lang: i })} />
               {s}
             </label>
@@ -306,7 +315,7 @@ function Tm() {
   )
 }
 
-function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: ConfigRow[]) => void }) {
+function Rb({ rows, error, onSaved, onRetry }: { rows: ConfigRow[] | null; error: string; onSaved: (rows: ConfigRow[]) => void; onRetry: () => void }) {
   const [busy, setBusy] = useState(false)
   const row = rows?.find((x) => x.key === 'reminders_enabled')
   const on = row ? row.value === true : true
@@ -316,7 +325,16 @@ function Rb({ rows, onSaved }: { rows: ConfigRow[] | null; onSaved: (rows: Confi
         Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
       </p>
       {rows === null ? (
-        <Chip>loading</Chip>
+        error ? (
+          <>
+            <Chip status="bad">error</Chip>{' '}
+            <Button type="button" className="btn btn-quiet btn-small" onClick={onRetry}>
+              Try again
+            </Button>
+          </>
+        ) : (
+          <Chip>loading</Chip>
+        )
       ) : (
         <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>
       )}
@@ -351,6 +369,10 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
   const [i, s] = useState('')
   const [r, a] = useState<ConfigRow[] | null>(null)
   const [o, c] = useState('')
+  const loadConfig = useCallback(() => {
+    c('')
+    Ln.getConfigRows().then(a, (l) => c(l.message))
+  }, [])
   useEffect(() => {
     Ln.getConfigRows().then(a, (l) => c(l.message))
   }, [])
@@ -383,15 +405,20 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
           <Oo listKey="queue.channel" label="Channel" value={i} onChange={s} />
         </div>
       </SettingsSection>
-      <Rb rows={r} onSaved={a} />
+      <Rb rows={r} error={o} onSaved={a} onRetry={loadConfig} />
       <SettingsSection id="appearance" title="Appearance">
         <Tm />
       </SettingsSection>
       <SettingsSection id="settings" title="Settings">
         {o ? (
-          <p className="field-error" role="alert">
-            Settings did not load: {o}
-          </p>
+          <>
+            <p className="field-error" role="alert">
+              Settings did not load: {o}
+            </p>
+            <Button type="button" className="btn btn-quiet btn-small" onClick={loadConfig}>
+              Try again
+            </Button>
+          </>
         ) : r ? (
           <Dm rows={r} onSaved={a} />
         ) : (

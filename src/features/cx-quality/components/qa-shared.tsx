@@ -35,19 +35,20 @@ import {
   Chip,
   LinesSkeleton,
   LoadError,
-  PageHead,
 } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
 import {
   Button,
   ConfirmInline,
   Input,
+  PageShell,
   Seg,
   Select,
   TableScroll,
   Textarea,
 } from '@/features/shared/components/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
+import { formatDate_ } from '@/features/shared/lib/adapters'
 import { FetchError, fetchJson, postJson } from '@/features/shared/lib/fetch-json'
 import { usePageData } from '@/features/shared/lib/use-page-data'
 import { loadOptions } from '@/features/shared/lib/use-options'
@@ -139,15 +140,17 @@ export function QaPage({
   children?: ReactNode
 }) {
   return (
-    <section
-      className="cxp page"
-      aria-labelledby="page-title"
-      aria-busy={!d && !error}
+    <PageShell
+      className="cxp"
+      title={route.title}
+      purpose={sub}
+      aside={aside}
+      busy={!d && !error}
+      error={error}
+      onRetry={reload}
     >
-      <PageHead title={route.title} sub={sub} aside={aside} />
-      {error ? <LoadError message={error} onRetry={reload} /> : null}
-      {!d && !error ? <LinesSkeleton lines={6} /> : d ? children : null}
-    </section>
+      {children}
+    </PageShell>
   )
 }
 
@@ -245,7 +248,7 @@ export const qaTicketLabel = (t: string): string => (qaIsNum(t) ? `#${t}` : t)
 /** ne — ticket ref: linked when the id is numeric, plain span otherwise. */
 export function TicketRef({ url, id }: { url: string; id: string }) {
   return qaIsNum(id) ? (
-    <a href={url + id} target="_blank" rel="noopener noreferrer">
+    <a className="cx-link" href={url + id} target="_blank" rel="noopener noreferrer">
       #{id}
     </a>
   ) : (
@@ -617,11 +620,7 @@ const ds = (t: any) =>
   )
 
 /** hs() — datetime-local "now" ceiling in Riyadh (verbatim). */
-const hs = (): string =>
-  new Date()
-    .toLocaleString('sv-SE', { timeZone: 'Asia/Riyadh' })
-    .slice(0, 16)
-    .replace(' ', 'T')
+const hs = (): string => formatDate_(new Date(), 'Asia/Riyadh', 'yyyy-MM-ddTHH:mm')
 
 /** rs(t, n) — client-side scoring (verbatim math). */
 export function qaScoreAnswers(t: any, n: any) {
@@ -1261,14 +1260,8 @@ export const QA_LEVELS: [string, string][] = [
   ['agent', 'Agents'],
   ['channel', 'Channels'],
 ]
-const qaDayFmt = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'Asia/Riyadh',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-}) // _l
 /** He — today in Riyadh, YYYY-MM-DD. */
-export const qaToday = (): string => qaDayFmt.format(new Date())
+export const qaToday = (): string => formatDate_(new Date(), 'Asia/Riyadh', 'yyyy-MM-dd')
 /** rt — shift a YYYY-MM-DD by n days. */
 export const qaDayShift = (t: string, n: number): string => {
   const a = new Date(t + 'T00:00:00Z')
@@ -1393,7 +1386,7 @@ export function DrillSection({
       ) : i ? (
         <>
           {pick.agent && !pick.question && i.questions.length ? (
-            <div className="cx-panel cx-tablewrap">
+            <TableScroll label="Questions failed" className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -1420,10 +1413,10 @@ export function DrillSection({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           ) : null}
           {pick.question && !pick.agent && i.agents.length ? (
-            <div className="cx-panel cx-tablewrap">
+            <TableScroll label="Agents who failed it" className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -1447,9 +1440,9 @@ export function DrillSection({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           ) : null}
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label="Audits" className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -1465,7 +1458,7 @@ export function DrillSection({
                     <tr key={r.auditId}>
                       <td>
                         {r.ticketUrl ? (
-                          <a href={r.ticketUrl} target="_blank" rel="noopener noreferrer">
+                          <a className="cx-link" href={r.ticketUrl} target="_blank" rel="noopener noreferrer">
                             #{r.ticketId}
                           </a>
                         ) : (
@@ -1505,7 +1498,7 @@ export function DrillSection({
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </>
       ) : (
         <p className="cx-muted">Loading the audits…</p>

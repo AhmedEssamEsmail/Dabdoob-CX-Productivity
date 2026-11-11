@@ -23,7 +23,7 @@ import {
   reduceMotion,
   useSe,
 } from './qa-shared'
-import { Button, Chip, ConfirmInline, Empty, Input, Seg, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, ConfirmInline, Empty, Input, Seg, TableScroll, Textarea } from '@/features/shared/components/ui'
 
 /* --- Ds — find my open CTLs matching a ticket number or audit/CTL id --------- */
 function findOpenCtls(t: any[], n: string): any[] {
@@ -183,25 +183,21 @@ function CtlForm({
           <span className="qa-ctlform__hint" id="ctl-ref-hint">Find an open CTL to review before submitting.</span>
         </div>
         {g.length > 1 ? (
-          <fieldset className="qa-pick">
-            <legend className="cx-label">
+          <div className="cx-field">
+            <span className="cx-label" id="ctl-pick-l">
               This ticket has {g.length} open CTLs: choose one
-            </legend>
-            {g.map((k) => (
-              <label key={k.ctlId}>
-                <input
-                  type="radio"
-                  name="ctl-pick"
-                  checked={y?.ctlId === k.ctlId}
-                  onChange={() => onPick({ ref: picked.ref, ctlId: k.ctlId })}
-                />
-                <span>
-                  {k.agentName}, audited {k.audit?.auditDate ?? ''} (
-                  {k.audit ? `${k.audit.finalScore}%` : '–'}), due {k.dueDate}
-                </span>
-              </label>
-            ))}
-          </fieldset>
+            </span>
+            <Seg
+              name="ctl-pick"
+              value={y?.ctlId ?? ''}
+              onChange={(v) => onPick({ ref: picked.ref, ctlId: v })}
+              options={g.map((k) => ({
+                value: k.ctlId,
+                label: `${k.agentName}, audited ${k.audit?.auditDate ?? ''} (${k.audit ? `${k.audit.finalScore}%` : '–'}), due ${k.dueDate}`,
+              }))}
+              aria-labelledby="ctl-pick-l"
+            />
+          </div>
         ) : picked.ref.trim() && !g.length ? (
           <p className="cx-muted">No open CTL of yours matches “{picked.ref.trim()}”.</p>
         ) : null}
@@ -387,7 +383,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                       key={r.ctlId}
                     >
                       {r.audit ? <ScoreChip score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
-                      <strong className="qa-name">{r.agentName}</strong>
+                      <strong className="qa-name" title={r.agentName}>{r.agentName}</strong>
                       {r.status === 'open' || !r.notes ? (
                         <span className="qa-meta qa-meta--full">
                           {r.audit ? (
@@ -458,7 +454,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                 </div>
               </div>
             </div>
-            <div className="cx-tablewrap">
+            <TableScroll label="CTL SLA" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -501,7 +497,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
         </div>
       ) : null}

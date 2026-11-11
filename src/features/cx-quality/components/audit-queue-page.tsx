@@ -17,7 +17,7 @@
 import { Fragment, useMemo, useRef, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
 import { getBoot } from '@/features/shared/shell/context'
-import { Button, Empty, PageShell, Seg, Select } from '@/features/shared/components/ui'
+import { Button, Empty, PageShell, Seg, Select, TableScroll } from '@/features/shared/components/ui'
 import {
   LinesSkeleton,
   LoadError,
@@ -331,6 +331,7 @@ function AuditQueuePage({
                       p.cls === 'ok' || p.cls === 'warn' ? p.cls : undefined
                     const off = w.status === 'done' || w.takenByOther || !!s.readOnly
                     return (
+                      // intentionally raw: workitem row-card widget (aria-pressed + disabled + nested layout), styled by .workitem
                       <button
                         key={w.queueId}
                         type="button"
@@ -341,10 +342,13 @@ function AuditQueuePage({
                       >
                         <WiIco channel={w.channel} tone={wiTone(w)} />
                         <div className="wi-main">
-                          <div className="wi-t">
+                          <div className="wi-t" title={`${w.channel || 'Ticket'} ${qaTicketLabel(w.ticketId)}`}>
                             {w.channel || 'Ticket'} {qaTicketLabel(w.ticketId)}
                           </div>
-                          <div className="wi-s">
+                          <div
+                            className="wi-s"
+                            title={`${w.agentName}${w.tlName ? ` · TL ${w.tlName}` : ''}${w.requested ? ` · requested by ${w.requestedByName}` : ''}${w.actionAt ? ` · ${w.actionAt}` : ''}`}
+                          >
                             {w.agentName}
                             {w.tlName ? ` · TL ${w.tlName}` : ''}
                             {w.requested ? ` · requested by ${w.requestedByName}` : ''}
@@ -429,7 +433,7 @@ function AuditQueuePage({
                   : 'Not imported yet today'
             }
           >
-            <div className="cx-panel cx-tablewrap">
+            <TableScroll label="Today's audit queue" className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -579,13 +583,13 @@ function AuditQueuePage({
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </QaSection>
           <WeekCoverage d={s} />
           {s.passed.length ? (
             <details className="qa-details-panel cx-panel cx-panel--pad">
               <summary>Passed without an audit, last 30 days ({s.passed.length})</summary>
-              <div className="cx-tablewrap">
+              <TableScroll label="Passed without an audit" className="cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -627,7 +631,7 @@ function AuditQueuePage({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             </details>
           ) : null}
           {s.isAdmin ? (

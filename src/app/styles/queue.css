@@ -225,4 +225,33 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
   [data-app="queue"] .sch-month-name { min-width: 7rem; /* px-exact */ }
 }
 
+/* sch — import result text + skeleton heights (px-exact: mirror prior inline px/rem values) */
+[data-app="queue"] .sch-result { white-space: pre-line; font-weight: var(--cx-weight-strong); }
+[data-app="queue"] .skeleton.sch-skel-import { block-size: 12.5rem; /* 200px */ }
+[data-app="queue"] .skeleton.sch-skel-offdays { block-size: 10rem; /* 160px */ }
+[data-app="queue"] .skeleton.sch-skel-main { block-size: 13.75rem; /* 220px */ }
+[data-app="queue"] .skeleton.sch-skel-inline { inline-size: 72%; }
+
+/* chk — check-ins page form layout */
+[data-app="queue"] .chk-head-pad { display: grid; gap: var(--cx-space-3); border-block-end: 1px solid var(--cx-line); }
+[data-app="queue"] .chk-foot-pad { display: grid; gap: var(--cx-space-3); border-block-start: 1px solid var(--cx-line); }
+[data-app="queue"] .chk-grid { display: grid; gap: var(--cx-space-3); }
+[data-app="queue"] .chk-form :is(.cx-input, .cx-textarea, .cx-select) { box-sizing: border-box; }
+[data-app="queue"] .chk-faint { font-weight: var(--cx-weight-regular); }
+[data-app="queue"] .chk-note { min-block-size: 6.2rem; /* px-exact: note field min height */ }
+[data-app="queue"] .chk-actions { display: flex; flex-wrap: wrap; gap: var(--cx-space-3); align-items: center; justify-content: space-between; }
+[data-app="queue"] .chk-side { display: grid; gap: var(--cx-space-4); align-content: start; }
+[data-app="queue"] .chk-earlier-title { margin: 0; }
+
+/* ag — aging page */
+[data-app="queue"] .ag-actions-full { flex-basis: 100%; }
+[data-app="queue"] .ag-title { margin: 0; }
+[data-app="queue"] .ag-mixseg { cursor: pointer; }
+[data-app="queue"] .ag-agechip { border: 0; cursor: pointer; inline-size: 100%; justify-content: center; }
+
+/* q — queue board mix segments */
+[data-app="queue"] .q-mixseg { flex-shrink: 1; flex-basis: 0; }
+/* .mixbar clips the universal outside ring via overflow:hidden — draw it inside */
+[data-app="queue"] .mixbar > :is(.ag-mixseg, .q-mixseg):focus-visible { outline-offset: calc(var(--cx-space-1) / -2); }
+
 

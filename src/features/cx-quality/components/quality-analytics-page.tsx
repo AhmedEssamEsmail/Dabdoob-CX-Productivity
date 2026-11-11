@@ -35,7 +35,7 @@ import {
 } from './qa-shared'
 import { Columns, Coverage, SparkChart, Spread } from './quality-analytics-charts'
 import { LoadError } from '@/features/shared/components/shell/ui'
-import { Button, Seg, Select } from '@/features/shared/components/ui'
+import { Button, Seg, Select, TableScroll } from '@/features/shared/components/ui'
 
 /* --- Ys — the health/bases head ------------------------------------------ */
 function HealthHead({ d: t }: { d: any }) {
@@ -173,7 +173,7 @@ function Attention({
       title="Who needs a look"
       hint="One row per agent, with every rule that fired: a critical fail, a repeat after a CTL, a score whose whole range sits under the middle agent, two falling periods, or fewer audits than the quota so far."
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Agents needing a look" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -221,7 +221,7 @@ function Attention({
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       {t.attention.length > 10 ? (
         <Button
           variant="quiet"
@@ -259,7 +259,7 @@ function ByChannel({ d: t }: { d: any }) {
       title="By channel and contact reason"
       hint="Each agent counts once in a channel's score (the plain audit average is beside it). Weighted: re-weighted to how many tickets each contact reason had, undoing the queue's prioritisation."
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Scores by channel" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -302,8 +302,8 @@ function ByChannel({ d: t }: { d: any }) {
             )}
           </tbody>
         </table>
-      </div>
-      <div className="cx-panel cx-tablewrap">
+      </TableScroll>
+      <TableScroll label="Scores by contact reason" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -339,7 +339,7 @@ function ByChannel({ d: t }: { d: any }) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </QaSection>
   )
 }
@@ -353,7 +353,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
       title="Agents"
       hint="Random audits only. Agents with 16 or more audits first, lowest score first; under 16 the score is not coloured. Channels are shown apart."
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Agent quality scores" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -405,11 +405,15 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                   </td>
                   <td className="cx-num">{s.fatal || ''}</td>
                   <td>
-                    {s.channels.map((i: any) => (
-                      <span className="qa-sub" key={i.channel}>
-                        {i.channel} {qaPct(i.avg)} ({i.audits})
-                      </span>
-                    ))}
+                    {s.channels.length ? (
+                      s.channels.map((i: any) => (
+                        <span className="qa-sub" key={i.channel}>
+                          {i.channel} {qaPct(i.avg)} ({i.audits})
+                        </span>
+                      ))
+                    ) : (
+                      '–'
+                    )}
                   </td>
                   <td className="cx-num">
                     {s.reasons.agent} / {s.reasons.other}
@@ -434,7 +438,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </QaSection>
   )
 }
@@ -449,7 +453,7 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
       title="Where points are lost"
       hint={`Points each question costs per 100 audits of its form. Questions asked fewer than 10 times are listed after the rest. Reasons are shares of tagged fails: ${t.reasonCoveragePct === null ? 'none' : `${t.reasonCoveragePct}%`} of fails are tagged.`}
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Where points are lost" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -496,7 +500,7 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       {t.questions.length > 15 ? (
         <Button
           variant="quiet"
@@ -527,7 +531,7 @@ function NonTicket({ d: t }: { d: any }) {
           hint={`Its own form and scale, kept out of the ticket scores. ${n.audits} audits, ${qaPct(n.avg)} ${qaMargin(n.margin)}.`}
           key={n.type}
         >
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label={`${n.type} audits by agent`} className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -538,17 +542,23 @@ function NonTicket({ d: t }: { d: any }) {
                 </tr>
               </thead>
               <tbody>
-                {n.agents.map((a: any) => (
-                  <tr key={a.email}>
-                    <td>{a.name}</td>
-                    <td className="cx-num">{a.audits}</td>
-                    <td className="cx-num">{qaPct(a.avg)}</td>
-                    <td className="cx-num">{a.fatal || ''}</td>
+                {n.agents.length ? (
+                  n.agents.map((a: any) => (
+                    <tr key={a.email}>
+                      <td>{a.name}</td>
+                      <td className="cx-num">{a.audits}</td>
+                      <td className="cx-num">{qaPct(a.avg)}</td>
+                      <td className="cx-num">{a.fatal || ''}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4}>No audits for this type.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </QaSection>
       ))}
     </>
@@ -593,7 +603,7 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
           </span>
         </div>
       </dl>
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Repeat failures after coaching" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -649,7 +659,7 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       {t.repeats.length > 10 ? (
         <Button
           variant="quiet"
@@ -670,7 +680,7 @@ function TeamLeads({ d: t }: { d: any }) {
       title="Team leads"
       hint="How many of each lead's agents are on the list above, and their open CTLs. CTL on-time rate in the month view."
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Team leads" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -724,7 +734,7 @@ function TeamLeads({ d: t }: { d: any }) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </QaSection>
   )
 }
@@ -737,7 +747,7 @@ function Outside({ d: t }: { d: any }) {
       title="Fix outside the team"
       hint="Questions where most tagged fails (60% or more of at least 10) are Process, Product or KB: a fix for their owner, not coaching."
     >
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Fixes outside the team" className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -767,7 +777,7 @@ function Outside({ d: t }: { d: any }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </QaSection>
   ) : null
 }
@@ -779,7 +789,7 @@ function Extras({ d: t }: { d: any }) {
       {t.grain === 'month' ? (
         <details className="qa-more">
           <summary>Auditors and CTL timeliness this month</summary>
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label="Auditors this month" className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -839,8 +849,8 @@ function Extras({ d: t }: { d: any }) {
                 )}
               </tbody>
             </table>
-          </div>
-          <div className="cx-panel cx-tablewrap">
+          </TableScroll>
+          <TableScroll label="Team leads this month" className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -881,7 +891,7 @@ function Extras({ d: t }: { d: any }) {
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </details>
       ) : null}
       {t.coverage ? (
@@ -893,7 +903,7 @@ function Extras({ d: t }: { d: any }) {
       {t.formRules.length ? (
         <details className="qa-more">
           <summary>What a critical fail does on each form</summary>
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label="Form rules" className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -925,7 +935,7 @@ function Extras({ d: t }: { d: any }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </details>
       ) : null}
     </>
@@ -975,7 +985,7 @@ function Drill({
       ) : i ? (
         <>
           {n.agent && !n.question && i.questions.length ? (
-            <div className="cx-panel cx-tablewrap">
+            <TableScroll label="Questions failed" className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -1002,10 +1012,10 @@ function Drill({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           ) : null}
           {n.question && !n.agent && i.agents.length ? (
-            <div className="cx-panel cx-tablewrap">
+            <TableScroll label="Agents who failed it" className="cx-panel cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -1029,9 +1039,9 @@ function Drill({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           ) : null}
-          <div className="cx-panel cx-tablewrap">
+          <TableScroll label="Audits in this period" className="cx-panel cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -1093,7 +1103,7 @@ function Drill({
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </>
       ) : (
         <p className="cx-muted">Loading the audits…</p>

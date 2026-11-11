@@ -51,10 +51,10 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
   }
   const id = `act-${a.actionId}`
   return (
-    <article className="cx-panel cx-panel--pad" style={{ display: 'grid', gap: 'var(--cx-space-2)' }} aria-labelledby={`${id}-t`}>
-      <h3 className="cx-section__title" id={`${id}-t`}>
+    <article className="cx-panel cx-panel--pad cxp-act" aria-labelledby={`${id}-t`}>
+      <h2 className="cx-section__title" id={`${id}-t`}>
         {a.title}
-      </h3>
+      </h2>
       <p className="cx-hint">
         From a {SOURCE_LABELS[a.sourceType] || a.sourceType}, due {a.dueDate}{' '}
         {overdue ? <Chip status="bad">Overdue</Chip> : null}
@@ -85,7 +85,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
           {error}
         </p>
       ) : null}
-      <div style={{ display: 'flex', gap: 'var(--cx-space-2)', flexWrap: 'wrap' }}>
+      <div className="cxp-act__btns">
         <Button
           variant="primary"
           disabled={busy}
@@ -126,8 +126,12 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
 export function MyActionsPage({ route }: { route: { title: string } }) {
   const { data, error, reload } = useSe('people.myactions', () => api.actionsMine())
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!data && !error}>
-      <PageShell title={route.title} purpose="What you agreed to in 1:1s and meetings — post where each stands before it is reviewed." id="page-title" />
+    <PageShell
+      className="cxp"
+      title={route.title}
+      purpose="What you agreed to in 1:1s and meetings — post where each stands before it is reviewed."
+      busy={!data && !error}
+    >
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         data.length ? (
@@ -144,6 +148,6 @@ export function MyActionsPage({ route }: { route: { title: string } }) {
       ) : (
         <LinesSkeleton lines={6} />
       )}
-    </section>
+    </PageShell>
   )
 }

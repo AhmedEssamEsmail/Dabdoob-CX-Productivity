@@ -134,7 +134,7 @@ function Jb({ boot: n, msg: e, setMsg: t }: { boot: any; msg: string; setMsg: (m
       if (c && !c.missing) {
         im(c)
       } else {
-        t(c ? 'That app is not connected yet. An admin adds its web app URL in Admin, Connected apps.' : 'You have no page in that system.')
+        t(c ? 'That app is not connected yet. An admin adds its web app URL in Admin, Settings.' : 'You have no page in that system.')
       }
       return
     }
@@ -142,7 +142,7 @@ function Jb({ boot: n, msg: e, setMsg: t }: { boot: any; msg: string; setMsg: (m
   }} /> : <div className="eco3-page-msg">{s ? <Ft><p>Ecosystem health did not load: {s}</p><Button className="btn" onClick={r}>Try again</Button></Ft> : <p>Loading the ecosystem…</p>}</div>}<header className="eco3-head"><h1>Ecosystem</h1>{i?.asOf ? <span>Health as of {new Date(i.asOf).toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
-  })}</span> : null}{e ? <span role="status">{e}</span> : null}<nav aria-label="Ecosystem"><a className="eco3-home" href={Lr('overview')}>Hub home</a></nav><small className="eco3-credit"><a href={As.source} target="_blank" rel="noopener noreferrer">Camel model</a>{' by'}{' '}<a href={As.authorUrl} target="_blank" rel="noopener noreferrer">{As.author}</a>,{' '}<a href={As.licenceUrl} target="_blank" rel="noopener noreferrer">{As.licence}</a></small></header></main></>
+  })}</span> : null}{e ? <span role="status">{e}</span> : null}<nav aria-label="Ecosystem"><a className="eco3-home" href={Lr('overview')}>Hub home</a></nav><small className="eco3-credit"><a className="cx-link" href={As.source} target="_blank" rel="noopener noreferrer">Camel model</a>{' by'}{' '}<a className="cx-link" href={As.authorUrl} target="_blank" rel="noopener noreferrer">{As.author}</a>,{' '}<a className="cx-link" href={As.licenceUrl} target="_blank" rel="noopener noreferrer">{As.licence}</a></small></header></main></>
 }
 
 /** Zb — ecosystem page component (verbatim port). */
@@ -155,5 +155,5 @@ export function EcosystemPage() {
     return document.title = 'Ecosystem, Dabdoob CX', () => {
       document.title = r
     }
-  }, []), !e || !t ? <><a className="skip" href="#main">Skip to content</a><main id="main" className="eco3-page" tabIndex={-1}><div className="eco3-page-msg"><p>The ecosystem map is for team leads and admins.</p><a href={Lr('overview')}>Go to Hub home</a></div></main></> : <Jb boot={e} msg={i} setMsg={s} />
+  }, []), !e || !t ? <><a className="skip" href="#main">Skip to content</a><main id="main" className="eco3-page" tabIndex={-1}><div className="eco3-page-msg"><p>The ecosystem map is for team leads and admins.</p><a className="cx-link" href={Lr('overview')}>Go to Hub home</a></div></main></> : <Jb boot={e} msg={i} setMsg={s} />
 }

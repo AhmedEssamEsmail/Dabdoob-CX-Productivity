@@ -39,9 +39,9 @@ export function ConfirmInline({
       aria-describedby={detail ? detailId : undefined}
       className={cx('cx-confirm', className)}
     >
-      <h4 ref={headingRef} id={labelId} tabIndex={-1} className="cx-confirm__label">
+      <h3 ref={headingRef} id={labelId} tabIndex={-1} className="cx-confirm__label">
         {label}
-      </h4>
+      </h3>
       {detail ? (
         <p id={detailId} className="cx-confirm__detail">
           {detail}

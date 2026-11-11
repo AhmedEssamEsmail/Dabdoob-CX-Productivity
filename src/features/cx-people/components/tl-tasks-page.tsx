@@ -22,7 +22,7 @@ import {
   routeOf,
 } from './pw'
 import { stagger } from '@/features/shared/components/shell/ui'
-import { Button, Chip, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Seg, Select, Textarea } from '@/features/shared/components/ui'
 
 /* I — the tasks facade (Tasks.js). */
 const api = {
@@ -133,22 +133,16 @@ function FilterBar({
       {owner ? sel('Owner', owner) : null}
       {team ? sel('Team', team) : null}
       {priority ? (
-        <div className="pw-seg" role="group" aria-label="Priority">
-          <button type="button" aria-pressed={!priority.value} onClick={() => priority.onChange('')}>
-            Any priority
-          </button>
-          {priority.options.map((p) => (
-             
-            <button
-              key={p}
-              type="button"
-              aria-pressed={priority.value === p}
-              onClick={() => priority.onChange(priority.value === p ? '' : p)}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+        <Seg
+          name="tl-filter-priority"
+          aria-label="Priority"
+          value={priority.value}
+          onChange={(v) => priority.onChange(v === priority.value ? '' : v)}
+          options={[
+            { value: '', label: 'Any priority' },
+            ...priority.options.map((p) => ({ value: p, label: p })),
+          ]}
+        />
       ) : null}
       {search ? (
         <label className="cx-filter cx-filter--search">
@@ -246,14 +240,13 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         ) : null}
         <div className="field">
           <span className="field-label">Priority</span>
-          <div className="pw-seg" role="group" aria-label="Priority">
-            {['P1', 'P2', 'P3'].map((p) => (
-               
-              <button key={p} type="button" aria-pressed={form.priority === p} onClick={() => patch({ priority: p })}>
-                {p}
-              </button>
-            ))}
-          </div>
+          <Seg
+            name="tl-form-priority"
+            aria-label="Priority"
+            value={form.priority}
+            onChange={(v) => patch({ priority: v })}
+            options={['P1', 'P2', 'P3'].map((p) => ({ value: p, label: p }))}
+          />
         </div>
         <label className="field">
           <span className="field-label">Starts (blank = now)</span>
@@ -402,6 +395,7 @@ function GanttRow({
   return (
     <div className="pw-g-row" aria-current={selected}>
       <div className="pw-g-label">
+        {/* intentionally raw: gantt row-label widget, styled by .pw-g-label button */}
         <button type="button" onClick={onSelect} title={t.title}>
           {t.title}
         </button>
@@ -429,6 +423,7 @@ function GanttRow({
             style={{ insetInlineStart: `${(f.i / nDays) * 100}%`, width: `${100 / nDays}%` }}
           />
         ))}
+        {/* intentionally raw: absolutely-positioned gantt bar widget, styled by .pw-bar */}
         <button
           type="button"
           className="pw-bar"
@@ -718,7 +713,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                     {m.rag ? `, ${RAG_LABELS[m.rag]}` : ''}
                   </div>
                   {m.kind === 'file' ? (
-                    <a href={m.fileUrl} target="_blank" rel="noopener">
+                    <a className="cx-link" href={m.fileUrl} target="_blank" rel="noopener">
                       {m.fileName}
                     </a>
                   ) : null}
@@ -759,14 +754,17 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
       ) : (
         <div className="pw-panel">
           <h2 className="pw-h2">Post an update</h2>
-          <div className="pw-seg pw-m-8-12" role="group" aria-label="Update type">
-            <button type="button" aria-pressed={kind === 'status'} onClick={() => setKind('status')}>
-              Written update
-            </button>
-            <button type="button" aria-pressed={kind === 'file'} onClick={() => setKind('file')}>
-              Upload a file
-            </button>
-          </div>
+          <Seg
+            name="tl-update-kind"
+            aria-label="Update type"
+            className="pw-m-8-12"
+            value={kind}
+            onChange={setKind}
+            options={[
+              { value: 'status', label: 'Written update' },
+              { value: 'file', label: 'Upload a file' },
+            ]}
+          />
           <div className="pw-grid-12">
             {kind === 'file' ? (
               <label className="field">
@@ -794,14 +792,13 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
                   </label>
                   <div className="field pw-flex-auto">
                     <span className="field-label">Status</span>
-                    <div className="pw-seg" role="group" aria-label="Status">
-                      {['on_track', 'at_risk', 'off_track'].map((r) => (
-                         
-                        <button key={r} type="button" aria-pressed={rag === r} onClick={() => setRag(r)}>
-                          {RAG_LABELS[r]}
-                        </button>
-                      ))}
-                    </div>
+                    <Seg
+                      name="tl-rag"
+                      aria-label="Status"
+                      value={rag}
+                      onChange={setRag}
+                      options={['on_track', 'at_risk', 'off_track'].map((r) => ({ value: r, label: RAG_LABELS[r] }))}
+                    />
                   </div>
                 </div>
                 <label className="field">
@@ -978,14 +975,16 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
               priority={{ value: priority, onChange: setPriority, options: ['P1', 'P2', 'P3'] }}
               search={{ value: search, onChange: setSearch, placeholder: 'Search task titles' }}
             >
-              <div className="pw-seg" role="group" aria-label="Show">
-                <button type="button" aria-pressed={show === 'open'} onClick={() => setShow('open')}>
-                  Open
-                </button>
-                <button type="button" aria-pressed={show === 'all'} onClick={() => setShow('all')}>
-                  Include done, last 30 days
-                </button>
-              </div>
+              <Seg
+                name="tl-show"
+                aria-label="Show"
+                value={show}
+                onChange={setShow}
+                options={[
+                  { value: 'open', label: 'Open' },
+                  { value: 'all', label: 'Include done, last 30 days' },
+                ]}
+              />
             </FilterBar>
           </div>
           {shown.length ? (

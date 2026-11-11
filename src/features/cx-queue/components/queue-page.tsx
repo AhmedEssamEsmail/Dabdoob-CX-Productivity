@@ -5,7 +5,7 @@
  * count-up nn/gs and skeleton xe live in ./shared). */
 import { Fragment, useRef, useState } from 'react'
 import { resolveLink } from '@/features/shared/shell/gates'
-import { Chip, TableScroll } from '@/features/shared/components/ui'
+import { Button, Chip, Input, TableScroll } from '@/features/shared/components/ui'
 import {
   AgeChip, AsOfHint, Count, Head, LoadError, RefreshNow, StatusChip, Xe,
   ageRank, bandTop, dayAt, deltaFmt, edgeRank, fetchJson, fmt, hm,
@@ -146,14 +146,15 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
         (m: any) => (!o || m.queue.toLowerCase().includes(o)) && (ageBand === null || (m.bands?.[ageBand] ?? 0) > 0),
       )
     : []
-  const head = (
+  const shell = (children: React.ReactNode) => (
     <Head
       title={route.title}
       sub={route.purpose ?? 'Every queue now: open work, its age, and how it moved since the last check-in.'}
+      className="aging-page-head"
       aside={
-        <>
+        <div className="page-actions">
           <label className="cx-filter">
-            <input
+            <Input
               className="input"
               type="search"
               aria-label="Filter queues"
@@ -162,37 +163,31 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
               onChange={(e) => i(e.target.value)}
             />
           </label>
-          <button type="button" className="btn btn-quiet" disabled={!t} onClick={() => exportCsv(f, t?.bands?.labels ?? [], new Date().toISOString().slice(0, 10))}>
+          <Button variant="quiet" className="btn btn-quiet" disabled={!t} onClick={() => exportCsv(f, t?.bands?.labels ?? [], new Date().toISOString().slice(0, 10))}>
             Export
-          </button>
+          </Button>
           <RefreshNow onDone={s} />
-        </>
+        </div>
       }
-    />
+    >
+      {children}
+    </Head>
   )
-  if (n)
-    return (
-      <Fragment>
-        {head}
-        <LoadError message={n} onRetry={s} />
-      </Fragment>
-    )
+  if (n) return shell(<LoadError message={n} onRetry={s} />)
   if (!t)
-    return (
-      <Fragment>
-        {head}
+    return shell(
+      <>
         <Xe shape="tiles" n={5} />
         <Xe shape="ladder" n={6} />
-      </Fragment>
+      </>,
     )
   const p = t.queues.reduce((m: number, b: any) => m + b.open, 0)
   const d = t.queues.reduce((m: number[], b: any) => b.bands.map((v: number, y: number) => (m[y] || 0) + v), [] as number[])
   const helpCount = t.queues.filter((m: any) => (m.overTop ?? 0) > 0).length
   const bandColor = (idx: number) => `var(--cx-age-${ageRank(idx, d.length)})`
   const pickBand = (idx: number) => setAgeBand((cur) => (cur === idx ? null : idx))
-  return (
-    <Fragment>
-      {head}
+  return shell(
+    <>
       <div className="grid grid-5 mb-3">
         {headStats(t).map((m) => (
           <div key={m.key} className="stat" data-tone={m.tone}>
@@ -213,9 +208,9 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
             {fmt(p)} open · click a band to list its tickets
             {ageBand !== null ? ` · ${t.bands.labels[ageBand] ?? 'selected band'}` : ''}
             {ageBand !== null ? (
-              <button type="button" className="btn btn-quiet" onClick={() => setAgeBand(null)}>
+              <Button variant="quiet" className="btn btn-quiet" onClick={() => setAgeBand(null)}>
                 All ages
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>
@@ -232,7 +227,7 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                   aria-pressed={ageBand === idx}
                   aria-label={`${fmt(count)} items, age band ${label}`}
                   title={`${label}: ${fmt(count)}`}
-                  style={{ flexGrow: count || (p ? 0 : 1), flexShrink: 1, flexBasis: 0, background: bandColor(idx), color: `var(--cx-age-ink-${ageRank(idx, d.length)})` }}
+                  style={{ flexGrow: count || (p ? 0 : 1), background: bandColor(idx), color: `var(--cx-age-ink-${ageRank(idx, d.length)})` }}
                   onClick={() => pickBand(idx)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -385,15 +380,11 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
         {t.excludedText.length ? ` and any group with “${t.excludedText.join('”, “')}” in its name` : ''} are left out: documentation of contacts already
         counted as chats or calls, and notification-only groups. Freshdesk synced {t.syncedAt ? `at ${hm(t.syncedAt)}` : 'not yet'}.
       </p>
-    </Fragment>
+    </>,
   )
 }
 
 /** Va — the route component. */
 export function QueuePage({ route }: { route: { title: string; purpose?: string } }) {
-  return (
-    <section className="page" aria-labelledby="page-title">
-      <Board route={route} />
-    </section>
-  )
+  return <Board route={route} />
 }

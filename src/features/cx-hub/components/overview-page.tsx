@@ -6,7 +6,7 @@
  * TL dayrail + oldest, specialist note, agent oldest). */
 
 import { Fragment, useRef, useState } from 'react'
-import { Button, Empty } from '@/features/shared/components/ui'
+import { Button, Empty, PageShell, TableScroll } from '@/features/shared/components/ui'
 import {
   Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, Hf, Hi, If, jl, Kf, km, lo, Nf,
   Of, pg, Ql, rg, sh, To, useTh, Vi, Wf, Yn, _g,
@@ -73,9 +73,9 @@ function _u({ rows, title, empty, ticketUrl, showAgent, allLink }: Q) {
         <h2 className="cx-section__title" id="oldest-h">
           {title}
         </h2>
-        <a href={allLink}>All aging cases</a>
+        <a className="cx-link" href={allLink}>All aging cases</a>
       </div>
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label={title} className="cx-panel cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -92,7 +92,7 @@ function _u({ rows, title, empty, ticketUrl, showAgent, allLink }: Q) {
                 <tr key={a.id} data-age={Ao(a.band)}>
                   <td className="cx-num">
                     {ticketUrl ? (
-                      <a href={ticketUrl + a.id} target="_blank" rel="noopener noreferrer">
+                      <a className="cx-link" href={ticketUrl + a.id} target="_blank" rel="noopener noreferrer">
                         #{a.id}
                       </a>
                     ) : (
@@ -116,7 +116,7 @@ function _u({ rows, title, empty, ticketUrl, showAgent, allLink }: Q) {
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </section>
   )
 }
@@ -165,7 +165,7 @@ function vg({ tiles, active, onPick, label }: Q) {
     <ul className="cx-stats" aria-label={label}>
       {tiles.map((s: Q) => (
         <li key={s.key}>
-          {/* kept raw: cx-stat is a full stat tile, not a button */}
+          {/* intentionally raw: cx-stat is a full stat tile, not a button */}
           <button
             type="button"
             className="cx-stat"
@@ -307,7 +307,7 @@ function Mu() {
           </span>
         </div>
         {rg({ label: "Filter queues", search: { value: r, onChange: a, placeholder: "Search queue names" } })}
-        <div className="cx-panel cx-tablewrap cc-chart" ref={o}>
+        <TableScroll label="Queues now" className="cx-panel cx-tablewrap cc-chart" ref={o}>
           <table className="cx-table">
             <thead>
               <tr>
@@ -358,7 +358,7 @@ function Mu() {
                     <td className="cx-num-col cx-num">
                       {y.unassigned ? (
                         y.kind === 'ticket' ? (
-                          <a href={resolveLink('#/aging?unassigned=1').href} title="Open the tickets nobody has">
+                          <a className="cx-link" href={resolveLink('#/aging?unassigned=1').href} title="Open the tickets nobody has">
                             {y.unassigned}
                           </a>
                         ) : (
@@ -379,7 +379,7 @@ function Mu() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       </section>
       <p className="cx-hint">
         Our queues (customer support groups and chats) come first. Tickets from{' '}
@@ -427,34 +427,35 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
     { label: 'Schedule adherence', v: pulse.adherence ?? null, cls: ' blue' },
   ]
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!e && !t}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
-          </h1>
-          {e ? (
-            <p className="page-purpose">
-              {To(e.now)}, {Yn(e.now)} Kuwait ·{' '}
-              {!e.specialist && e.role !== 'agent'
-                ? Cg(e)
-                : e.specialist
-                  ? 'Your open actions and the coaching signals you sent.'
-                  : e.role === 'agent'
-                    ? 'Your oldest open tickets first.'
-                    : e.role === 'tl'
-                      ? 'What needs you now, then your day in order.'
-                      : 'What is red right now, and which queue or team lead it sits with.'}
-            </p>
-          ) : null}
-        </div>
-        {e ? (
+    <PageShell
+      title={e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
+      purpose={
+        e ? (
+          <>
+            {To(e.now)}, {Yn(e.now)} Kuwait ·{' '}
+            {!e.specialist && e.role !== 'agent'
+              ? Cg(e)
+              : e.specialist
+                ? 'Your open actions and the coaching signals you sent.'
+                : e.role === 'agent'
+                  ? 'Your oldest open tickets first.'
+                  : e.role === 'tl'
+                    ? 'What needs you now, then your day in order.'
+                    : 'What is red right now, and which queue or team lead it sits with.'}
+          </>
+        ) : undefined
+      }
+      aside={
+        e ? (
           <div className="page-actions">
             {e.role !== 'agent' ? <Hf onDone={i} /> : null}
             {r ? <If item={r} /> : null}
           </div>
-        ) : null}
-      </header>
+        ) : undefined
+      }
+      className="cxp aging-page-head"
+      id="page-title"
+    >
       {e ? (
         <div className="grid grid-4 mb-3">
           <div className="stat" data-tone={aged ? 'bad' : 'ok'}>
@@ -517,8 +518,8 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                         <OvIco s={String(i.status ?? '')} />
                       </span>
                       <div className="wi-main">
-                        <div className="wi-t">{i.title}</div>
-                        <div className="wi-s">{who}</div>
+                        <div className="wi-t" title={String(i.title)}>{i.title}</div>
+                        <div className="wi-s" title={who}>{who}</div>
                       </div>
                       <div className="wi-side">
                         <div className="t">{Hi(Number(i.count) || 0)}</div>
@@ -605,7 +606,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
             <p className="cx-note">
               <span>
                 You own no tickets, so there is no aging list here. Seen something in a QA audit
-                that a team lead should raise? <a href={resolveLink('#/coaching').href}>Send a coaching signal</a>: it
+                that a team lead should raise? <a className="cx-link" href={resolveLink('#/coaching').href}>Send a coaching signal</a>: it
                 becomes a suggested topic in that person&apos;s next 1:1.
               </span>
             </p>
@@ -620,7 +621,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                   <h2 className="cx-section__title" id="today-h">
                     Check-ins today
                   </h2>
-                  <a href={resolveLink('#/checkins').href}>Open check-ins</a>
+                  <a className="cx-link" href={resolveLink('#/checkins').href}>Open check-ins</a>
                 </div>
                 <div className="cx-panel">
                   <Sg slots={e.slots} now={e.now} />
@@ -652,7 +653,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
       ) : (
         jl({ lines: 6 })
       )}
-    </section>
+    </PageShell>
   )
 }
 export default OverviewPage

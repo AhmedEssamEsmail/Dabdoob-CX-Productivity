@@ -7,7 +7,7 @@
  * upload parsers live in ../lib/heatmap-engine (As/Cs/cl/dl/hl/ul/xs + rn/Ts/
  * ml/gl/fl). google.script.run is the /api/queue/heatmap route. */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { Button, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Dialog, Empty, Input, PageShell, Seg, Select, TableScroll, Textarea, Toggle } from '@/features/shared/components/ui'
 import { fetchJson } from './shared'
 import {
   HM_AHT_GROUPS, hmChatSlotMin_, hmCsvParse_, hmCsv_, hmDeepMerge_, hmDefaults_,
@@ -59,6 +59,7 @@ function RegTable({ reg, full }: { reg: any; full: any }) {
   const a = [...new Set([...Object.keys(s.v2), ...Object.keys(s.old)])]
   return (
     <div className="hm-reg">
+      <TableScroll label="Contacts per week, by channel">
       <table className="trk-table hm-reg-table">
         <caption>Contacts per week, by channel</caption>
         <thead>
@@ -71,9 +72,9 @@ function RegTable({ reg, full }: { reg: any; full: any }) {
         <tbody>
           {a.map((l) => (
             <tr key={l}>
-              <th scope="row">{l}</th>
-              <td>{s.old[l] !== undefined ? hmFmt_(s.old[l]) : 'not in tab'}</td>
-              <td>{s.v2[l] !== undefined ? hmFmt_(s.v2[l]) : 'none'}</td>
+              <th scope="row" title={l}>{l}</th>
+              <td title={s.old[l] !== undefined ? hmFmt_(s.old[l]) : 'not in tab'}>{s.old[l] !== undefined ? hmFmt_(s.old[l]) : 'not in tab'}</td>
+              <td title={s.v2[l] !== undefined ? hmFmt_(s.v2[l]) : 'none'}>{s.v2[l] !== undefined ? hmFmt_(s.v2[l]) : 'none'}</td>
             </tr>
           ))}
           <tr>
@@ -83,6 +84,7 @@ function RegTable({ reg, full }: { reg: any; full: any }) {
           </tr>
         </tbody>
       </table>
+      </TableScroll>
       {s.err ? <p className="field-error">The HeatMap tab could not be read as a heatmap: {s.err}</p> : null}
       <p className="hm-hint">
         {(reg.notes || []).join(' ')} Rows 17 to 51 of the HeatMap tab ({(reg.outcomeRows || []).slice(16).filter((l: any[]) => l.some((r) => String(r).trim())).length} non-empty) are not compared yet.
@@ -221,17 +223,11 @@ function CountryChips({ page, selected, setSelected, onSaved }: { page: any; sel
     <div className="hm-countries" role="group" aria-labelledby="hm-countries-h">
       <h2 id="hm-countries-h" className="hm-h2">Countries</h2>
       <div className="hm-chips">
-        <label className={`hm-chip ${f ? 'is-on' : ''}`}>
-          {/* kept raw:hm-chip is a bespoke chip toggle (is-on class + hidden input), not a ui/Toggle pill */}
-          <input type="checkbox" checked={f} onChange={() => setSelected([])} />
-          All countries
-        </label>
+        <Toggle checked={f} onChange={() => setSelected([])}>All countries</Toggle>
         {o.map((b: string) => (
-          <label key={b} className={`hm-chip ${!f && selected.includes(b) ? 'is-on' : ''}`}>
-            {/* kept raw:hm-chip is a bespoke chip toggle (is-on class + hidden input), not a ui/Toggle pill */}
-            <input type="checkbox" checked={!f && selected.includes(b)} onChange={() => g(b)} />
+          <Toggle key={b} checked={!f && selected.includes(b)} onChange={() => g(b)}>
             {b}
-          </label>
+          </Toggle>
         ))}
       </div>
       <p className="hm-hint">Volumes are pooled across the countries you pick, then sized once. One team serves them all.</p>
@@ -280,14 +276,10 @@ function HmGroup({ title, children, open = true }: { title: string; children: Re
 /** Pn: a labelled checkbox with an optional inline hint. */
 function HmToggle({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
-    <label className="hm-toggle">
-      {/* kept raw:hm-toggle is a bespoke inline checkbox row, not a ui/Toggle pill */}
-      <input type="checkbox" checked={checked} onChange={(l) => onChange(l.currentTarget.checked)} />
-      <span>
-        {label}
-        {hint ? <span className="hm-hint hm-hint-inline">{hint}</span> : null}
-      </span>
-    </label>
+    <Toggle className="hm-toggle" checked={checked} onChange={onChange}>
+      {label}
+      {hint ? <span className="hm-hint hm-hint-inline">{hint}</span> : null}
+    </Toggle>
   )
 }
 
@@ -428,7 +420,7 @@ function AssumptionPanel({ a, set, chatSlotAuto, onReset }: { a: any; set: (path
           {l.map((d: any, u: number) => (
             <div className="hm-shift" key={d.id}>
               <label className="hm-toggle">
-                {/* kept raw:hm-shift enable checkbox is a bespoke hm-toggle row, not a ui/Toggle pill */}
+                {/* intentionally raw: grid-cell enable checkbox in a fixed --cx-space-8 column; a Toggle pill would overflow it */}
                 <input type="checkbox" checked={d.enabled !== false} onChange={(c) => i(u, { enabled: c.currentTarget.checked })} />
                 <span className={`hm-shift-name hm-shift-${String(d.id).toLowerCase()}`}>{d.id}</span>
               </label>
@@ -669,19 +661,16 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
           <h2 id="hm-grid-t" className="cx-section__title">Agents in each half hour</h2>
           <div className="cx-section__hint">Needed agents per half hour — pick a layer to compare rostered, on-floor and scheduled coverage.</div>
         </div>
-        <fieldset className="hm-chips">
-          <legend className="cx-sr">Show</legend>
-          {c.map((f) => (
-            <label key={f.id} className={`hm-chip ${layer === f.id ? 'is-on' : ''}`}>
-              {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
-              <input type="radio" name="hm-layer" checked={layer === f.id} onChange={() => setLayer(f.id)} />
-              {f.label}
-            </label>
-          ))}
-        </fieldset>
+        <Seg
+          name="hm-layer"
+          value={layer}
+          onChange={setLayer}
+          aria-label="Show"
+          options={c.map((f) => ({ value: f.id, label: f.label }))}
+        />
       </div>
       <div className="cx-panel--pad">
-      <div ref={a} className="hm-grid-scroll cc-chart" tabIndex={0} role="region" aria-label="Agents per interval and day">
+      <TableScroll ref={a} label="Agents per interval and day" className="hm-grid-scroll cc-chart">
         <table className="hm-grid">
           <thead>
             <tr>
@@ -728,7 +717,7 @@ function HmGrid({ plan, layer, setLayer }: { plan: any; layer: string; setLayer:
             </tr>
           </tbody>
         </table>
-      </div>
+      </TableScroll>
       <p className="hm-hint">Bars show which shift is on duty: {i.map((f: any) => f.id).join(' and ')}. Darker cells need more agents.</p>
       </div>
     </section>
@@ -750,7 +739,6 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
   countries: string[]; canAdmin: boolean; onClose: () => void
   onSaved: (r: any) => void; onCountryAdded: (c: string) => Promise<void>; onAht: (aht: Record<string, number>) => void
 }) {
-  const i = useRef<HTMLDialogElement | null>(null)
   const [h, p] = useState<any>(null)
   const [d, u] = useState('')
   const [c, o] = useState(false)
@@ -760,9 +748,6 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
   const [w, M] = useState(60)
   const [$, L] = useState('')
   const [H, O] = useState(false)
-  useEffect(() => {
-    if (i.current && !i.current.open) i.current.showModal?.()
-  }, [])
   async function T(A?: File) {
     if (A) {
       g('')
@@ -832,11 +817,11 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
     }
   }
   return (
-    <dialog ref={i} className="hm-dialog" aria-labelledby="hm-up" onClose={onClose} onCancel={onClose}>
+    <Dialog open labelledby="hm-up" onClose={onClose} className="hm-dialog">
       <h2 id="hm-up" className="hm-h2">Upload a heatmap</h2>
       <p className="hm-hint">Use volumes you prepared elsewhere. Headcount is worked out from them the same way, with the assumptions on this page.</p>
       <label className="hm-drop">
-        {/* kept raw:hm-drop is a bespoke file dropzone (hidden input + dashed frame), not a ui control */}
+        {/* intentionally raw: file input, no shared primitive */}
         <input type="file" accept=".csv,.xlsx" onChange={(A) => T(A.currentTarget.files?.[0] ?? undefined)} />
         <span>{d || 'Choose a .csv or .xlsx file'}</span>
       </label>
@@ -845,25 +830,29 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
         <div className="hm-up-opts">
           <fieldset className="hm-chips">
             <legend>Each row covers</legend>
-            {[60, 30].map((A) => (
-              <label key={A} className={`hm-chip ${w === A ? 'is-on' : ''}`}>
-                {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
-                <input type="radio" name="hm-int" checked={w === A} onChange={() => M(A)} />
-                {A === 60 ? 'One hour' : 'Half an hour'}
-              </label>
-            ))}
+            <Seg
+              name="hm-int"
+              value={String(w)}
+              onChange={(A) => M(Number(A))}
+              options={[
+                { value: '60', label: 'One hour' },
+                { value: '30', label: 'Half an hour' },
+              ]}
+            />
           </fieldset>
           {w === 60 ? <p className="hm-hint">Hourly values are split evenly into half hours. A half-hour file removes that assumption.</p> : null}
           {h.format === 'wide' ? (
             <fieldset className="hm-chips">
               <legend>This file is for</legend>
-              {['*', ...countries, OTHER].map((A) => (
-                <label key={A} className={`hm-chip ${m === A ? 'is-on' : ''}`}>
-                  {/* kept raw:hm-chip is a bespoke chip radio (is-on class + hidden input), not a ui/Seg */}
-                  <input type="radio" name="hm-c" checked={m === A} onChange={() => b(A)} />
-                  {A === '*' ? 'All countries together' : A === OTHER ? 'Other…' : A}
-                </label>
-              ))}
+              <Seg
+                name="hm-c"
+                value={m}
+                onChange={b}
+                options={['*', ...countries, OTHER].map((A) => ({
+                  value: A,
+                  label: A === '*' ? 'All countries together' : A === OTHER ? 'Other…' : A,
+                }))}
+              />
               {m === OTHER ? (
                 <Input className="input hm-other" placeholder="Country name" maxLength={40} value={v} onInput={(A) => y(A.currentTarget.value)} aria-label="Other country" />
               ) : null}
@@ -892,7 +881,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
           easier to prepare, then download the example and replace its numbers.
         </p>
         <p className="hm-need-h">Layout 1: one row per value (easiest to build from a pivot or a script)</p>
-        <div className="hm-need-scroll">
+        <TableScroll label="What the upload file needs" className="hm-need-scroll">
           <table className="hm-need-table">
             <thead>
               <tr>
@@ -923,7 +912,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
               </tr>
             </tbody>
           </table>
-        </div>
+        </TableScroll>
         <ul className="hm-need-list">
           <li>
             <code>day</code> is Sun, Mon, Tue, Wed, Thu, Fri or Sat. <code>interval</code> is the start of the hour, like 09:00 (or 09:30 for half-hour
@@ -958,7 +947,7 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
           {H ? 'Saving…' : 'Use this heatmap'}
         </Button>
       </div>
-    </dialog>
+    </Dialog>
   )
 }
 
@@ -1021,14 +1010,12 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
   const O = $.plan
   const T = hmChatSlotMin_(M)
   return (
-    <section className="page hm-page" aria-labelledby="page-title">
-      <header className="page-head hm-head">
-        <div>
-          <h1 id="page-title" className="page-title">{route.title}</h1>
-          <p className="page-purpose">
-            How many agents each half hour needs, and how many people to hire for each shift.
-          </p>
-        </div>
+    <PageShell
+      id="page-title"
+      className="hm-page"
+      title={route.title}
+      purpose="How many agents each half hour needs, and how many people to hire for each shift."
+      aside={
         <div className="hm-head-actions">
           {n && n.inputs.length ? (
             <div className="field hm-source">
@@ -1047,7 +1034,8 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
             Upload heatmap
           </Button>
         </div>
-      </header>
+      }
+    >
       {h ? (
         <p className="hm-banner hm-banner-error" role="alert">{h}</p>
       ) : null}
@@ -1132,6 +1120,6 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
           }}
         />
       ) : null}
-    </section>
+    </PageShell>
   )
 }

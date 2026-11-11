@@ -10,7 +10,7 @@
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { Chip, useTip } from '@/features/shared/components/shell/ui'
-import { Button, Empty, Input, Seg } from '@/features/shared/components/ui'
+import { Button, Empty, Input, Seg, TableScroll, Toggle } from '@/features/shared/components/ui'
 import { pageParams, resolveLink } from '@/features/shared/shell/gates'
 import {
   BasisSeg,
@@ -319,7 +319,7 @@ function BreakdownTable({
           <span aria-current="page">{l}</span>
         </nav>
       ) : null}
-      <div className="cx-tablewrap">
+      <TableScroll label="Quality scores" className="cx-tablewrap">
         <table className="cx-table">
           <thead>
             <tr>
@@ -383,7 +383,7 @@ function BreakdownTable({
             )}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </section>
   )
 }
@@ -513,14 +513,9 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
             <span className="qs-range">
               {qaDayLabel(i.from)} to {qaDayLabel(i.to)}
             </span>
-            <label className="qs-check">
-              <input
-                type="checkbox"
-                checked={p}
-                onChange={(y) => m(y.currentTarget.checked)}
-              />{' '}
+            <Toggle className="qs-check" checked={p} onChange={(c) => m(c)}>
               Compare with the {i.days} days before
-            </label>
+            </Toggle>
             <BasisSeg basis={n.basis} onChange={(y) => h({ basis: y, agent: '' })} />
           </div>
           <p className="cx-faint qa-basisnote">

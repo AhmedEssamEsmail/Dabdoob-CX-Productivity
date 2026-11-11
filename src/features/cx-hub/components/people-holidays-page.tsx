@@ -6,7 +6,7 @@
  * button + result note, and the holiday form/table. */
 
 import { useState } from 'react'
-import { Button, Chip, Empty, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 import { Eo, Ft, jl, Oo, sh, Ti, To, Vf, Vi, Yn } from './hub-shared'
 
 type Q = Record<string, any>
@@ -57,7 +57,7 @@ function Dg({ r: n, nameOf: e }: { r: Q; nameOf: (x: string) => string }) {
                   {e(t.email)}: &quot;{t.manager}&quot; ({t.reason}). If {t.manager} is on the roster
                   below, pick them under Reports to. If not (for example a manager outside CX), add{' '}
                   <code>{'"' + t.manager + '": "their email"'}</code> to{' '}
-                  <a href="#/admin">roster_manager_aliases in Admin</a>; an override can only pick
+                  <a className="cx-link" href="#/admin">roster_manager_aliases in Admin</a>; an override can only pick
                   someone on the roster.
                 </li>
               ))}
@@ -174,17 +174,15 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
         <legend className="cx-label">Days off</legend>
         <div className="dq-days">
           {t.map((x) => (
-            <label className="cx-toggle" key={x}>
-              <input
-                type="checkbox"
-                checked={o.includes(x)}
-                onChange={(b) => {
-                  const w = b.currentTarget.checked
-                  c((S) => (w ? t.filter((_) => _ === x || S.includes(_)) : S.filter((_) => _ !== x)))
-                }}
-              />
-              <span>{x}</span>
-            </label>
+            <Toggle
+              key={x}
+              checked={o.includes(x)}
+              onChange={(w) =>
+                c((S) => (w ? t.filter((_) => _ === x || S.includes(_)) : S.filter((_) => _ !== x)))
+              }
+            >
+              {x}
+            </Toggle>
           ))}
         </div>
         <span className="cx-hint">None ticked = the country or default pattern.</span>
@@ -250,16 +248,17 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
   const b = e ? e.people.filter((S: Q) => y || S.active) : []
   const w = (S: string) => e?.people.find((_: Q) => _.email === S)?.name || S
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!e && !t}>
-      <Vf
-        title={n.title}
-        sub="Role, who each person reports to, where they are based, their days off, and public holidays by country. The daily HCT sync never changes what you set here."
-        aside={
-          <Button className="cx-btn" disabled={p} onClick={x}>
-            {p ? 'Syncing…' : 'Sync roster from HCT now'}
-          </Button>
-        }
-      />
+    <Vf
+      title={n.title}
+      sub="Role, who each person reports to, where they are based, their days off, and public holidays by country. The daily HCT sync never changes what you set here."
+      aside={
+        <Button className="cx-btn" disabled={p} onClick={x}>
+          {p ? 'Syncing…' : 'Sync roster from HCT now'}
+        </Button>
+      }
+      className="cxp"
+      id="page-title"
+    >
       {u ? (
         <p className="cx-error" role="alert">
           {u}
@@ -288,13 +287,12 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   Roles, who each person reports to, where they are based, and their days off.
                 </div>
               </div>
-              <label className="cx-toggle">
-                <input type="checkbox" checked={y} onChange={(S) => v(S.currentTarget.checked)} />
-                <span>Show people who left</span>
-              </label>
+              <Toggle checked={y} onChange={v}>
+                Show people who left
+              </Toggle>
             </div>
             {b.length ? (
-            <div className="cx-tablewrap">
+            <TableScroll label="People roster" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -390,7 +388,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             ) : (
               <Empty
                 icon={
@@ -455,7 +453,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
               ) : null}
             </form>
             {e.holidays.length ? (
-            <div className="cx-tablewrap">
+            <TableScroll label="Public holidays" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -484,7 +482,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
             ) : (
               <Empty
                 icon={
@@ -499,7 +497,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
       ) : (
         jl({ lines: 10 })
       )}
-    </section>
+    </Vf>
   )
 }
 export default PeopleHolidaysPage

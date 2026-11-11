@@ -156,6 +156,7 @@ function Slider({ id, value, note, zones, onSave }: { id: string; value: number 
         <label className="cx-sr" htmlFor={`dk-r-${id}`}>
           Rating, 0 to 100
         </label>
+        {/* intentionally raw: range slider styled by .dk-slider with zone data-attrs; labelled via cx-sr label htmlFor */}
         <input
           id={`dk-r-${id}`}
           type="range"
@@ -316,7 +317,7 @@ function MailItem({ m }: { m: MailSummary['items'][number] }) {
   return (
     <li>
       <div className="dk-row">
-        <a href={m.gmailUrl} target="_blank" rel="noopener noreferrer">
+        <a className="cx-link" href={m.gmailUrl} target="_blank" rel="noopener noreferrer">
           {m.subject}
         </a>
         {m.status === 'open' ? <Badge tone={m.breached ? 'bad' : 'warn'}>{m.breached ? 'Open past due' : 'Open'}</Badge> : null}

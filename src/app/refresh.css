@@ -25,6 +25,7 @@
 :root .page-actions {
   display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
 }
+:root .page-actions > [role="status"] { flex-basis: 100%; min-inline-size: 0; overflow-wrap: anywhere; }
 :root .aging-page-head { display: grid; grid-template-columns: minmax(0, 1fr); }
 :root .aging-page-head .page-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) 12rem; min-inline-size: 0; }
 :root .aging-page-head .page-actions > .cx-section__hint { min-inline-size: 0; overflow-wrap: anywhere; }
@@ -139,6 +140,9 @@
 :root .cpk-item:hover { background: var(--cx-accent-soft); color: var(--cx-accent-text); }
 :root .cpk-item.on { background: var(--cx-accent-soft); color: var(--cx-accent-text); font-weight: var(--w-strong); }
 :root .cpk-item.on svg { opacity: 1; }
+:root .cpk-item[aria-disabled] { opacity: .55; cursor: not-allowed; }
+:root .cpk-item[aria-disabled]:hover { background: transparent; color: var(--cx-ink-2); }
+:root .cpk-item[aria-disabled].on { background: transparent; color: var(--cx-ink-2); font-weight: var(--w-medium); }
 :root .cpk-kbd {
   margin-inline-start: auto; font: var(--w-medium) var(--cx-text-xs) var(--cx-font-mono);
   background: var(--cx-surface-2); border: 1px solid var(--cx-line-2);
@@ -461,6 +465,9 @@
 :root .cx-totals__item dd { margin: 0; font-size: var(--cx-text-2xl); font-weight: var(--cx-weight-strong); line-height: 1.1; }
 :root .cx-details summary { cursor: pointer; padding: var(--cx-space-3) var(--cx-space-4); font-weight: var(--cx-weight-strong); font-size: var(--cx-text-sm); min-height: var(--cx-target); display: flex; align-items: center; }
 :root .cx-refresh{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--cx-space-2)}
+:root .cx-refresh>[role="status"]{flex-basis:100%;min-inline-size:0;overflow-wrap:anywhere}
+:root .cx-refresh>.cx-btn,:root .cx-refresh>button{min-inline-size:11rem}
+:root .aging-page-head .cx-refresh>button,:root .aging-page-head .cx-refresh>.cx-btn{min-inline-size:0}
 :root .cx-statusline{display:block;font-weight:var(--cx-weight-regular);font-size:var(--cx-text-sm);color:var(--cx-text-muted)}
 :root .cx-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1px;margin:0;background:var(--cx-line);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object);overflow:hidden}
 :root .cx-totals__item{background:var(--cx-surface);padding:var(--cx-space-3) var(--cx-space-4);display:grid;gap:2px}

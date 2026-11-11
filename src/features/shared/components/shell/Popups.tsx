@@ -8,11 +8,12 @@ import {
 } from '@/features/shared/shell/context'
 import { resolveLink } from '@/features/shared/shell/gates'
 import { usePoll } from '@/features/shared/lib/use-poll'
-import { useDialogModal } from '@/features/shared/lib/use-dialog-modal'
 import { timeAgo } from '@/features/shared/components/shell/ui'
 import { D } from '@/features/shared/shell/i18n'
 import OneOnOneAlerts, { chime } from '@/features/shared/components/shell/OneOnOneAlerts'
 import { Toasts } from '@/features/shared/components/shell/Toasts'
+import { Button } from '@/features/shared/components/ui/Button'
+import { Dialog } from '@/features/shared/components/ui/Dialog'
 
 /**
  * ya — reminder popup dialog + the 1:1 alert stack + the toast region.
@@ -71,9 +72,8 @@ export default function Popups({
   const later = () =>
     current && setDismissed((set) => new Set(set).add(current.id))
 
-  /* Shared dialog lifecycle: showModal/close sync, ESC → dismiss, focus
-     restore to the invoking element. */
-  const { dialogRef, onCancel } = useDialogModal(!!current, later)
+  /* Shared dialog lifecycle (showModal/close sync, ESC → dismiss, focus
+     restore to the invoking element) is provided by the Dialog primitive. */
 
   /* Topbar bell: re-open the reminder dialog by clearing dismissals
      (adjust-during-render, same pattern as prevRoutePath). */
@@ -89,12 +89,7 @@ export default function Popups({
 
   return (
     <>
-      <dialog
-        ref={dialogRef}
-        className="popup"
-        aria-labelledby="popup-title"
-        onCancel={onCancel}
-      >
+      <Dialog open={!!current} onClose={later} labelledby="popup-title">
         {current ? (
           <div className="popup-body">
             <p className="popup-kicker">
@@ -123,14 +118,13 @@ export default function Popups({
                   {current.kind.startsWith('qa_') ? D('Open') : D('Log it now')}
                 </a>
               ) : null}
-              {/* kept raw: legacy .btn contract */}
-              <button type="button" className="btn btn-quiet" onClick={later}>
+              <Button variant="quiet" className="btn btn-quiet" onClick={later}>
                 {D('Later')}
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}
-      </dialog>
+      </Dialog>
       <OneOnOneAlerts incoming={alerts} />
       <Toasts />
     </>

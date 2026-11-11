@@ -170,7 +170,7 @@ function SlaTr({ m }: { m: SlaRow }) {
     <tr>
       <td className="md-when">{V(m.receivedAt)}</td>
       <td>
-        <a href={m.gmailUrl} target="_blank" rel="noopener noreferrer">
+        <a className="cx-link" href={m.gmailUrl} target="_blank" rel="noopener noreferrer">
           {m.subject}
         </a>
         <span className="dk-fine">
@@ -240,7 +240,7 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
       </header>
       <p className="md-meta">
         From {a.requesterName}, {V(a.receivedAt)}.{' '}
-        <a href={a.gmailUrl} target="_blank" rel="noopener noreferrer">
+        <a className="cx-link" href={a.gmailUrl} target="_blank" rel="noopener noreferrer">
           Open in Gmail
         </a>
       </p>

@@ -20,7 +20,7 @@ import {
   inputDT,
   routeOf,
 } from './pw'
-import { Button, Chip, Empty, Input, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Seg, Select, Textarea, Toggle } from '@/features/shared/components/ui'
 
 /* I — the meetings facade (Meetings.js + Actions.js post-update). */
 const api = {
@@ -183,14 +183,13 @@ function ActionRows({
           </div>
           {allowTask ? (
             <div className="pw-inline pw-mt-4">
-              <label className="pw-check">
-                <input
-                  type="checkbox"
-                  checked={!!row.trackAsTask}
-                  onChange={(e) => patch(i, { trackAsTask: e.currentTarget.checked })}
-                />
+              <Toggle
+                className="pw-check"
+                checked={!!row.trackAsTask}
+                onChange={(c) => patch(i, { trackAsTask: c })}
+              >
                 Track as a TL task
-              </label>
+              </Toggle>
               {row.trackAsTask ? (
                 <label className="field pw-max-w-160">
                   <span className="field-label">Estimated hours</span>
@@ -329,8 +328,8 @@ function MeetingAction({ actionId, title, due }: { actionId: string; title: stri
   return (
     <div className="workitem">
       <div className="wi-main">
-        <div className="wi-t">{title}</div>
-        <div className="wi-s">
+        <div className="wi-t" title={title}>{title}</div>
+        <div className="wi-s" title={`Due ${dayLabel(due)}`}>
           Due {dayLabel(due)} {due < today() ? <Chip status="bad">Overdue</Chip> : null}
         </div>
       </div>
@@ -450,8 +449,13 @@ function SeriesView({
             .map((m: any) => (
               <div key={m.meetingId} className="workitem">
                 <div className="wi-main">
-                  <div className="wi-t">{dayTime(m.heldAt)}</div>
-                  <div className="wi-s">{m.decisions ? m.decisions.split('\n')[0] : 'No decisions logged'}</div>
+                  <div className="wi-t" title={dayTime(m.heldAt)}>{dayTime(m.heldAt)}</div>
+                  <div
+                    className="wi-s"
+                    title={m.decisions ? m.decisions.split('\n')[0] : 'No decisions logged'}
+                  >
+                    {m.decisions ? m.decisions.split('\n')[0] : 'No decisions logged'}
+                  </div>
                 </div>
                 <div className="wi-side">
                   <Button size="sm" disabled={busy} onClick={() => onOpen(m.meetingId)}>
@@ -526,8 +530,11 @@ function MeetingView({
               .filter((a: any) => a.review)
               .map((a: any) => (
                 <div key={a.actionId} className="pw-carry">
-                  <div className="pw-row-title">{a.title}</div>
-                  <div className="pw-row-meta">
+                  <div className="pw-row-title" title={a.title}>{a.title}</div>
+                  <div
+                    className="pw-row-meta"
+                    title={`${a.ownerName}: ${a.review.outcome === 'carried' ? `still open, now due ${dayLabel(a.review.newDueDate)}` : a.review.outcome}${a.review.note ? `. ${a.review.note}` : ''}`}
+                  >
                     {a.ownerName}:{' '}
                     {a.review.outcome === 'carried' ? `still open, now due ${dayLabel(a.review.newDueDate)}` : a.review.outcome}
                     {a.review.note ? `. ${a.review.note}` : ''}
@@ -602,8 +609,8 @@ function MeetingView({
             {view.newActions.map((a: any) => (
               <div key={a.actionId} className="workitem">
                 <div className="wi-main">
-                  <div className="wi-t">{a.title}</div>
-                  <div className="wi-s">
+                  <div className="wi-t" title={a.title}>{a.title}</div>
+                  <div className="wi-s" title={`${a.ownerName}, due ${dayLabel(a.dueDate)}`}>
                     {a.ownerName}, due {dayLabel(a.dueDate)}
                   </div>
                 </div>
@@ -636,15 +643,15 @@ function MeetingView({
         </h3>
         <div className="pw-panel pw-attend">
           {view.attendees.map((a: any) => (
-            <label key={a.email} className="pw-check">
-              <input
-                type="checkbox"
-                disabled={!canEdit}
-                checked={!!attendance[a.email]}
-                onChange={(e) => setAttendance((v) => ({ ...v, [a.email]: e.currentTarget.checked }))}
-              />
+            <Toggle
+              key={a.email}
+              className="pw-check"
+              disabled={!canEdit}
+              checked={!!attendance[a.email]}
+              onChange={(c) => setAttendance((v) => ({ ...v, [a.email]: c }))}
+            >
               {a.name}
-            </label>
+            </Toggle>
           ))}
         </div>
       </div>
@@ -709,14 +716,17 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
       <div className="form-grid pw-mt-12">
         <div className="field">
           <span className="field-label">Type</span>
-          <div className="pw-seg" role="group" aria-label="Type">
-            {(admin ? ['WBR', 'BR', 'team', 'adhoc'] : ['team', 'adhoc']).map((t) => (
-               
-              <button key={t} type="button" aria-pressed={type === t} onClick={() => setType(t)}>
-                {TYPE_LABELS[t]}
-              </button>
-            ))}
-          </div>
+          <Seg
+            className="pw-seg"
+            name="meeting-type"
+            aria-label="Type"
+            value={type}
+            onChange={setType}
+            options={(admin ? ['WBR', 'BR', 'team', 'adhoc'] : ['team', 'adhoc']).map((t) => ({
+              value: t,
+              label: TYPE_LABELS[t],
+            }))}
+          />
         </div>
         <label className="field">
           <span className="field-label">Name</span>
@@ -744,16 +754,16 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
           {data.people
             .filter((p: any) => p.email !== chair)
             .map((p: any) => (
-              <label key={p.email} className="pw-check">
-                <input
-                  type="checkbox"
-                  checked={attendees.includes(p.email)}
-                  onChange={(e) =>
-                    setAttendees((v) => (e.currentTarget.checked ? [...v, p.email] : v.filter((x) => x !== p.email)))
-                  }
-                />
+              <Toggle
+                key={p.email}
+                className="pw-check"
+                checked={attendees.includes(p.email)}
+                onChange={(c) =>
+                  setAttendees((v) => (c ? [...v, p.email] : v.filter((x) => x !== p.email)))
+                }
+              >
                 {p.name}
-              </label>
+              </Toggle>
             ))}
         </div>
       </fieldset>
@@ -846,7 +856,7 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
             <div className="pw-two">
               <nav className="pw-rows" aria-label="Meeting series">
                 {data.series.map((s: any) => (
-                   
+                  // intentionally raw: series nav row; bespoke .pw-series-btn styling/aria-current
                   <button
                     key={s.seriesId}
                     type="button"

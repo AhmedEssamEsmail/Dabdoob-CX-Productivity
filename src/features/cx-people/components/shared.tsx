@@ -28,7 +28,7 @@ const kwTime = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour:
 const kwDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: 'numeric', month: 'short' })
 export const hm = (t?: string | null) => (t ? kwTime.format(new Date(t)) : '')
 export const dayAt = (t?: string | null) => (t ? kwDay.format(new Date(t)) : '')
-export const fmt = (n: number) => n.toLocaleString('en-US')
+export { fmt } from '@/features/shared/lib/format'
 
 export function AsOfHint({ iso, what = 'Freshdesk' }: { iso?: string | null; what?: string }) {
   return iso ? (

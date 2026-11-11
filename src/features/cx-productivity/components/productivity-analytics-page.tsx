@@ -1,8 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useRef } from 'react'
-import { LinesSkeleton, LoadError, PageHead } from '@/features/shared/components/shell/ui'
-import { Button, Chip } from '@/features/shared/components/ui'
+import { Button, Chip, PageShell, TableScroll } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import { toUserText } from '@/features/shared/lib/error-copy'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
@@ -116,30 +115,31 @@ export function ProductivityAnalyticsPage() {
     </div>
   ) : null
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!s && !error}>
-      <PageHead
-        title={ROUTE.title}
-        aside={aside}
-        sub="Raw vs reviewed status per agent; reclassifying IDLE time changes the Productivity % denominator."
-      />
-      {error ? (
-        <LoadError
-          message={toUserText(error, { isAdmin, feature: 'Productivity analytics' })}
-          onRetry={reload}
-        />
-      ) : null}
-      {!s && !error ? <LinesSkeleton lines={6} /> : null}
+    <PageShell
+      id="page-title"
+      className="cxp page"
+      title={ROUTE.title}
+      purpose="Raw vs reviewed status per agent; reclassifying IDLE time changes the Productivity % denominator."
+      aside={aside}
+      busy={!s && !error}
+      error={
+        error
+          ? toUserText(error, { isAdmin, feature: 'Productivity analytics' })
+          : null
+      }
+      onRetry={reload}
+    >
       {s ? (
         <Fragment>
           <section className="cx-panel" aria-labelledby="pa-a-h">
             <div className="cx-section__head">
               <div>
-                <h2 id="pa-a-h" className="cx-section__title" style={{ margin: 0 }}>
+                <h2 id="pa-a-h" className="cx-section__title">
                   Idle and productivity, as logged and after review
                 </h2>
               </div>
             </div>
-            <div className="cx-tablewrap">
+            <TableScroll label="Idle and productivity by agent" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -183,18 +183,18 @@ export function ProductivityAnalyticsPage() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
           <section className="cx-panel" aria-labelledby="pa-t-h">
             <div className="cx-section__head">
               <div>
-                <h2 id="pa-t-h" className="cx-section__title" style={{ margin: 0 }}>
+                <h2 id="pa-t-h" className="cx-section__title">
                   How flags were reviewed, by team lead
                 </h2>
                 <div className="cx-section__hint">Flags raised in the week</div>
               </div>
             </div>
-            <div className="cx-tablewrap">
+            <TableScroll label="Flag review by team lead" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -250,17 +250,17 @@ export function ProductivityAnalyticsPage() {
                   ) : null}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
           <section className="cx-panel" aria-labelledby="pa-d-h">
             <div className="cx-section__head">
               <div>
-                <h2 id="pa-d-h" className="cx-section__title" style={{ margin: 0 }}>
+                <h2 id="pa-d-h" className="cx-section__title">
                   Disputes, last 4 weeks
                 </h2>
               </div>
             </div>
-            <div className="cx-tablewrap">
+            <TableScroll label="Disputes by agent" className="cx-tablewrap">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -289,12 +289,12 @@ export function ProductivityAnalyticsPage() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           </section>
           <section className="cx-panel" aria-labelledby="pa-w-h">
             <div className="cx-section__head">
               <div>
-                <h2 id="pa-w-h" className="cx-section__title" style={{ margin: 0 }}>
+                <h2 id="pa-w-h" className="cx-section__title">
                   Last 4 weeks
                 </h2>
               </div>
@@ -307,7 +307,7 @@ export function ProductivityAnalyticsPage() {
             <section className="cx-panel" aria-labelledby="pa-h-h">
               <div className="cx-section__head">
                 <div>
-                  <h2 id="pa-h-h" className="cx-section__title" style={{ margin: 0 }}>
+                  <h2 id="pa-h-h" className="cx-section__title">
                     Idle after review by hour and weekday
                   </h2>
                   <div className="cx-section__hint">
@@ -322,7 +322,7 @@ export function ProductivityAnalyticsPage() {
             <section className="cx-panel" aria-labelledby="pa-c-h">
               <div className="cx-section__head">
                 <div>
-                  <h2 id="pa-c-h" className="cx-section__title" style={{ margin: 0 }}>
+                  <h2 id="pa-c-h" className="cx-section__title">
                     {`Calibration of X (now ${s.rule.x} in ${s.rule.windowMin} minutes)`}
                   </h2>
                 </div>
@@ -332,6 +332,6 @@ export function ProductivityAnalyticsPage() {
           ) : null}
         </Fragment>
       ) : null}
-    </section>
+    </PageShell>
   )
 }

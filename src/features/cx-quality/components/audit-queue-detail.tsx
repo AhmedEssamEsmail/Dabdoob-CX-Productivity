@@ -9,7 +9,8 @@
  *   Jn — non-ticket remove reasons, REQUEST/NONTICKET sort maps. */
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
-import { Button, Input, Select } from '@/features/shared/components/ui'
+import { Button, Empty, Input, Select, TableScroll } from '@/features/shared/components/ui'
+import { fmt } from '@/features/shared/lib/format'
 import {
   P,
   Q,
@@ -479,7 +480,7 @@ export function RequestedAudits({
         <RequestForm d={d} onDone={(x) => (l(false), Q(x), reload())} />
       ) : null}
       {requests.length ? (
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Audit requests" className="cx-panel cx-tablewrap">
           <table className="cx-table">
             <thead>
               <tr>
@@ -524,7 +525,7 @@ export function RequestedAudits({
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       ) : (
         <p className="cx-muted">No audit requests this week.</p>
       )}
@@ -794,7 +795,7 @@ export function NonTicketAudits({
     >
       {l ? <NonTicketForm d={d} onDone={(h) => (p(false), Q(h), reloadData())} /> : null}
       {rows.length ? (
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Non-ticket audits" className="cx-panel cx-tablewrap">
           <table className="cx-table">
             <thead>
               <tr>
@@ -834,7 +835,7 @@ export function NonTicketAudits({
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       ) : (
         <p className="cx-muted">
           None yet. Add a cash refund or another non-ticket action to audit it.
@@ -1009,7 +1010,7 @@ export function OffQueueAudits({
         <RequestForm d={d} off onDone={requestDone} />
       ) : null}
       {rows.length ? (
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Off-queue audits" className="cx-panel cx-tablewrap">
           <table className="cx-table">
             <thead>
               <tr>
@@ -1040,8 +1041,10 @@ export function OffQueueAudits({
               ))}
             </tbody>
           </table>
-        </div>
-      ) : null}
+        </TableScroll>
+      ) : (
+        <Empty title="No off-queue audits yet." />
+      )}
     </QaSection>
   )
 }
@@ -1193,7 +1196,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
             else 1.
           </p>
         )}
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Contact types" className="cx-panel cx-tablewrap">
           <table className="cx-table">
             <thead>
               <tr>
@@ -1208,7 +1211,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                 _.map((v) => (
                   <tr key={v.name}>
                     <td>{v.name}</td>
-                    <td className="cx-num">{v.seen.toLocaleString()}</td>
+                    <td className="cx-num">{fmt(v.seen)}</td>
                     <td>
                       <WeightInput
                         label={`Weight for ${v.name}`}
@@ -1228,7 +1231,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
               )}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       </section>
       <section aria-labelledby="qs-st">
         <h3 id="qs-st" className="cx-section__title">
@@ -1240,7 +1243,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
           status, even if the ticket moved on since (use it for No Response From
           customer). Names match ignoring case and spacing.
         </p>
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Statuses" className="cx-panel cx-tablewrap">
           <table className="cx-table">
             <thead>
               <tr>
@@ -1252,10 +1255,11 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
               </tr>
             </thead>
             <tbody>
-              {i.map((v) => (
+              {i.length ? (
+                i.map((v) => (
                 <tr data-excluded={v.excluded ? 'true' : undefined} key={v.name}>
                   <td>{v.name}</td>
-                  <td className="cx-num">{v.seen.toLocaleString()}</td>
+                  <td className="cx-num">{fmt(v.seen)}</td>
                   <td>
                     <WeightInput
                       label={`Weight for ${v.name}`}
@@ -1270,6 +1274,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                   <td>
                     <div className="qa-actions">
                       <label className="cx-toggle">
+                        {/* intentionally raw: Toggle can't forward the per-row aria-label; cx-toggle pattern keeps it */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets whose status now is ${v.name}`}
@@ -1279,6 +1284,7 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                         <span>Status now</span>
                       </label>
                       <label className="cx-toggle">
+                        {/* intentionally raw: Toggle can't forward the per-row aria-label; cx-toggle pattern keeps it */}
                         <input
                           type="checkbox"
                           aria-label={`Exclude tickets the agent set to ${v.name}`}
@@ -1290,10 +1296,15 @@ function SamplingForm({ page, onSaved }: { page: any; onSaved: () => void }) {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5}>No statuses recorded yet.</td>
+                </tr>
+              )}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       </section>
       {u ? (
         <p className="cx-error" role="alert">
@@ -1419,7 +1430,7 @@ export function AccessPanel() {
               placeholder="Name, email or position"
             />
           </div>
-          <div className="cx-tablewrap">
+          <TableScroll label="Audit access" className="cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -1475,7 +1486,7 @@ export function AccessPanel() {
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
           {t.log.length ? (
             <>
               <h3 className="cx-label">Recent changes</h3>

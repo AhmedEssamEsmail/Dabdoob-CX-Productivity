@@ -23,7 +23,7 @@ import {
   prefersReducedMotion,
 } from './pw'
 import { useBootSelector, getBoot } from '@/features/shared/shell/context'
-import { Button, Chip, Empty, Input, Meter, Select, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, Meter, Seg, Select, TableScroll, Textarea, Toggle } from '@/features/shared/components/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 import { api } from './one-on-ones-api'
 import {
@@ -129,7 +129,7 @@ function OoTickets({ rows, url, showAgent }: { rows: any[]; url?: string; showAg
       {rows.map((r) => (
         <li key={r.id}>
           {url ? (
-            <a href={url + r.id} target="_blank" rel="noopener noreferrer">
+            <a className="cx-link" href={url + r.id} target="_blank" rel="noopener noreferrer">
               #{r.id}
             </a>
           ) : (
@@ -206,7 +206,7 @@ function TeamBlock({ ctx, name }: { ctx: any; name: string }) {
             </div>
           </div>
           <h3 className="oo-h3">Agents, weakest first (lowest of productivity, quality, FCR)</h3>
-          <div className="oo-scroll">
+          <TableScroll label="Team agents, weakest first" className="oo-scroll">
             <table className="oo-table">
               <thead>
                 <tr>
@@ -256,7 +256,7 @@ function TeamBlock({ ctx, name }: { ctx: any; name: string }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
           <p className="oo-fine">
             Productivity, quality and FCR are this month on the scorecard, with the change on last month. Queue 7 d is
             productive time over the last 7 days, with the change on the 7 before.
@@ -281,7 +281,7 @@ function TeamBlock({ ctx, name }: { ctx: any; name: string }) {
               <ul className="oo-flags">
                 {team.flags.map((f: any) => (
                   <li key={f.ticketId + f.at}>
-                    <a href={ctx.ticketUrl ? ctx.ticketUrl + f.ticketId : undefined} target="_blank" rel="noopener noreferrer">
+                    <a className="cx-link" href={ctx.ticketUrl ? ctx.ticketUrl + f.ticketId : undefined} target="_blank" rel="noopener noreferrer">
                       #{f.ticketId}
                     </a>{' '}
                     <b>{f.by}</b>: {f.note}
@@ -682,7 +682,7 @@ function PerfLink({ email, name }: { email: string; name: string }) {
     <p className="oo-block">
       {link.missing ? (
         <span className="oo-muted">
-          {name}&apos;s performance page needs the TL desk app&apos;s URL (Hub Admin, Connected apps).
+          {name}&apos;s performance page needs the TL desk app&apos;s URL (Hub Admin &gt; Settings).
         </span>
       ) : (
         <a className="btn btn-primary" href={link.href} target="_blank" rel="noopener noreferrer">
@@ -714,6 +714,7 @@ function QueueBlock({ ctx }: { ctx: any }) {
       </h2>
       {last7 ? (
         <>
+          <TableScroll label="Queue productivity, last 7 days">
           <table className="oo-table oo-table--narrow">
             <thead>
               <tr>
@@ -732,6 +733,7 @@ function QueueBlock({ ctx }: { ctx: any }) {
               <QueueRow label="Waiting address vs target" now={last7.waPct} before={prev7?.waPct ?? null} />
             </tbody>
           </table>
+          </TableScroll>
           <p className="oo-fine">
             {last7.days} day{last7.days === 1 ? '' : 's'} worked: {last7.inboundAchieved} inbound handled,{' '}
             {last7.inboundMissed} missed, {last7.textingAchieved} texting, {last7.waAchieved} waiting address. Idle{' '}
@@ -808,14 +810,14 @@ function ProjStatusForm({ t, onSaved, onCancel }: { t: any; onSaved: (x: any) =>
           : ''
   return (
     <div className="oo-proj-form">
-      <div className="pw-seg" role="group" aria-label="Status">
-        {PROJ_STATUS.map((b) => (
-           
-          <button key={b.id} type="button" aria-pressed={status === b.id} onClick={() => setStatus(b.id)}>
-            {b.label}
-          </button>
-        ))}
-      </div>
+      <Seg
+        className="pw-seg"
+        name={`proj-status-${t.actionId}`}
+        aria-label="Status"
+        value={status}
+        onChange={setStatus}
+        options={PROJ_STATUS.map((b) => ({ value: b.id, label: b.label }))}
+      />
       {lbl ? (
         <label className="field">
           <span className="field-label">{lbl}</span>
@@ -1332,14 +1334,14 @@ function TopicSection({
         <h3 className="pw-h2 pw-h2--flush">
           {def.label}
         </h3>
-        <div className="pw-seg" role="group" aria-label="Raised by">
-          {raisers.map((r) => (
-             
-            <button key={r} type="button" aria-pressed={state.raisedBy === r} onClick={() => onChange({ raisedBy: r })}>
-              {raiserLabel[r]}
-            </button>
-          ))}
-        </div>
+        <Seg
+          className="pw-seg"
+          name={`raised-by-${kind}-${n}`}
+          aria-label="Raised by"
+          value={state.raisedBy}
+          onChange={(v) => onChange({ raisedBy: v })}
+          options={raisers.map((r) => ({ value: r, label: raiserLabel[r] }))}
+        />
       </header>
       <div className="pw-topic-body">
         {def.noData ? <p className="pw-small pw-muted">No performance data is shown for this topic, on purpose.</p> : null}
@@ -1367,19 +1369,17 @@ function TopicSection({
           ) : f.type === 'yes_no' ? (
             <div key={f.id} className="field">
               <span className="field-label">{f.label}</span>
-              <div className="pw-seg" role="group" aria-label={f.label}>
-                {['yes', 'no'].map((v) => (
-                   
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={state.fields[f.id] === v}
-                    onClick={() => onChange({ fields: { ...state.fields, [f.id]: v } })}
-                  >
-                    {v === 'yes' ? 'Yes' : 'No'}
-                  </button>
-                ))}
-              </div>
+              <Seg
+                className="pw-seg"
+                name={`field-${f.id}`}
+                aria-label={f.label}
+                value={state.fields[f.id] ?? ''}
+                onChange={(v) => onChange({ fields: { ...state.fields, [f.id]: v } })}
+                options={[
+                  { value: 'yes', label: 'Yes' },
+                  { value: 'no', label: 'No' },
+                ]}
+              />
             </div>
           ) : (
             <label key={f.id} className="field">
@@ -1419,14 +1419,18 @@ function TopicSection({
             ))}
             <div className="field">
               <span className="field-label">Was the standard shown to them before?</span>
-              <div className="pw-seg" role="group" aria-label="Was the standard shown before?">
-                {['yes', 'no', 'unsure'].map((v) => (
-                   
-                  <button key={v} type="button" aria-pressed={ev.shownBefore === v} onClick={() => setEv('shownBefore', v)}>
-                    {v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure'}
-                  </button>
-                ))}
-              </div>
+              <Seg
+                className="pw-seg"
+                name={`shown-before-${kind}-${n}`}
+                aria-label="Was the standard shown before?"
+                value={ev.shownBefore}
+                onChange={(v) => setEv('shownBefore', v)}
+                options={[
+                  { value: 'yes', label: 'Yes' },
+                  { value: 'no', label: 'No' },
+                  { value: 'unsure', label: 'Unsure' },
+                ]}
+              />
               {limited ? (
                 <span className="field-hint">
                   Not shown before, so this can only be recorded as standard communicated or coaching.
@@ -1601,10 +1605,13 @@ function LogForm({
             <div className="pw-panel pw-mb-12">
               {start.suggestions.map((s: any) => (
                 <div key={s.topic} className="pw-suggest">
-                  <label className="pw-check">
-                    <input type="checkbox" checked={topics.includes(s.topic)} onChange={() => toggleTopic(s.topic)} />
+                  <Toggle
+                    className="pw-check"
+                    checked={topics.includes(s.topic)}
+                    onChange={() => toggleTopic(s.topic)}
+                  >
                     <strong>{s.label}</strong>
-                  </label>
+                  </Toggle>
                   <span className="pw-small pw-muted">{s.reason}</span>
                   {s.performance && !topics.includes(s.topic) ? (
                     <div className="pw-span-all">
@@ -1624,6 +1631,7 @@ function LogForm({
           <div className="pw-chips" role="group" aria-label="Topics">
             {library.map((d: any) => (
                
+              // intentionally raw: multi-select topic chips (aria-pressed toggles); Seg is single-select only
               <button
                 key={d.id}
                 type="button"
@@ -2085,9 +2093,9 @@ function BookedSection({
   return (
     <section className="cx-panel pw-section" aria-labelledby="booked-h">
       <div className="cx-section__head">
-        <div className="cx-section__title" id="booked-h">
+        <h2 className="cx-section__title" id="booked-h">
           Booked 1:1s
-        </div>
+        </h2>
         <div className="cx-section__hint">
           {data.me.role === 'admin'
             ? 'Every booked 1:1 on the team, soonest first.'
@@ -2140,9 +2148,9 @@ export function BookedDue({
       {data.missed.length ? (
         <section className="cx-panel pw-section" aria-labelledby="missed-h">
           <div className="cx-section__head">
-            <div className="cx-section__title" id="missed-h">
+            <h2 className="cx-section__title" id="missed-h">
               Not logged by {data.cutoff}
-            </div>
+            </h2>
             <div className="cx-section__hint">
               Each one stays on your login pop-up until you submit the record or mark it not held with a new date.
             </div>
@@ -2156,9 +2164,9 @@ export function BookedDue({
       ) : null}
       <section className="cx-panel pw-section" aria-labelledby="people-h">
         <div className="cx-section__head">
-          <div className="cx-section__title" id="people-h">
+          <h2 className="cx-section__title" id="people-h">
             Who is due
-          </div>
+          </h2>
           <div className="cx-section__hint">
             Set the exact date and time for each 1:1. A 1:1 with no record by {data.cutoff} Kuwait time on its day counts
             as missed.

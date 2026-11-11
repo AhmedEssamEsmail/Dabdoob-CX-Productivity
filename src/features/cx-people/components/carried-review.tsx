@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* ls — the outcome picker for each carried action (one-on-ones + meetings). */
-import { Chip, Input } from '@/features/shared/components/ui'
+import { Chip, Empty, Input, Seg } from '@/features/shared/components/ui'
 import { addDays, dayLabel, dayTime, today } from './pw'
 
 const REVIEW_OUTCOMES = [
@@ -35,6 +35,7 @@ export function CarriedReview({
   }
   return (
     <div>
+      {actions.length ? null : <Empty title="No carried actions to review." />}
       {actions.map((a) => {
         const v = value[a.actionId]
         const overdue = a.dueDate < today()
@@ -59,20 +60,14 @@ export function CarriedReview({
                 </p>
               ) : null}
             </div>
-            <div className="pw-seg" role="group" aria-label={`Outcome for ${a.title}`}>
-              {REVIEW_OUTCOMES.map((o) => (
-                 
-                <button
-                  key={o.id}
-                  type="button"
-                  aria-pressed={v?.outcome === o.id}
-                  disabled={disabled}
-                  onClick={() => patch(a, { outcome: o.id })}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
+            <Seg
+              className="pw-seg"
+              name={`carry-${a.actionId}`}
+              aria-label={`Outcome for ${a.title}`}
+              value={v?.outcome ?? ''}
+              onChange={(val) => patch(a, { outcome: val })}
+              options={REVIEW_OUTCOMES.map((o) => ({ value: o.id, label: o.label, disabled }))}
+            />
             {v ? (
               v.outcome === 'carried' ? (
                 <label className="field pw-max-w-220">

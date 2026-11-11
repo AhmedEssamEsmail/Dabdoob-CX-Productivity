@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Aging page (aging.closure.js symbol za). */
 import { useMemo, useState } from 'react'
-import { Button, Chip, Field, Input, Seg, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
+import { Button, Chip, Field, Input, PageShell, Seg, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 import { AgeChip, AsOfHint, LoadError, RefreshNow, Skeleton, ageRank, bandTop, fetchJson, fmt, hm, useHashParams, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 
@@ -104,19 +104,17 @@ export function AgingPage({ route }: { route: { title: string } }) {
   const title = n ? (band !== null ? n.bands.labels[band] : S >= T ? `Open ${bandTop(n.bands.edges[T - 1])} or more` : 'All open tickets') + (queue ? ` in ${queue}` : '') : ''
   const topCount = counts[counts.length - 1] ?? 0
   return (
-    <section className="cxp page" aria-labelledby="page-title" aria-busy={!n && !error}>
-      <header className="page-head aging-page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            {n?.scope === 'agent' ? D('My aging cases') : route.title}
-          </h1>
-          <p className="page-purpose">
-            {n?.scope === 'agent'
-              ? D('Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.')
-              : D('Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.')}
-          </p>
-        </div>
-        <div className="page-actions">
+    <PageShell
+      id="page-title"
+      className="cxp aging-page-head"
+      title={n?.scope === 'agent' ? D('My aging cases') : route.title}
+      purpose={
+        n?.scope === 'agent'
+          ? D('Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.')
+          : D('Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.')
+      }
+      aside={
+        <div className="page-actions ag-actions-full">
           <Seg
             name="ag-assign"
             value={assign}
@@ -138,7 +136,8 @@ export function AgingPage({ route }: { route: { title: string } }) {
             </>
           ) : null}
         </div>
-      </header>
+      }
+    >
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {n?.scope === 'agent' ? (
         <p className="cx-hint">
@@ -152,7 +151,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
           <section className="cx-panel mb-3" aria-labelledby="dist-h">
             <div className="cx-section__head">
               <div>
-                <h2 id="dist-h" className="cx-section__title" style={{ margin: 0 }}>
+                <h2 id="dist-h" className="cx-section__title ag-title">
                   {D('Wait-time distribution')}
                 </h2>
                 <div className="cx-section__hint">{D('Select a band to filter the matrix below')}</div>
@@ -167,13 +166,13 @@ export function AgingPage({ route }: { route: { title: string } }) {
                       key={i}
                       role="button"
                       tabIndex={0}
+                      className="ag-mixseg"
                       aria-pressed={band === i && !queue}
                       aria-label={`${n.bands.labels[i]}: ${c} tickets`}
                       style={{
                         flex: Math.max(c, 0.5),
                         background: `var(--cx-age-${r})`,
                         color: `var(--cx-age-ink-${r})`,
-                        cursor: 'pointer',
                       }}
                       onClick={() => pick(band === i && !queue ? null : i)}
                       onKeyDown={(e) => {
@@ -231,22 +230,19 @@ export function AgingPage({ route }: { route: { title: string } }) {
                           <td className="lead">{x}</td>
                           {P.map((U, V) => (
                             <td key={V} className="cx-num-col cx-num">
+                              {/* intentionally raw: matrix cell chip button, styled by .cx-agechip + data-age ramp; Button chrome would break cell sizing */}
                               <button
                                 type="button"
-                                className="cx-agechip"
+                                className="cx-agechip ag-agechip"
                                 data-age={ageRank(V, n.bands.labels.length)}
                                 data-zero={U === 0 ? 'true' : undefined}
                                 aria-pressed={band === V && queue === x}
                                 aria-label={`${x}, ${n.bands.labels[V]}: ${U} tickets`}
-                                style={{
-                                  border: 0,
-                                  cursor: 'pointer',
-                                  width: '100%',
-                                  justifyContent: 'center',
-                                  ...(U === 0
+                                style={
+                                  U === 0
                                     ? { background: 'var(--cx-surface-2)', color: 'var(--cx-ink-3)', fontWeight: 'var(--cx-weight-regular)' }
-                                    : {}),
-                                }}
+                                    : undefined
+                                }
                                 onClick={() => pick(V, x)}
                               >
                                 {U}
@@ -305,7 +301,7 @@ export function AgingPage({ route }: { route: { title: string } }) {
                 <tbody>
                   {rows.slice(0, shown).map((x: any[]) => (
                     <tr key={x[0]} data-age={ageRank(x[6], n.bands.labels.length)}>
-                      <td className="cx-num"><a className="cx-mono" href={n.ticketUrl + x[0]} target="_blank" rel="noopener noreferrer" aria-label={`Open ticket ${x[0]} in Freshdesk`}>#{x[0]}</a></td>
+                      <td className="cx-num"><a className="cx-mono cx-link" href={n.ticketUrl + x[0]} target="_blank" rel="noopener noreferrer" aria-label={`Open ticket ${x[0]} in Freshdesk`}>#{x[0]}</a></td>
                       <td>{x[1]}</td>
                       <td className="cx-muted">{x[10] && x[10] !== 'null' ? x[10] : '–'}</td>
                       <td>{x[7] || <span className="cx-faint">Not assigned</span>}</td>
@@ -324,6 +320,6 @@ export function AgingPage({ route }: { route: { title: string } }) {
           </section>
         </>
       ) : null}
-    </section>
+    </PageShell>
   )
 }

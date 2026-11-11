@@ -12,6 +12,7 @@ import {
   PageShell,
   PagedList,
   Seg,
+  TableScroll,
   Textarea,
 } from '@/features/shared/components/ui'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
@@ -132,7 +133,7 @@ function FlagDetail({
         <DecisionChip d={f.decision} />
       </div>
       <div className="cx-panel--pad">
-        <div className="grid grid-3" style={{ marginBlock: '0 1rem' }}>
+        <div className="grid grid-3 pv-fstats">
           <div className="stat">
             <span className="stat-l">Suggested status</span>
             <span className="stat-v">{f.suggestedStatus}</span>
@@ -162,6 +163,7 @@ function FlagDetail({
           <div className="cx-section__head">
             <div className="cx-section__title">Inside the window</div>
           </div>
+          <TableScroll label="Cases inside the window">
           <table className="cx-table">
             <thead>
               <tr>
@@ -173,7 +175,7 @@ function FlagDetail({
               {f.cases.map((c) => (
                 <tr key={c.id}>
                   <td className="rowlink">
-                    <a href={ticketUrl + c.id} target="_blank" rel="noopener noreferrer">
+                    <a className="cx-link" href={ticketUrl + c.id} target="_blank" rel="noopener noreferrer">
                       #{c.id}
                     </a>
                   </td>
@@ -182,6 +184,7 @@ function FlagDetail({
               ))}
             </tbody>
           </table>
+          </TableScroll>
         </div>
         {f.decision !== 'pending' ? (
           <p className="cx-muted">
@@ -383,13 +386,13 @@ export function StatusValidationPage() {
                             {pvInitials(f)}
                           </span>
                           <span className="wi-main">
-                            <span className="wi-t pv-item__who">
+                            <span className="wi-t pv-item__who" title={`${f.agentName} · ${re(f.intervalStart)}, ${fe(f)}`}>
                               <strong>{f.agentName}</strong>{' '}
                               <span className="cx-muted">
                                 {re(f.intervalStart)}, {fe(f)}
                               </span>
                             </span>
-                            <span className="wi-s pv-item__what">
+                            <span className="wi-s pv-item__what" title={`${G(f.flaggedMin)} ${f.rawStatus}, ${f.distinctCases} cases, suggested ${f.suggestedStatus}`}>
                               {G(f.flaggedMin)} {f.rawStatus}, {f.distinctCases} cases, suggested{' '}
                               {f.suggestedStatus}
                             </span>
@@ -460,7 +463,7 @@ export function StatusValidationPage() {
           {view === 'reviewed' ? (
             <Section id="pv-h" title="Decided, last 30 days">
               {n.decided.length ? (
-              <div className="cx-panel cx-tablewrap">
+              <TableScroll label="Decided flags, last 30 days" className="cx-panel cx-tablewrap">
                 <table className="cx-table">
                   <thead>
                     <tr>
@@ -496,7 +499,7 @@ export function StatusValidationPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
               ) : (
                 <p className="cx-muted">Nothing reviewed yet.</p>
               )}

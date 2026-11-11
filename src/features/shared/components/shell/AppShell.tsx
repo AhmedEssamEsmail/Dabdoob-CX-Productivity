@@ -146,13 +146,11 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   /* Role/app-gated pages and the page this route actually renders (fallback
      while the requested page is denied or its redirect is in flight).
      Computed before the early returns so the title effect can read it. */
-  const visible = useMemo(() => {
-    if (!boot) return []
-    const app = appForGroup(route.group)
-    return PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
-      inApp(page, app)
-    )
-  }, [boot, route.group])
+  const visible = boot
+    ? PAGES.filter((page) => pageAllowed(page, boot)).filter((page) =>
+        inApp(page, appForGroup(route.group))
+      )
+    : []
   const fallback =
     visible.find((page) => page.path === 'my-day') ??
     visible.find((page) => page.path === 'overview') ??
@@ -296,9 +294,14 @@ export default function AppShell({ children }: { children?: ReactNode }) {
      routes are distinguishable in tabs/history; falls back to the app title
      before boot resolves a page. Client-side only, so no SSR title flash. */
   useEffect(() => {
-    document.title = current?.title
-      ? `${D(current.title)} · ${ctxTitle}`
-      : ctxTitle
+    const updateTitle = () => {
+      document.title = current?.title
+        ? `${D(current.title)} · ${ctxTitle}`
+        : ctxTitle
+    }
+    updateTitle()
+    const timers = [0, 50, 200].map((ms) => setTimeout(updateTitle, ms))
+    return () => timers.forEach((timer) => clearTimeout(timer))
   }, [current?.path, current?.title, ctxTitle, lang])
 
   /* ia(ca()) — stored appearance holds from the first app paint. */
@@ -538,6 +541,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                 <div className="brand-sub">Operations console</div>
               </div>
             </a>
+            {/* intentionally raw: shell nav chrome with bespoke .nav-toggle styling/ARIA */}
             <button
               type="button"
               className="nav-toggle"
@@ -548,11 +552,13 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               {D(navOpen ? 'Close' : 'Menu')}
             </button>
           </div>
+          {/* intentionally raw: shell rail search trigger; bespoke .rail-search chrome */}
           <button
             type="button"
             className="rail-search"
             ref={railSearchRef}
             aria-label={D('Search or jump to…')}
+            title={D('Search or jump to…')}
             aria-haspopup="dialog"
             aria-expanded={paletteOpen}
             onClick={() => setPaletteOpen(true)}
@@ -582,6 +588,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
               const open = openGroups.has(group)
               return (
                 <div className="nav-group" data-tone={GROUP_TONE[group]} key={group}>
+                  {/* intentionally raw: nav group disclosure; bespoke .nav-group-label chrome */}
                   <button
                     type="button"
                     id={'nav-label-' + group}
@@ -651,6 +658,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
               </svg>
             </Link>
+            {/* intentionally raw: rail collapse toggle; bespoke .rail-collapse chrome */}
             <button
               type="button"
               className="rail-collapse"

@@ -160,10 +160,7 @@ export function MyStatusPage() {
               <Empty title="No logged time this week yet." />
             )}
           </Section>
-          <div
-            className="grid cols-32"
-            style={{ alignItems: 'start' }}
-          >
+          <div className="grid cols-32 pv-grid-start">
             <section className="cx-panel" aria-labelledby="pv-mf-h">
               <div className="cx-section__head">
                 <h2 id="pv-mf-h" className="cx-section__title">
@@ -180,8 +177,7 @@ export function MyStatusPage() {
                     return (
                       <article
                         key={f.flagId}
-                        className="workitem"
-                        style={{ display: 'flex', alignItems: 'flex-start' }}
+                        className="workitem pv-workitem"
                       >
                         <div className="wi-main">
                           <header className="pv-detail__head">
@@ -228,7 +224,7 @@ export function MyStatusPage() {
                 <Empty title="No flags in the last 45 days" body="Flags appear here once your IDLE time is sent for review." />
               )}
             </section>
-            <div className="grid" style={{ alignContent: 'start' }}>
+            <div className="grid pv-grid-content-start">
               <section className="cx-panel" aria-labelledby="pv-bva-h">
                 <div className="cx-section__head">
                   <h2 id="pv-bva-h" className="cx-section__title">

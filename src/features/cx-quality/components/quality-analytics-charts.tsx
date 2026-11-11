@@ -17,7 +17,7 @@ import {
   qaWeekKeyLabel,
 } from './qa-shared'
 import { useTip } from '@/features/shared/components/shell/ui'
-import { Empty, Seg, Select } from '@/features/shared/components/ui'
+import { Empty, Seg, Select, TableScroll } from '@/features/shared/components/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 
 const qaPerDay = (t: any, n: string): number =>
@@ -374,7 +374,7 @@ export function Spread({ d: t }: { d: any }) {
 /* --- ml / xn / pl — the coverage machinery -------------------------------------- */
 function CoverageTotals({ c: t }: { c: any }) {
   return (
-    <div className="cx-panel cx-tablewrap">
+    <TableScroll label="Coverage totals by day" className="cx-panel cx-tablewrap">
       <table className="cx-table">
         <thead>
           <tr>
@@ -403,7 +403,7 @@ function CoverageTotals({ c: t }: { c: any }) {
             .reverse()}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   )
 }
 
@@ -470,7 +470,7 @@ export function Coverage({ c: t }: { c: any }) {
             {s || 'Point at or tab to a day under the offer to see why.'}
           </p>
         ) : null}
-        <div className="cx-panel cx-tablewrap">
+        <TableScroll label="Samples per agent per day" className="cx-panel cx-tablewrap">
           <table className="cx-table qa-cov">
             <thead>
               <tr>
@@ -549,7 +549,7 @@ export function Coverage({ c: t }: { c: any }) {
               })}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
         <p className="qa-cov-legend cx-faint">
           <span className="qa-cov__cell" data-l="bad">
             0

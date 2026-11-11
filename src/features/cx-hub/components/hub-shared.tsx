@@ -12,7 +12,7 @@ import {
   useState,
 } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, Seg, Select } from '@/features/shared/components/ui'
+import { Button, Input, PageShell, Seg, Select } from '@/features/shared/components/ui'
 import { Failed } from '@/features/shared/components/ui/PageStates'
 import { getBoot, setBoot, useBootSelector } from '@/features/shared/shell/context'
 import { applyAppearance, D } from '@/features/shared/shell/i18n'
@@ -24,6 +24,7 @@ import {
 import { usePageData } from '@/features/shared/lib/use-page-data'
 import { loadOptions } from '@/features/shared/lib/use-options'
 import { usePoll } from '@/features/shared/lib/use-poll'
+import { fmt } from '@/features/shared/lib/format'
 
 /**
  * Shared machinery of the Hub pages, ported once: the oi()/yn() api objects
@@ -190,17 +191,25 @@ export function jl({ lines = 3, tall = false }: { lines?: number; tall?: boolean
 export { Failed as sh }
 
 /* ------------------------------------------------------------------ Vf */
-export function Vf({ title, sub, aside }: { title: ReactNode; sub?: ReactNode; aside?: ReactNode }) {
+export function Vf({
+  title,
+  sub,
+  aside,
+  children,
+  className,
+  id,
+}: {
+  title: ReactNode
+  sub?: ReactNode
+  aside?: ReactNode
+  children?: ReactNode
+  className?: string
+  id?: string
+}) {
   return (
-    <header className="page-head">
-      <div>
-        <h1 id="page-title" className="page-title">
-          {title}
-        </h1>
-        {sub ? <p className="page-purpose">{sub}</p> : null}
-      </div>
-      {aside}
-    </header>
+    <PageShell title={title} purpose={sub} aside={aside} className={className} id={id}>
+      {children}
+    </PageShell>
   )
 }
 
@@ -290,7 +299,7 @@ export function Kf({ value, format = String }: { value: number; format?: (n: num
   const a = k >= 1 ? r : format(Number((value * ease).toFixed(og(value))))
   return <Jl live={a} final={r} spanRef={ref} />
 }
-export const Hi = (n: number) => n.toLocaleString('en-US')
+export const Hi = fmt
 export const Ql = (n: number | null) => (n === null ? '–' : n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '0')
 
 /* ------------------------------------------------------------- th / zm */
@@ -404,9 +413,9 @@ export function du(n: Record<string, number>): string {
   const t = e
     .filter(([s]) => na(s) < 40)
     .sort((s, r) => na(s[0]) - na(r[0]) || r[1] - s[1])
-    .map(([s, r]) => `${hg(s)} ${r.toLocaleString('en-US')}`)
+    .map(([s, r]) => `${hg(s)} ${fmt(r)}`)
     .join(' · ')
-  const i = e.filter(([s]) => na(s) >= 40).map(([s, r]) => `${s} ${r.toLocaleString('en-US')}`)
+  const i = e.filter(([s]) => na(s) >= 40).map(([s, r]) => `${s} ${fmt(r)}`)
   return i.length ? `${t} (also ${i.join(', ')})` : t
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button, Empty, Input } from '@/features/shared/components/ui'
+import { Button, Empty, Input, PageShell, TableScroll } from '@/features/shared/components/ui'
 import { toUserText } from '@/features/shared/lib/error-copy'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
 import { Eo, fetchJson, jl, sh, Ti } from './hub-shared'
@@ -53,15 +53,11 @@ export function AdminConfigPage() {
   }
 
   return (
-    <section className="page" aria-labelledby="page-title" aria-busy={!config && !error}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            Configuration
-          </h1>
-          <p className="page-purpose">System settings the productivity engine and pages read.</p>
-        </div>
-      </header>
+    <PageShell
+      title="Configuration"
+      purpose="System settings the productivity engine and pages read."
+      id="page-title"
+    >
 
       {error ? sh({ message: toUserText(error, { isAdmin, feature: 'Configuration' }), onRetry: reload }) : null}
 
@@ -83,7 +79,7 @@ export function AdminConfigPage() {
             body="Settings will appear here once they load."
           />
         ) : (
-        <div className="cx-tablewrap">
+        <TableScroll label="System configuration" className="cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -138,9 +134,9 @@ export function AdminConfigPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         )}
       </section>
-    </section>
+    </PageShell>
   )
 }

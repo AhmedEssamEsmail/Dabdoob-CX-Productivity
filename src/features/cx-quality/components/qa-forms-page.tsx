@@ -5,15 +5,12 @@
  */
 import { useState } from 'react'
 import {
-  LinesSkeleton,
   ListSelect,
-  LoadError,
   P,
   useSe,
 } from './qa-shared'
-import { PageHead } from '@/features/shared/components/shell/ui'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Chip, Empty, Input, Select, Toggle } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 
 let aa = 0
 
@@ -360,18 +357,15 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
   const [i, c] = useState<any>(null)
 
   return (
-    <section
-      className="cxp page"
-      aria-labelledby="page-title"
-      aria-busy={!n && !a}
+    <PageShell
+      className="cxp"
+      title={route.title}
+      purpose="The questions auditors answer, per channel. Critical questions set the audit to 0 when failed. Each save is a new version; past audits keep theirs."
+      busy={!n && !a && !i}
+      error={a}
+      onRetry={s}
     >
-      <PageHead
-        title={route.title}
-        sub="The questions auditors answer, per channel. Critical questions set the audit to 0 when failed. Each save is a new version; past audits keep theirs."
-      />
-      {a ? (
-        <LoadError message={a} onRetry={s} />
-      ) : i ? (
+      {i ? (
         <FormBuilder
           draft={i}
           onClose={(l) => {
@@ -398,7 +392,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
           >
             New form
           </Button>
-          <div className="cx-panel cx-tablewrap qa-gap">
+          <TableScroll label="Audit forms" className="cx-panel cx-tablewrap qa-gap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -461,11 +455,9 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
                 )}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
         </>
-      ) : (
-        <LinesSkeleton lines={6} />
-      )}
-    </section>
+      ) : null}
+    </PageShell>
   )
 }

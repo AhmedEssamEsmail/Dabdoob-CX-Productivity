@@ -80,7 +80,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="login-wrap">
+    <div className="login-wrap">
       <div className="login-card">
         <div className="brand-row">
           <Image
@@ -195,6 +195,6 @@ export default function LoginPage() {
           <span>v2.4</span>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

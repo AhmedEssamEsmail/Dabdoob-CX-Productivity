@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button, Chip, Empty, Input, Select } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Select, TableScroll } from '@/features/shared/components/ui'
 import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 import { toUserText } from '@/features/shared/lib/error-copy'
 import { getBoot, useBootSelector } from '@/features/shared/shell/context'
@@ -88,16 +88,10 @@ export function AdminRosterPage() {
   }
 
   return (
-    <section className="page" aria-labelledby="page-title" aria-busy={!roster && !error}>
-      <header className="page-head">
-        <div>
-          <h1 id="page-title" className="page-title">
-            Roster
-          </h1>
-          <p className="page-purpose">
-            Roles, team leads and active status for the CX roster.
-          </p>
-        </div>
+    <PageShell
+      title="Roster"
+      purpose="Roles, team leads and active status for the CX roster."
+      aside={
         <div className="page-actions">
           <Button
             variant={showAddForm ? 'quiet' : 'primary'}
@@ -106,7 +100,9 @@ export function AdminRosterPage() {
             {showAddForm ? 'Cancel' : 'Add user'}
           </Button>
         </div>
-      </header>
+      }
+      id="page-title"
+    >
 
       {error ? sh({ message: toUserText(error, { isAdmin, feature: 'Roster' }), onRetry: reload }) : null}
 
@@ -173,7 +169,7 @@ export function AdminRosterPage() {
               <div className="field">
                 <label className="field-label" htmlFor="nu-active">Active</label>
                 <span>
-                  {/* kept raw: id="nu-active" pairs with the field-label htmlFor; Toggle can't carry id */}
+                  {/* intentionally raw: checkbox keeps id="nu-active" paired with the field-label htmlFor; Toggle can't carry id */}
                   <input
                     id="nu-active"
                     type="checkbox"
@@ -215,7 +211,7 @@ export function AdminRosterPage() {
               body="Add the first roster member."
             />
           ) : (
-          <div className="cx-tablewrap">
+          <TableScroll label="Roster users" className="cx-tablewrap">
             <table className="cx-table">
               <thead>
                 <tr>
@@ -297,9 +293,9 @@ export function AdminRosterPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
           )}
         </section>
-    </section>
+    </PageShell>
   )
 }

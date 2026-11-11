@@ -3,14 +3,13 @@
 import { type ReactNode, useId } from 'react'
 import { Failed, LinesSkeleton } from './PageStates'
 
-/** PageShell — the ONE page chrome: .page(.page-narrow) + .page-head with
+/** PageShell — the ONE page chrome: .page + .page-head with
  *  h1.page-title (unique id via useId) + p.page-purpose + aside slot.
  *  busy → LinesSkeleton, error → Failed (PageStates). */
 export function PageShell({
   title,
   purpose,
   aside,
-  narrow,
   busy,
   error,
   onRetry,
@@ -21,7 +20,6 @@ export function PageShell({
   title: ReactNode
   purpose?: ReactNode
   aside?: ReactNode
-  narrow?: boolean
   busy?: boolean
   error?: string | null
   onRetry?: () => void
@@ -33,9 +31,7 @@ export function PageShell({
   const headingId = id ?? generatedId
   return (
     <section
-      className={
-        narrow ? `page page-narrow${className ? ` ${className}` : ''}` : `page${className ? ` ${className}` : ''}`
-      }
+      className={`page${className ? ` ${className}` : ''}`}
       aria-labelledby={headingId}
       aria-busy={busy}
     >

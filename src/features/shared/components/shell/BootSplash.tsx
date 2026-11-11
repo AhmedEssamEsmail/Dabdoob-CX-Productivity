@@ -6,7 +6,7 @@
  */
 
 const SPLASH_CSS = `
-.boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:center;gap:14px;background:radial-gradient(900px 500px at 8% -10%,#cfe4ff 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#fbd9e8 0,transparent 55%),#f2f5f4;color:#4d5d63;font:500 0.875rem/1.3 'IBM Plex Sans',system-ui,sans-serif}/* kept raw: verbatim pre-paint splash palette; decorative gradient stops have no token equivalent */
+.boot-splash{position:fixed;inset:0;z-index:calc(var(--z-modal) + 10);display:grid;place-content:center;justify-items:center;gap:14px;background:radial-gradient(900px 500px at 8% -10%,#cfe4ff 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#fbd9e8 0,transparent 55%),#f2f5f4;color:#4d5d63;font:500 0.875rem/1.3 'IBM Plex Sans',system-ui,sans-serif}/* kept raw: verbatim pre-paint splash palette; decorative gradient stops have no token equivalent */
 #app:not(:empty)+.boot-splash{display:none}
 .bl-mix{position:relative;display:grid;width:260px;height:190px}
 .bl-scene{grid-area:1/1;display:grid;place-items:center;align-content:center;opacity:0;animation:bl-cycle 9s infinite}

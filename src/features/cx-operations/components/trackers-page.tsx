@@ -20,7 +20,7 @@ import {
 } from 'react'
 import { fetchJson } from '@/features/shared/lib/fetch-json'
 import { pageParams } from '@/features/shared/shell/gates'
-import { Button, Chip, Empty, Input, Select, TableScroll } from '@/features/shared/components/ui'
+import { Button, Chip, Dialog, Empty, Input, PageShell, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 
 // ---------------------------------------------------------------- API surface
 // (ee in the closure: getTrackersPage / getTrackerRecords / addTrackerRecord /
@@ -271,6 +271,7 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
           const d = u.type === 'dependent' && !n.length
           return (
             <label key={u.type} className={`trk-kind ${e.type === u.type ? 'is-on' : ''} ${d ? 'is-off' : ''}`}>
+              {/* intentionally raw: per-kind card picker (.trk-kind name+desc+is-off styling); Seg can't carry per-option classes */}
               <input type="radio" name={`${a}-k`} value={u.type} checked={e.type === u.type} disabled={d}
                 onChange={() => i({ type: u.type })} />
               <span className="trk-kind-name">{u.name}</span>
@@ -345,26 +346,20 @@ function Kt({ draft: e, onChange: t, parents: n, showErrors: s }: { draft: Draft
           ) : null}
         </Fragment>
       ) : null}
-      <label className="trk-check">
-        <input type="checkbox" checked={e.required} onChange={(u) => i({ required: u.currentTarget.checked })} />
+      <Toggle className="trk-check" checked={e.required} onChange={(checked) => i({ required: checked })}>
         People must fill this in
-      </label>
+      </Toggle>
     </div>
   )
 }
 
 /** Jn: the add/edit field dialog. */
 function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; field: FieldOut | null; onClose: () => void; onSaved: (d: TrackerData) => void }) {
-  const a = useRef<HTMLDialogElement>(null)
   const [i, c] = useState<Draft>(() => (t ? Zn(t, e) : Ie()))
   const [h, u] = useState(false)
   const [d, m] = useState(false)
   const [f, o] = useState('')
   const _ = Yn(e.fields, e.choices ?? {}, t?.id)
-  useEffect(() => {
-    const p = a.current
-    if (p && !p.open) p.showModal?.()
-  }, [])
   const l = useMemo(() => {
     if (!t || i.type === t.type) return 0
     const p = new Set(i.choicesText.map((w) => w.trim().toLowerCase()).filter(Boolean))
@@ -400,7 +395,7 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
   }
   const y = t ? 'Save changes' : 'Add field'
   return (
-    <dialog ref={a} className="trk-dialog cx-panel" aria-labelledby="trk-af" onClose={n} onCancel={n}>
+    <Dialog open labelledby="trk-af" onClose={n} className="trk-dialog cx-panel">
       <h2 id="trk-af" className="trk-form-title">{t ? `Edit ${t.label}` : `Add a field to ${e.tracker.name}`}</h2>
       <p className="field-hint">
         {t
@@ -419,7 +414,7 @@ function Jn({ data: e, field: t, onClose: n, onSaved: s }: { data: TrackerData; 
         <Button variant="quiet" onClick={n}>Cancel</Button>
         <Button variant="primary" onClick={g} disabled={d}>{d ? 'Saving…' : y}</Button>
       </div>
-    </dialog>
+    </Dialog>
   )
 }
 
@@ -705,10 +700,10 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
         <thead>
           <tr>
             {e.map((a) => (
-              <th key={a.id} scope="col" className={a.type === 'number' || a.type === 'money' ? 'trk-num' : undefined}>
+              <th key={a.id} scope="col" title={a.label} className={a.type === 'number' || a.type === 'money' ? 'trk-num' : undefined}>
                 {s && Wn(a) ? (
                   <>
-                    <button type="button" className="trk-th-edit" onClick={() => s(a)} title="Edit this field">{a.label}</button>
+                    <Button className="trk-th-edit" onClick={() => s(a)} title="Edit this field">{a.label}</Button>
                   </>
                 ) : (
                   a.label
@@ -800,13 +795,12 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
       : s.rows
   }, [s, _])
   const y = s?.tracker
+  const isEmpty = !!t && t.trackers.length === 0
   return (
-    <section className="page page-fill trk-page" aria-labelledby="page-title">
-      <header className="page-head trk-head">
-        <div>
-          <h1 id="page-title" className="page-title">{e.title}</h1>
-          <p className="page-purpose">Every record keeps the email of the person who added it.</p>
-        </div>
+    <PageShell
+      title={e.title}
+      purpose="Every record keeps the email of the person who added it."
+      aside={isEmpty ? undefined : (
         <div className="trk-switch field">
           <label className="field-label" htmlFor="trk-switch">Tracker</label>
           {t ? (
@@ -824,10 +818,20 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
             <div className="trk-skel trk-skel-select" aria-hidden="true" />
           )}
         </div>
-      </header>
+      )}
+      id="page-title"
+      className="page-fill trk-page"
+    >
       {i ? <p className="trk-banner trk-banner-error" role="alert">{i}</p> : null}
       {!t && !i ? <Kn /> : null}
       {t && d ? <Er onCancel={() => m(false)} onCreated={(p) => { de(p.current); n(p); a(p.current); m(false) }} /> : null}
+      {t && isEmpty && !d ? (
+        <Empty className="trk-empty" title="No trackers yet."
+          body="Trackers hold the records your teams add and report on."
+          action={t.canCreate ? (
+            <Button variant="primary" onClick={() => m(true)}>Create the first tracker</Button>
+          ) : undefined} />
+      ) : null}
       {t && !d && s ? (
         <div className={`trk-body fill-grow ${h ? 'is-busy' : ''}`} aria-busy={h}>
           {s.tracker.accessMode === 'view_only' ? (
@@ -836,7 +840,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
               {s.tracker.sourceUrl ? (
                 <Fragment>
                   {' '}
-                  <a href={s.tracker.sourceUrl} target="_blank" rel="noopener noreferrer">Open the source sheet</a>
+                  <a className="cx-link" href={s.tracker.sourceUrl} target="_blank" rel="noopener noreferrer">Open the source sheet</a>
                 </Fragment>
               ) : null}
             </p>
@@ -880,6 +884,6 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
         <Jn key={f === 'new' ? 'new' : f.id} data={s} field={f === 'new' ? null : f} onClose={() => o(null)}
           onSaved={(p) => { de(p); a(p); o(null) }} />
       ) : null}
-    </section>
+    </PageShell>
   )
 }

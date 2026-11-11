@@ -15,7 +15,7 @@ import {
 import { Chip, Section } from '@/features/shared/components/shell/ui'
 import { D } from '@/features/shared/shell/i18n'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { AutoSaveInput, Button, Input, PaintGrid, Seg, Select, Toggle } from '@/features/shared/components/ui'
+import { AutoSaveInput, Button, Input, PaintGrid, Seg, Select, TableScroll, Toggle } from '@/features/shared/components/ui'
 import {
   $e,
   $n,
@@ -104,6 +104,8 @@ function Qa({ d, trend, go }: { d: TphData; trend: { forD: TphData; days: TrendD
           The 7-day trend could not load: {trend.err}
         </p>
       ) : s ? (
+        <Fragment>
+        {!s.length ? <p className="cx-faint">No days returned for this range.</p> : null}
         <ol className="tph-trend tph-trend--days">
           {s.map((r) => {
             const o = !r.touchesReady || !r.hasCases || r.pct == null
@@ -139,10 +141,24 @@ function Qa({ d, trend, go }: { d: TphData; trend: { forD: TphData; days: TrendD
             )
           })}
         </ol>
+        </Fragment>
       ) : (
-        <p className="cx-faint" role="status">
-          Loading the last 7 days…
-        </p>
+        <Fragment>
+          <p className="cx-sr" role="status">
+            Loading the last 7 days…
+          </p>
+          <ol className="tph-trend tph-trend--days" aria-hidden="true">
+            {Array.from({ length: 7 }, (_, i) => (
+              <li className="tph-trend__col" key={i}>
+                <span className="tph-trend__val">&nbsp;</span>
+                <span className="tph-trend__track">
+                  <span className="skeleton" />
+                </span>
+                <span className="tph-trend__axis">&nbsp;</span>
+              </li>
+            ))}
+          </ol>
+        </Fragment>
       )}
     </figure>
   )
@@ -156,6 +172,7 @@ function Za({ d, sum }: { d: TphData; sum: Sum }) {
   return (
     <figure className="tph-trendbox">
       <figcaption className="tph-trend__cap">{d.date} by hour</figcaption>
+      {!d.hours.length ? <p className="cx-faint">No grid hours for this day.</p> : null}
       <ol className="tph-trend tph-trend--hours">
         {d.hours.map((h) => {
           const r = a.get(h)
@@ -530,7 +547,7 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
     () =>
       d.agents.map((a) => ({
         id: a.email,
-        label: a.name,
+        label: <span title={a.name}>{a.name}</span>,
         cells: (cells[a.email] || []).map((cell, f) => {
           const v = d.firstSlot + f
           const y = `${a.name} ${Wa(v)}: ${cell.c ? We(d, cell.c) : 'nothing logged'}${cell.calls ? ' + inbound calls' : ''}${cell.src === 'carried' ? ' (carried)' : cell.src === 'task' ? ' (from a task)' : ''}`
@@ -601,9 +618,9 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
       <section className="cx-panel" aria-labelledby="tph-grid-card-h">
         <div className="cx-section__head">
           <div>
-            <h2 id="tph-grid-card-h" className="cx-section__title">
+            <h3 id="tph-grid-card-h" className="cx-section__title">
               {D('Who is on which channel')}
-            </h2>
+            </h3>
             <div className="cx-section__hint">
               {D('{agents} agents · {channels} channels · {slots} slots of {minutes} min', {
                 agents: String(d.agents.length),
@@ -614,6 +631,7 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
             </div>
           </div>
         </div>
+        {rows.length ? (
         <div className="tph-gridwrap">
           <EsPaintGrid
             className="tph-grid"
@@ -630,6 +648,9 @@ export function Es({ d, onSaved }: { d: TphData; onSaved: () => void }) {
             onCommit={flush}
           />
         </div>
+        ) : (
+          <p className="cx-faint">No agents on the grid for this day.</p>
+        )}
       </section>
       <p className="cx-faint tph-note">
         A dark bar on top marks Inbound calls blended with the channel. Hatched slots were not logged and repeat the
@@ -785,7 +806,9 @@ export function Ts({ d, onSaved }: { d: TphData; onSaved: () => void }) {
             />
           ))}
         </ul>
-      ) : null}
+      ) : (
+        <p className="cx-faint">No tasks logged for this day.</p>
+      )}
     </Section>
   )
 }
@@ -877,7 +900,7 @@ export function As({ d, onSaved, missing, select }: {
       ) : missing ? (
         ht({ text: `${U(missing, 'hour-channel')} missing`, select })
       ) : null}
-      <div className="cx-panel cx-tablewrap">
+      <TableScroll label="Cases offered each hour" className="cx-panel cx-tablewrap">
         <table className="cx-table tph-cases">
           <thead>
             <tr>
@@ -890,6 +913,13 @@ export function As({ d, onSaved, missing, select }: {
             </tr>
           </thead>
           <tbody>
+            {!cases.length ? (
+              <tr>
+                <td colSpan={channels.length + 1} className="cx-faint">
+                  No case rows for this day.
+                </td>
+              </tr>
+            ) : null}
             {cases.map((o) => (
               <CaseHourRow
                 key={o.hour}
@@ -902,7 +932,7 @@ export function As({ d, onSaved, missing, select }: {
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScroll>
     </Section>
   )
 }
@@ -1072,7 +1102,7 @@ export function Rs({ d, badge, select }: { d: TphData; badge: string; select: (t
             </div>
           )}
           {wide ? (
-            <div className="cx-panel cx-tablewrap tph-capstable">
+            <TableScroll label="Cap minutes by hour and channel" className="cx-panel cx-tablewrap tph-capstable">
               <table className="cx-table">
                 <thead>
                   <tr>
@@ -1108,7 +1138,7 @@ export function Rs({ d, badge, select }: { d: TphData; badge: string; select: (t
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScroll>
           ) : null}
         </Fragment>
       ) : (
@@ -1192,7 +1222,12 @@ export function Os({ d }: { d: TphData }) {
     const v = perAgent.get(email)
     return v && v.m ? (v.t * 60) / v.m : null
   }, [perAgent])
-  if (!n.length) return null
+  if (!n.length)
+    return (
+      <Section id="tph-day" title="Each agent's day">
+        <p className="cx-faint">No agents have minutes or touches on this day.</p>
+      </Section>
+    )
   const a = summary.below
   const s = summary.over
   return (
@@ -1245,9 +1280,13 @@ export function Ds({ d }: { d: TphData }) {
       hint={`Agents with touches on the channel in the last ${d.eligibleDays} days`}
     >
       <div className="tph-who">
-        {eligible.map((n) => (
-          <EligibleChannel key={n.channel} item={n} name={channels.find((c) => c.key === n.channel)?.name} />
-        ))}
+        {eligible.length ? (
+          eligible.map((n) => (
+            <EligibleChannel key={n.channel} item={n} name={channels.find((c) => c.key === n.channel)?.name} />
+          ))
+        ) : (
+          <p className="cx-faint">No agents have touches on these channels in the last {d.eligibleDays} days.</p>
+        )}
       </div>
     </Section>
   )

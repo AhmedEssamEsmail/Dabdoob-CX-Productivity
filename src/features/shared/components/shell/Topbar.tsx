@@ -21,6 +21,7 @@ type Props = {
 
 export default function Topbar({
   crumbGroup,
+  crumbTitle,
   initials,
   pending,
   onBell,
@@ -40,9 +41,11 @@ export default function Topbar({
   return (
     <div className="topbar">
       <div className="crumbs">
-        {crumbGroup ? <b>{crumbGroup}</b> : null}
+        {crumbGroup ? <>{crumbGroup} / </> : null}
+        <b>{crumbTitle}</b>
       </div>
       <div className="topbar-right">
+        {/* intentionally raw: icon toggle with SVG + notification badge dot, styled by .icon-btn; Button chrome would break topbar icon sizing */}
         <button
           type="button"
           className="icon-btn"
@@ -69,6 +72,7 @@ export default function Topbar({
         <span className="cx-sr" role="status" aria-live="polite">
           {notifStatus}
         </span>
+        {/* intentionally raw: icon toggle with SVG glyph, styled by .icon-btn; Button chrome would break topbar icon sizing */}
         <button
           type="button"
           className="icon-btn"

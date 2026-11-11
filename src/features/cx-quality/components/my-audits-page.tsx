@@ -54,11 +54,14 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
           score={a.status === 'rescored' ? a.finalScore : a.score}
           fatal={a.fatal}
         />
-        <strong className="qa-name">
+        <strong
+          className="qa-name"
+          title={qaIsNum(a.ticketId) ? `Ticket #${a.ticketId}` : a.ticketId}
+        >
           {qaIsNum(a.ticketId) ? `Ticket #${a.ticketId}` : a.ticketId}
         </strong>
         <span className="qa-meta">
-          <span>
+          <span title={`${a.channel}, audited ${a.auditDate} by ${a.auditorName}`}>
             {a.channel}, audited {a.auditDate} by {a.auditorName}
           </span>
         </span>

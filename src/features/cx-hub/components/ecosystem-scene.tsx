@@ -8,7 +8,7 @@
  * Scene internals live here; shared page data in `./ecosystem-data`,
  * overlay UI in `./ecosystem-ui`.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import * as THREE from 'three'
 import { Sky } from 'three/examples/jsm/objects/Sky.js'
 import { Water } from 'three/examples/jsm/objects/Water.js'
@@ -91,6 +91,7 @@ const $i = THREE.AdditiveBlending
 // ---------------------------------------------------------------------------
 // Scene constants (verbatim from the closure); page data/palettes live in
 // ./ecosystem-data, overlay UI in ./ecosystem-ui.
+/* 3D-scene palette: intentional raw colors, no DOM token equivalent */
 // ---------------------------------------------------------------------------
 const ib = 8.1
 
@@ -2673,7 +2674,7 @@ function qb(n: {
         U.style.visibility = 'hidden'
         return
       }
-      U.style.visibility = ''
+      U.style.visibility = 'visible'
       U.style.transform = `translate3d(${((De.x + 1) / 2 * Ge).toFixed(1)}px, ${((1 - De.y) / 2 * B).toFixed(1)}px, 0) translate(-50%, -100%)`
     }
   }
@@ -3094,9 +3095,7 @@ export function Scene3D(n: { health: any; onSelect: (id: string) => void }) {
     return document.addEventListener('keydown', _), () => document.removeEventListener('keydown', _)
   }, [o]), o) return <div className="eco3 eco3--msg"><p>{o === 'nogl' ? '3D view needs WebGL' : '3D view stopped: the graphics card was reset. Reload the page.'}</p></div>
   const S = l?.kind === 'camel' && l.id !== 'hub' ? l.id : null
-  return <div className="eco3" role="group" aria-label="CX ecosystem in 3D: the Main Hub and seven systems"><div className="eco3-canvas" ref={t} /><Eco3Tags health={e} hot={w} camelId={S} tagRefs={s} camelRef={r} onHover={h} onFocus={d} onPick={b} />{C.state === 'loading' ? <div className="eco3-loading" role="status"><span>Loading the desert</span><i className="eco3-loading-bar" aria-hidden="true"><b style={{
-    inlineSize: `${Math.round(C.p * 100)}%`,
-  }} /></i></div> : null}<Eco3Dock hours={y} now={p} autoRotate={m} onTime={T => {
+  return <div className="eco3" role="group" aria-label="CX ecosystem in 3D: the Main Hub and seven systems"><div className="eco3-canvas" ref={t} /><Eco3Tags health={e} hot={w} camelId={S} tagRefs={s} camelRef={r} onHover={h} onFocus={d} onPick={b} />{C.state === 'loading' ? <div className="eco3-loading" role="status"><span>Loading the desert</span><i className="eco3-loading-bar" aria-hidden="true"><b style={{ '--p': C.p } as CSSProperties} /></i></div> : null}<Eco3Dock hours={y} now={p} autoRotate={m} onTime={T => {
     g(!1)
     v(T)
   }} onNow={() => g(!0)} onAutoRotate={() => E(_ => !_)} /></div>
