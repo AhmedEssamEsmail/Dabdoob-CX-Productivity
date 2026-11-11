@@ -6,7 +6,6 @@ import { describe, it, expect } from 'vitest'
 import {
   callLegacy,
   diffPath,
-  expectSame,
   json,
   rint,
   rng,
@@ -479,7 +478,7 @@ describe('analytics helpers + prodAnalytics_', () => {
         flagStatuses: ['IDLE'],
         offlineStatuses: ['Offline'],
         channelStatus: { ticket: 'Available', chat: 'Chats', wa: 'Waiting Address' },
-        offsetMs: (ms: number) => 10800000, // Kuwait +3
+        offsetMs: () => 10800000, // Kuwait +3
         full: false,
       }
       for (let j = 0; j < rint(R, 0, 6); j++) {
@@ -541,14 +540,17 @@ describe('analytics helpers + prodAnalytics_', () => {
     }
   })
 
-  it('prodAnalytics_ full=true reproduces the undefined-`from` ReferenceError', () => {
+  it('prodAnalytics_ full=true populates calibration, skipping rows before weeks[0]', () => {
     const inp = {
       intervals: [
         { date: '2026-10-29', agentEmail: 'a@x.com', agentName: 'A', status: 'IDLE', startMs: 0, endMs: 3600000, minutes: 60 },
       ],
       flags: [],
       layers: [],
-      hist: [{ date: '2026-10-01', class: 'idle', counts_json: '{"3":2}' }],
+      hist: [
+        { date: '2026-10-01', class: 'idle', counts_json: '{"9":9}' },
+        { date: '2026-10-10', class: 'idle', counts_json: '{"3":2}' },
+      ],
       people: {},
       tlName: '@@fn:__fn_tlName__',
       week: '2026-10-25',
@@ -565,7 +567,10 @@ describe('analytics helpers + prodAnalytics_', () => {
       prodAnalytics_({ ...inp, tlName: (e: string) => 'TL ' + e, offsetMs: () => 10800000 } as never)
     )
     expect(legacy.err).toMatch(/from is not defined/)
-    expect(port.err).toMatch(/from is not defined/)
+    expect(port.err).toBeUndefined()
+    const cal = (port.ok as Record<string, unknown>).calibration as Record<string, Record<string, number>>
+    expect(cal.idle).toEqual({ '3': 2 })
+    expect(cal.working).toEqual({})
   })
 })
 

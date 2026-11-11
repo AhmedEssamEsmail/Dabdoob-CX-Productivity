@@ -6,19 +6,17 @@
  */
 
 import 'server-only'
-import type { Cfg } from '@/features/shared/lib/adapters'
 import {
   normEmail_,
   dqAddDays_,
 } from '@/features/shared/lib/adapters'
 import {
-  qaRound1_, qaBool_, qaFinalScore_, qaParse_, qaQuestions_, qaScore_, qaLostQuestions_,
-  qaNeedsCtl_, qaRollupAudits_, qaEmailList_, qaPeriodOf_, qaCanCloseCtl_, qaCtlVisibleTo_,
-  qaIsNonTicket_, qaItemId_, qaItemRef_, qaItemTag_, qaNameKey_, qaMatchAgent_, qaWhen_,
-  qaCtlDue_, qaAuditHasMarkdown_, qaSetting_,
-  QA_ANSWERS, QA_FAIL_REASONS, QA_CHOICES,
+  qaQuestions_, qaScore_, qaPeriodOf_,
+  qaIsNonTicket_, qaItemRef_, qaItemTag_, qaNameKey_, qaMatchAgent_, qaWhen_,
+  qaCtlDue_,
+  QA_ANSWERS, QA_FAIL_REASONS,
 } from './core'
-import { qeFmt_, qeWeekKeyFor_, qeQuotaFor_, qeCanonAgent_ } from './engine'
+import { qeFmt_, qeQuotaFor_, qeCanonAgent_ } from './engine'
 
 /** Engine Riyadh times ("yyyy-MM-dd HH:mm") stored as text with a leading apostrophe. */
 export const QA_QUEUE_TIME_FIELDS = ['interaction_at', 'action_at']

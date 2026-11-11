@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
+ 
 /**
  * QueueCore.js pure parts moved from cx-queue/lib — shared by queue/people/hub/desk
  * (aging flags, submissions, check-in checkpoints, aging bands). Store reads arrive as

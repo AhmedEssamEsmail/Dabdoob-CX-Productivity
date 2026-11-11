@@ -24,7 +24,7 @@
 import 'server-only'
 
 import { createHash } from 'node:crypto'
-import { dqSetting_, prodFileFor_, dqAddDays_, type Cfg } from '@/features/shared/lib/adapters'
+import { dqSetting_, dqAddDays_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { tphClock_ } from '@/features/cx-productivity/lib/tph'
 import { db } from '@/features/shared/platform/repo'
@@ -55,8 +55,6 @@ interface MirrorSpec {
   windowMs?: number
   hint: string
 }
-
-const MAQSAM_MONTH_TAB = 'Maqsam Calls'
 
 const SPECS: Record<MirrorTable, MirrorSpec> = {
   fd_activities: {

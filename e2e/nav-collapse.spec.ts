@@ -100,7 +100,7 @@ test.describe('Unified collapsible nav', () => {
   })
 
   test('nav links route client-side — no reload, no BootSplash', async ({ page }) => {
-    const nav = await bootedNav(page)
+    await bootedNav(page)
     await page.evaluate(() => {
       ;(window as unknown as { __navStay: number }).__navStay = 1
     })

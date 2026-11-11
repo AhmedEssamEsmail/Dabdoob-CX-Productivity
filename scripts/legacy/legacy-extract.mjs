@@ -116,7 +116,7 @@ function findRouteMeta(ast) {
 }
 
 /** Top-level symbol table: name -> {start,end,kind} */
-function topLevel(ast, code) {
+function topLevel(ast) {
   const out = new Map()
   for (const node of ast.program.body) {
     if (node.type === 'FunctionDeclaration' && node.id) {
@@ -131,7 +131,7 @@ function topLevel(ast, code) {
 }
 
 /** Free identifiers of a node that resolve to top-level symbols. */
-function depsOf(node, topNames, code) {
+function depsOf(node, topNames) {
   const refs = new Set()
   const collect = (n) => {
     if (!n || typeof n !== 'object') return
@@ -170,7 +170,7 @@ for (const [app, dir] of Object.entries(APPS)) {
   fs.writeFileSync(path.join(outDir, 'app.pretty.js'), prettyCode)
 
   const ast = parse(prettyCode, { sourceType: 'module' })
-  const top = topLevel(ast, prettyCode)
+  const top = topLevel(ast)
   const tables = findRouteTables(ast)
   const metas = findRouteMeta(ast)
 
@@ -240,7 +240,7 @@ for (const [app, dir] of Object.entries(APPS)) {
         continue
       }
       const fnNode = ast.program.body.find((n) => n.start === node.start)
-      const deps = fnNode ? depsOf(fnNode, new Set(top.keys()), prettyCode) : []
+      const deps = fnNode ? depsOf(fnNode, new Set(top.keys())) : []
       const src2 = prettyCode.slice(node.start, node.end)
       const safe = route.replace(/[^a-z0-9-]/g, '_')
       fs.writeFileSync(path.join(outDir, 'pages', `${safe}.js`), src2 + '\n')
@@ -259,7 +259,7 @@ for (const [app, dir] of Object.entries(APPS)) {
         if (seen.has(name) || !top.has(name)) return
         seen.add(name)
         const n = ast.program.body.find((x) => x.start === top.get(name).start)
-        if (n) for (const d of depsOf(n, new Set(top.keys()), prettyCode)) visit(d)
+        if (n) for (const d of depsOf(n, new Set(top.keys()))) visit(d)
         order.push(name)
       }
       visit(sym)

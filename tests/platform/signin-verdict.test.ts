@@ -6,7 +6,7 @@ type QueryResult = { data: unknown; error: { message: string } | null }
 // resolves to them (roleForEmail matches the row itself after ilike).
 const supa = vi.hoisted(() => ({
   rosterRows: [] as unknown[],
-  from: (_table: string): unknown => {
+  from: (): unknown => {
     const result: QueryResult = { data: supa.rosterRows, error: null }
     const b = new Proxy(function () {}, {
       get(_t, prop) {
@@ -24,8 +24,8 @@ const supa = vi.hoisted(() => ({
   },
 }))
 vi.mock('@/features/shared/lib/supabase', () => ({
-  supabase: { from: (t: string) => supa.from(t) },
-  createClient: () => ({ from: (t: string) => supa.from(t) }),
+  supabase: { from: () => supa.from() },
+  createClient: () => ({ from: () => supa.from() }),
 }))
 vi.mock('@/features/shared/lib/auth', () => ({
   createAuthClient: async () => ({ auth: { getClaims: async () => ({ data: null }) } }),

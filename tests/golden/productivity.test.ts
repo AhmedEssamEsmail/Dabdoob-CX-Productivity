@@ -38,7 +38,6 @@ import {
   prodActivitiesFromRows_,
   prodAssumptions_,
   prodComputeDates_,
-  prodComputeRange_,
   prodDetectDates_,
   prodAutoAccept_,
   prodFlagView_,
@@ -96,7 +95,6 @@ describe('adapters: time + keys', () => {
 
   it('dqWallToUtc_ / dqTzOffsetMin_ / dqDateKey_ / dqAddDays_ / prodDateKey_ / normEmail_ — 150 vectors', () => {
     const tzs = ['Asia/Kuwait', 'Africa/Cairo', 'Pacific/Kiritimati', 'America/New_York', 'Asia/Kolkata', 'UTC']
-    const cfg = CFG()
     for (let i = 0; i < 150; i++) {
       const y = rint(R, 2019, 2030)
       const mo = rint(R, 1, 12)
@@ -621,7 +619,7 @@ describe('prodDetectDates_ / prodAutoAccept_ — flag orchestration', () => {
       const writes: { fn: string; args: unknown[] }[] = []
       const io = {
         cfg: fx.settings as Cfg,
-        openSpreadsheet: (id: string) => sheetBook({}) as never,
+        openSpreadsheet: () => sheetBook({}) as never,
         prodRows: (name: string) => {
           const tab = ((fx.spreadsheets as Record<string, Record<string, unknown[][]>>)['prod-store'] || {})[name] || []
           const hdrs = (tab[0] || []) as string[]

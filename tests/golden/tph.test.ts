@@ -19,9 +19,7 @@ import {
   type GoldenFixture,
 } from './helpers-oracle'
 import {
-  TPH_SLOTS,
   TPH_CALLS,
-  TPH_OFF,
   tphHm_,
   tphTaskSlots_,
   tphParseSlot_,
@@ -73,7 +71,6 @@ import {
   tphDayCore_,
   tphBuildTouches_,
   tphActivityTail_,
-  tphBuildCallMinutes_,
   tphPastDay_,
   tphDiagnoseTouchLines_,
   tphCaptureCases_,
@@ -114,7 +111,6 @@ const CFG = {
 // Thursday 2026-10-29 13:20 Asia/Kuwait (10:20Z) -> today '2026-10-29', nowSlot 53.
 const NOW_MS = Date.UTC(2026, 9, 29, 10, 20, 0)
 const TODAY = '2026-10-29'
-const YESTERDAY = '2026-10-28'
 
 function fx(extra: GoldenFixture = {}): GoldenFixture {
   return baseFixtures({ settings: { ...CFG, ...(extra.settings as object) }, nowMs: NOW_MS, ...extra })
@@ -366,7 +362,6 @@ describe('tph id/index/rows', () => {
 describe('tph people/settings/helpers', () => {
   it('canEdit / groupIndex / touchFallback / json / people', () => {
     const R = rng(7009)
-    const chans = tphChannels_(CFG)
     for (let i = 0; i < 40; i++) {
       const role = rpick(R, ['admin', 'tl', 'agent', ''])
       const date = rpick(R, ['2026-10-29', '2026-10-26', '2026-10-27', '2026-10-30', 'bad', '2026-10-25'])

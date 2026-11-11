@@ -100,6 +100,9 @@ export async function raisePopup(p: RaisePopupInput, actor: string): Promise<Rec
 /** Closes every open pop-up matching kind + ref (resolvePopups_). Returns how many resolved. */
 export async function resolvePopups(kind: string, ref: string, actor: string): Promise<number> {
   await assertWritable()
+  // actor is kept for signature parity with the legacy port; the popups table
+  // carries no resolver column, so it is intentionally unused.
+  String(actor)
   const now = new Date().toISOString()
   const { data, error } = await db()
     .from(POPUPS_TABLE)

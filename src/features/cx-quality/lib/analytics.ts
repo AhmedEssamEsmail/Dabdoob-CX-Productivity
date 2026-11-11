@@ -13,7 +13,7 @@ import {
 import {
   qaRound1_, qaFinalScore_, qaRollupAudits_, qaBool_, qaParse_, qaPeriodOf_,
   qaQuestions_, qaIsNonTicket_, qaItemId_, qaWhen_, qaScore_, qaCtlSla_, qaAuditorKpis_,
-  QA_ANSWERS, QA_FAIL_REASONS,
+  QA_FAIL_REASONS,
 } from './core'
 import { qaDaysBetween_, qaRangeBucket_ } from './pure'
 

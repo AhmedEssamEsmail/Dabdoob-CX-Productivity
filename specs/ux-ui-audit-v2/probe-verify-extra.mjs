@@ -1,7 +1,7 @@
 // verify-1 supplemental probe: qa-q via /calibration, admin kv-row cause,
 // md-status token pair. Run: node specs/ux-ui-audit-v2/probe-verify-extra.mjs
 import { chromium } from 'playwright'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -37,7 +37,6 @@ console.log('login:', await login(page, ADMIN))
 await page.goto('/calibration', { waitUntil: 'domcontentloaded', timeout: 60000 })
 await settle(page)
 R.calibration = await page.evaluate(() => {
-  const btns = [...document.querySelectorAll('button, [role="button"], tr, li')].filter((el) => !el.disabled)
   return {
     buttons: [...document.querySelectorAll('button')].map((b) => (b.textContent || '').trim().slice(0, 50)).slice(0, 30),
     rows: document.querySelectorAll('tbody tr, .workitem, [class*="cal"]').length,

@@ -4,7 +4,11 @@ import { FetchError, fetchJson, postJson } from '@/features/shared/lib/fetch-jso
 afterEach(() => vi.unstubAllGlobals())
 
 function stubFetch(res: { ok: boolean; status?: number; json?: unknown }) {
-  const spy = vi.fn(async (_url: string, _init?: RequestInit) => ({
+  const spy = vi.fn<(url: string, init?: RequestInit) => Promise<{
+    ok: boolean
+    status: number
+    json: () => Promise<unknown>
+  }>>(async () => ({
     ok: res.ok,
     status: res.status ?? (res.ok ? 200 : 500),
     json: async () => res.json ?? {},

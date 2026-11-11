@@ -17,8 +17,6 @@ import { dqAddDays_, dqParseTs_, prodActivityKey_, prodDateKey_ } from '@/featur
 // Re-export the existing module so this file is the single "validation" surface.
 export * from '../prod-validation'
 import {
-  prodNorm,
-  prodIn,
   checkDecision,
   effectiveStatus,
   type ProdFlagRow,
@@ -459,6 +457,8 @@ export function prodCheckDispute_(
   _disputeDays?: unknown,
   _reason?: unknown
 ): never {
+  // Params kept for legacy signature parity; the mechanism is disabled.
+  String(_reason)
   throw new Error('Dispute mechanism is disabled.')
 }
 
@@ -469,6 +469,8 @@ export function prodCheckDisputeDecision_(
   _input?: unknown,
   _statuses?: unknown
 ): never {
+  // Params kept for legacy signature parity; the mechanism is disabled.
+  String(_statuses)
   throw new Error('Dispute mechanism is disabled.')
 }
 
@@ -484,6 +486,8 @@ export function prodConfidenceScore_(
   _interval?: unknown,
   _agentHistory?: unknown
 ): { score: number; level: string; factors: string[] } {
+  // cases / interval / agentHistory: legacy placeholder args kept for arity (see docstring).
+  String(_agentHistory)
   let score = 50 // Base score
   const factors: string[] = []
 

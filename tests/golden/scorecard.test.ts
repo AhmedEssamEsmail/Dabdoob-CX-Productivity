@@ -43,7 +43,6 @@ import { pwTasksOut_ } from '@/features/cx-people/lib/work-core'
 import type { Cfg } from '@/features/shared/lib/adapters'
 
 const R = rng(0x77aa11)
-const CFG = baseFixtures().settings as Cfg
 
 describe('small helpers', () => {
   it('pwIsOpenStatus_ / pwOpenSeriesActions_ / pwPrevMonth_ / d0num_ / pwFit_ / pwRound1_ / scRound1_ / scEmail_ / scNum_', () => {
@@ -472,7 +471,7 @@ describe('scorecard math', () => {
     })
     const l = callLegacy('scLoad_', [{ from: '2026-10-01', to: '2026-10-31' }], fx)
     // port: scLoad_(io, range) with io mirroring the oracle stores
-    const readRange = (name: string, from: string, to: string) => {
+    const readRange = (name: string) => {
       // emulate scReadRange_ over the data-2026 tabs
       const tab = ((fx.spreadsheets as Record<string, Record<string, unknown[][]>>)['data-2026'] || {})[name] || []
       const hdrs = (tab[0] || []) as string[]

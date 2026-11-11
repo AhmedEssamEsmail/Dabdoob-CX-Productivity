@@ -1685,7 +1685,7 @@ describe('mdOurs_ precedence (wave-2 extension)', () => {
       gmsg('ta', 'tam1', NOW - 3 * H, 'alerts@myfatoorah.com', 'Refund Status Update ORD-A'),
       gmsg('ta', 'tam2', NOW - H, 'Admin <admin@dabdoob.com>', 'Re: Refund Status Update ORD-A'),
     ]}]
-    const { port } = await deskSame('mdSyncSla_', [], oursFx(t), () => mdSyncSla_(), 'ours via admins')
+    await deskSame('mdSyncSla_', [], oursFx(t), () => mdSyncSla_(), 'ours via admins')
     const row = (hubDb.tables.mail_sla || [])[0]
     expect(row.status).toBe('replied')
     expect(row.replied_by).toBe('admin@dabdoob.com')
