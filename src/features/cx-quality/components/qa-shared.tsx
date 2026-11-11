@@ -23,6 +23,7 @@
 import {
   type ReactNode,
   type RefObject,
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -112,10 +113,11 @@ export const Q = toast
  * function-identity cacheKey; anonymous loaders stay uncached, exactly
  * like the legacy dn Map keyed on load.name.
  */
-export const useSe = (load: () => Promise<any>) =>
+const useSeLoader = (load: () => Promise<any>) =>
   usePageData(load.name || null, load, {
     cacheKey: load.name ? load : null,
   })
+export { useSeLoader as useSe }
 
 /* --- de / D — page shell + section ------------------------------------- */
 /** de — the routed page shell. */
@@ -460,7 +462,12 @@ export function ListSelect({
             placeholder="Type the new choice"
             onInput={(R) => h(R.currentTarget.value)}
             onKeyDown={(R) => {
-              R.key === 'Enter' ? (R.preventDefault(), v()) : R.key === 'Escape' && w()
+              if (R.key === 'Enter') {
+                R.preventDefault()
+                v()
+              } else if (R.key === 'Escape') {
+                w()
+              }
             }}
           />
           <Button
@@ -567,17 +574,22 @@ function ys(t: any[], n: ((r: any) => any) | undefined, a: string, s: 'asc' | 'd
 /** _e(t) — column sort state + apply(). */
 export function useQaSort(t: QaSortCols): QaSort {
   const [n, a] = useState<{ col: string; dir: 'asc' | 'desc' } | null>(null)
-  return {
-    s: n,
-    toggle: (s) =>
+  /* apply/toggle are memoized so consumers can depend on `sort.apply` in
+     useMemo without re-sorting on every render. */
+  const toggle = useCallback(
+    (s: string) =>
       a((i) =>
         i && i.col === s
           ? { col: s, dir: i.dir === 'asc' ? 'desc' : 'asc' }
           : { col: s, dir: 'asc' }
       ),
-    apply: (s) =>
-      n && t[n.col] ? ys(s, t[n.col].get, t[n.col].type, n.dir) : s,
-  }
+    []
+  )
+  const apply = useCallback(
+    (s: any[]) => (n && t[n.col] ? ys(s, t[n.col].get, t[n.col].type, n.dir) : s),
+    [n, t]
+  )
+  return useMemo(() => ({ s: n, toggle, apply }), [n, toggle, apply])
 }
 
 /* --- It / os — audit-form vocabulary ------------------------------------ */
@@ -727,7 +739,10 @@ export function AuditForm({
   const v = (N: string[], z: boolean) =>
     d((X: any) => {
       const F = { ...X }
-      for (const Xe of N) z ? (F[Xe] = 'na') : delete F[Xe]
+      for (const Xe of N) {
+        if (z) F[Xe] = 'na'
+        else delete F[Xe]
+      }
       return F
     })
   const w = Object.keys(u).filter((N) => u[N] === 'fail')
@@ -1120,7 +1135,7 @@ function CountSpans({
       <span ref={spanRef} aria-hidden="true">
         {rn(live)}
       </span>
-      <span className="sr-only">{rn(final)}</span>
+      <span className="cx-sr">{rn(final)}</span>
     </>
   )
 }
@@ -1354,7 +1369,7 @@ export function DrillSection({
     data: i,
     error: c,
     reload: l,
-  } = useSe(() =>
+  } = useSeLoader(() =>
     P.analyticsAudits(scope.grain, scope.period, pick.agent ?? '', pick.question ?? '', scope.basis)
   )
   const m = [pick.agentName, pick.questionText ? `“${pick.questionText.slice(0, 80)}”` : '']

@@ -43,7 +43,7 @@ function Ja({ d, go }: { d: TphData; go: (date: string) => void }) {
   return (
     <div className="tph-day">
       <Button onClick={() => go(dt(d.date, -1))}>Previous day</Button>
-      <label className="sr-only" htmlFor="tph-date">
+      <label className="cx-sr" htmlFor="tph-date">
         Day
       </label>
       <Input

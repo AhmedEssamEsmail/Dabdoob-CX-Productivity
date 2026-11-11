@@ -25,7 +25,11 @@ export function hmParseTime_(t: unknown): number {
   const l = Number(s[2] || 0)
   if (s[4]) {
     const r = s[4].toUpperCase() === 'PM'
-    a === 12 ? (a = r ? 12 : 0) : r && (a += 12)
+    if (a === 12) {
+      a = r ? 12 : 0
+    } else if (r) {
+      a += 12
+    }
   }
   return a * 60 + l
 }
@@ -257,7 +261,12 @@ export function hmRequirement_(t: any, n: any, s?: string) {
       w.sort((B, te) => B.due - te.due)
       let J = 0
       let se = 0
-      for (const B of w) if (B.due <= q) (B.np ? (se += B.rem / l) : (J += B.rem / l))
+      for (const B of w) {
+        if (B.due <= q) {
+          if (B.np) se += B.rem / l
+          else J += B.rem / l
+        }
+      }
       const Le = n.minOnFloor || 0
       const ue = Math.max(I + se, (A + x + J + se) / n.occupancyCap, P, Le)
       let Ee = n.occupancyCap * ue - (A + x + J + se)

@@ -216,7 +216,7 @@ export function Xa({ d, sum, runner, trend, select, go }: {
         key: `${w.email}|${w.hour}`,
         text: `${w.name}, ${F(w.hour)}: ${w.callMin} min`,
       })),
-    [d]
+    [d.callVariance]
   )
   const overItems = useMemo(
     () => overRows.map((w) => ({ key: w.email, text: `${w.name}: ${U(w.overHours, 'hour-channel')}, ${P(w.pctRaw)}% un-clipped` })),
@@ -231,7 +231,7 @@ export function Xa({ d, sum, runner, trend, select, go }: {
       d.channels
         .filter((w) => d.rebuiltReasons[w.key])
         .map((w) => ({ key: w.key, text: `${w.name}: ${d.rebuiltReasons[w.key]}` })),
-    [d]
+    [d.channels, d.rebuiltReasons]
   )
   const note =
     h || (i ? 'No cases for this day: rebuild needed' : sum.scored ? '' : 'No scored hours yet: no agent has a cap and touches')

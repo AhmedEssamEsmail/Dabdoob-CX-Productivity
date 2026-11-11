@@ -67,7 +67,11 @@ function he(t) {
   const l = Number(s[2] || 0);
   if (s[4]) {
     const r = s[4].toUpperCase() === "PM";
-    a === 12 ? a = r ? 12 : 0 : r && (a += 12);
+    if (a === 12) {
+      a = r ? 12 : 0;
+    } else if (r) {
+      a += 12;
+    }
   }
   return a * 60 + l;
 }
@@ -216,11 +220,14 @@ function rl(t, n, s) {
     o = 0;
   for (const v of t.cells) {
     const y = ut(v.country, r);
-    y === "*" || !h.has(y) || (o += v.volume, d.has(y) && (c += v.volume));
+    if (y !== "*" && h.has(y)) {
+      o += v.volume;
+      if (d.has(y)) c += v.volume;
+    }
   }
   const f = o > 0 ? c / o : 0;
   let g;
-  !s && !(n.countries && n.countries.length) ? g = 1 : n.sharedVolumeMode === "full" ? g = p.length ? 1 : 0 : o === 0 ? g = u ? 1 : 0 : n.sharedVolumeMode === "allOnly" ? g = u && !s ? 1 : 0 : g = f;
+  if (!s && !(n.countries && n.countries.length)) g = 1; else if (n.sharedVolumeMode === "full") g = p.length ? 1 : 0; else if (o === 0) g = u ? 1 : 0; else if (n.sharedVolumeMode === "allOnly") g = u && !s ? 1 : 0; else g = f;
   const b = new Map();
   for (const v of t.cells) {
     const y = n.channels[v.channel];
@@ -241,7 +248,9 @@ function rl(t, n, s) {
           workSec: 0
         },
         E = v.volume * M / O;
-      N.volume += E, N.workSec += E * $, b.set(q, N);
+      N.volume += E;
+      N.workSec += E * $;
+      b.set(q, N);
     }
   }
   return b;
@@ -249,15 +258,18 @@ function rl(t, n, s) {
 function ol(t, n) {
   const s = [],
     a = new Set();
-  for (const l of t.cells) n.channels[l.channel] || a.add(l.channel), l.volume >= 0 || s.push(`Negative or missing volume at ${l.channel} ${l.day} ${l.start}`);
+  for (const l of t.cells) {
+    if (!n.channels[l.channel]) a.add(l.channel);
+    if (!(l.volume >= 0)) s.push(`Negative or missing volume at ${l.channel} ${l.day} ${l.start}`);
+  }
   if (a.size && s.push(`Unknown channels (ignored): ${[...a].join(", ")}`), n.countryList && n.countryList.length) {
     const l = new Set(n.countryList),
       r = new Map();
     for (const i of t.cells) {
       const h = ut(i.country, n.countryAliases || {});
-      h !== "*" && !l.has(h) && r.set(h, (r.get(h) || 0) + (i.volume || 0));
+      if (h !== "*" && !l.has(h)) r.set(h, (r.get(h) || 0) + (i.volume || 0));
     }
-    r.size && s.push(`Countries not in the country list (excluded; add them or an alias): ${[...r].map(([i, h]) => `${i} (${h.toFixed(1)}/wk-day vol)`).join(", ")}`);
+    if (r.size) s.push(`Countries not in the country list (excluded; add them or an alias): ${[...r].map(([i, h]) => `${i} (${h.toFixed(1)}/wk-day vol)`).join(", ")}`);
   }
   return s;
 }
@@ -306,7 +318,9 @@ function Cs(t, n, s) {
     q[H] = q[H] || {
       volume: 0,
       workSec: 0
-    }, q[H].volume += L.volume, q[H].workSec += L.workSec;
+    };
+    q[H].volume += L.volume;
+    q[H].workSec += L.workSec;
   }
   const y = $ => Math.max(0, Math.floor((u[$].slaMin ?? 60) / a) - 1);
   let w = [];
@@ -317,7 +331,7 @@ function Cs(t, n, s) {
       O = (L + 6) % 7;
     for (const S of g) {
       const C = [b[L].before[S], b[O].after[S]].filter(Boolean);
-      for (const q of C) q.volume > 0 && w.push({
+      for (const q of C) if (q.volume > 0) w.push({
         id: S,
         rem: q.workSec / 3600,
         due: H + y(S),
@@ -332,7 +346,8 @@ function Cs(t, n, s) {
         E = 0;
       for (const B of o) {
         const te = m(B, L, C);
-        N += te.volume, E += te.workSec;
+        N += te.volume;
+        E += te.workSec;
       }
       const R = N > 0 ? E / N : 0,
         k = N / l,
@@ -344,7 +359,11 @@ function Cs(t, n, s) {
       for (const B of f) {
         const te = m(B, L, C),
           re = u[B].concurrency || n.chats.concurrency;
-        U += te.volume, n.chats.model === "legacy" ? x += te.workSec / 3600 / l / (n.chats.ahtBasis === "effort" ? 1 : re) : (x += te.workSec / 3600 / l, P += te.volume / l * Ms(n, u[B]) / 60 / re);
+        U += te.volume;
+        if (n.chats.model === "legacy") x += te.workSec / 3600 / l / (n.chats.ahtBasis === "effort" ? 1 : re); else {
+          x += te.workSec / 3600 / l;
+          P += te.volume / l * Ms(n, u[B]) / 60 / re;
+        }
       }
       const V = x / n.occupancyCap,
         de = {
@@ -359,7 +378,8 @@ function Cs(t, n, s) {
         const te = m(B, L, C);
         if (te.workSec <= 0) continue;
         let re = q + y(B);
-        n.overnight === "forceBeforeClose" && (re = Math.min(re, H + h)), w.push({
+        if (n.overnight === "forceBeforeClose") re = Math.min(re, H + h);
+        w.push({
           id: B,
           rem: te.workSec / 3600,
           due: re,
@@ -369,7 +389,9 @@ function Cs(t, n, s) {
       w.sort((B, te) => B.due - te.due);
       let J = 0,
         se = 0;
-      for (const B of w) B.due <= q && (B.np ? se += B.rem / l : J += B.rem / l);
+      for (const B of w) if (B.due <= q) {
+        if (B.np) se += B.rem / l; else J += B.rem / l;
+      }
       const Le = n.minOnFloor || 0;
       let ue = Math.max(I + se, (A + x + J + se) / n.occupancyCap, P, Le),
         Ee = n.occupancyCap * ue - (A + x + J + se),
@@ -384,11 +406,16 @@ function Cs(t, n, s) {
         const te = B.np ? Math.min(Ee, on) : Ee;
         if (te <= ie) continue;
         const re = Math.min(B.rem, te * l);
-        B.rem -= re, Ee -= re / l, B.np ? (on -= re / l, Mt += re / l) : St += re / l;
+        B.rem -= re;
+        Ee -= re / l;
+        if (B.np) {
+          on -= re / l;
+          Mt += re / l;
+        } else St += re / l;
       }
       w = w.filter(B => B.rem > ie);
       const cn = A + x + St + Mt;
-      $ >= 7 && T.push({
+      if ($ >= 7) T.push({
         start: C,
         label: qe(C),
         calls: {
@@ -410,7 +437,8 @@ function Cs(t, n, s) {
         rostered: ue / (1 - n.shrinkage)
       });
     }
-    n.overnight === "forceBeforeClose" && (w = []), $ >= 7 && M.push({
+    if (n.overnight === "forceBeforeClose") w = [];
+    if ($ >= 7) M.push({
       day: kt[L],
       intervals: T
     });
@@ -474,7 +502,7 @@ function dl(t, n, s, a, l = {}) {
     u = a.map((m, b) => {
       let v = 0;
       return d.forEach(y => {
-        i[b][y] && (v = Math.max(v, t[y]));
+        if (i[b][y]) v = Math.max(v, t[y]);
       }), Math.ceil(v - ie) + (l.flexible ? 1 : 0);
     }),
     c = l.flexible ? l.presence : t;
@@ -486,7 +514,7 @@ function dl(t, n, s, a, l = {}) {
           let v = 0;
           for (const y of d) {
             let w = 0;
-            for (let M = 0; M < a.length; M++) i[M][y] && (w += f[M]);
+            for (let M = 0; M < a.length; M++) if (i[M][y]) w += f[M];
             if (w + ie < c[y]) return;
             v += (w - c[y]) * r;
           }
@@ -494,14 +522,17 @@ function dl(t, n, s, a, l = {}) {
             const y = f.reduce((w, M, $) => w + M * h[$], 0);
             if (v + ie < l.shrinkage * y) return;
           }
-          (!o || b < o.total || b === o.total && v < o.surplus - ie) && (o = {
+          if (!o || b < o.total || b === o.total && v < o.surplus - ie) o = {
             total: b,
             surplus: v,
             alloc: f.slice()
-          });
+          };
           return;
         }
-        for (let v = 0; v <= u[m]; v++) f[m] = v, g(m + 1, b + v);
+        for (let v = 0; v <= u[m]; v++) {
+          f[m] = v;
+          g(m + 1, b + v);
+        }
         f[m] = 0;
       }
     };
@@ -553,11 +584,14 @@ function ul(t, n, s) {
   let d = Math.ceil(p - ie);
   const u = Math.max(...n.days.map(T => T.total)),
     c = [];
-  d < u && (c.push(`Peak day needs ${u} bodies but arithmetic gives ${d}; raised to ${u}.`), d = u);
+  if (d < u) {
+    c.push(`Peak day needs ${u} bodies but arithmetic gives ${d}; raised to ${u}.`);
+    d = u;
+  }
   const o = n.days.filter(T => T.total >= d).map(T => T.day);
-  o.length && c.push(`Zero slack (every hire working) on: ${o.join(", ")}.`);
+  if (o.length) c.push(`Zero slack (every hire working) on: ${o.join(", ")}.`);
   const f = n.days.flatMap(T => T.uncovered.map(S => `${T.day} ${S}`));
-  f.length && c.push(`UNCOVERED intervals (no enabled shift): ${f.join(", ")}`);
+  if (f.length) c.push(`UNCOVERED intervals (no enabled shift): ${f.join(", ")}`);
   const g = n.shifts.map(T => {
     const S = n.days.map(N => N.bodies[T.id]),
       C = S.reduce((N, E) => N + E, 0),
@@ -590,7 +624,8 @@ function ul(t, n, s) {
       }
       const R = Math.floor(E - C.deferredServed.nonPreemptible + ie),
         k = ws(C.calls.lambdaPerHour, C.calls.ahtSec, R, s.calls.answerWithinSec);
-      y += C.calls.volume, w += C.calls.volume * k.sl;
+      y += C.calls.volume;
+      w += C.calls.volume * k.sl;
     }
   }));
   const M = n.days.reduce((T, S) => T + n.shifts.reduce((C, q) => C + S.bodies[q.id] * q.paidHours, 0), 0),
@@ -623,7 +658,7 @@ function ul(t, n, s) {
     regime: O,
     chatBinding: t.days.reduce((T, S) => (S.intervals.forEach(C => {
       const q = C.chat?.binding;
-      q && T[q]++;
+      if (q) T[q]++;
     }), T), {
       effort: 0,
       slots: 0
@@ -651,9 +686,25 @@ function rn(t) {
     l = !1;
   for (let r = 0; r < t.length; r++) {
     const i = t[r];
-    l ? i === '"' ? t[r + 1] === '"' ? (a += '"', r++) : l = !1 : a += i : i === '"' ? l = !0 : i === "," ? (s.push(a), a = "") : i === `
-` || i === "\r" ? (i === "\r" && t[r + 1] === `
-` && r++, s.push(a), n.push(s), s = [], a = "") : a += i;
+    if (l) {
+      if (i === '"') {
+        if (t[r + 1] === '"') {
+          a += '"';
+          r++;
+        } else l = !1;
+      } else a += i;
+    } else if (i === '"') l = !0; else if (i === ",") {
+      s.push(a);
+      a = "";
+    } else if (i === `
+` || i === "\r") {
+      if (i === "\r" && t[r + 1] === `
+`) r++;
+      s.push(a);
+      n.push(s);
+      s = [];
+      a = "";
+    } else a += i;
   }
   return (a !== "" || s.length) && (s.push(a), n.push(s)), n;
 }
@@ -727,7 +778,7 @@ function Ts(t, {
       for (let m = 0; m < 7; m++) {
         const b = (a[f][u + 1 + m] || "").trim(),
           v = Number(b);
-        b !== "" && !isNaN(v) && r.push({
+        if (b !== "" && !isNaN(v)) r.push({
           country: n,
           channel: o,
           day: kt[m],
@@ -740,7 +791,7 @@ function Ts(t, {
   for (let d = 0; d < (a[0] || []).length; d++) if (String(a[0][d]).trim().toLowerCase() === "queue" && String(a[0][d + 1]).trim().toLowerCase() === "aht") for (let u = 1; u < a.length; u++) {
     const c = (a[u][d] || "").trim(),
       o = Number(a[u][d + 1]);
-    c && !isNaN(o) && (i[c] = o);
+    if (c && !isNaN(o)) i[c] = o;
   }
   return {
     intervalMinutes: s,
@@ -768,7 +819,7 @@ function Vt(t, n, s) {
 function fl(t) {
   const n = new Set();
   return t.map(s => (s.forEach((a, l) => {
-    String(a).trim().toLowerCase() === "interval" && n.add(l);
+    if (String(a).trim().toLowerCase() === "interval") n.add(l);
   }), s.map((a, l) => {
     let r = String(a ?? "");
     const i = Number(r);
@@ -806,12 +857,18 @@ function Ls() {
     s = [],
     a = [];
   t.forEach((r, i) => {
-    s.push(r, ...Array(7).fill(n)), a.push("Interval", ...qs), i < t.length - 1 && (s.push(n), a.push(n));
+    s.push(r, ...Array(7).fill(n));
+    a.push("Interval", ...qs);
+    if (i < t.length - 1) {
+      s.push(n);
+      a.push(n);
+    }
   });
   const l = Os.map((r, i) => {
     const h = [];
     return t.forEach((p, d) => {
-      h.push(r, ...pt[p][i]), d < t.length - 1 && h.push(n);
+      h.push(r, ...pt[p][i]);
+      if (d < t.length - 1) h.push(n);
     }), h.join(",");
   });
   return [s.join(","), a.join(","), ...l].join(`
@@ -822,7 +879,10 @@ function je(t, n) {
       type: "text/csv;charset=utf-8"
     })),
     a = document.createElement("a");
-  a.href = s, a.download = t, a.click(), setTimeout(() => URL.revokeObjectURL(s), 1e3);
+  a.href = s;
+  a.download = t;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(s), 1e3);
 }
 const Re = "__other__";
 const _l = {
@@ -841,3 +901,7 @@ const _l = {
   mt = t => (Math.round(t * 10) / 10).toLocaleString("en-GB", {
     maximumFractionDigits: 1
   });
+
+/* Parity keep: these extracted helpers are unused inside this fixture but
+ * stay verbatim so the oracle mirrors the legacy bundle. */
+globalThis.__hmParityKept = [As, ml, Ts, Ut, Vt, fl, gl, Kt, Ls, je, Re, _l, mt];

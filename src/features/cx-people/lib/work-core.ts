@@ -27,7 +27,6 @@ import {
 } from './scorecard'
 import { pwDirectory, type Directory } from '@/features/shared/platform/identity'
 import { getWorkingCalendar, type WorkingDay } from '@/features/shared/platform/calendar'
-import { readRows } from '@/features/shared/platform/repo'
 import { readStore } from '@/features/shared/platform/stores'
 import { configAll } from '@/features/shared/platform/settings'
 import {

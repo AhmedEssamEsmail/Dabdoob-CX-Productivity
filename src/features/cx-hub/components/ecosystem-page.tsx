@@ -95,7 +95,13 @@ function ec(n: any, e: any) {
 }
 
 function im(n: any) {
-  n.missing || !n.href || (n.external ? window.open(n.href, '_top') : location.assign(n.href))
+  if (!n.missing && n.href) {
+    if (n.external) {
+      window.open(n.href, '_top')
+    } else {
+      location.assign(n.href)
+    }
+  }
 }
 
 function lm(n: string, e: (t: any) => boolean) {
@@ -119,13 +125,17 @@ function Jb({ boot: n, msg: e, setMsg: t }: { boot: any; msg: string; setMsg: (m
   } = Eo(Ng.get)
   return useEffect(() => {
     const o = setInterval(() => {
-      document.hidden || r()
+      if (!document.hidden) r()
     }, Kb)
     return () => clearInterval(o)
   }, [r]), <><a className="skip" href="#main">Skip to content</a><main id="main" className="eco3-page" tabIndex={-1}>{i ? <Scene3D health={i} onSelect={o => {
     if (appForGroup(o) !== Hr) {
       const c = yf(o, PAGES as any[], l => ec(l, n))
-      c && !c.missing ? im(c) : t(c ? 'That app is not connected yet. An admin adds its web app URL in Admin, Connected apps.' : 'You have no page in that system.')
+      if (c && !c.missing) {
+        im(c)
+      } else {
+        t(c ? 'That app is not connected yet. An admin adds its web app URL in Admin, Connected apps.' : 'You have no page in that system.')
+      }
       return
     }
     location.href = Lr(lm(o, c => rh(c, n)))

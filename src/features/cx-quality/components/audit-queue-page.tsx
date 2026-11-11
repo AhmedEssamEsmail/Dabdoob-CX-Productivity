@@ -429,7 +429,7 @@ function AuditQueuePage({
                       Audit
                     </SortTh>
                     <th scope="col">
-                      <span className="sr-only">Action</span>
+                      <span className="cx-sr">Action</span>
                     </th>
                   </tr>
                 </thead>

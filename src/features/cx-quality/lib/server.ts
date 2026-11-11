@@ -38,7 +38,6 @@ import {
   qaItemRef_, qaItemId_, qaItemTag_, qaIsNonTicket_, qaWhen_, qaParse_, qaFinalScore_,
   qaQuestions_, qaAlignment_, qaRollupAudits_, qaCtlDue_, qaCtlDenyRecipients_,
   qaAgentIndex_,
-  type QaQueueCtx,
 } from './core'
 import {
   qaCleanInteractionAt_, qaTakenByOther_, qaScoreSubmission_,
@@ -349,13 +348,6 @@ async function qeHubTicketDetail_(ids: Record<string, boolean> | string[]): Prom
     })
   }
   return out
-}
-
-/** qaQueueCtx_ verbatim: the QaQueueCtx the queue parser needs (roster + headcount). */
-async function qaQueueCtx_(dir: Directory): Promise<QaQueueCtx> {
-  const people = qaImportablePeople_(dir).map((p) => ({ email: p.email, name: p.name, tlEmail: p.tlEmail || undefined }))
-  const headcount = await qaHeadcount_()
-  return { today: qaToday_(), auditors: await qaAuditors_(dir), people, headcount }
 }
 
 // =====================================================================
