@@ -1,0 +1,1779 @@
+{
+ "routes": {
+  "trackers@375": {
+   "hscroll": {
+    "scrollW": 375,
+    "innerW": 375,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Trackers"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page page-fill trk-page"
+    },
+    {
+     "tag": "header",
+     "role": "",
+     "label": "",
+     "cls": "page-head trk-head"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-toggle",
+     "name": "Menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEATrackersEvery record keeps the email ",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "select",
+     "type": "",
+     "cls": "cx-select select trk-switch-select",
+     "name": "Tracker",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 8,
+   "inlineStyled": [],
+   "nInlineStyled": 0,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": {
+    "y": 222,
+    "h": 143
+   },
+   "title": "Trackers · Dabdoob CX Operations",
+   "diag": {
+    "api": {
+     "nTrackers": 0,
+     "names": [],
+     "error": null,
+     "hasCurrent": false,
+     "canCreate": true
+    },
+    "hasBody": false,
+    "hasCreate": false,
+    "hasBannerErr": false,
+    "hasEmpty": false,
+    "switchValue": "__new__",
+    "switchOptions": [
+     "__new__|Other: create a new tracker…"
+    ]
+   },
+   "switchInfo": {
+    "options": 1,
+    "realOptions": 0,
+    "skipped": "one-or-zero real tracker options"
+   },
+   "focusTrail": [
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-toggle",
+     "label": "Menu",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "label": "Notifications",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "label": "Appearance",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "select",
+     "cls": "cx-select select trk-switch-select",
+     "label": "Other: create a new tracker…",
+     "outline": "none 3px rgb(29, 38, 50)",
+     "boxShadow": "rgba(255, 255, 255, 0.97) 0px 0px 0px 1.94081px, rgba(47, 111, 237, 0.97) 0px 0p"
+    },
+    {
+     "tag": "nextjs-portal",
+     "cls": "",
+     "label": "",
+     "outline": "none 3px rgb(117, 117, 117)",
+     "boxShadow": ""
+    },
+    {
+     "tag": "nextjs-portal",
+     "cls": "",
+     "label": "",
+     "outline": "none 3px rgb(117, 117, 117)",
+     "boxShadow": ""
+    },
+    null,
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-toggle",
+     "label": "Menu",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    }
+   ],
+   "emptyStateText": "NO-SEARCH-INPUT (no tracker body)"
+  },
+  "trackers@768": {
+   "hscroll": {
+    "scrollW": 768,
+    "innerW": 768,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Trackers"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page page-fill trk-page"
+    },
+    {
+     "tag": "header",
+     "role": "",
+     "label": "",
+     "cls": "page-head trk-head"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-toggle",
+     "name": "Menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEATrackersEvery record keeps the email ",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "select",
+     "type": "",
+     "cls": "cx-select select trk-switch-select",
+     "name": "Tracker",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 8,
+   "inlineStyled": [],
+   "nInlineStyled": 0,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": {
+    "y": 222,
+    "h": 127
+   },
+   "title": "Trackers · Dabdoob CX Operations",
+   "diag": {
+    "api": {
+     "nTrackers": 0,
+     "names": [],
+     "error": null,
+     "hasCurrent": false,
+     "canCreate": true
+    },
+    "hasBody": false,
+    "hasCreate": false,
+    "hasBannerErr": false,
+    "hasEmpty": false,
+    "switchValue": "__new__",
+    "switchOptions": [
+     "__new__|Other: create a new tracker…"
+    ]
+   },
+   "switchInfo": {
+    "options": 1,
+    "realOptions": 0,
+    "skipped": "one-or-zero real tracker options"
+   },
+   "focusTrail": [
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-toggle",
+     "label": "Menu",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "label": "Notifications",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "label": "Appearance",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "select",
+     "cls": "cx-select select trk-switch-select",
+     "label": "Other: create a new tracker…",
+     "outline": "none 3px rgb(29, 38, 50)",
+     "boxShadow": "rgba(255, 255, 255, 0.992) 0px 0px 0px 1.98466px, rgba(47, 111, 237, 0.992) 0px "
+    },
+    {
+     "tag": "nextjs-portal",
+     "cls": "",
+     "label": "",
+     "outline": "none 3px rgb(117, 117, 117)",
+     "boxShadow": ""
+    },
+    {
+     "tag": "nextjs-portal",
+     "cls": "",
+     "label": "",
+     "outline": "none 3px rgb(117, 117, 117)",
+     "boxShadow": ""
+    },
+    null,
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-toggle",
+     "label": "Menu",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    }
+   ]
+  },
+  "trackers@1024": {
+   "hscroll": {
+    "scrollW": 1024,
+    "innerW": 1024,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Trackers"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page page-fill trk-page"
+    },
+    {
+     "tag": "header",
+     "role": "",
+     "label": "",
+     "cls": "page-head trk-head"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Hub",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "My day",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Home",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "People & holidays",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Admin",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Quality",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Productivity",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Queue & Workforce",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "People & Performance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Operations & Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Escalation matrix",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "TL desk",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "FCR",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "va-open",
+     "name": "View as",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "rail-signout",
+     "name": "Sign out",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-collapse",
+     "name": "Hide the menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEATrackersEvery record keeps the email ",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "select",
+     "type": "",
+     "cls": "cx-select select trk-switch-select",
+     "name": "Tracker",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 24,
+   "inlineStyled": [
+    {
+     "tag": "span",
+     "cls": "nav-ind",
+     "style": "transform: translate(12px, 525px); width: 191px; height: 52px;"
+    }
+   ],
+   "nInlineStyled": 1,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": {
+    "y": 106,
+    "h": 60
+   },
+   "title": "Trackers · Dabdoob CX Operations",
+   "diag": {
+    "api": {
+     "nTrackers": 0,
+     "names": [],
+     "error": null,
+     "hasCurrent": false,
+     "canCreate": true
+    },
+    "hasBody": false,
+    "hasCreate": false,
+    "hasBannerErr": false,
+    "hasEmpty": false,
+    "switchValue": "__new__",
+    "switchOptions": [
+     "__new__|Other: create a new tracker…"
+    ]
+   },
+   "switchInfo": {
+    "options": 1,
+    "realOptions": 0,
+    "skipped": "one-or-zero real tracker options"
+   },
+   "focusTrail": [
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Hub",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "My day",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Home",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "People & holidays",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Admin",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Quality",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Productivity",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Queue & Workforce",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "People & Performance",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Operations & Trackers",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Trackers",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    }
+   ]
+  },
+  "trackers@1440": {
+   "hscroll": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Trackers"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page page-fill trk-page"
+    },
+    {
+     "tag": "header",
+     "role": "",
+     "label": "",
+     "cls": "page-head trk-head"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Hub",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "My day",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Home",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "People & holidays",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Admin",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Quality",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Productivity",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Queue & Workforce",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "People & Performance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Operations & Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Escalation matrix",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "TL desk",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "FCR",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "va-open",
+     "name": "View as",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "rail-signout",
+     "name": "Sign out",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-collapse",
+     "name": "Hide the menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEATrackersEvery record keeps the email ",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "select",
+     "type": "",
+     "cls": "cx-select select trk-switch-select",
+     "name": "Tracker",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 24,
+   "inlineStyled": [
+    {
+     "tag": "span",
+     "cls": "nav-ind",
+     "style": "transform: translate(12px, 517px); width: 205px; height: 52px;"
+    }
+   ],
+   "nInlineStyled": 1,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": {
+    "y": 112,
+    "h": 63
+   },
+   "title": "Trackers · Dabdoob CX Operations",
+   "diag": {
+    "api": {
+     "nTrackers": 0,
+     "names": [],
+     "error": null,
+     "hasCurrent": false,
+     "canCreate": true
+    },
+    "hasBody": false,
+    "hasCreate": false,
+    "hasBannerErr": false,
+    "hasEmpty": false,
+    "switchValue": "__new__",
+    "switchOptions": [
+     "__new__|Other: create a new tracker…"
+    ]
+   },
+   "switchInfo": {
+    "options": 1,
+    "realOptions": 0,
+    "skipped": "one-or-zero real tracker options"
+   },
+   "focusTrail": [
+    {
+     "tag": "a",
+     "cls": "skip",
+     "label": "Skip to content",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgba(15, 23, 34, 0.14) 0px 12px 32px 0px"
+    },
+    {
+     "tag": "a",
+     "cls": "brand",
+     "label": "Dabdoob CXOperations console",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "label": "Search or jump to…",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Hub",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "My day",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Home",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "People & holidays",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Admin",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Quality",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Productivity",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Queue & Workforce",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "People & Performance",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "button",
+     "cls": "nav-group-label",
+     "label": "Operations & Trackers",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    },
+    {
+     "tag": "a",
+     "cls": "nav-link",
+     "label": "Trackers",
+     "outline": "solid 2px rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0px 0px 4px"
+    }
+   ]
+  },
+  "escalation-matrix@375": {
+   "hscroll": {
+    "scrollW": 375,
+    "innerW": 375,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Escalation matrix"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-toggle",
+     "name": "Menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEAEscalation matrixThis page hit an err",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "btn btn-quiet",
+     "name": "Try again",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 8,
+   "inlineStyled": [],
+   "nInlineStyled": 0,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "This page hit an error and could not be shown: Attempted to call D() from the server but D is on the",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": null,
+   "title": "Escalation matrix · Dabdoob CX Operations",
+   "status": 200,
+   "unbuilt": {
+    "hasPageHead": 0,
+    "hasEmpty": 1,
+    "bodyText": "Skip to content Dabdoob CX Operations console Menu Search or jump to… Operations & Trackers EA Escalation matrix This page hit an error and could not be shown: Attempted to call D() from the server but D is on the client. It's not possible "
+   }
+  },
+  "escalation-matrix@1440": {
+   "hscroll": {
+    "scrollW": 1440,
+    "innerW": 1440,
+    "ok": true
+   },
+   "overflowEls": [],
+   "headings": [
+    {
+     "lvl": "H2",
+     "text": "View as"
+    },
+    {
+     "lvl": "H1",
+     "text": "Escalation matrix"
+    }
+   ],
+   "landmarks": [
+    {
+     "tag": "aside",
+     "role": "",
+     "label": "",
+     "cls": "rail"
+    },
+    {
+     "tag": "nav",
+     "role": "",
+     "label": "Main",
+     "cls": "nav"
+    },
+    {
+     "tag": "main",
+     "role": "",
+     "label": "",
+     "cls": "main"
+    },
+    {
+     "tag": "section",
+     "role": "",
+     "label": "page-title",
+     "cls": "page"
+    }
+   ],
+   "controls": [
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "skip",
+     "name": "Skip to content",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "brand",
+     "name": "Dabdoob CXOperations console",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-search",
+     "name": "Search or jump to…",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Hub",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "My day",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Home",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "People & holidays",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Admin",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Quality",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Productivity",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Queue & Workforce",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "People & Performance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "Operations & Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Trackers",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "nav-link",
+     "name": "Escalation matrix",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "TL desk",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "nav-group-label",
+     "name": "FCR",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "va-open",
+     "name": "View as",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "a",
+     "type": "",
+     "cls": "rail-signout",
+     "name": "Sign out",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "rail-collapse",
+     "name": "Hide the menu",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "main",
+     "type": "",
+     "cls": "main",
+     "name": "Operations & TrackersEAEscalation matrixThis page hit an err",
+     "disabled": false,
+     "tabindex": "-1",
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Notifications",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "icon-btn",
+     "name": "Appearance",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    },
+    {
+     "tag": "button",
+     "type": "button",
+     "cls": "btn btn-quiet",
+     "name": "Try again",
+     "disabled": false,
+     "tabindex": null,
+     "inlineStyle": null
+    }
+   ],
+   "nControls": 24,
+   "inlineStyled": [
+    {
+     "tag": "span",
+     "cls": "nav-ind",
+     "style": "transform: translate(12px, 570px); width: 205px; height: 52px;"
+    }
+   ],
+   "nInlineStyled": 1,
+   "alerts": [
+    "Loading the roster…",
+    "",
+    "This page hit an error and could not be shown: Attempted to call D() from the server but D is on the",
+    "",
+    ".boot-splash{position:fixed;inset:0;z-index:50;display:grid;place-content:center;justify-items:cente"
+   ],
+   "headRect": null,
+   "title": "Escalation matrix · Dabdoob CX Operations",
+   "status": 200,
+   "unbuilt": {
+    "hasPageHead": 0,
+    "hasEmpty": 1,
+    "bodyText": "Skip to content Dabdoob CX Operations console Search or jump to… Ctrl K HUB My day Home People & holidays Admin QUALITY PRODUCTIVITY QUEUE & WORKFORCE PEOPLE & PERFORMANCE OPERATIONS & TRACKERS Trackers Escalation matrix TL DESK FCR View as"
+   }
+  }
+ },
+ "notes": [
+  "login ok"
+ ],
+ "consoleErrs": [
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerender",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/trackers\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either p",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/trackers\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either p",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/trackers\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either p",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/trackers\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either p",
+  "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be render",
+  "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either ",
+  "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be render",
+  "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a",
+  "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+  "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either "
+ ]
+}

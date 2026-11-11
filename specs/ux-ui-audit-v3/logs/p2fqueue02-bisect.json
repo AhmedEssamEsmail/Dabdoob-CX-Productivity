@@ -1,0 +1,88 @@
+{
+ "confirm": {
+  "iw": 375,
+  "sw": 376,
+  "bodySw": 368
+ },
+ "bisect": {
+  "base": 376,
+  "res": [
+   {
+    "sel": ".shell",
+    "cls": "shell   ",
+    "swBefore": 376,
+    "swAfter": 375
+   },
+   {
+    "sel": ".main",
+    "cls": "main",
+    "swBefore": 376,
+    "swAfter": 375
+   },
+   {
+    "sel": "main",
+    "cls": "main",
+    "swBefore": 376,
+    "swAfter": 375
+   },
+   {
+    "sel": "body > *",
+    "cls": "",
+    "swBefore": 376,
+    "swAfter": 375
+   }
+  ]
+ },
+ "overflowing": [
+  {
+   "tag": "a",
+   "cls": "skip",
+   "id": "",
+   "pos": "absolute",
+   "left": -999,
+   "right": -871.6,
+   "w": 127.4,
+   "ow": "visible"
+  },
+  {
+   "tag": "input",
+   "cls": "cx-input cx-num",
+   "id": "q-Chats-ag",
+   "pos": "static",
+   "left": 25,
+   "right": 376,
+   "w": 351,
+   "ow": "clip"
+  },
+  {
+   "tag": "textarea",
+   "cls": "cx-textarea chk-note",
+   "id": "q-Chats-n",
+   "pos": "static",
+   "left": 25,
+   "right": 376,
+   "w": 351,
+   "ow": "auto"
+  },
+  {
+   "tag": "div",
+   "cls": "toasts",
+   "id": "",
+   "pos": "fixed",
+   "left": 359,
+   "right": 359,
+   "w": 0,
+   "ow": "visible"
+  },
+  {
+   "tag": "div",
+   "cls": "boot-splash",
+   "id": "",
+   "pos": "fixed",
+   "left": 0,
+   "right": 0,
+   "w": 0,
+   "ow": "visible"
+  }
+ ]
+}

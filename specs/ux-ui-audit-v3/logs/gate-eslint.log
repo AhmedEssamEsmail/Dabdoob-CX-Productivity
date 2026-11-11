@@ -1,0 +1,29 @@
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-hub\components\overview-page.tsx
+  169:11  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-people\components\meetings-page.tsx
+  860:19  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\components\shell\AppShell.tsx
+  541:13  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+  551:11  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+  585:19  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+  654:13  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\components\shell\ErrorBoundary.tsx
+  34:11  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\components\shell\OneOnOneAlerts.tsx
+  257:15  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+  264:15  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\components\shell\Toasts.tsx
+  91:7  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\components\shell\ViewAs.tsx
+  126:9   warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+  188:19  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+✖ 12 problems (0 errors, 12 warnings)
+

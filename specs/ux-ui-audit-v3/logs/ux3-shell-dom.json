@@ -1,0 +1,2662 @@
+{
+ "widths": {
+  "375": {
+   "width": 375,
+   "overview": {
+    "innerWidth": 375,
+    "docScrollWidth": 375,
+    "bodyScrollWidth": 359,
+    "hScroll": false,
+    "title": "Home · Dabdoob CX",
+    "url": "/overview",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 1,
+     "footer": 0,
+     "sectionsLabelled": 7,
+     "sectionsTotal": 7,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "Good afternoon, E2E",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Needs you today",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues right now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Team pulse",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "By queue",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999",
+     "span.cx-ladder__seg \"0\n0\" right=379 left=347",
+     "span.cx-ladder__seg \"0\n0\" right=413 left=381",
+     "span \"0\n0\" right=401 left=393",
+     "span \"0\" right=401 left=393",
+     "span.cx-sr \"0\" right=382 left=381",
+     "span.cx-ladder__seg \"0\n0\" right=447 left=415",
+     "span \"0\n0\" right=435 left=427",
+     "span \"0\" right=435 left=427",
+     "span.cx-sr \"0\" right=416 left=415",
+     "span.cx-ladder__seg \"0\n0\" right=481 left=449",
+     "span \"0\n0\" right=469 left=461",
+     "span \"0\" right=469 left=461",
+     "span.cx-sr \"0\" right=450 left=449",
+     "table.cx-table \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1528 left=25"
+    ],
+    "clippedNoTitle": [],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 359,
+      "h": 122,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "nav": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 287,
+      "y": 25,
+      "w": 64,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 327,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 24,
+      "y": 150,
+      "w": 327,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 24,
+      "y": 174,
+      "w": 0,
+      "h": 0,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 8,
+      "y": 130,
+      "w": 359,
+      "h": 2888,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 359,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "Home",
+      "href": "/overview"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "false"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "",
+    "topbarText": "EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "Good afternoon, E2E"
+   },
+   "consoleErrors": [
+    "Error: Route \"/overview\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to f",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of ",
+    "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Clien",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to "
+   ],
+   "topbarStability": {
+    "before": {
+     "x": 24,
+     "y": 149.5,
+     "width": 327,
+     "height": 48
+    },
+    "after": {
+     "x": 24,
+     "y": 929,
+     "width": 327,
+     "height": 48
+    }
+   },
+   "navOpen": {
+    "shellClass": "shell nav-open  ",
+    "navVisible": true,
+    "railRect": {
+     "x": 8,
+     "w": 359,
+     "h": 901
+    },
+    "mainCovered": false,
+    "backdrop": false
+   },
+   "palette": {
+    "open": true,
+    "role": "dialog",
+    "ariaModal": "true",
+    "backdropPosition": "fixed",
+    "backdropZ": "60",
+    "rect": {
+     "x": 15,
+     "y": 108,
+     "w": 345,
+     "h": 461,
+     "vw": 375,
+     "vh": 900
+    },
+    "clipped": false,
+    "inputFocused": true,
+    "itemCount": 20,
+    "activeIsOption": "combobox",
+    "listboxLabelled": true,
+    "hitsCenter": "cpk-input"
+   },
+   "paletteAfterArrow": {
+    "onText": "HomeHub",
+    "ariaActive": "cpk-item-1"
+   },
+   "paletteClosed": {
+    "gone": true,
+    "focusTag": "BUTTON",
+    "focusCls": "nav-toggle"
+   },
+   "viewasButtonVisible": true,
+   "viewas": {
+    "open": true,
+    "rect": {
+     "x": 17,
+     "y": 300,
+     "w": 341,
+     "h": 299,
+     "vw": 375
+    },
+    "clipped": false,
+    "title": "View as",
+    "people": 0,
+    "loading": true,
+    "error": null,
+    "labelledBy": "va-title"
+   },
+   "viewasClosed": {
+    "gone": true,
+    "focusCls": "va-open"
+   },
+   "focusSeq": [
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "text": "Search or jump to…",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Notifications",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Appearance",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.btn",
+     "text": "Next:\n18:30",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "none",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "One-to-ones held but not ",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "TL tasks past their deadl",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Check-ins missed today\n09",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Overdue actions across th",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "cx-section__hint",
+     "text": "Open →",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open now\n4\n4",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Came in today\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(255, 255, 255, 1) 0px 0px 0px 1.99962px, rgba(47, 111, ",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open 10 d or more\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(255, 255, 255, 1) 0px 0px 0px 1.99962px, rgba(47, 111, ",
+     "visible": true
+    }
+   ],
+   "toasts": {
+    "present": true,
+    "live": "polite",
+    "role": "status",
+    "items": 0
+   },
+   "fcr": {
+    "innerWidth": 375,
+    "docScrollWidth": 375,
+    "bodyScrollWidth": 359,
+    "hScroll": false,
+    "title": "FCR · Dabdoob CX FCR",
+    "url": "/fcr",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 0,
+     "footer": 0,
+     "sectionsLabelled": 1,
+     "sectionsTotal": 1,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "FCR",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999"
+    ],
+    "clippedNoTitle": [],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 359,
+      "h": 365,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "nav": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 287,
+      "y": 25,
+      "w": 64,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 327,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 24,
+      "y": 393,
+      "w": 327,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 24,
+      "y": 408,
+      "w": 24,
+      "h": 20,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 8,
+      "y": 373,
+      "w": 359,
+      "h": 535,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 359,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "FCR",
+      "href": "/fcr"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "true"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "FCR",
+    "topbarText": "FCR | EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "FCR"
+   }
+  },
+  "768": {
+   "width": 768,
+   "overview": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 752,
+    "hScroll": false,
+    "title": "Home · Dabdoob CX",
+    "url": "/overview",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 1,
+     "footer": 0,
+     "sectionsLabelled": 7,
+     "sectionsTotal": 7,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "Good afternoon, E2E",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Needs you today",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues right now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Team pulse",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "By queue",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999",
+     "table.cx-table \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1531 left=28",
+     "thead \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1531 left=28",
+     "tr \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1531 left=28",
+     "th.cx-num-col \"CHANGE\" right=825 left=748",
+     "th.cx-num-col \"OURS TO WORK\" right=945 left=825",
+     "th.cx-num-col \"NOT ASSIGNED\" right=1063 left=945",
+     "th \"AGE MIX\" right=1231 left=1063",
+     "th \"OLDEST\" right=1315 left=1231",
+     "th.cx-num-col \"IN TODAY\" right=1399 left=1315",
+     "th.cx-num-col \"RESOLVED TODAY\" right=1531 left=1399",
+     "tbody \"Chats (best effort)Stale: thes\" right=1531 left=28",
+     "tr \"Chats (best effort)Stale: thes\" right=1531 left=28",
+     "td.cx-num-col.cx-num \"–\" right=825 left=748",
+     "td.cx-num-col.cx-num \"4\" right=945 left=825"
+    ],
+    "clippedNoTitle": [],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 752,
+      "h": 122,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "nav": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 680,
+      "y": 25,
+      "w": 64,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 720,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 27,
+      "y": 150,
+      "w": 714,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 27,
+      "y": 174,
+      "w": 0,
+      "h": 0,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 8,
+      "y": 130,
+      "w": 752,
+      "h": 2393,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 752,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "Home",
+      "href": "/overview"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "false"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "",
+    "topbarText": "EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "Good afternoon, E2E"
+   },
+   "consoleErrors": [
+    "Error: Route \"/overview\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to f",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of ",
+    "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Clien",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to "
+   ],
+   "topbarStability": {
+    "before": {
+     "x": 27.1875,
+     "y": 149.5,
+     "width": 713.625,
+     "height": 48
+    },
+    "after": {
+     "x": 27.1875,
+     "y": 929,
+     "width": 713.625,
+     "height": 48
+    }
+   },
+   "navOpen": {
+    "shellClass": "shell nav-open  ",
+    "navVisible": true,
+    "railRect": {
+     "x": 8,
+     "w": 752,
+     "h": 901
+    },
+    "mainCovered": false,
+    "backdrop": false
+   },
+   "palette": {
+    "open": true,
+    "role": "dialog",
+    "ariaModal": "true",
+    "backdropPosition": "fixed",
+    "backdropZ": "60",
+    "rect": {
+     "x": 111,
+     "y": 108,
+     "w": 546,
+     "h": 439,
+     "vw": 768,
+     "vh": 900
+    },
+    "clipped": false,
+    "inputFocused": true,
+    "itemCount": 20,
+    "activeIsOption": "combobox",
+    "listboxLabelled": true,
+    "hitsCenter": "cpk-input"
+   },
+   "paletteAfterArrow": {
+    "onText": "HomeHub",
+    "ariaActive": "cpk-item-1"
+   },
+   "paletteClosed": {
+    "gone": true,
+    "focusTag": "BUTTON",
+    "focusCls": "nav-toggle"
+   },
+   "viewasButtonVisible": true,
+   "viewas": {
+    "open": true,
+    "rect": {
+     "x": 143,
+     "y": 183,
+     "w": 482,
+     "h": 534,
+     "vw": 768
+    },
+    "clipped": false,
+    "title": "View as",
+    "people": 49,
+    "loading": false,
+    "error": null,
+    "labelledBy": "va-title"
+   },
+   "viewasClosed": {
+    "gone": true,
+    "focusCls": "va-open"
+   },
+   "focusSeq": [
+    {
+     "tag": "button",
+     "cls": "rail-search",
+     "text": "Search or jump to…",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Notifications",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Appearance",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.btn",
+     "text": "Next:\n18:30",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "none",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "One-to-ones held but not ",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "TL tasks past their deadl",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Check-ins missed today\n09",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Overdue actions across th",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "cx-section__hint",
+     "text": "Open →",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open now\n4\n4",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(255, 255, 255, 1) 0px 0px 0px 1.99962px, rgba(47, 111, ",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Came in today\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open 10 d or more\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(255, 255, 255, 0.992) 0px 0px 0px 1.98474px, rgba(47, 1",
+     "visible": true
+    }
+   ],
+   "toasts": {
+    "present": true,
+    "live": "polite",
+    "role": "status",
+    "items": 0
+   },
+   "fcr": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 752,
+    "hScroll": false,
+    "title": "FCR · Dabdoob CX FCR",
+    "url": "/fcr",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 0,
+     "footer": 0,
+     "sectionsLabelled": 1,
+     "sectionsTotal": 1,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "FCR",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999"
+    ],
+    "clippedNoTitle": [],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 752,
+      "h": 391,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "nav": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 680,
+      "y": 25,
+      "w": 64,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 720,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 27,
+      "y": 419,
+      "w": 714,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 27,
+      "y": 433,
+      "w": 24,
+      "h": 20,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 8,
+      "y": 399,
+      "w": 752,
+      "h": 509,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 752,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "FCR",
+      "href": "/fcr"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "true"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "FCR",
+    "topbarText": "FCR | EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "FCR"
+   }
+  },
+  "1024": {
+   "width": 1024,
+   "overview": {
+    "innerWidth": 1024,
+    "docScrollWidth": 1024,
+    "bodyScrollWidth": 1008,
+    "hScroll": false,
+    "title": "Home · Dabdoob CX",
+    "url": "/overview",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 1,
+     "footer": 0,
+     "sectionsLabelled": 7,
+     "sectionsTotal": 7,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "Good afternoon, E2E",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Needs you today",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues right now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Team pulse",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "By queue",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [
+     "span.nav-ind \"\" style=\"transform: translate(12px, 98px); width: 191px; height: 52px;\""
+    ],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999",
+     "table.cx-table \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1754 left=251",
+     "thead \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1754 left=251",
+     "tr \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1754 left=251",
+     "th.cx-num-col \"CHANGE\" right=1047 left=971",
+     "th.cx-num-col \"OURS TO WORK\" right=1167 left=1047",
+     "th.cx-num-col \"NOT ASSIGNED\" right=1285 left=1167",
+     "th \"AGE MIX\" right=1453 left=1285",
+     "th \"OLDEST\" right=1538 left=1453",
+     "th.cx-num-col \"IN TODAY\" right=1621 left=1538",
+     "th.cx-num-col \"RESOLVED TODAY\" right=1754 left=1621",
+     "tbody \"Chats (best effort)Stale: thes\" right=1754 left=251",
+     "tr \"Chats (best effort)Stale: thes\" right=1754 left=251",
+     "td.cx-num-col.cx-num \"–\" right=1047 left=971",
+     "td.cx-num-col.cx-num \"4\" right=1167 left=1047"
+    ],
+    "clippedNoTitle": [
+     "span.rail-search-label \"Search or jump to…\" title=NO"
+    ],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 216,
+      "h": 900,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "auto"
+     },
+     "nav": {
+      "x": 8,
+      "y": 129,
+      "w": 215,
+      "h": 647,
+      "display": "block",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 183,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 250,
+      "y": 34,
+      "w": 741,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 250,
+      "y": 58,
+      "w": 0,
+      "h": 0,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 224,
+      "y": 8,
+      "w": 792,
+      "h": 1727,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 1008,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 8,
+      "y": 775,
+      "w": 215,
+      "h": 48,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 8,
+      "y": 823,
+      "w": 215,
+      "h": 85,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "Home",
+      "href": "/overview"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "false"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "",
+    "topbarText": "EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "Good afternoon, E2E"
+   },
+   "consoleErrors": [
+    "Error: Route \"/overview\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to f",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of ",
+    "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Clien",
+    "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to ",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "topbarStability": {
+    "before": {
+     "x": 249.59375,
+     "y": 33.59375,
+     "width": 740.8125,
+     "height": 48
+    },
+    "after": {
+     "x": 249.59375,
+     "y": 33.59375,
+     "width": 740.8125,
+     "height": 48
+    }
+   },
+   "railCollapseVisible": true,
+   "railOff": {
+    "shellClass": "shell  rail-off ",
+    "railW": 56,
+    "ariaExpanded": "false"
+   },
+   "railRestored": {
+    "shellClass": "shell   ",
+    "railW": 216
+   },
+   "palette": {
+    "open": true,
+    "role": "dialog",
+    "ariaModal": "true",
+    "backdropPosition": "fixed",
+    "backdropZ": "60",
+    "rect": {
+     "x": 239,
+     "y": 108,
+     "w": 546,
+     "h": 439,
+     "vw": 1024,
+     "vh": 900
+    },
+    "clipped": false,
+    "inputFocused": true,
+    "itemCount": 20,
+    "activeIsOption": "combobox",
+    "listboxLabelled": true,
+    "hitsCenter": "cpk-input"
+   },
+   "paletteAfterArrow": {
+    "onText": "HomeHub",
+    "ariaActive": "cpk-item-1"
+   },
+   "paletteClosed": {
+    "gone": true,
+    "focusTag": "BUTTON",
+    "focusCls": "rail-collapse"
+   },
+   "viewasButtonVisible": true,
+   "viewas": {
+    "open": true,
+    "rect": {
+     "x": 271,
+     "y": 183,
+     "w": 482,
+     "h": 534,
+     "vw": 1024
+    },
+    "clipped": false,
+    "title": "View as",
+    "people": 49,
+    "loading": false,
+    "error": null,
+    "labelledBy": "va-title"
+   },
+   "viewasClosed": {
+    "gone": true,
+    "focusCls": "va-open"
+   },
+   "focusSeq": [
+    {
+     "tag": "a",
+     "cls": "rail-signout",
+     "text": "Sign out",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "rail-collapse",
+     "text": "Hide the menu",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Notifications",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Appearance",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.btn",
+     "text": "Next:\n18:30",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "none",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "One-to-ones held but not ",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "TL tasks past their deadl",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Check-ins missed today\n09",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Overdue actions across th",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "cx-section__hint",
+     "text": "Open →",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open now\n4\n4",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Came in today\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    }
+   ],
+   "toasts": {
+    "present": true,
+    "live": "polite",
+    "role": "status",
+    "items": 0
+   },
+   "fcr": {
+    "innerWidth": 1024,
+    "docScrollWidth": 1024,
+    "bodyScrollWidth": 1008,
+    "hScroll": false,
+    "title": "FCR · Dabdoob CX FCR",
+    "url": "/fcr",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 0,
+     "footer": 0,
+     "sectionsLabelled": 1,
+     "sectionsTotal": 1,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "FCR",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [
+     "span.nav-ind \"\" style=\"transform: translate(12px, 629px); width: 191px; height: 52px;\""
+    ],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999"
+    ],
+    "clippedNoTitle": [
+     "span.rail-search-label \"Search or jump to…\" title=NO"
+    ],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 216,
+      "h": 900,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "auto"
+     },
+     "nav": {
+      "x": 8,
+      "y": 127,
+      "w": 215,
+      "h": 698,
+      "display": "block",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 183,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 250,
+      "y": 34,
+      "w": 741,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 250,
+      "y": 48,
+      "w": 24,
+      "h": 20,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 224,
+      "y": 8,
+      "w": 792,
+      "h": 900,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 1008,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 8,
+      "y": 825,
+      "w": 215,
+      "h": 48,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 8,
+      "y": 873,
+      "w": 215,
+      "h": 85,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "FCR",
+      "href": "/fcr"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "true"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "FCR",
+    "topbarText": "FCR | EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "FCR"
+   }
+  },
+  "1440": {
+   "width": 1440,
+   "overview": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1424,
+    "hScroll": false,
+    "title": "Home · Dabdoob CX",
+    "url": "/overview",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 1,
+     "footer": 0,
+     "sectionsLabelled": 7,
+     "sectionsTotal": 7,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "Good afternoon, E2E",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Needs you today",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues right now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Team pulse",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "Queues now",
+      "hidden": false
+     },
+     {
+      "level": 2,
+      "text": "By queue",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [
+     "span.nav-ind \"\" style=\"transform: translate(12px, 98px); width: 205px; height: 52px;\""
+    ],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999",
+     "table.cx-table \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1779 left=275",
+     "thead \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1779 left=275",
+     "tr \"QUEUE\tOPEN\tCHANGE\tOURS TO WORK\" right=1779 left=275",
+     "th \"AGE MIX\" right=1478 left=1310",
+     "th \"OLDEST\" right=1562 left=1478",
+     "th.cx-num-col \"IN TODAY\" right=1646 left=1562",
+     "th.cx-num-col \"RESOLVED TODAY\" right=1779 left=1646",
+     "tbody \"Chats (best effort)Stale: thes\" right=1779 left=275",
+     "tr \"Chats (best effort)Stale: thes\" right=1779 left=275",
+     "td \"\" right=1478 left=1310",
+     "span.cx-agebar.cc-sweep-bar \"\" right=1466 left=1322",
+     "i \"\" right=1466 left=1322",
+     "td \"1 d 15 h\" right=1562 left=1478",
+     "span.cx-agechip \"1 d 15 h\" right=1550 left=1490"
+    ],
+    "clippedNoTitle": [
+     "span.rail-search-label \"Search or jump to…\" title=NO"
+    ],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 230,
+      "h": 900,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "auto"
+     },
+     "nav": {
+      "x": 8,
+      "y": 129,
+      "w": 229,
+      "h": 647,
+      "display": "block",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 197,
+      "h": 38,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 274,
+      "y": 40,
+      "w": 1122,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 274,
+      "y": 64,
+      "w": 0,
+      "h": 0,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 238,
+      "y": 8,
+      "w": 1194,
+      "h": 1568,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 1424,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 8,
+      "y": 775,
+      "w": 229,
+      "h": 48,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 8,
+      "y": 823,
+      "w": 229,
+      "h": 85,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "Home",
+      "href": "/overview"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "false"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "",
+    "topbarText": "EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "Good afternoon, E2E"
+   },
+   "consoleErrors": [
+    "Error: Route \"/overview\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to f",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "%o\n\n%s Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of ",
+    "Error: Attempted to call D() from the server but D is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Clien",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Error: Route \"/[...slug]\": Next.js encountered the unstable value `Date.now()` while prerendering.\n\nThis value can change between renders, so it must be either prerendered or computed later.\n\nWays to "
+   ],
+   "topbarStability": {
+    "before": {
+     "x": 274.390625,
+     "y": 40,
+     "width": 1121.609375,
+     "height": 48
+    },
+    "after": {
+     "x": 274.390625,
+     "y": 40,
+     "width": 1121.609375,
+     "height": 48
+    }
+   },
+   "railCollapseVisible": true,
+   "railOff": {
+    "shellClass": "shell  rail-off ",
+    "railW": 56,
+    "ariaExpanded": "false"
+   },
+   "railRestored": {
+    "shellClass": "shell   ",
+    "railW": 230.390625
+   },
+   "palette": {
+    "open": true,
+    "role": "dialog",
+    "ariaModal": "true",
+    "backdropPosition": "fixed",
+    "backdropZ": "60",
+    "rect": {
+     "x": 447,
+     "y": 108,
+     "w": 546,
+     "h": 439,
+     "vw": 1440,
+     "vh": 900
+    },
+    "clipped": false,
+    "inputFocused": true,
+    "itemCount": 20,
+    "activeIsOption": "combobox",
+    "listboxLabelled": true,
+    "hitsCenter": "cpk-input"
+   },
+   "paletteAfterArrow": {
+    "onText": "HomeHub",
+    "ariaActive": "cpk-item-1"
+   },
+   "paletteClosed": {
+    "gone": true,
+    "focusTag": "BUTTON",
+    "focusCls": "rail-collapse"
+   },
+   "viewasButtonVisible": true,
+   "viewas": {
+    "open": true,
+    "rect": {
+     "x": 479,
+     "y": 183,
+     "w": 482,
+     "h": 534,
+     "vw": 1440
+    },
+    "clipped": false,
+    "title": "View as",
+    "people": 49,
+    "loading": false,
+    "error": null,
+    "labelledBy": "va-title"
+   },
+   "viewasClosed": {
+    "gone": true,
+    "focusCls": "va-open"
+   },
+   "focusSeq": [
+    {
+     "tag": "a",
+     "cls": "rail-signout",
+     "text": "Sign out",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "rail-collapse",
+     "text": "Hide the menu",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Notifications",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "icon-btn",
+     "text": "Appearance",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.btn",
+     "text": "Next:\n18:30",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "none",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "One-to-ones held but not ",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "TL tasks past their deadl",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Check-ins missed today\n09",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "workitem",
+     "text": "Overdue actions across th",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "a",
+     "cls": "cx-section__hint",
+     "text": "Open →",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-btn.cx-btn",
+     "text": "Refresh now",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(16, 30, 42, 0.05) 0px 1px 2px 0px, rgba(16, 30, 42, 0.0",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Open now\n4\n4",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 2px, rgb(47, 111, 237) 0px 0p",
+     "visible": true
+    },
+    {
+     "tag": "button",
+     "cls": "cx-stat",
+     "text": "Came in today\n0\n0",
+     "outlineStyle": "solid",
+     "outlineWidth": "2px",
+     "outlineColor": "rgb(47, 111, 237)",
+     "boxShadow": "rgba(255, 255, 255, 0.992) 0px 0px 0px 1.98474px, rgba(47, 1",
+     "visible": true
+    }
+   ],
+   "toasts": {
+    "present": true,
+    "live": "polite",
+    "role": "status",
+    "items": 0
+   },
+   "fcr": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1424,
+    "hScroll": false,
+    "title": "FCR · Dabdoob CX FCR",
+    "url": "/fcr",
+    "landmarks": {
+     "nav": 1,
+     "navLabelled": 1,
+     "main": 1,
+     "header": 0,
+     "footer": 0,
+     "sectionsLabelled": 1,
+     "sectionsTotal": 1,
+     "banner": 0,
+     "contentinfo": 0,
+     "skipLink": true,
+     "dialogs": 0
+    },
+    "headings": [
+     {
+      "level": 2,
+      "text": "View as",
+      "hidden": true
+     },
+     {
+      "level": 1,
+      "text": "FCR",
+      "hidden": false
+     }
+    ],
+    "unnamedControls": [],
+    "unstyledControls": [],
+    "inlineStyled": [
+     "span.nav-ind \"\" style=\"transform: translate(12px, 621px); width: 205px; height: 52px;\""
+    ],
+    "overflowRight": [
+     "a.skip \"Skip to content\" right=-872 left=-999"
+    ],
+    "clippedNoTitle": [
+     "span.rail-search-label \"Search or jump to…\" title=NO"
+    ],
+    "rects": {
+     "shell": "shell   ",
+     "rail": {
+      "x": 8,
+      "y": 8,
+      "w": 230,
+      "h": 900,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "auto"
+     },
+     "nav": {
+      "x": 8,
+      "y": 127,
+      "w": 229,
+      "h": 690,
+      "display": "block",
+      "visibility": "visible",
+      "position": "relative",
+      "zIndex": "auto"
+     },
+     "navToggle": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "display": "none",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railSearch": {
+      "x": 24,
+      "y": 87,
+      "w": 197,
+      "h": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "topbar": {
+      "x": 274,
+      "y": 40,
+      "w": 1122,
+      "h": 48,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "sticky",
+      "zIndex": "5"
+     },
+     "crumbs": {
+      "x": 274,
+      "y": 54,
+      "w": 24,
+      "h": 20,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "main": {
+      "x": 238,
+      "y": 8,
+      "w": 1194,
+      "h": 900,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "toasts": {
+      "x": 1424,
+      "y": 884,
+      "w": 0,
+      "h": 0,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "fixed",
+      "zIndex": "40"
+     },
+     "railVa": {
+      "x": 8,
+      "y": 817,
+      "w": 229,
+      "h": 48,
+      "display": "block",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     },
+     "railFoot": {
+      "x": 8,
+      "y": 865,
+      "w": 229,
+      "h": 85,
+      "display": "flex",
+      "visibility": "visible",
+      "position": "static",
+      "zIndex": "auto"
+     }
+    },
+    "navToggleExpanded": "false",
+    "ariaCurrent": [
+     {
+      "cur": "page",
+      "text": "FCR",
+      "href": "/fcr"
+     }
+    ],
+    "navGroupLabels": [
+     {
+      "text": "Hub",
+      "expanded": "true"
+     },
+     {
+      "text": "Quality",
+      "expanded": "false"
+     },
+     {
+      "text": "Productivity",
+      "expanded": "false"
+     },
+     {
+      "text": "Queue & Workforce",
+      "expanded": "false"
+     },
+     {
+      "text": "People & Performance",
+      "expanded": "false"
+     },
+     {
+      "text": "Operations & Trackers",
+      "expanded": "false"
+     },
+     {
+      "text": "TL desk",
+      "expanded": "false"
+     },
+     {
+      "text": "FCR",
+      "expanded": "true"
+     }
+    ],
+    "navLinkCount": 38,
+    "crumbsText": "FCR",
+    "topbarText": "FCR | EA",
+    "toastCount": 0,
+    "vaOpen": true,
+    "stateScreen": false,
+    "emptyState": false,
+    "pageTitle": "FCR"
+   }
+  }
+ },
+ "consoleErrors": [],
+ "notes": [
+  "login ok as e2e.admin@dabdoob.com"
+ ]
+}

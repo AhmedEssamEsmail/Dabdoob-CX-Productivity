@@ -1,0 +1,37 @@
+{
+ "sw": 376,
+ "iw": 375,
+ "app": "queue",
+ "ctrls": [
+  {
+   "id": "cx-input input",
+   "right": 0,
+   "w": 0,
+   "bs": "border-box"
+  },
+  {
+   "id": "q-Chats-ag",
+   "right": 376,
+   "w": 351,
+   "bs": "content-box"
+  },
+  {
+   "id": "_r_3_",
+   "right": 350,
+   "w": 325,
+   "bs": "border-box"
+  },
+  {
+   "id": "q-Chats-n",
+   "right": 376,
+   "w": 351,
+   "bs": "content-box"
+  },
+  {
+   "id": "gen",
+   "right": 360,
+   "w": 319,
+   "bs": "content-box"
+  }
+ ]
+}
