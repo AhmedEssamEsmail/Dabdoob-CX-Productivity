@@ -1,0 +1,246 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [31m❯[39m tests/perf/audit-queue-memo.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 21[2mms[22m[39m
+   [31m❯[39m AuditQueuePage memo deps [2m(4)[22m
+[31m     [31m×[31m does not re-sort queue/passed rows on re-render with unchanged payload fields[39m[32m 12[2mms[22m[39m
+[31m     [31m×[31m does not recompute when s identity changes but dep fields are unchanged[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m recomputes the queue sort when s.rows reference changes[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m recomputes the passed sort when s.passed reference changes[39m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/performance/api.spec.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 166[2mms[22m[39m
+ [32m✓[39m tests/golden/kpi.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m tests/perf/identity-roster.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 296[2mms[22m[39m
+ [32m✓[39m tests/perf/tph-store.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 217[2mms[22m[39m
+ [32m✓[39m tests/perf/qa-pushdown.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mmatches the oracle for user admin@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 peopleHomeCards_=0 planHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 peopleHomeCards_@0 planHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mmatches the oracle for user tl@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 peopleHomeCards_=0 planHomeCards_=0 dqLastRun=0 dqSetting=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 peopleHomeCards_@0 planHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mmatches the oracle for user agent@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mmatches the oracle for user spec@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mmatches with empty optional stores (no submissions/flags/1:1s/popups)
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2mrejects a signed-out caller identically
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 peopleHomeCards_=0 planHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 peopleHomeCards_@0 planHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/golden/hub-overview.test.ts[2m > [22m[2mhub getHomePage (Aggregates.js:568-681)[2m > [22m[2memits a pulse object whose four metrics are each number|null
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 peopleHomeCards_=0 planHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 peopleHomeCards_@0 planHomeCards_@0 ecosystem@0
+
+ [32m✓[39m tests/golden/queue-checkin.test.ts [2m([22m[2m40 tests[22m[2m)[22m[32m 217[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-overview.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 173[2mms[22m[39m
+ [32m✓[39m tests/golden/people.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 155[2mms[22m[39m
+ [32m✓[39m tests/golden/queue.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 628[2mms[22m[39m
+ [32m✓[39m tests/golden/quality.test.ts [2m([22m[2m64 tests[22m[2m)[22m[32m 233[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-scheduler.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 190[2mms[22m[39m
+ [32m✓[39m tests/golden/people-jobs.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 518[2mms[22m[39m
+ [32m✓[39m tests/lib/use-page-data.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 123[2mms[22m[39m
+ [32m✓[39m tests/golden/tph.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 776[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-aggregates.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+ [32m✓[39m tests/golden/operations.test.ts [2m([22m[2m188 tests[22m[2m)[22m[33m 744[2mms[22m[39m
+ [32m✓[39m tests/golden/desk.test.ts [2m([22m[2m160 tests[22m[2m)[22m[33m 755[2mms[22m[39m
+ [32m✓[39m tests/golden/scorecard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 489[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-people-holidays.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m tests/golden/prod-validation.test.ts [2m([22m[2m25 tests[22m[2m)[22m[33m 1079[2mms[22m[39m
+   [32m✓[39m cases + spans [2m(3)[22m
+     [33m[2m✓[22m[39m prodCasesFromActivityRows_ / prodCasesByEmail_ (150 sets)[33m 572[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-admin.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 125[2mms[22m[39m
+ [32m✓[39m tests/jobs/tph-jobs.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m tests/golden/hub-my-day.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-heatmap.test.ts [2m([22m[2m47 tests[22m[2m)[22m[33m 794[2mms[22m[39m
+[90mstdout[2m | tests/perf/hub-aggregates.test.ts[2m > [22m[2mgetHomePage pushed-down bounds (P-04)[2m > [22m[2mreturns identical output for whole vs pre-bounded tables
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/perf/hub-aggregates.test.ts[2m > [22m[2mgetHomePage pushed-down bounds (P-04)[2m > [22m[2mreturns identical output for whole vs pre-bounded tables
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 ecosystem@0
+
+ [32m✓[39m tests/perf/prod-analytics.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+[90mstdout[2m | tests/perf/hub-aggregates.test.ts[2m > [22m[2mgetHomePage pushed-down bounds (P-04)[2m > [22m[2msends date/slot bounds to Postgres for the named reads
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 ecosystem@0
+
+[90mstdout[2m | tests/perf/hub-aggregates.test.ts[2m > [22m[2mgetHomePage pushed-down bounds (P-04)[2m > [22m[2mreturns a stored 'YYYY-MM-DDT…' slot_date row to dqSubmissionsFor_ (data-2)
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 ecosystem@0
+
+ [32m✓[39m tests/perf/hub-aggregates.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m tests/jobs/quarterly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m tests/golden/productivity.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1372[2mms[22m[39m
+   [32m✓[39m adapters: time + keys [2m(3)[22m
+     [33m[2m✓[22m[39m dqWallToUtc_ / dqTzOffsetMin_ / dqDateKey_ / dqAddDays_ / prodDateKey_ / normEmail_ — 150 vectors[33m 394[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-tlqueue.test.ts [2m([22m[2m50 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32m✓[39m tests/jobs/vendor-apis.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m tests/jobs/mirrors.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/perf/queue-pages.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/jobs/productivity-snapshot.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/features/cx-productivity/lib/prod-validation.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/jobs/queue-tickets-read.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/queue.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+[90mstdout[2m | tests/platform/repo.test.ts[2m > [22m[2mupdateRows (batched upsert)[2m > [22m[2mfalls back to per-row updates when the upsert lacks a conflict target
+[22m[39mupsert fallback: things (id) — add unique index
+
+ [32m✓[39m tests/platform/repo.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m tests/perf/fallback-log.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/jobs/routes.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m tests/jobs/run-step-errors.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m tests/jobs/backfill.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/perf/qe-lookups.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m tests/platform/settings.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/golden/viewas-sweep.test.ts [2m([22m[2m65 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m tests/perf/job-preload.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/ui/paint-grid.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-missed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-qa.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/app/api/__tests__/integration.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m tests/jobs/grid-slots.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+[90mstdout[2m | tests/perf/flush-invalidate.test.ts[2m > [22m[2mflushWrites live| invalidation[2m > [22m[2mkeeps live|<table> when the op fails (soft ops still drain)
+[22m[39msoft write failed (refresh_log): refresh_log insert: insert denied
+
+ [32m✓[39m tests/perf/flush-invalidate.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-popups.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/security/security.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/auth/google-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/perf/lookups.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/platform/health.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/perf/qa-upsert.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/perf/read-all-paged.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/lib/errors.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/features/shared/lib/auth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/platform/time.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/ui/autosave-input.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/perf/tph-grid-memo.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-dq.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/lib/use-options.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/lib/accent-contract.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/lib/fetch-json.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/lib/migration-dedupe-key.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/perf/stores-filter.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-alerts.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/golden/reminders-off-sendonce.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/auth/callback-route.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/platform/signin-verdict.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/perf/ecosystem-dynamic.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/platform/calendar.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/shell/registry-coverage.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/perf/dq-live-cache.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/shell/command-palette.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/lib/migration-conflict-target.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/ui/tabs.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/fragments.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/platform/options.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/platform/notify.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/api-fragments/kpi.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/perf/scorecard-range.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mdoes not re-sort queue/passed rows on re-render with unchanged payload fields
+[31m[1mError[22m: [vitest] No "TableScroll" export is defined on the "@/features/shared/components/ui" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("@/features/shared/components/ui"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Object.AuditQueuePage [as type] src/features/cx-quality/components/audit-queue-page.tsx:[2m436:14[22m[39m
+    [90m434|[39m             }
+    [90m435|[39m           >
+    [90m436|[39m             <TableScroll label="Today's audit queue" className="cx-pan…
+    [90m   |[39m              [31m^[39m
+    [90m437|[39m               <table className="cx-table">
+    [90m438|[39m                 <thead>
+[90m [2m❯[22m renderPage tests/perf/audit-queue-memo.test.tsx:[2m249:24[22m[39m
+[90m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m274:19[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mdoes not recompute when s identity changes but dep fields are unchanged
+[31m[1mError[22m: [vitest] No "TableScroll" export is defined on the "@/features/shared/components/ui" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("@/features/shared/components/ui"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Object.AuditQueuePage [as type] src/features/cx-quality/components/audit-queue-page.tsx:[2m436:14[22m[39m
+    [90m434|[39m             }
+    [90m435|[39m           >
+    [90m436|[39m             <TableScroll label="Today's audit queue" className="cx-pan…
+    [90m   |[39m              [31m^[39m
+    [90m437|[39m               <table className="cx-table">
+    [90m438|[39m                 <thead>
+[90m [2m❯[22m renderPage tests/perf/audit-queue-memo.test.tsx:[2m249:24[22m[39m
+[90m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m288:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mrecomputes the queue sort when s.rows reference changes
+[31m[1mError[22m: [vitest] No "TableScroll" export is defined on the "@/features/shared/components/ui" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("@/features/shared/components/ui"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Object.AuditQueuePage [as type] src/features/cx-quality/components/audit-queue-page.tsx:[2m436:14[22m[39m
+    [90m434|[39m             }
+    [90m435|[39m           >
+    [90m436|[39m             <TableScroll label="Today's audit queue" className="cx-pan…
+    [90m   |[39m              [31m^[39m
+    [90m437|[39m               <table className="cx-table">
+    [90m438|[39m                 <thead>
+[90m [2m❯[22m renderPage tests/perf/audit-queue-memo.test.tsx:[2m249:24[22m[39m
+[90m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m301:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/perf/audit-queue-memo.test.tsx[2m > [22mAuditQueuePage memo deps[2m > [22mrecomputes the passed sort when s.passed reference changes
+[31m[1mError[22m: [vitest] No "TableScroll" export is defined on the "@/features/shared/components/ui" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("@/features/shared/components/ui"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Object.AuditQueuePage [as type] src/features/cx-quality/components/audit-queue-page.tsx:[2m436:14[22m[39m
+    [90m434|[39m             }
+    [90m435|[39m           >
+    [90m436|[39m             <TableScroll label="Today's audit queue" className="cx-pan…
+    [90m   |[39m              [31m^[39m
+    [90m437|[39m               <table className="cx-table">
+    [90m438|[39m                 <thead>
+[90m [2m❯[22m renderPage tests/perf/audit-queue-memo.test.tsx:[2m249:24[22m[39m
+[90m [2m❯[22m tests/perf/audit-queue-memo.test.tsx:[2m311:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m85 passed[39m[22m[90m (86)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m1295 passed[39m[22m[90m (1299)[39m
+[2m   Start at [22m 16:28:42
+[2m   Duration [22m 3.27s[2m (import 47%, tests 36%, transform 15%, worker 2%)[22m
+
+[2m    Isolate [22m [33m86 workers spawned[39m[2m · ~293ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~1.03s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+VITEST_EXIT=1

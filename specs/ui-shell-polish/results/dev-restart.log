@@ -1,0 +1,228 @@
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.6.50:3000
+- Environments: .env.local
+✓ Ready in 1498ms
+✓ Running next.config.ts took 98ms
+Creating turbopack project { dir: 'C:\\Users\\AHMED\\KPIs\\CX-Hub', testMode: true }
+- Cache Components enabled
+- Partial Prefetching enabled
+
+ POST /api/qa/getQaAccess 401 in 2.2s (next.js: 1897ms, application-code: 291ms)
+ GET /auth/login 200 in 2.7s (next.js: 1925ms, proxy.ts: 66ms, application-code: 733ms)
+ GET /auth/login 200 in 143ms (next.js: 30ms, proxy.ts: 9ms, application-code: 105ms)
+ GET /auth/login 200 in 3.2s (next.js: 1030ms, proxy.ts: 12ms, application-code: 2.2s)
+ GET /auth/login 200 in 3.3s (next.js: 1103ms, proxy.ts: 17ms, application-code: 2.2s)
+ GET /auth/login 200 in 2.5s (next.js: 321ms, proxy.ts: 9ms, application-code: 2.2s)
+ GET /auth/login 200 in 2.6s (next.js: 818ms, proxy.ts: 21ms, application-code: 1719ms)
+ GET /auth/login 200 in 2.6s (next.js: 1153ms, proxy.ts: 25ms, application-code: 1377ms)
+ GET /auth/login 200 in 2.6s (next.js: 1415ms, proxy.ts: 24ms, application-code: 1120ms)
+ GET /auth/login 200 in 2.6s (next.js: 1609ms, proxy.ts: 49ms, application-code: 916ms)
+ GET /auth/login 200 in 2.4s (next.js: 1618ms, proxy.ts: 8ms, application-code: 737ms)
+ GET /auth/login 200 in 518ms (next.js: 214ms, proxy.ts: 13ms, application-code: 290ms)
+ GET /auth/login 200 in 313ms (next.js: 26ms, proxy.ts: 8ms, application-code: 278ms)
+ POST /api/auth/login 200 in 1876ms (next.js: 5ms, application-code: 1871ms)
+ POST /api/auth/login 200 in 2.0s (next.js: 53ms, application-code: 1981ms)
+ POST /api/auth/login 200 in 765ms (next.js: 2ms, application-code: 763ms)
+ POST /api/auth/login 200 in 1384ms (next.js: 55ms, application-code: 1329ms)
+ POST /api/auth/login 200 in 960ms (next.js: 27ms, application-code: 933ms)
+ POST /api/auth/login 200 in 1604ms (next.js: 51ms, application-code: 1554ms)
+ POST /api/auth/login 200 in 1952ms (next.js: 40ms, application-code: 1911ms)
+ POST /api/auth/login 200 in 546ms (next.js: 3ms, application-code: 543ms)
+ GET / 200 in 8.8s (next.js: 2.7s, proxy.ts: 423ms, application-code: 5.6s)
+ GET / 200 in 5.3s (next.js: 2.2s, proxy.ts: 95ms, application-code: 3.0s)
+ GET / 200 in 8.9s (next.js: 1724ms, proxy.ts: 70ms, application-code: 7.1s)
+ GET / 200 in 4.5s (next.js: 2.4s, proxy.ts: 1437ms, application-code: 649ms)
+ POST /api/auth/login 200 in 2.2s (next.js: 43ms, application-code: 2.2s)
+ GET / 200 in 14.7s (next.js: 2.3s, proxy.ts: 636ms, application-code: 11.8s)
+ GET / 200 in 15.0s (next.js: 1463ms, proxy.ts: 166ms, application-code: 13.4s)
+ GET / 200 in 15.6s (next.js: 966ms, proxy.ts: 719ms, application-code: 13.9s)
+ GET / 200 in 15.0s (next.js: 1956ms, proxy.ts: 516ms, application-code: 12.6s)
+ GET / 200 in 16.0s (next.js: 1802ms, proxy.ts: 1195ms, application-code: 13.0s)
+ GET / 200 in 11.9s (next.js: 2.7s, proxy.ts: 1316ms, application-code: 7.9s)
+ GET / 200 in 15.7s (next.js: 2.1s, proxy.ts: 629ms, application-code: 13.0s)
+ GET / 200 in 12.1s (next.js: 2.4s, proxy.ts: 118ms, application-code: 9.6s)
+ POST /api/auth/login 200 in 1034ms (next.js: 5ms, application-code: 1029ms)
+ GET / 200 in 12.4s (next.js: 2.2s, proxy.ts: 616ms, application-code: 9.6s)
+ GET / 200 in 12.6s (next.js: 1449ms, proxy.ts: 151ms, application-code: 11.0s)
+ GET / 200 in 12.4s (next.js: 2.5s, proxy.ts: 1051ms, application-code: 8.8s)
+ GET / 200 in 14.2s (next.js: 769ms, proxy.ts: 151ms, application-code: 13.3s)
+ GET / 200 in 8.8s (next.js: 4.8s, proxy.ts: 689ms, application-code: 3.4s)
+○ Compiling /api/bootstrap ...
+ GET /auth/login 200 in 11.7s (next.js: 1437ms, proxy.ts: 442ms, application-code: 9.8s)
+ GET /auth/login 200 in 11.7s (next.js: 1097ms, proxy.ts: 472ms, application-code: 10.2s)
+ GET /auth/login 200 in 12.3s (next.js: 1681ms, proxy.ts: 459ms, application-code: 10.2s)
+ GET /auth/login 200 in 12.3s (next.js: 2.0s, proxy.ts: 457ms, application-code: 9.8s)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+ GET /auth/login 200 in 13.6s (next.js: 2.3s, proxy.ts: 457ms, application-code: 10.8s)
+ GET /auth/login 200 in 13.6s (next.js: 2.6s, proxy.ts: 457ms, application-code: 10.5s)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+ GET /auth/login 200 in 13.8s (next.js: 2.8s, proxy.ts: 456ms, application-code: 10.5s)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+ GET / 200 in 13.8s (next.js: 2.7s, proxy.ts: 613ms, application-code: 10.5s)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/auth/login": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+Error: Route "/": Next.js encountered the unstable value `Date.now()` while prerendering.
+
+This value can change between renders, so it must be either prerendered or computed later.
+
+Ways to fix this:
+  - [dynamic] Render at request time by adding a dynamic data access (e.g. `await connection()`) before this call
+  - [cache] Prerender and cache the value with `"use cache"`
+  - [client] Render the value on the client with `"use client"`
+  - [measure] If the value is for telemetry, use a timing API such as `performance.now()`
+
+Learn more: https://nextjs.org/docs/messages/blocking-prerender-current-time
+    at RootLayout (<anonymous>)
+ POST /api/auth/login 200 in 2.5s (next.js: 224ms, application-code: 2.2s)

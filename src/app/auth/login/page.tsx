@@ -38,11 +38,33 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    // Mounted on document.body (not the React tree) so the busy overlay
+    // survives the route commit — it stays up until navigation completes.
+    const overlay = document.createElement('div')
+    overlay.className = 'login-overlay'
+    overlay.setAttribute('role', 'status')
+    overlay.setAttribute('aria-live', 'polite')
+    overlay.setAttribute('aria-busy', 'true')
+    overlay.setAttribute('aria-label', 'Signing in')
+    const inner = document.createElement('span')
+    inner.className = 'login-overlay__inner'
+    const spin = document.createElement('span')
+    spin.className = 'spinner login-overlay__spinner'
+    spin.setAttribute('aria-hidden', 'true')
+    const label = document.createElement('span')
+    label.className = 'login-overlay__label'
+    label.textContent = 'Signing in…'
+    inner.append(spin, label)
+    overlay.appendChild(inner)
+    document.body.appendChild(overlay)
+    const dismissOverlay = () => overlay.remove()
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        signal: AbortSignal.timeout(20000),
       })
 
       const data = await response.json()
@@ -53,9 +75,28 @@ export default function LoginPage() {
 
       router.push('/')
       router.refresh()
+
+      // Keep the overlay until the new route commits, plus a short settle.
+      const startedAt = Date.now()
+      const navWatch = window.setInterval(() => {
+        const navigated = location.pathname !== '/auth/login'
+        const timedOut = Date.now() - startedAt > 15000
+        if (navigated || timedOut) {
+          window.clearInterval(navWatch)
+          window.setTimeout(dismissOverlay, 500)
+          if (!navigated) {
+            setError('Sign-in timed out — try again.')
+            setLoading(false)
+          }
+        }
+      }, 100)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unable to sign in')
-    } finally {
+      dismissOverlay()
+      setError(
+        err instanceof DOMException && (err.name === 'AbortError' || err.name === 'TimeoutError')
+          ? 'Sign-in timed out — try again.'
+          : err instanceof Error ? err.message : 'Unable to sign in'
+      )
       setLoading(false)
     }
   }
@@ -195,6 +236,7 @@ export default function LoginPage() {
           <span>v2.4</span>
         </div>
       </div>
+
     </div>
   )
 }

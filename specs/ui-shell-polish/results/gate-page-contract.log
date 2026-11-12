@@ -1,0 +1,809 @@
+
+Running 50 tests using 10 workers
+
+[1/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px
+[2/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px
+[3/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px
+[4/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px
+[5/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px
+[6/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px
+[7/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px
+[8/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px
+[9/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px
+[10/50] [chromium] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px
+[11/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px
+[12/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px
+[13/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px
+[14/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px
+[15/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px
+[16/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px
+  1) [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ──────────────────
+
+    Error: .page-actions x moved on /admin/roster
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    12.96875
+
+      123 |             Math.abs(after.x - before.x),
+      124 |             `.page-actions x moved on ${r.path}`
+    > 125 |           ).toBeLessThanOrEqual(1)
+          |             ^
+      126 |           expect(
+      127 |             Math.abs(after.y - before.y),
+      128 |             `.page-actions y moved on ${r.path}`
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:125:13
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-1024px-chromium\error-context.md
+
+
+[17/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px
+[18/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px
+[19/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px
+[20/50] [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px
+  2) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px ────────────────────
+
+    Error: console errors on /admin/config:
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-375px-firefox\error-context.md
+
+
+[21/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px
+  3) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px ───────────────────────────
+
+    Error: console errors on /admin:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-contract-375px-firefox\error-context.md
+
+
+[22/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px
+  4) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ───────────────────
+
+    Error: .page-actions x moved on /admin/roster
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    12.9666748046875
+
+      123 |             Math.abs(after.x - before.x),
+      124 |             `.page-actions x moved on ${r.path}`
+    > 125 |           ).toBeLessThanOrEqual(1)
+          |             ^
+      126 |           expect(
+      127 |             Math.abs(after.y - before.y),
+      128 |             `.page-actions y moved on ${r.path}`
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:125:13
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-1024px-firefox\error-context.md
+
+
+  5) [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px ─────────────────
+
+    Error: console errors on /quality-scores:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-1024px-firefox\error-context.md
+
+
+[23/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px
+[24/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px
+  6) [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px ──────────────────
+
+    Error: console errors on /quality-scores:
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-375px-firefox\error-context.md
+
+
+  7) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px ──────────────────────────
+
+    Error: console errors on /admin:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-contract-1024px-firefox\error-context.md
+
+
+  8) [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px ────────────────────
+
+    Error: console errors on /calibration:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-firefox\error-context.md
+
+
+  9) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px ────────────────────
+
+    Error: console errors on /admin/roster:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-375px-firefox\error-context.md
+
+
+[25/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px
+  10) [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px ────────────────────
+
+    Error: console errors on /calibration:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-firefox\error-context.md
+
+
+  11) [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px ──────────────────
+
+    Error: console errors on /admin/config:
+    Error
+    Error
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Error",
+    +   "Error",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-1024px-firefox\error-context.md
+
+
+[26/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px
+[27/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px
+[28/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px
+[29/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px
+[30/50] [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px
+  12) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px ──────────────────────────
+
+    Error: console errors on /admin:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-contract-1024px-webkit\error-context.md
+
+
+  13) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px ────────────────────
+
+    Error: console errors on /admin/config:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-375px-webkit\error-context.md
+
+
+  14) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px ───────────────────
+
+    Error: console errors on /admin/config:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-1024px-webkit\error-context.md
+
+
+[31/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px
+[32/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px
+[33/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px
+  15) [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px ─────────────────
+
+    Error: console errors on /quality-scores:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-1024px-webkit\error-context.md
+
+
+  16) [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px ──────────────────
+
+    Error: console errors on /quality-scores:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-375px-webkit\error-context.md
+
+
+  17) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px ────────────────────
+
+    Error: console errors on /admin/roster:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-375px-webkit\error-context.md
+
+
+[34/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px
+  18) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ───────────────────
+
+    Error: .page-actions x moved on /admin/roster
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    12.96875
+
+      123 |             Math.abs(after.x - before.x),
+      124 |             `.page-actions x moved on ${r.path}`
+    > 125 |           ).toBeLessThanOrEqual(1)
+          |             ^
+      126 |           expect(
+      127 |             Math.abs(after.y - before.y),
+      128 |             `.page-actions y moved on ${r.path}`
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:125:13
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-1024px-webkit\error-context.md
+
+
+[35/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px
+[36/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px
+[37/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px
+  19) [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px ────────────────────
+
+    Error: console errors on /calibration:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-webkit\error-context.md
+
+
+  20) [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px ─────────────────────
+
+    Error: console errors on /calibration:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-webkit\error-context.md
+
+
+[38/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px
+[39/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px
+[40/50] [mobile] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px
+[41/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px
+[42/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px
+  21) [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px ───────────────────────────
+
+    Error: console errors on /admin:
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.
+    Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/bootstrap due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=core due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=mail due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=files due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/api/hub/my-day?part=followups due to access control checks.",
+    +   "Fetch API cannot load http: /localhost:3000/__nextjs_original-stack-frames due to access control checks.",
+    + ]
+
+      143 |         offenders,
+      144 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 145 |       ).toEqual([])
+          |         ^
+      146 |
+      147 |       // 4. accessible names on every control
+      148 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:145:9
+
+    Error Context: test-results\e2e-page-contract--admin-contract-375px-webkit\error-context.md
+
+
+[43/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px
+[44/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px
+  22) [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ───────────────────
+
+    Error: .page-actions x moved on /admin/roster
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    12.96875
+
+      123 |             Math.abs(after.x - before.x),
+      124 |             `.page-actions x moved on ${r.path}`
+    > 125 |           ).toBeLessThanOrEqual(1)
+          |             ^
+      126 |           expect(
+      127 |             Math.abs(after.y - before.y),
+      128 |             `.page-actions y moved on ${r.path}`
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:125:13
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-1024px-mobile\error-context.md
+
+
+[45/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px
+[46/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px
+[47/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px
+[48/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px
+[49/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px
+[50/50] [tablet] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px
+  23) [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ───────────────────
+
+    Error: .page-actions x moved on /admin/roster
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    12.96875
+
+      123 |             Math.abs(after.x - before.x),
+      124 |             `.page-actions x moved on ${r.path}`
+    > 125 |           ).toBeLessThanOrEqual(1)
+          |             ^
+      126 |           expect(
+      127 |             Math.abs(after.y - before.y),
+      128 |             `.page-actions y moved on ${r.path}`
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:125:13
+
+    Error Context: test-results\e2e-page-contract--admin-roster-contract-1024px-tablet\error-context.md
+
+
+  23 failed
+    [chromium] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ───────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px ────────────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px ───────────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px ─────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px ────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px ─────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px ──────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px ─────────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px ───────────────────
+    [firefox] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px ──────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @375px ─────────────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin contract @1024px ────────────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @375px ──────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/config contract @1024px ─────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @375px ──────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ─────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @375px ───────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /calibration contract @1024px ──────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @375px ────────────────────
+    [webkit] › e2e\page-contract.spec.ts:83:9 › /quality-scores contract @1024px ───────────────────
+    [mobile] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ─────────────────────
+    [tablet] › e2e\page-contract.spec.ts:83:9 › /admin/roster contract @1024px ─────────────────────
+  27 passed (1.1m)

@@ -1,0 +1,57 @@
+
+Running 10 tests using 10 workers
+
+[1/10] [chromium] › e2e\ui-shell-polish.spec.ts:88:5 › item2: /calibration AssignForm — fields do not overlap
+[2/10] [chromium] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated
+[3/10] [firefox] › e2e\ui-shell-polish.spec.ts:88:5 › item2: /calibration AssignForm — fields do not overlap
+[4/10] [mobile] › e2e\ui-shell-polish.spec.ts:88:5 › item2: /calibration AssignForm — fields do not overlap
+[5/10] [firefox] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated
+[6/10] [webkit] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated
+[7/10] [mobile] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated
+[8/10] [webkit] › e2e\ui-shell-polish.spec.ts:88:5 › item2: /calibration AssignForm — fields do not overlap
+[9/10] [tablet] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated
+[10/10] [tablet] › e2e\ui-shell-polish.spec.ts:88:5 › item2: /calibration AssignForm — fields do not overlap
+  1) [firefox] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated 
+
+    Error: page.goto: NS_BINDING_ABORTED
+    Call log:
+      - navigating to "http://localhost:3000/auth/login", waiting until "load"
+
+
+       at e2e\users.ts:47
+
+      45 | ): Promise<void> {
+      46 |   for (let attempt = 0; attempt < 4; attempt++) {
+    > 47 |     await page.goto('/auth/login')
+         |                ^
+      48 |     await fillSticky(page, 'input[type="email"]', email)
+      49 |     await fillSticky(page, 'input[type="password"]', password)
+      50 |     const [response] = await Promise.all([
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:47:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\ui-shell-polish.spec.ts:244:3
+
+    Error Context: test-results\e2e-ui-shell-polish-items6-dff97-r-user-name-small-truncated-firefox\error-context.md
+
+
+  2) [webkit] › e2e\ui-shell-polish.spec.ts:239:5 › items6+7: rail footer — no avatar; user name small + truncated 
+
+    Error: page.goto: Navigation to "http://localhost:3000/auth/login" is interrupted by another navigation to "http://localhost:3000/"
+    Call log:
+      - navigating to "http://localhost:3000/auth/login", waiting until "load"
+
+
+       at e2e\users.ts:47
+
+      45 | ): Promise<void> {
+      46 |   for (let attempt = 0; attempt < 4; attempt++) {
+    > 47 |     await page.goto('/auth/login')
+         |                ^
+      48 |     await fillSticky(page, 'input[type="email"]', email)
+      49 |     await fillSticky(page, 'input[type="password"]', password)
+      50 |     const [response] = await Promise.all([
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:47:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\ui-shell-polish.spec.ts:244:3
+
+    Error Context: test-results\e2e-ui-shell-polish-items6-dff97-r-user-name-small-truncated-webkit\error-context.md
+
+

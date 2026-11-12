@@ -25,7 +25,6 @@ import {
   APPEARANCE_KEY,
   applyAppearance,
   D,
-  prefersReducedMotion,
   readAppearance,
   useLang,
 } from '@/features/shared/shell/i18n'
@@ -103,10 +102,6 @@ function writeNavGroups(groups: Set<string>): void {
   }
 }
 
-type ViewTransitionDoc = Document & {
-  startViewTransition?: (update: () => void) => unknown
-}
-
 /** normalize a Next pathname to a registry path (strip slashes + query). */
 function routePath(pathname: string): string {
   return pathname.replace(/^\/+|\/+$/g, '').split('?')[0]
@@ -122,6 +117,7 @@ export default function AppShell({ children }: { children?: ReactNode }) {
   const [modKbd, setModKbd] = useState('⌘K')
   const [reopenTick, setReopenTick] = useState(0)
   const [pendingN, setPendingN] = useState(0)
+  const [pendingHref, setPendingHref] = useState<string | null>(null)
   const [theme, setTheme] = useState('auto')
   const pathname = usePathname()
   const router = useRouter()
@@ -344,9 +340,10 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     setPrevRoutePath(route.path)
     setNavOpen(false)
     setPaletteOpen(false)
+    setPendingHref(null)
   }
 
-  /* SPA navigation wrapped in a view transition when the browser allows it. */
+  /* SPA navigation: mark the clicked link pending until the route changes. */
   const navigate = useCallback(
     (event: MouseEvent<HTMLAnchorElement>, href: string) => {
       if (
@@ -359,15 +356,13 @@ export default function AppShell({ children }: { children?: ReactNode }) {
       )
         return
       event.preventDefault()
-      const go = () => router.push(href)
-      const doc = document as ViewTransitionDoc
-      if (!doc.startViewTransition || document.hidden || prefersReducedMotion()) {
-        go()
-        return
+      if (href !== pageHref(route.path)) {
+        setPendingHref(href)
+        window.setTimeout(() => setPendingHref((h) => (h === href ? null : h)), 8000)
       }
-      doc.startViewTransition(go)
+      router.push(href)
     },
-    [router]
+    [router, route.path]
   )
 
   if (bootError) {
@@ -385,12 +380,6 @@ export default function AppShell({ children }: { children?: ReactNode }) {
 
   const { user } = boot
   const viewingAs = !!boot.viewAs?.target
-  const whoParts = user.name.trim().split(/\s+/).filter(Boolean)
-  const initials = (
-    (whoParts[0]?.[0] ?? '') +
-    (whoParts.length > 1 ? whoParts[whoParts.length - 1][0] : '')
-  ).toUpperCase()
-
   /* Topbar avatar initials: first letters of the first two words of the
      viewed (or signed-in) user; falls back to the email's first letter. */
   const topName = viewAsTarget?.name ?? user.name
@@ -619,6 +608,8 @@ export default function AppShell({ children }: { children?: ReactNode }) {
                           className="nav-link"
                           href={pageHref(page.path)}
                           aria-current={page.path === current?.path ? 'page' : undefined}
+                          data-pending={pendingHref === pageHref(page.path) ? 'true' : undefined}
+                          aria-busy={pendingHref === pageHref(page.path) ? 'true' : undefined}
                           onClick={(event) => navigate(event, pageHref(page.path))}
                         >
                           <NavIcon path={page.path} />
@@ -637,11 +628,8 @@ export default function AppShell({ children }: { children?: ReactNode }) {
             </div>
           ) : null}
           <div className="rail-foot">
-            <div className="avatar" aria-hidden="true">
-              {initials}
-            </div>
             <div className="rail-who">
-              <p className="who who-name">{user.name}</p>
+              <p className="who who-name" title={user.name}>{user.name}</p>
               <p className="who-meta who-role">
                 {viewingAs
                   ? D('{role}, viewed by you', { role: displayRole(user) })

@@ -1,0 +1,259 @@
+
+Running 30 tests using 10 workers
+
+[1/30] [chromium] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+[2/30] [chromium] › e2e\ui-shell-polish.spec.ts:227:5 › item5: /admin Reminders — compact row with Toggle
+[3/30] [chromium] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+[4/30] [firefox] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+[5/30] [chromium] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+[6/30] [firefox] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+[7/30] [firefox] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+[8/30] [chromium] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+[9/30] [chromium] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+[10/30] [firefox] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+[chromium] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+item3 samples: [{"t":4,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":120,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":229,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":339,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":448,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":557,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":666,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":777,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":883,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":993,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1104,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1213,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1323,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1432,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1540,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1647,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1756,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1865,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1974,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2082,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2192,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2302,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2413,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2521,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2631,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2742,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2849,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2958,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3066,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3174,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3283,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3394,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3498,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3608,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3716,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3825,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3934,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4043,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4155,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4264,"url":"/auth/login","busy":true,"btnText":"Signing in…"}]
+
+item3 last: {"t":8605,"url":"/auth/login","busy":true,"btnText":"Signing in…"}
+
+item3 dead-time samples on /auth/login: 0
+
+[firefox] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+item3 samples: [{"t":6,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":122,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":230,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":340,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":449,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":557,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":666,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":776,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":887,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":996,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1106,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1214,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1321,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1430,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1538,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1646,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1762,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1881,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1989,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2101,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2210,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2319,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2430,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2540,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2647,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2754,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2862,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2967,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3082,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3189,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3299,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3405,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3514,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3623,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3733,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3845,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3953,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4061,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4170,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4277,"url":"/auth/login","busy":true,"btnText":"Signing in…"}]
+
+item3 last: {"t":8635,"url":"/auth/login","busy":true,"btnText":"Signing in…"}
+
+item3 dead-time samples on /auth/login: 0
+
+[11/30] [firefox] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+[12/30] [firefox] › e2e\ui-shell-polish.spec.ts:227:5 › item5: /admin Reminders — compact row with Toggle
+[13/30] [webkit] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+[14/30] [webkit] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+[firefox] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 overlayers: []
+
+items6+7 pill: {"info":[{"tag":"NEXTJS-PORTAL","cls":"","pos":"absolute","txt":""},{"tag":"P","cls":"who who-name","pos":"static","txt":"E2E Admin"},{"tag":"DIV","cls":"rail-who","pos":"static","txt":"E2E AdminAdmin"},{"tag":"DIV","cls":"rail-foot","pos":"static","txt":"E2E AdminAdmin"},{"tag":"ASIDE","cls":"rail","pos":"sticky","txt":"Dabdoob CXOperations consoleMenuSearch or jump to…Ctrl KHubM"}],"topHtml":"<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>"}
+
+items6+7 who styles: {"fontSize":"12px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap","heightPx":18}
+
+[chromium] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item4 clicked state: {"cls":"nav-link","ariaBusy":null,"dataPending":null,"entry":"calm","pageAnim":"cx-enter","vtName":"none"}
+
+[15/30] [webkit] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+[16/30] [webkit] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+[chromium] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 overlayers: []
+
+items6+7 pill: {"info":[{"tag":"NEXTJS-PORTAL","cls":"","pos":"absolute","txt":""},{"tag":"P","cls":"who who-name","pos":"static","txt":"E2E Admin"},{"tag":"P","cls":"who-meta who-role","pos":"static","txt":"Admin"},{"tag":"DIV","cls":"rail-who","pos":"static","txt":"E2E AdminAdmin"},{"tag":"DIV","cls":"rail-foot","pos":"static","txt":"E2E AdminAdmin"}],"topHtml":"<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>"}
+
+items6+7 who styles: {"fontSize":"12px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap","heightPx":18}
+
+[firefox] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item4 clicked state: {"cls":"nav-link","ariaBusy":null,"dataPending":null,"entry":"calm","pageAnim":"cx-enter","vtName":"none"}
+
+[17/30] [webkit] › e2e\ui-shell-polish.spec.ts:227:5 › item5: /admin Reminders — compact row with Toggle
+[18/30] [webkit] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+[firefox] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+item2 api probe: {"status":200,"body":"{\"calibrations\":[],\"forms\":[{\"formId\":\"FRM-VOICE-IN\",\"version\":1,\"channel\":\"Inbound Calls\",\"title\":\"Voice QA (inbound calls)\",\"placeholder\":false,\"active\":true,\"scoring\":\"deduction\",\"sections\":[{\"id\":\"s1\",\"title\":\"Greeting\",\"questions\":[{\"id\":\"v01\",\"text\":\"Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v02\",\"text\":\"Did the agent asked the customer if the time of the call is suitable?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v03\",\"text\":\"Entity Name : Did the agent mention the name of the company?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"}]},{\"id\":\"s2\",\"title\":\"Listen & Understand your customer\",\"questions\":[{\"id\":\"v04\",\"text\":\"Acknowledgement: Did the agent acknowledge and cover all customer's concerns during the call?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"},{\"id\":\"v06\",\"text\":\"Did the agent avoid asking unnecessary questions during the interaction?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"}]},{\"id\":\"s3\",\"title\":\"Clear & Effective Communication\",\"questions\":[{\"id\":\"v05\",\"text\":\"Did the customer avoid repeating their questions or not correct the agent?\",\"weight"}
+
+[webkit] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+item3 samples: [{"t":7,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":118,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":226,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":332,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":446,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":567,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":674,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":780,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":889,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":997,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1105,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1215,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1323,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1431,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1538,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1646,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1755,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1863,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1972,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2078,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2186,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2295,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2397,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2515,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2635,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2743,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2865,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2973,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3086,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3193,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3303,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3410,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3519,"url":"/","busy":true,"btnText":""}]
+
+item3 last: {"t":3519,"url":"/","busy":true,"btnText":""}
+
+item3 dead-time samples on /auth/login: 0
+
+[19/30] [mobile] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+[chromium] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+item2 api probe: {"status":200,"body":"{\"calibrations\":[],\"forms\":[{\"formId\":\"FRM-VOICE-IN\",\"version\":1,\"channel\":\"Inbound Calls\",\"title\":\"Voice QA (inbound calls)\",\"placeholder\":false,\"active\":true,\"scoring\":\"deduction\",\"sections\":[{\"id\":\"s1\",\"title\":\"Greeting\",\"questions\":[{\"id\":\"v01\",\"text\":\"Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v02\",\"text\":\"Did the agent asked the customer if the time of the call is suitable?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v03\",\"text\":\"Entity Name : Did the agent mention the name of the company?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"}]},{\"id\":\"s2\",\"title\":\"Listen & Understand your customer\",\"questions\":[{\"id\":\"v04\",\"text\":\"Acknowledgement: Did the agent acknowledge and cover all customer's concerns during the call?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"},{\"id\":\"v06\",\"text\":\"Did the agent avoid asking unnecessary questions during the interaction?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"}]},{\"id\":\"s3\",\"title\":\"Clear & Effective Communication\",\"questions\":[{\"id\":\"v05\",\"text\":\"Did the customer avoid repeating their questions or not correct the agent?\",\"weight"}
+
+item2 overlaps: []
+
+[20/30] [mobile] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+[webkit] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+item2 api probe: {"status":200,"body":"{\"calibrations\":[],\"forms\":[{\"formId\":\"FRM-VOICE-IN\",\"version\":1,\"channel\":\"Inbound Calls\",\"title\":\"Voice QA (inbound calls)\",\"placeholder\":false,\"active\":true,\"scoring\":\"deduction\",\"sections\":[{\"id\":\"s1\",\"title\":\"Greeting\",\"questions\":[{\"id\":\"v01\",\"text\":\"Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v02\",\"text\":\"Did the agent asked the customer if the time of the call is suitable?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v03\",\"text\":\"Entity Name : Did the agent mention the name of the company?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"}]},{\"id\":\"s2\",\"title\":\"Listen & Understand your customer\",\"questions\":[{\"id\":\"v04\",\"text\":\"Acknowledgement: Did the agent acknowledge and cover all customer's concerns during the call?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"},{\"id\":\"v06\",\"text\":\"Did the agent avoid asking unnecessary questions during the interaction?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"}]},{\"id\":\"s3\",\"title\":\"Clear & Effective Communication\",\"questions\":[{\"id\":\"v05\",\"text\":\"Did the customer avoid repeating their questions or not correct the agent?\",\"weight"}
+
+item2 overlaps: []
+
+[21/30] [mobile] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+[chromium] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaAccess: {"status":200,"body":"{\"people\":[{\"email\":\"ahmedmohamed@dabdoob.com\",\"name\":\"Ahmed Naguib\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"e2e.tl@dabdoob.com\",\"name\":\"E2E Team Lead\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"heba@dabdoob.com\",\"name\":\"Heba Allah Khaled Ismail Abdelhamid\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"hozaifa.edres@dabdoob.com\",\"name\":\"Hozaifa Kamal Eldien Edres Fadl Elmawla\",\"role\":\"specialist\",\"position\":\"\",\"via\":\"granted\"},{\"email\":\"menna.mekkawy@dabdoob.com\",\"name\":\"Menna Mekawy\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"noha@dabdoob.com\",\"name\":\"Noha Hassan Foaad Qandil\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"abdallah.abdelraouf@dabdoob.com\",\"name\":\"Abdallah Abdelraouf Bashir Balola\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelrahman.elqasaby@dabdoob.com\",\"name\":\"Abdelrahman Ahmed Farouk Elqasaby\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelsamad.mohamed@dabdoob.com\",\"name\":\"Abdelsamad Mohamed Abdelsamad Youssef\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"adel@dabdoob.com\",\"name\":\"Adel Sharif Shorhabil Ahmed\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"ali.khaled@dabdoob.com\",\"name"}
+
+[firefox] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaAccess: {"status":200,"body":"{\"people\":[{\"email\":\"ahmedmohamed@dabdoob.com\",\"name\":\"Ahmed Naguib\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"e2e.tl@dabdoob.com\",\"name\":\"E2E Team Lead\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"heba@dabdoob.com\",\"name\":\"Heba Allah Khaled Ismail Abdelhamid\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"hozaifa.edres@dabdoob.com\",\"name\":\"Hozaifa Kamal Eldien Edres Fadl Elmawla\",\"role\":\"specialist\",\"position\":\"\",\"via\":\"granted\"},{\"email\":\"menna.mekkawy@dabdoob.com\",\"name\":\"Menna Mekawy\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"noha@dabdoob.com\",\"name\":\"Noha Hassan Foaad Qandil\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"abdallah.abdelraouf@dabdoob.com\",\"name\":\"Abdallah Abdelraouf Bashir Balola\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelrahman.elqasaby@dabdoob.com\",\"name\":\"Abdelrahman Ahmed Farouk Elqasaby\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelsamad.mohamed@dabdoob.com\",\"name\":\"Abdelsamad Mohamed Abdelsamad Youssef\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"adel@dabdoob.com\",\"name\":\"Adel Sharif Shorhabil Ahmed\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"ali.khaled@dabdoob.com\",\"name"}
+
+[22/30] [mobile] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+[chromium] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaScoresPage: {"status":200,"body":"{\"from\":\"2026-01-25\",\"to\":\"2026-02-24\",\"days\":31,\"bucket\":\"day\",\"prevFrom\":\"2025-12-25\",\"prevTo\":\"2026-01-24\",\"basis\":\"interaction\",\"weekStartsOn\":0,\"fallbackDates\":0,\"team\":{\"score\":null,\"margin\":null,\"badge\":\"low\",\"audits\":0,\"agents\":0,\"agentsExcluded\":0,\"prevScore\":null,\"prevMargin\":null,\"prevAudits\":0,\"delta\":null,\"trend\":\"\",\"critical\":0,\"fatalRate\":null,\"scoreNoCritical\":null,\"disputes\":0,\"disputeRate\":null,\"allScore\":null,\"allAudits\":0,\"pendingDisputes\":0},\"series\":[{\"key\":\"2026-01-25\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-26\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-27\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-28\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-29\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-30\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-31\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-02-01\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits"}
+
+[firefox] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaScoresPage: {"status":200,"body":"{\"from\":\"2026-01-25\",\"to\":\"2026-02-24\",\"days\":31,\"bucket\":\"day\",\"prevFrom\":\"2025-12-25\",\"prevTo\":\"2026-01-24\",\"basis\":\"interaction\",\"weekStartsOn\":0,\"fallbackDates\":0,\"team\":{\"score\":null,\"margin\":null,\"badge\":\"low\",\"audits\":0,\"agents\":0,\"agentsExcluded\":0,\"prevScore\":null,\"prevMargin\":null,\"prevAudits\":0,\"delta\":null,\"trend\":\"\",\"critical\":0,\"fatalRate\":null,\"scoreNoCritical\":null,\"disputes\":0,\"disputeRate\":null,\"allScore\":null,\"allAudits\":0,\"pendingDisputes\":0},\"series\":[{\"key\":\"2026-01-25\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-26\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-27\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-28\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-29\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-30\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-31\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-02-01\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits"}
+
+[chromium] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 alignment: [{"col":0,"header":"Agent","thLeft":275.390625,"tdLeft":275.390625,"thTextLeft":287.390625},{"col":1,"header":"Score","thLeft":601.046875,"tdLeft":601.046875,"thTextLeft":613.046875},{"col":2,"header":"Change","thLeft":953.171875,"tdLeft":953.171875,"thTextLeft":965.171875},{"col":3,"header":"Audits","thLeft":1053.28125,"tdLeft":1053.28125,"thTextLeft":1065.28125},{"col":4,"header":"Critical","thLeft":1147.359375,"tdLeft":1147.359375,"thTextLeft":1159.359375},{"col":5,"header":"Loses most to","thLeft":1255.578125,"tdLeft":1255.578125,"thTextLeft":1255.578125}]
+
+[23/30] [mobile] › e2e\ui-shell-polish.spec.ts:227:5 › item5: /admin Reminders — compact row with Toggle
+[mobile] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+item3 samples: [{"t":6,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":115,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":222,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":330,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":437,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":546,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":656,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":764,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":876,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":984,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1093,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1202,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1311,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1418,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1529,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1637,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1745,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1852,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1961,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2071,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2180,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2290,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2397,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2505,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2614,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2721,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2829,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2935,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3045,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3155,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3263,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3367,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3482,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3587,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3694,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3801,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3911,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4021,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4131,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4238,"url":"/auth/login","busy":true,"btnText":"Signing in…"}]
+
+item3 last: {"t":8598,"url":"/auth/login","busy":true,"btnText":"Signing in…"}
+
+item3 dead-time samples on /auth/login: 0
+
+[24/30] [mobile] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+[webkit] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 overlayers: []
+
+items6+7 pill: {"info":[{"tag":"NEXTJS-PORTAL","cls":"","pos":"absolute","txt":""},{"tag":"P","cls":"who-meta who-role","pos":"static","txt":"Admin"},{"tag":"P","cls":"who who-name","pos":"static","txt":"E2E Admin"},{"tag":"DIV","cls":"rail-who","pos":"static","txt":"E2E AdminAdmin"},{"tag":"DIV","cls":"rail-foot","pos":"static","txt":"E2E AdminAdmin"}],"topHtml":"<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>"}
+
+[webkit] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item4 clicked state: {"cls":"nav-link","ariaBusy":null,"dataPending":null,"entry":"calm","pageAnim":"cx-enter","vtName":"none"}
+
+[webkit] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 who styles: {"fontSize":"12px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap","heightPx":18}
+
+[25/30] [tablet] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+[26/30] [tablet] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+  1) [firefox] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('form.qa-grid')
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('form.qa-grid') with timeout 30000ms
+      - waiting for locator('form.qa-grid')
+
+
+      104 |
+      105 |   const form = page.locator('form.qa-grid')
+    > 106 |   await expect(form).toBeVisible({ timeout: 30000 })
+          |                      ^
+      107 |   await form.screenshot({ path: `${SHOTS}/item2-calibration-assignform.png` })
+      108 |
+      109 |   const overlaps = await page.evaluate(() => {
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\ui-shell-polish.spec.ts:106:22
+
+    Error Context: test-results\e2e-ui-shell-polish-item2--4904b-orm-—-fields-do-not-overlap-firefox\error-context.md
+
+
+[27/30] [tablet] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+[webkit] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaAccess: {"status":200,"body":"{\"people\":[{\"email\":\"ahmedmohamed@dabdoob.com\",\"name\":\"Ahmed Naguib\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"e2e.tl@dabdoob.com\",\"name\":\"E2E Team Lead\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"heba@dabdoob.com\",\"name\":\"Heba Allah Khaled Ismail Abdelhamid\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"hozaifa.edres@dabdoob.com\",\"name\":\"Hozaifa Kamal Eldien Edres Fadl Elmawla\",\"role\":\"specialist\",\"position\":\"\",\"via\":\"granted\"},{\"email\":\"menna.mekkawy@dabdoob.com\",\"name\":\"Menna Mekawy\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"noha@dabdoob.com\",\"name\":\"Noha Hassan Foaad Qandil\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"abdallah.abdelraouf@dabdoob.com\",\"name\":\"Abdallah Abdelraouf Bashir Balola\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelrahman.elqasaby@dabdoob.com\",\"name\":\"Abdelrahman Ahmed Farouk Elqasaby\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelsamad.mohamed@dabdoob.com\",\"name\":\"Abdelsamad Mohamed Abdelsamad Youssef\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"adel@dabdoob.com\",\"name\":\"Adel Sharif Shorhabil Ahmed\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"ali.khaled@dabdoob.com\",\"name"}
+
+item1 api probe getQaScoresPage: {"status":200,"body":"{\"from\":\"2026-01-25\",\"to\":\"2026-02-24\",\"days\":31,\"bucket\":\"day\",\"prevFrom\":\"2025-12-25\",\"prevTo\":\"2026-01-24\",\"basis\":\"interaction\",\"weekStartsOn\":0,\"fallbackDates\":0,\"team\":{\"score\":null,\"margin\":null,\"badge\":\"low\",\"audits\":0,\"agents\":0,\"agentsExcluded\":0,\"prevScore\":null,\"prevMargin\":null,\"prevAudits\":0,\"delta\":null,\"trend\":\"\",\"critical\":0,\"fatalRate\":null,\"scoreNoCritical\":null,\"disputes\":0,\"disputeRate\":null,\"allScore\":null,\"allAudits\":0,\"pendingDisputes\":0},\"series\":[{\"key\":\"2026-01-25\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-26\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-27\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-28\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-29\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-30\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-31\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-02-01\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits"}
+
+item1 alignment: [{"col":0,"header":"Agent","thLeft":275.390625,"tdLeft":275.390625,"thTextLeft":287.390625},{"col":1,"header":"Score","thLeft":601.078125,"tdLeft":601.078125,"thTextLeft":613.078125},{"col":2,"header":"Change","thLeft":953.1875,"tdLeft":953.1875,"thTextLeft":965.1875},{"col":3,"header":"Audits","thLeft":1053.328125,"tdLeft":1053.328125,"thTextLeft":1065.328125},{"col":4,"header":"Critical","thLeft":1147.421875,"tdLeft":1147.421875,"thTextLeft":1159.421875},{"col":5,"header":"Loses most to","thLeft":1255.65625,"tdLeft":1255.65625,"thTextLeft":1255.65625}]
+
+[mobile] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaAccess: {"status":200,"body":"{\"people\":[{\"email\":\"ahmedmohamed@dabdoob.com\",\"name\":\"Ahmed Naguib\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"e2e.tl@dabdoob.com\",\"name\":\"E2E Team Lead\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"heba@dabdoob.com\",\"name\":\"Heba Allah Khaled Ismail Abdelhamid\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"hozaifa.edres@dabdoob.com\",\"name\":\"Hozaifa Kamal Eldien Edres Fadl Elmawla\",\"role\":\"specialist\",\"position\":\"\",\"via\":\"granted\"},{\"email\":\"menna.mekkawy@dabdoob.com\",\"name\":\"Menna Mekawy\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"noha@dabdoob.com\",\"name\":\"Noha Hassan Foaad Qandil\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"abdallah.abdelraouf@dabdoob.com\",\"name\":\"Abdallah Abdelraouf Bashir Balola\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelrahman.elqasaby@dabdoob.com\",\"name\":\"Abdelrahman Ahmed Farouk Elqasaby\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelsamad.mohamed@dabdoob.com\",\"name\":\"Abdelsamad Mohamed Abdelsamad Youssef\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"adel@dabdoob.com\",\"name\":\"Adel Sharif Shorhabil Ahmed\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"ali.khaled@dabdoob.com\",\"name"}
+
+[28/30] [tablet] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item1 api probe getQaScoresPage: {"status":200,"body":"{\"from\":\"2026-01-25\",\"to\":\"2026-02-24\",\"days\":31,\"bucket\":\"day\",\"prevFrom\":\"2025-12-25\",\"prevTo\":\"2026-01-24\",\"basis\":\"interaction\",\"weekStartsOn\":0,\"fallbackDates\":0,\"team\":{\"score\":null,\"margin\":null,\"badge\":\"low\",\"audits\":0,\"agents\":0,\"agentsExcluded\":0,\"prevScore\":null,\"prevMargin\":null,\"prevAudits\":0,\"delta\":null,\"trend\":\"\",\"critical\":0,\"fatalRate\":null,\"scoreNoCritical\":null,\"disputes\":0,\"disputeRate\":null,\"allScore\":null,\"allAudits\":0,\"pendingDisputes\":0},\"series\":[{\"key\":\"2026-01-25\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-26\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-27\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-28\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-29\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-30\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-31\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-02-01\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits"}
+
+item1 alignment: [{"col":0,"header":"Agent","thLeft":275.390625,"tdLeft":275.390625,"thTextLeft":287.390625},{"col":1,"header":"Score","thLeft":601.046875,"tdLeft":601.046875,"thTextLeft":613.046875},{"col":2,"header":"Change","thLeft":953.171875,"tdLeft":953.171875,"thTextLeft":965.171875},{"col":3,"header":"Audits","thLeft":1053.28125,"tdLeft":1053.28125,"thTextLeft":1065.28125},{"col":4,"header":"Critical","thLeft":1147.359375,"tdLeft":1147.359375,"thTextLeft":1159.359375},{"col":5,"header":"Loses most to","thLeft":1255.578125,"tdLeft":1255.578125,"thTextLeft":1255.578125}]
+
+[29/30] [tablet] › e2e\ui-shell-polish.spec.ts:227:5 › item5: /admin Reminders — compact row with Toggle
+[tablet] › e2e\ui-shell-polish.spec.ts:133:5 › item3: /auth/login — persistent busy overlay with spinner until nav
+item3 samples: [{"t":5,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":115,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":223,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":332,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":439,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":547,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":654,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":763,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":873,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":981,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1087,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1196,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1302,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1411,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1516,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1624,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1731,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1841,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":1949,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2056,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2165,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2270,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2379,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2487,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2596,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2704,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2811,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":2918,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3027,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3134,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3244,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3351,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3461,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3568,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3675,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3784,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":3894,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4003,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4111,"url":"/auth/login","busy":true,"btnText":"Signing in…"},{"t":4221,"url":"/auth/login","busy":true,"btnText":"Signing in…"}]
+
+item3 last: {"t":8564,"url":"/auth/login","busy":true,"btnText":"Signing in…"}
+
+item3 dead-time samples on /auth/login: 0
+
+[30/30] [tablet] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+  2) [firefox] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('section[aria-labelledby="qs-tbl-h"] table').locator('tbody tr').first()
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('section[aria-labelledby="qs-tbl-h"] table').locator('tbody tr').first() with timeout 30000ms
+      - waiting for locator('section[aria-labelledby="qs-tbl-h"] table').locator('tbody tr').first()
+
+
+      54 |
+      55 |   const table = page.locator('section[aria-labelledby="qs-tbl-h"] table')
+    > 56 |   await expect(table.locator('tbody tr').first()).toBeVisible({ timeout: 30000 })
+         |                                                   ^
+      57 |
+      58 |   // click the first team-lead link in "Who is behind the score"
+      59 |   await table.locator('tbody tr td button.qa-link').first().click()
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\ui-shell-polish.spec.ts:56:51
+
+    Error Context: test-results\e2e-ui-shell-polish-item1--e3efc-le-headers-align-with-cells-firefox\error-context.md
+
+
+[mobile] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item4 clicked state: {"cls":"nav-link","ariaBusy":"true","dataPending":"true","entry":"calm","pageAnim":"cx-enter","vtName":"none"}
+
+[mobile] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+item2 api probe: {"status":200,"body":"{\"calibrations\":[],\"forms\":[{\"formId\":\"FRM-VOICE-IN\",\"version\":1,\"channel\":\"Inbound Calls\",\"title\":\"Voice QA (inbound calls)\",\"placeholder\":false,\"active\":true,\"scoring\":\"deduction\",\"sections\":[{\"id\":\"s1\",\"title\":\"Greeting\",\"questions\":[{\"id\":\"v01\",\"text\":\"Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v02\",\"text\":\"Did the agent asked the customer if the time of the call is suitable?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v03\",\"text\":\"Entity Name : Did the agent mention the name of the company?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"}]},{\"id\":\"s2\",\"title\":\"Listen & Understand your customer\",\"questions\":[{\"id\":\"v04\",\"text\":\"Acknowledgement: Did the agent acknowledge and cover all customer's concerns during the call?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"},{\"id\":\"v06\",\"text\":\"Did the agent avoid asking unnecessary questions during the interaction?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"}]},{\"id\":\"s3\",\"title\":\"Clear & Effective Communication\",\"questions\":[{\"id\":\"v05\",\"text\":\"Did the customer avoid repeating their questions or not correct the agent?\",\"weight"}
+
+[tablet] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells
+item1 api probe getQaAccess: {"status":200,"body":"{\"people\":[{\"email\":\"ahmedmohamed@dabdoob.com\",\"name\":\"Ahmed Naguib\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"e2e.tl@dabdoob.com\",\"name\":\"E2E Team Lead\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"heba@dabdoob.com\",\"name\":\"Heba Allah Khaled Ismail Abdelhamid\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"hozaifa.edres@dabdoob.com\",\"name\":\"Hozaifa Kamal Eldien Edres Fadl Elmawla\",\"role\":\"specialist\",\"position\":\"\",\"via\":\"granted\"},{\"email\":\"menna.mekkawy@dabdoob.com\",\"name\":\"Menna Mekawy\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"noha@dabdoob.com\",\"name\":\"Noha Hassan Foaad Qandil\",\"role\":\"tl\",\"position\":\"\",\"via\":\"team lead\"},{\"email\":\"abdallah.abdelraouf@dabdoob.com\",\"name\":\"Abdallah Abdelraouf Bashir Balola\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelrahman.elqasaby@dabdoob.com\",\"name\":\"Abdelrahman Ahmed Farouk Elqasaby\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"abdelsamad.mohamed@dabdoob.com\",\"name\":\"Abdelsamad Mohamed Abdelsamad Youssef\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"adel@dabdoob.com\",\"name\":\"Adel Sharif Shorhabil Ahmed\",\"role\":\"agent\",\"position\":\"\",\"via\":\"\"},{\"email\":\"ali.khaled@dabdoob.com\",\"name"}
+
+item1 api probe getQaScoresPage: {"status":200,"body":"{\"from\":\"2026-01-25\",\"to\":\"2026-02-24\",\"days\":31,\"bucket\":\"day\",\"prevFrom\":\"2025-12-25\",\"prevTo\":\"2026-01-24\",\"basis\":\"interaction\",\"weekStartsOn\":0,\"fallbackDates\":0,\"team\":{\"score\":null,\"margin\":null,\"badge\":\"low\",\"audits\":0,\"agents\":0,\"agentsExcluded\":0,\"prevScore\":null,\"prevMargin\":null,\"prevAudits\":0,\"delta\":null,\"trend\":\"\",\"critical\":0,\"fatalRate\":null,\"scoreNoCritical\":null,\"disputes\":0,\"disputeRate\":null,\"allScore\":null,\"allAudits\":0,\"pendingDisputes\":0},\"series\":[{\"key\":\"2026-01-25\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-26\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-27\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-28\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-29\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-30\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-01-31\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits\":0},{\"key\":\"2026-02-01\",\"score\":null,\"margin\":null,\"audits\":0,\"prevScore\":null,\"prevAudits"}
+
+item1 alignment: [{"col":0,"header":"Agent","thLeft":275.390625,"tdLeft":275.390625,"thTextLeft":287.390625},{"col":1,"header":"Score","thLeft":601.046875,"tdLeft":601.046875,"thTextLeft":613.046875},{"col":2,"header":"Change","thLeft":953.171875,"tdLeft":953.171875,"thTextLeft":965.171875},{"col":3,"header":"Audits","thLeft":1053.28125,"tdLeft":1053.28125,"thTextLeft":1065.28125},{"col":4,"header":"Critical","thLeft":1147.359375,"tdLeft":1147.359375,"thTextLeft":1159.359375},{"col":5,"header":"Loses most to","thLeft":1255.578125,"tdLeft":1255.578125,"thTextLeft":1255.578125}]
+
+[tablet] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap
+item2 api probe: {"status":200,"body":"{\"calibrations\":[],\"forms\":[{\"formId\":\"FRM-VOICE-IN\",\"version\":1,\"channel\":\"Inbound Calls\",\"title\":\"Voice QA (inbound calls)\",\"placeholder\":false,\"active\":true,\"scoring\":\"deduction\",\"sections\":[{\"id\":\"s1\",\"title\":\"Greeting\",\"questions\":[{\"id\":\"v01\",\"text\":\"Opening: Did the agent start the call with positive greeting in an active, clear and attentive voice following the opening standards?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v02\",\"text\":\"Did the agent asked the customer if the time of the call is suitable?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"},{\"id\":\"v03\",\"text\":\"Entity Name : Did the agent mention the name of the company?\",\"weight\":20,\"fatal\":false,\"hint\":\"\"}]},{\"id\":\"s2\",\"title\":\"Listen & Understand your customer\",\"questions\":[{\"id\":\"v04\",\"text\":\"Acknowledgement: Did the agent acknowledge and cover all customer's concerns during the call?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"},{\"id\":\"v06\",\"text\":\"Did the agent avoid asking unnecessary questions during the interaction?\",\"weight\":100,\"fatal\":true,\"hint\":\"\"}]},{\"id\":\"s3\",\"title\":\"Clear & Effective Communication\",\"questions\":[{\"id\":\"v05\",\"text\":\"Did the customer avoid repeating their questions or not correct the agent?\",\"weight"}
+
+item2 overlaps: []
+
+[mobile] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 overlayers: []
+
+items6+7 pill: {"info":[{"tag":"NEXTJS-PORTAL","cls":"","pos":"absolute","txt":""},{"tag":"P","cls":"who who-name","pos":"static","txt":"E2E Admin"},{"tag":"P","cls":"who-meta who-role","pos":"static","txt":"Admin"},{"tag":"DIV","cls":"rail-who","pos":"static","txt":"E2E AdminAdmin"},{"tag":"DIV","cls":"rail-foot","pos":"static","txt":"E2E AdminAdmin"}],"topHtml":"<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>"}
+
+items6+7 who styles: {"fontSize":"12px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap","heightPx":18}
+
+[tablet] › e2e\ui-shell-polish.spec.ts:246:5 › items6+7: rail footer — no avatar; user name small + truncated
+items6+7 overlayers: []
+
+items6+7 pill: {"info":[{"tag":"NEXTJS-PORTAL","cls":"","pos":"absolute","txt":""},{"tag":"P","cls":"who who-name","pos":"static","txt":"E2E Admin"},{"tag":"P","cls":"who-meta who-role","pos":"static","txt":"Admin"},{"tag":"DIV","cls":"rail-who","pos":"static","txt":"E2E AdminAdmin"},{"tag":"DIV","cls":"rail-foot","pos":"static","txt":"E2E AdminAdmin"}],"topHtml":"<nextjs-portal style=\"--nextjs-dev-tools-scale: 1;\"></nextjs-portal>"}
+
+items6+7 who styles: {"fontSize":"12px","overflow":"hidden","textOverflow":"ellipsis","whiteSpace":"nowrap","heightPx":18}
+
+[tablet] › e2e\ui-shell-polish.spec.ts:184:5 › item4: nav link — immediate feedback + entry animation for new page
+item4 clicked state: {"cls":"nav-link","ariaBusy":"true","dataPending":"true","entry":"calm","pageAnim":"cx-enter","vtName":"none"}
+
+  3) [mobile] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('form.qa-grid')
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('form.qa-grid') with timeout 30000ms
+      - waiting for locator('form.qa-grid')
+
+
+      104 |
+      105 |   const form = page.locator('form.qa-grid')
+    > 106 |   await expect(form).toBeVisible({ timeout: 30000 })
+          |                      ^
+      107 |   await form.screenshot({ path: `${SHOTS}/item2-calibration-assignform.png` })
+      108 |
+      109 |   const overlaps = await page.evaluate(() => {
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\ui-shell-polish.spec.ts:106:22
+
+    Error Context: test-results\e2e-ui-shell-polish-item2--4904b-orm-—-fields-do-not-overlap-mobile\error-context.md
+
+
+  3 failed
+    [firefox] › e2e\ui-shell-polish.spec.ts:36:5 › item1: /quality-scores TL drill — agents table headers align with cells 
+    [firefox] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap 
+    [mobile] › e2e\ui-shell-polish.spec.ts:94:5 › item2: /calibration AssignForm — fields do not overlap 
+  27 passed (2.4m)

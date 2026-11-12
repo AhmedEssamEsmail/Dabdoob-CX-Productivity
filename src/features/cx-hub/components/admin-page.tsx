@@ -316,49 +316,54 @@ function Tm() {
 }
 
 function Rb({ rows, error, onSaved, onRetry }: { rows: ConfigRow[] | null; error: string; onSaved: (rows: ConfigRow[]) => void; onRetry: () => void }) {
-  const [busy, setBusy] = useState(false)
+  const [pending, setPending] = useState<boolean | null>(null)
+  const busy = pending !== null
   const row = rows?.find((x) => x.key === 'reminders_enabled')
   const on = row ? row.value === true : true
   return (
     <SettingsSection id="reminders" title="Reminders">
-      <p className="cx-section__hint">
-        Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
-      </p>
       {rows === null ? (
-        error ? (
-          <>
-            <Chip status="bad">error</Chip>{' '}
-            <Button type="button" className="btn btn-quiet btn-small" onClick={onRetry}>
-              Try again
-            </Button>
-          </>
-        ) : (
-          <Chip>loading</Chip>
-        )
+        <>
+          <p className="cx-section__hint">
+            Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
+          </p>
+          {error ? (
+            <>
+              <Chip status="bad">error</Chip>{' '}
+              <Button type="button" className="btn btn-quiet btn-small" onClick={onRetry}>
+                Try again
+              </Button>
+            </>
+          ) : (
+            <Chip>loading</Chip>
+          )}
+        </>
       ) : (
-        <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>
+        <div className="between">
+          <span className="cx-section__hint">
+            <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>{' '}
+            Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
+          </span>
+          <Toggle
+            checked={pending ?? on}
+            disabled={busy || !row}
+            onChange={(next) => {
+              setPending(next)
+              Ln.saveConfigSetting('reminders_enabled', next)
+                .then(
+                  (updated) => {
+                    onSaved(updated)
+                    Ti(`Reminders are ${next ? 'on' : 'off'}`)
+                  },
+                  (error) => Ti((error as Error).message, 'error')
+                )
+                .finally(() => setPending(null))
+            }}
+          >
+            Reminders
+          </Toggle>
+        </div>
       )}
-      <Button
-        type="button"
-        className="btn btn-quiet btn-small"
-        disabled={busy || !row}
-        aria-label={`Turn reminders ${on ? 'off' : 'on'}`}
-        aria-pressed={on}
-        onClick={() => {
-          setBusy(true)
-          Ln.saveConfigSetting('reminders_enabled', !on)
-            .then(
-              (updated) => {
-                onSaved(updated)
-                Ti(`Reminders are ${!on ? 'on' : 'off'}`)
-              },
-              (error) => Ti((error as Error).message, 'error')
-            )
-            .finally(() => setBusy(false))
-        }}
-      >
-        {busy ? 'Saving…' : on ? 'Turn off' : 'Turn on'}
-      </Button>
     </SettingsSection>
   )
 }

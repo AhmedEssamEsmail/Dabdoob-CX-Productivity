@@ -1,0 +1,5 @@
+
+Running 1 test using 1 worker
+
+[1/1] [firefox] › e2e\ui-shell-polish.spec.ts:220:5 › item5: /admin Reminders — compact row with Toggle
+  1 passed (7.7s)

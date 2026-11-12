@@ -1,0 +1,2 @@
+e2e/ui-shell-polish.spec.ts(29,120): error TS1501: This regular expression flag is only available when targeting 'es2018' or later.
+TSC_EXIT=1

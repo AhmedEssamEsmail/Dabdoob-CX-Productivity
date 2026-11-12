@@ -1079,6 +1079,19 @@
 :root .nav-link:hover .nav-icon,
 :root .nav-link[aria-current="page"] .nav-icon { opacity: 1; }
 :root .nav-link[aria-current="page"] .nav-icon { color: var(--cx-accent); }
+:root .nav-link[data-pending="true"] {
+  color: var(--cx-accent-text);
+  font-weight: var(--cx-weight-strong);
+}
+:root .nav-link[data-pending="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: var(--cx-space-2);
+  inset-block-end: 3px;
+  block-size: 2px;
+  border-radius: 1px;
+  background: var(--cx-accent);
+}
 
 :root .nav-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
@@ -1135,6 +1148,7 @@
 }
 :root .who { margin: 0; color: var(--cx-ink); font-weight: var(--cx-weight-strong); font-size: var(--cx-text-md); }
 :root .who-meta { margin: 0; font-size: var(--cx-text-xs); color: var(--cx-ink-2); }
+:root .who-name { display: block; font-size: var(--cx-text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 821px) {
   :root .rail-off .brand-name, :root .rail-off .brand-sub, :root .rail-off .rail-who { display: none; }
 }
@@ -1491,7 +1505,8 @@ dialog:is(.popup,.trk-dialog,.hm-dialog)::backdrop { background: var(--scrim); }
     opacity var(--cc-sweep) var(--ease) calc(var(--i, 0) * var(--cc-stagger)),
     stroke-dashoffset var(--cc-sweep) var(--ease);
 }
-:root [data-entry="first"] { --cx-enter-y: 14px; --cx-enter-dur: .55s; --cx-enter-stagger: 60ms; }
+:root[data-entry="first"] { --cx-enter-y: 14px; --cx-enter-dur: .55s; --cx-enter-stagger: 60ms; }
+:root[data-entry="calm"] { --cx-enter-y: 8px; --cx-enter-dur: .32s; --cx-enter-stagger: 24ms; }
 
 /* ========================================================================== */
 /* Page-level helpers                                                          */
@@ -1533,8 +1548,6 @@ dialog:is(.popup,.trk-dialog,.hm-dialog)::backdrop { background: var(--scrim); }
 @keyframes oo-alert-in{50%{transform:translateY(-3px);box-shadow:var(--shadow-3)}}
 @keyframes cx-enter{0%{opacity:0;transform:translateY(var(--cx-enter-y))}}
 @keyframes qg-pop-in{0%{opacity:0;transform:translateY(-12px) scale(.98)}}
-@keyframes qg-vt-out{to{opacity:0}}
-@keyframes qg-vt-in{0%{opacity:0}}
 
 .page{inline-size:100%;max-width:var(--page-max);margin-inline:auto}
 .page-head{margin-bottom:var(--space-5)}
@@ -1556,13 +1569,10 @@ body:has(dialog[open]){overflow:hidden}
 .oo-alert .btn-quiet{color:inherit;border:1px solid currentColor}
 .oo-alert-sound{font-size:var(--text-xs);opacity:.85}
 .oo-alert[data-type=soon] .btn-primary{background:var(--signal);border-color:var(--signal);color:var(--signal-ink)}
-:root[data-entry="first"] :is(.page)>*{animation:cx-enter var(--cx-enter-dur) var(--ease) backwards;animation-delay:calc(var(--i, 0) * var(--cx-enter-stagger))}
+:root:is([data-entry="first"],[data-entry="calm"]) :is(.page)>*{animation:cx-enter var(--cx-enter-dur) var(--ease) backwards;animation-delay:calc(var(--i, 0) * var(--cx-enter-stagger))}
 :is(.page)>:nth-child(2){--i: 1}
 :is(.page)>:nth-child(3){--i: 2}
 :is(.page)>:nth-child(4){--i: 3}
 :is(.page)>:nth-child(5){--i: 4}
 :is(.page)>:nth-child(6){--i: 5}
 :is(.page)>:nth-child(n+7){--i: 6}
-::view-transition-old(root),::view-transition-new(root){animation:none}
-::view-transition-old(page){animation:.14s var(--ease) both qg-vt-out}
-::view-transition-new(page){animation:.26s var(--ease) both qg-vt-in}

@@ -459,6 +459,24 @@
 :root .login-google {
   width: 100%; justify-content: center; gap: .5rem; height: 2.5rem;
 }
+:root .login-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center;
+  background: color-mix(in oklab, var(--cx-bg) 72%, transparent);
+}
+:root .login-overlay__inner {
+  display: flex; align-items: center; gap: .7rem;
+  background: var(--cx-surface); border: 1px solid var(--cx-line);
+  border-radius: var(--cx-radius-object); box-shadow: var(--shadow-2);
+  padding: .9rem 1.3rem;
+  font-size: var(--cx-text-md); font-weight: var(--w-strong);
+}
+:root .login-overlay__spinner {
+  font-size: 1.4rem; color: var(--cx-accent); flex: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .login-overlay__spinner { animation: none; }
+}
 
 /* shared legacy families (was per-app scoped) */
 /* The .dq-editor/.dq-editor__actions/.dq-days/.dq-holform rules below are documented keeps (people-holidays editor skin); the rest of the family was renamed cx-* per results/dq-map.md. */
