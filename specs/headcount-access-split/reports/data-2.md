@@ -1,0 +1,24 @@
+# data report - headcount-access-split - round 2 (DELTA)
+
+Verdict: PASS
+Open: 0/0/0/4
+
+Reconciliation:
+- data-1 (TPH write gate) — RESOLVED. `tphCheckAgent_` is now `!p || !isCxAgent_(p)` (write.ts:47-50), exactly the recommended fix; `TphStore.dir` carries `active`+`position` (page.ts:145-151) so the predicate has real inputs. New pins tests/perf/tph-write-gate.test.ts cover the finding's exact cases: admin-role CX Agent accepted, inactive rejected, 'Enablemen Specialist' and 'Customer Experience Manager' titles rejected, unknown email rejected. Re-ran: 5/5 pass (exit=0).
+- data-2 (NULL `roster.active` divergence) — RESOLVED. Unified predicate `x.active !== false && String(x.active).toLowerCase() !== 'false'` now at every roster-row site: adapters.ts:528 (pwDirectory_), jobs.ts:277 (dqActiveTlEmails_), roster.ts:336 (wasActive), :445 (mgrActive), :517 (getRosterAdmin people map), myday.ts:523 (asTlFollowUps_). Verbatim parity with identity.ts:219. Migration 20261112165047 backfills NULL→TRUE then `SET NOT NULL` (DEFAULT TRUE kept; column was nullable `BOOLEAN DEFAULT TRUE`, 20261030163812:19); sorts last in migrations/. tests/platform/roster-active.test.ts pins NULL→active, 'false'→inactive, true/false — 3/3 pass; total re-run 8/8.
+- Sweep: no remaining raw roster-row `active` coercions (`=== 'true'`/`!!`/`=== ''`-style) in any roster-reading file. `myday.ts:349` `isTrue_` is on `meeting_series.active` which is `NOT NULL DEFAULT TRUE` (20261105172248_people.sql:193) — correctly untouched.
+- Scope note (verified, not a finding): the fix also swapped role checks -> `dqTitleLevel_(position, role)` at adapters managerOf/agentsOf/tls, dqActiveTlEmails_, asTlFollowUps_, and mgrEligible (roster.ts:446-451). Matches identity's `pwDirectory` (identity.ts:226-273) 1:1; intended title-axis widening — admin-role CX TL now counts in tls()/TL lists, consistent with data-1 expected `tls()=4`. Specialist-titled people stay 'agent' level (title-level.ts:10), so agentsOf/managerOf coverage is unchanged for them.
+- Expected post-backfill counts unchanged from round 1 (16 CX Agents, 4 TLs, 20 QA-importable); still not verifiable against live DB — real backfill NEEDS_APPROVAL, migration local-only until merge.
+
+| ID | Sev | file:line | Issue + evidence (<=2 lines) | Exact fix | Owner |
+|---|---|---|---|---|---|
+| data-3 | LOW | src/features/shared/lib/adapters.ts:538-547 | Still open (deferred by FIX routing): `pwDirectory_` inserts non-rostered config admins into `by`; identity keeps `by` roster-only + `lookup()` (identity.ts:233-251). `Object.keys(by)` enumerations differ; no live-impact consumer. | Keep `by` roster-only; resolve synthetic admins inside `person()`/`name()` like identity's `lookup()`. | dev |
+| data-4 | LOW | src/features/cx-productivity/lib/tph/index.ts:1255,1294 | Still open (deferred): legacy `tphPeople_`/`tphCheckAgent_` copies remain role-keyed (`role==='agent'||'specialist'`); no src callers, but future callers get pre-split semantics. | Re-point to `isCxAgent_` or delete the unused exports. | dev |
+| data-5 | LOW | src/features/cx-hub/lib/roster.ts:154-158 | Still open (deferred to approved backfill run): `dqHctActive_` = `status==='current'` AND `lwd` blank/'-'; LWD guard undocumented; a Current-with-LWD row drops from headcount silently. | Document the LWD guard in the criterion; at backfill, confirm none of the 16 Current CX Agents carries an LWD. | data-engineer |
+| data-6 | LOW | src/features/shared/platform/identity.ts:41 | Residual of data-2: `isCxAgent_` keeps `!!p.active` truthy guard — diverges on raw `null`/`''`/`0` vs the unified `!== 'false'` predicate. All 9 call sites pass pre-coerced `DirectoryPerson.active` booleans and the column is now NOT NULL, so unreachable today; only a future raw-row caller would see it. | Optional consistency: `const active = p.active !== false && String(p.active).toLowerCase() !== 'false'`. | dev |
+
+Not verified / assumptions:
+- No live DB access this round either — code + migration verified statically; expected counts re-verified post-merge via `SELECT position, count(*) FROM roster WHERE active GROUP BY position` (CX Agent=16, TL=4, Manager=1, Specialist=1).
+- `src/app/api/roster/route.ts:17` `eq('active', param==='true')` filters in SQL — NULL rows excluded under `?active=true` pre-migration; converges once the NOT NULL migration applies. No change needed.
+- `setPersonV2Fields` now writes `active = employmentStatus.toLowerCase()==='current'` when the field is sent (roster.ts:607-608) — a deliberate status-driven write, consistent with `dqHctActive_`; part of earlier uncommitted spec leaves, outside the fix scope.
+- Deploy-order caveat unchanged: `position` is NULL until the backfill runs, so `isCxAgent_`-gated counts read 0 meanwhile (already logged sec-1 LOW).

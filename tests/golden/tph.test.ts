@@ -3,7 +3,7 @@
  * The pure rules get seeded vectors; the store readers/writers run through injected seams
  * whose fixtures mirror the oracle's fake spreadsheets.
  */
-import { describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   oracle,
   baseFixtures,
@@ -77,6 +77,7 @@ import {
   type TphIo,
   type TphTableAgentRow,
 } from '@/features/cx-productivity/lib/tph/index'
+import { tphPeople_ as tphPeoplePage_ } from '@/features/cx-productivity/lib/tph/page'
 import type { Cfg } from '@/features/shared/lib/adapters'
 
 const CFG = {
@@ -379,13 +380,27 @@ describe('tph people/settings/helpers', () => {
     }
     const dir = {
       by: {
-        'a@dabdoob.com': { email: 'a@dabdoob.com', name: 'Zed', tlEmail: 'tl@dabdoob.com', active: true, role: 'agent' },
-        'b@dabdoob.com': { email: 'b@dabdoob.com', name: 'Amy', tlEmail: '', active: true, role: 'specialist' },
-        'c@dabdoob.com': { email: 'c@dabdoob.com', name: 'Bo', tlEmail: 'tl@dabdoob.com', active: false, role: 'agent' },
-        'tl@dabdoob.com': { email: 'tl@dabdoob.com', name: 'Tee', tlEmail: '', active: true, role: 'tl' },
+        'a@dabdoob.com': { email: 'a@dabdoob.com', name: 'Zed', tlEmail: 'tl@dabdoob.com', active: true, role: 'agent', position: 'Customer Experience Agent' },
+        'b@dabdoob.com': { email: 'b@dabdoob.com', name: 'Amy', tlEmail: '', active: true, role: 'specialist', position: 'Enablemen Specialist' },
+        'c@dabdoob.com': { email: 'c@dabdoob.com', name: 'Bo', tlEmail: 'tl@dabdoob.com', active: false, role: 'agent', position: 'Customer Experience Agent' },
+        'tl@dabdoob.com': { email: 'tl@dabdoob.com', name: 'Tee', tlEmail: '', active: true, role: 'tl', position: 'Customer Experience Team Leader' },
       },
     }
     same('tphPeople_', [{ email: 'tl@dabdoob.com' }, dir], () => tphPeople_({ email: 'tl@dabdoob.com' }, dir), {}, 'people')
+  })
+
+  it('page tphPeople_ counts only active exact-position CX Agents', () => {
+    const dir = {
+      by: {
+        'a1@dabdoob.com': { email: 'a1@dabdoob.com', name: 'Zed', tlEmail: 'tl@dabdoob.com', active: true, role: 'agent', position: 'Customer Experience Agent' },
+        'a2@dabdoob.com': { email: 'a2@dabdoob.com', name: 'Amy', tlEmail: 'x@dabdoob.com', active: true, role: 'agent', position: 'Customer Experience Agent' },
+        's@dabdoob.com': { email: 's@dabdoob.com', name: 'Spec', tlEmail: 'tl@dabdoob.com', active: true, role: 'specialist', position: 'Enablemen Specialist' },
+        't@dabdoob.com': { email: 't@dabdoob.com', name: 'Tee', tlEmail: '', active: true, role: 'tl', position: 'Customer Experience Team Leader' },
+        'x@dabdoob.com': { email: 'x@dabdoob.com', name: 'Gone', tlEmail: 'tl@dabdoob.com', active: false, role: 'agent', position: 'Customer Experience Agent' },
+      },
+    }
+    const people = tphPeoplePage_({ email: 'tl@dabdoob.com' }, dir)
+    expect(people.map((p) => p.email)).toEqual(['a1@dabdoob.com', 'a2@dabdoob.com'])
   })
 
   it('settings readers: channels/activities/keys/hours', () => {
@@ -412,11 +427,11 @@ describe('tph people/settings/helpers', () => {
       same('tphPastDay_', [d], () => tphPastDay_(d, CFG, NOW_MS), fx(), `pd ${d}`)
     }
     same('tphNowSlot_', [], () => tphNowSlot_(CFG, NOW_MS), fx(), 'nowSlot')
-    const persons: Record<string, { email: string; active: boolean; role: string }> = {
-      'a@dabdoob.com': { email: 'a@dabdoob.com', active: true, role: 'agent' },
-      's@dabdoob.com': { email: 's@dabdoob.com', active: true, role: 'specialist' },
-      't@dabdoob.com': { email: 't@dabdoob.com', active: true, role: 'tl' },
-      'x@dabdoob.com': { email: 'x@dabdoob.com', active: false, role: 'agent' },
+    const persons: Record<string, { email: string; active: boolean; role: string; position: string }> = {
+      'a@dabdoob.com': { email: 'a@dabdoob.com', active: true, role: 'agent', position: 'Customer Experience Agent' },
+      's@dabdoob.com': { email: 's@dabdoob.com', active: true, role: 'specialist', position: 'Enablemen Specialist' },
+      't@dabdoob.com': { email: 't@dabdoob.com', active: true, role: 'tl', position: 'Customer Experience Team Leader' },
+      'x@dabdoob.com': { email: 'x@dabdoob.com', active: false, role: 'agent', position: 'Customer Experience Agent' },
     }
     const fxDir = fx({ dirPersons: persons })
     const portDir = { person: (e: string) => persons[String(e).trim().toLowerCase()] || null }

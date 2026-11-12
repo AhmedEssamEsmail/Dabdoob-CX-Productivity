@@ -90,8 +90,8 @@ const TODAY = prodToday_(CFG as never)
 const LO = dqAddDays_(TODAY, -28)
 
 const ROSTER = [
-  { email: 'A@dabdoob.com', name: 'Agent A', role: 'agent', tl_email: 'TL@dabdoob.com', active: true, position: '' },
-  { email: 'boss@dabdoob.com', name: 'Boss', role: 'admin', tl_email: null, active: true, position: '' },
+  { email: 'A@dabdoob.com', name: 'Agent A', role: 'agent', tl_email: 'TL@dabdoob.com', active: true, position: 'Customer Experience Agent' },
+  { email: 'boss@dabdoob.com', name: 'Boss', role: 'admin', tl_email: null, active: true, position: 'Customer Experience Manager' },
 ]
 
 const FIXTURE: Record<string, Record<string, unknown>[]> = {
@@ -174,6 +174,7 @@ describe('tphLoadStore_ window/options (P-03)', () => {
     expect(store.cfg).toEqual(CFG)
     expect(store.dir.by['a@dabdoob.com']).toEqual({
       email: 'a@dabdoob.com', name: 'Agent A', tlEmail: 'tl@dabdoob.com', role: 'agent', active: true,
+      position: 'Customer Experience Agent',
     })
     expect(store.dir.name('a@dabdoob.com')).toBe('Agent A')
   })

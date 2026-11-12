@@ -25,7 +25,7 @@ import 'server-only'
 
 import { db, cacheGet, cachePut, cacheRemove } from './repo'
 import { getConfig, dqSetting } from './settings'
-import { normEmail } from './identity'
+import { dqTitleLevel_, normEmail } from './identity'
 import {
   pwMs, pwKwDate, pwKwTime, pwDateOnly, pwAt, pwDow, pwAddDays, pwToday, PW_DAY_MS,
 } from './time'
@@ -73,7 +73,7 @@ async function wcState(): Promise<WcState> {
   if (hit) return hit
   const roster: Record<string, Record<string, unknown>> = {}
   try {
-    const { data } = await db().from('roster').select('email,role,days_off,based_in_country')
+    const { data } = await db().from('roster').select('email,role,position,days_off,based_in_country')
     ;(data || []).forEach((r) => {
       const e = normEmail(r.email)
       if (e) roster[e] = r as Record<string, unknown>
@@ -188,7 +188,7 @@ export async function getWorkingCalendar(
   email = normEmail(email)
   const row = email ? st.roster[email] : null
   const role = row ? String(row.role || '') : ''
-  const isTl = role === 'tl'
+  const isTl = dqTitleLevel_(row && row.position, role) === 'tl'
   const tl = isTl ? await wcTlSchedule(st) : null
   const off = await wcDaysOff(row)
   const tlShifts = (await getConfig('tl_shifts', {})) as Record<string, unknown>

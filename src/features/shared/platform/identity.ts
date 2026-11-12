@@ -24,9 +24,22 @@ import { db } from './repo'
 import { getConfig } from './settings'
 import { viewAsState, assertWritable } from './viewas'
 import { described } from '@/features/shared/lib/errors'
+import { dqTitleLevel_ } from '@/features/shared/lib/title-level'
+
+export { dqTitleLevel_ }
 
 export function normEmail(e: unknown): string {
   return String(e || '').trim().toLowerCase()
+}
+
+/** Headcount counts only this exact position title (DECISION option A). */
+export const CX_AGENT_POSITION = 'Customer Experience Agent'
+
+/** Exact CX-agent predicate for headcount numbers — position must match verbatim. */
+export function isCxAgent_(p: { active?: unknown; position?: unknown } | null | undefined): boolean {
+  if (!p) return false
+  const active = !!p.active && String(p.active).toLowerCase() !== 'false'
+  return active && String(p.position || '').trim() === CX_AGENT_POSITION
 }
 
 /** The signed-in caller, whatever View as says. '' in a cron run (no session). */
@@ -174,6 +187,7 @@ export interface DirectoryPerson {
   tlEmail: string | null
   active: boolean
   position: string
+  titleLevel: 'agent' | 'tl' | 'manager'
 }
 
 export interface Directory {
@@ -210,6 +224,7 @@ export const pwDirectory = cache(async (): Promise<Directory> => {
       tlEmail: normEmail(r.tl_email) || null,
       active,
       position: String(r.position || ''),
+      titleLevel: dqTitleLevel_(r.position, String(r.role || '')),
     }
   })
   admins.forEach((a) => {
@@ -222,7 +237,15 @@ export const pwDirectory = cache(async (): Promise<Directory> => {
     const p = by[key]
     if (p) return p
     if (admins.indexOf(key) !== -1) {
-      return { email: key, name: key, role: 'admin', tlEmail: null, active: true, position: '' }
+      return {
+        email: key,
+        name: key,
+        role: 'admin',
+        tlEmail: null,
+        active: true,
+        position: '',
+        titleLevel: dqTitleLevel_('', 'admin'),
+      }
     }
     return null
   }
@@ -237,17 +260,17 @@ export const pwDirectory = cache(async (): Promise<Directory> => {
     managerOf: (e: string) => {
       const p = lookup(e)
       if (!p) return null
-      if (p.role === 'agent' || p.role === 'specialist') return p.tlEmail
-      if (p.role === 'tl') return admins[0] || null
+      if (p.titleLevel === 'agent') return p.tlEmail
+      if (p.titleLevel === 'tl') return admins[0] || null
       return null
     },
     agentsOf: (tl: string) => {
       const t = normEmail(tl)
       return Object.keys(by)
         .map((k) => by[k])
-        .filter((p) => (p.role === 'agent' || p.role === 'specialist') && p.active && p.tlEmail === t)
+        .filter((p) => p.titleLevel === 'agent' && p.active && p.tlEmail === t)
     },
-    tls: () => Object.keys(by).map((k) => by[k]).filter((p) => p.role === 'tl' && p.active),
+    tls: () => Object.keys(by).map((k) => by[k]).filter((p) => p.titleLevel === 'tl' && p.active),
   }
 })
 

@@ -15,7 +15,7 @@
 import 'server-only'
 import { appendRow, cacheGet, cachePut, db, newId, readAllPaged, readRows, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
-import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
+import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, isCxAgent_, dqTitleLevel_, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { hbBeat, hbFlush, hbRun } from '@/features/shared/platform/health'
 import { getWorkingCalendar } from '@/features/shared/platform/calendar'
@@ -40,7 +40,7 @@ import {
   qaAgentIndex_,
 } from './core'
 import {
-  qaCleanInteractionAt_, qaTakenByOther_, qaScoreSubmission_,
+  qaCleanInteractionAt_, qaCleanInteractionDate_, qaTakenByOther_, qaScoreSubmission_,
   qaCleanFailReasons_, qaNewCtl_, qaCtlPopups_, qaAuditMail_, qaMyAuditCounts_,
   qaCanWaive_, qaCleanReason_, qaRequestRows_, qaTicketQueueRow_,
   qaNonTicketClash_, qaNonTicketRow_, qaCleanPassReason_,
@@ -240,14 +240,14 @@ async function qaWaiverList_(): Promise<string[]> {
   return qaEmailList_(await qaSetting_('qa_request_waiver_emails'))
 }
 
-/** qaAuditors_ verbatim: every active TL or position-matching person, plus grants. */
+/** qaAuditors_ verbatim: every active title-TL or position-matching person, plus grants. */
 async function qaAuditors_(dir: Directory): Promise<string[]> {
   const keys = (await qaAuditorPosKeywords_()).map((s) => String(s).toLowerCase().trim()).filter(String)
   const seen: Record<string, boolean> = {}
   Object.keys(dir.by).forEach((k) => {
     const p = dir.by[k]
     const pos = String(p.position || '').toLowerCase()
-    if (p.active && (p.role === 'tl' || keys.some((w) => pos.indexOf(w) !== -1))) seen[k] = true
+    if (p.active && (dqTitleLevel_(p.position, p.role) === 'tl' || keys.some((w) => pos.indexOf(w) !== -1))) seen[k] = true
   })
   ;([] as unknown[]).concat(((await qaSetting_('qa_auditor_emails')) as unknown[]) || [])
     .map(normEmail).filter(String).forEach((e) => { seen[e] = true })
@@ -305,11 +305,11 @@ async function qaAuditTypes_(): Promise<string[]> {
   return (await optionsFor('qa.audit_type')) as string[]
 }
 
-/** qaImportablePeople_ verbatim: active agents, specialists and TLs. */
+/** qaImportablePeople_: active CX Agents and title-TLs. */
 function qaImportablePeople_(dir: Directory | { by: Record<string, DirectoryPerson> }): DirectoryPerson[] {
   return Object.keys(dir.by)
     .map((k) => dir.by[k])
-    .filter((p) => p.active && (p.role === 'agent' || p.role === 'specialist' || p.role === 'tl'))
+    .filter((p) => p.active && (isCxAgent_(p) || dqTitleLevel_(p.position, p.role) === 'tl'))
 }
 
 /** dqHeadcount_ seam: the roster's Freshdesk ids/names (fd_id, fd_name columns on roster). */
@@ -578,11 +578,11 @@ async function qaUnmatchedAgents_(): Promise<{ name: string; items: number }[]> 
   }
 }
 
-/** qaQuotaAgents_ verbatim: active agents/specialists on the roster, less excludeAgents. */
+/** qaQuotaAgents_ verbatim: active CX Agents on the roster, less excludeAgents. */
 async function qaQuotaAgents_(dir: Directory, S: Row): Promise<{ email: string; name: string }[]> {
   const excluded = ((S.excludeAgents as string[]) || []).map(qeCanonAgent_)
   return qaImportablePeople_(dir)
-    .filter((p) => p.role !== 'tl' && excluded.indexOf(qeCanonAgent_(p.name)) === -1)
+    .filter((p) => isCxAgent_(p) && excluded.indexOf(qeCanonAgent_(p.name)) === -1)
     .map((p) => ({ email: normEmail(p.email), name: p.name }))
 }
 
@@ -677,7 +677,10 @@ export async function getQaQueuePage(auditorEmail: string): Promise<Row> {
   if (me.role === 'admin') {
     auditors = (await qaAuditors_(dir))
       .filter((e) => e !== me.email)
-      .map((e) => ({ email: e, name: dir.name(e), tl: (dir.person(e) || ({} as DirectoryPerson)).role === 'tl' }))
+      .map((e) => {
+        const p = dir.person(e) || ({} as DirectoryPerson)
+        return { email: e, name: dir.name(e), tl: dqTitleLevel_(p.position, p.role) === 'tl' }
+      })
       .sort((a, b) => Number(a.tl) - Number(b.tl) || a.name.localeCompare(b.name))
       .map((a) => ({ email: a.email, name: a.name }))
     if (auditorEmail === '*' && auditors.length) target = auditors[0].email
@@ -687,7 +690,7 @@ export async function getQaQueuePage(auditorEmail: string): Promise<Row> {
     if (me.role !== 'admin') throw new Error('Only an admin can open another auditor\'s Audit Desk.')
     if ((await qaAuditors_(dir)).indexOf(target) === -1) throw new Error(target + ' is not a quality auditor.')
     const tp = dir.person(target) || ({} as DirectoryPerson)
-    user = { email: target, name: dir.name(target), role: tp.role === 'tl' ? 'tl' : 'agent' }
+    user = { email: target, name: dir.name(target), role: dqTitleLevel_(tp.position, tp.role) === 'tl' ? 'tl' : 'agent' }
   }
   const page = await qaQueuePageFor_(user, dir)
   page.readOnly = user !== me
@@ -753,7 +756,7 @@ export async function submitQaAudit(input: Row): Promise<Row> {
     if (q.status === 'passed') throw new Error('This ticket was passed on, so it is no longer in the queue.')
     if (q.status === 'waived') throw new Error('This audit request was waived, so it is no longer in the queue.')
     if (qaIsNonTicket_(q) && String((scored.form as Row).channel) !== String(q.channel)) throw new Error('Use the ' + String(q.audit_type) + ' audit form. Reload the page.')
-    const interactionAt = qaCleanInteractionAt_(input.interactionAt)
+    const interactionAt = q.source === 'offqueue' ? qaCleanInteractionDate_(input.interactionAt) : qaCleanInteractionAt_(input.interactionAt)
     const now = qaNowIso_()
     const audit: Row = {
       audit_id: newId('QA'), kind: 'audit', queue_id: q.queue_id, calibration_id: '', ticket_id: q.ticket_id,
@@ -908,7 +911,7 @@ async function qaTicketTarget_(input: Row, dir: Directory): Promise<{ ticket: st
   const people = qaImportablePeople_(dir)
   let agent: DirectoryPerson | null = null
   if (input.agentEmail) {
-    agent = people.filter((p) => p.email === normEmail(input.agentEmail) && p.role !== 'tl')[0] || null
+    agent = people.filter((p) => p.email === normEmail(input.agentEmail) && isCxAgent_(p))[0] || null
     if (!agent) throw new Error('That agent is not active on the roster.')
   } else if (detail.responderId) {
     const idx = qaAgentIndex_(people.map((p) => ({ email: p.email, name: p.name, tlEmail: p.tlEmail || undefined })), await qaHeadcount_())
@@ -1001,7 +1004,7 @@ export async function createQaNonTicketAudit(input: Row): Promise<Row> {
   if (ref.length > 200) throw new Error('Keep the reference under 200 characters.')
   const note = qaSquash_(input.note)
   if (note.length > 500) throw new Error('Keep the note under 500 characters.')
-  const agent = qaImportablePeople_(dir).filter((p) => p.email === normEmail(input.agentEmail) && p.role !== 'tl')[0]
+  const agent = qaImportablePeople_(dir).filter((p) => p.email === normEmail(input.agentEmail) && isCxAgent_(p))[0]
   if (!agent) throw new Error('Choose the agent to audit (active on the roster).')
   const form = qaForms_(await qaRows_('qa_forms')).list.filter((f) => f.active && f.channel === type)[0]
   if (!form) throw new Error(type + ' has no active audit form. An admin adds one in Admin > Audit forms, with ' + type + ' as its audit type.')
@@ -1498,8 +1501,8 @@ export async function getQaCalibrationPage(): Promise<Row> {
     calibrations: visible, forms: forms.list.filter((f) => f.active), canAssign: user.role !== 'agent',
     target: Number(await qaSetting_('qa_alignment_target')), ticketUrl: await qaTicketUrl_(),
     auditors: auditors.map((e) => ({ email: e, name: dir.name(e) })),
-    tls: people.filter((p) => p.role === 'tl' || p.role === 'admin').map((p) => ({ email: p.email, name: p.name })),
-    agents: people.filter((p) => p.role === 'agent').map((p) => ({ email: p.email, name: p.name })),
+    tls: people.filter((p) => dqTitleLevel_(p.position, p.role) === 'tl' || p.role === 'admin').map((p) => ({ email: p.email, name: p.name })),
+    agents: people.filter((p) => isCxAgent_(p)).map((p) => ({ email: p.email, name: p.name })),
     trend: Object.keys(trend)
       .map((k) => {
         const t = trend[k]
@@ -1882,7 +1885,7 @@ async function qaCoverageCached_(): Promise<Row> {
   const from = dqAddDays_(today, -(QA_COVERAGE_DAYS - 1))
   const values = await qeQueueValues_(live ? from : undefined)
   const dir = await pwDirectory()
-  const people = qaImportablePeople_(dir).map((p) => ({ email: p.email, name: p.name, role: p.role, tlEmail: p.tlEmail }))
+  const people = qaImportablePeople_(dir).map((p) => ({ email: p.email, name: p.name, role: p.role, tlEmail: p.tlEmail, position: p.position }))
   const headcount = await qaHeadcount_()
   let S: Row
   try {

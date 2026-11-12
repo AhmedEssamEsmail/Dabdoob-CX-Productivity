@@ -22,7 +22,7 @@ import {
 import { dqWeekStart_ } from '@/features/shared/lib/queue-core'
 import { newId, findRow, updateRow, readRows, cacheRemove } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { requireRole, pwDirectory } from '@/features/shared/platform/identity'
+import { requireRole, pwDirectory, dqTitleLevel_ } from '@/features/shared/platform/identity'
 import { getConfig, configAll } from '@/features/shared/platform/settings'
 import { getWorkingCalendar, wcDay, pwAddWorkingDays } from '@/features/shared/platform/calendar'
 import { pwShiftDefs_ } from './scorecard/index'
@@ -187,10 +187,11 @@ export function pwPair_(
   if (!report || !report.active) throw new Error('That person is not on the active roster.')
   if (report.email === user.email) throw new Error('You cannot hold a 1:1 with yourself.')
   if (!pwIsManagerOf_(user as never, report.email, dir)) throw new Error('You can only hold 1:1s with people who report to you.')
-  if (report.role !== 'agent' && report.role !== 'tl' && report.role !== 'specialist') {
+  const level = dqTitleLevel_(report.position, report.role)
+  if (level !== 'tl' && level !== 'agent') {
     throw new Error('1:1s are held with agents, specialists and team leads.')
   }
-  return { kind: report.role === 'tl' ? 'tl' : 'agent', manager: user.email, report: report.email, reportName: report.name }
+  return { kind: level === 'tl' ? 'tl' : 'agent', manager: user.email, report: report.email, reportName: report.name }
 }
 
 // ---------------------------------------------------------------- missed rule

@@ -541,7 +541,7 @@
 :root .dq-editor{display:grid;grid-template-columns:minmax(12rem,18rem) minmax(0,1fr);gap:var(--cx-space-4);align-items:start;margin-block-start:var(--cx-space-3)}
 :root .dq-editor__actions{grid-column:1 / -1;display:flex;gap:var(--cx-space-2)}
 :root .dq-days{display:flex;flex-wrap:wrap;gap:var(--cx-space-2);margin-block:var(--cx-space-1)}
-:root .dq-holform{display:grid;grid-template-columns:minmax(12rem,1fr) 11rem minmax(12rem,1.4fr) auto;gap:var(--cx-space-3);align-items:end}
+:root .dq-holform{display:grid;grid-template-columns:minmax(12rem,1fr) minmax(12rem,14rem) minmax(10rem,20rem) auto;max-inline-size:52rem;gap:var(--cx-space-3);align-items:end}
 :root .dq-holform .cx-error{grid-column:1 / -1}
 @media(max-width:900px){:root .cx-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){:root .dq-holform, :root .dq-editor{grid-template-columns:minmax(0,1fr)}}

@@ -116,6 +116,7 @@ describe('wcState roster read (P-21)', () => {
             email: 'a@dabdoob.com',
             name: 'Agent A',
             role: 'agent',
+            position: 'Customer Experience Agent',
             days_off: 'Fri',
             based_in_country: 'Kuwait',
           },
@@ -130,7 +131,7 @@ describe('wcState roster read (P-21)', () => {
     supa.calls = []
     const days = await getWorkingCalendar('a@dabdoob.com', '2026-10-07', '2026-10-09')
     const rosterRead = supa.calls.find((c) => c.table === 'roster')
-    expect(rosterRead?.select).toBe('email,role,days_off,based_in_country')
+    expect(rosterRead?.select).toBe('email,role,position,days_off,based_in_country')
     // unchanged behaviour: projected days_off / based_in_country still drive the calendar
     expect(days.map((d) => [d.date, d.working, d.reason])).toEqual([
       ['2026-10-07', true, null],

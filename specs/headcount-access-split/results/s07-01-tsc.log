@@ -1,0 +1,2 @@
+src/app/api/prod/flags/[flagId]/decide/route.ts(36,51): error TS2304: Cannot find name 'RouteContext'.
+src/app/api/prod/flags/[flagId]/route.ts(12,51): error TS2304: Cannot find name 'RouteContext'.

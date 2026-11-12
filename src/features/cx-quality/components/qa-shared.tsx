@@ -708,6 +708,7 @@ export function AuditForm({
   askReasons: l = false,
   memory: p,
   interactionAt: m = '',
+  dateOnly = false,
 }: {
   form: any
   facts: ReactNode
@@ -723,11 +724,12 @@ export function AuditForm({
   askReasons?: boolean
   memory?: any
   interactionAt?: string
+  dateOnly?: boolean
 }) {
   const r = useMemo(() => ds(t), [t])
   const [u, d] = useState<any>(r)
   const [o, h] = useState('')
-  const [b, x] = useState(m.replace(' ', 'T'))
+  const [b, x] = useState(dateOnly ? m.slice(0, 10) : m.replace(' ', 'T'))
   const [f, g] = useState<any>({})
   const [y, _] = useState(false)
   const [T, k] = useState('')
@@ -816,13 +818,15 @@ export function AuditForm({
         <div>{n}</div>
         <div className="cx-field">
           <label className="cx-label" htmlFor="qa-when">
-            Interaction date and time (Riyadh)
+            {dateOnly
+              ? 'Interaction date (Riyadh)'
+              : 'Interaction date and time (Riyadh)'}
           </label>
           <Input
-            type="datetime-local"
+            type={dateOnly ? 'date' : 'datetime-local'}
             id="qa-when"
             required
-            max={hs()}
+            max={dateOnly ? hs().slice(0, 10) : hs()}
             value={b}
             onInput={(N) => x(N.currentTarget.value)}
           />

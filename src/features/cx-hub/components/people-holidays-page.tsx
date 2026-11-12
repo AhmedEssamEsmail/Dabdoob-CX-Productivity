@@ -82,10 +82,23 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
   const [l, h] = useState<string>(n.roleOverride)
   const [u, d] = useState<string>(n.tlOverride)
   const [p2, g] = useState('')
+  const [pos, setPos] = useState<string>(n.position || '')
+  const [hdate, setHdate] = useState<string>(n.hiringDate || '')
+  const [gen, setGen] = useState<string>(n.gender || '')
+  const [mob, setMob] = useState<string>(n.mobile || '')
+  const [hr, setHr] = useState<string>(n.hrId || '')
+  const [emp, setEmp] = useState<string>(n.employmentStatus || '')
   const [y, v] = useState(!1)
   const m = (x: string) => e.find((b) => b.email === x)?.name || x
   const E = e.filter(
-    (x) => x.active && x.email !== n.email && (x.role === 'tl' || x.role === 'admin') && !Pg(x.email, n.email, e)
+    (x) =>
+      x.active &&
+      x.email !== n.email &&
+      (x.role === 'tl' ||
+        x.role === 'admin' ||
+        x.titleLevel === 'tl' ||
+        x.titleLevel === 'manager') &&
+      !Pg(x.email, n.email, e)
   )
   if (n.tlOverride && !E.some((x) => x.email === n.tlOverride))
     E.push({ ...n, email: n.tlOverride, name: m(n.tlOverride) })
@@ -102,8 +115,17 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
       v(!0)
       g('')
       try {
-        const x = await Vi.setPerson(n.email, { basedInCountry: r, daysOff: o })
-        let b: any = { ...n, basedInCountry: x.basedInCountry, daysOff: x.daysOff }
+        const x = await Vi.setPerson(n.email, {
+          basedInCountry: r,
+          daysOff: o,
+          position: pos,
+          hiringDate: hdate,
+          gender: gen,
+          mobile: mob,
+          hrId: hr,
+          employmentStatus: emp || undefined,
+        })
+        let b: any = { ...n, ...x }
         let w = ''
         if (l !== n.roleOverride || u !== n.tlOverride) {
           const S = await Vi.setOverrides(n.email, { role: l, tlEmail: u })
@@ -135,7 +157,7 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
     <div className="dq-editor">
       <div className="cx-field">
         <label className="cx-label" htmlFor={`role-${n.email}`}>
-          Role
+          Access
         </label>
         <Select className="cx-input" id={`role-${n.email}`} value={l} onChange={(x) => h(x.currentTarget.value)}>
           <option value="">
@@ -150,6 +172,80 @@ function Lg({ p: n, people: e, weekdays: t, onSaved: i, onCancel: s }: {
             ))}
         </Select>
       </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-title-${n.email}`}>
+          Title
+        </label>
+        <Input
+          className="cx-input"
+          id={`hd-title-${n.email}`}
+          value={pos}
+          onInput={(x) => setPos(x.currentTarget.value)}
+        />
+      </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-hdate-${n.email}`}>
+          Hiring date
+        </label>
+        <Input
+          className="cx-input"
+          id={`hd-hdate-${n.email}`}
+          type="date"
+          value={hdate}
+          onInput={(x) => setHdate(x.currentTarget.value)}
+        />
+      </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-gender-${n.email}`}>
+          Gender
+        </label>
+        <Input
+          className="cx-input"
+          id={`hd-gender-${n.email}`}
+          value={gen}
+          onInput={(x) => setGen(x.currentTarget.value)}
+        />
+      </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-mobile-${n.email}`}>
+          Mobile
+        </label>
+        <Input
+          className="cx-input"
+          id={`hd-mobile-${n.email}`}
+          value={mob}
+          onInput={(x) => setMob(x.currentTarget.value)}
+        />
+      </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-hr-${n.email}`}>
+          HR ID
+        </label>
+        <Input
+          className="cx-input"
+          id={`hd-hr-${n.email}`}
+          value={hr}
+          onInput={(x) => setHr(x.currentTarget.value)}
+        />
+      </div>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor={`hd-status-${n.email}`}>
+          Status
+        </label>
+        <Select
+          className="cx-input"
+          id={`hd-status-${n.email}`}
+          value={emp}
+          onChange={(x) => setEmp(x.currentTarget.value)}
+        >
+          <option value="">Leave unchanged</option>
+          <option value="Current">Current</option>
+          <option value="Left">Left</option>
+        </Select>
+      </div>
+      <span className="cx-hint">
+        Title and headcount details come from the HCT on the next sync.
+      </span>
       <div className="cx-field">
         <label className="cx-label" htmlFor={`tl-${n.email}`}>
           Reports to
@@ -284,7 +380,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   People
                 </div>
                 <div className="cx-section__hint">
-                  Roles, who each person reports to, where they are based, and their days off.
+                  Access, title, who each person reports to, headcount details, where they are based, and their days off.
                 </div>
               </div>
               <Toggle checked={y} onChange={v}>
@@ -297,7 +393,13 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                 <thead>
                   <tr>
                     <th scope="col">Name</th>
-                    <th scope="col">Role</th>
+                    <th scope="col">Access</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Hiring date</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Mobile</th>
+                    <th scope="col">HR ID</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Reports to</th>
                     <th scope="col">Based in</th>
                     <th scope="col">Days off</th>
@@ -310,7 +412,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                   {b.map((S: Q) =>
                     r === S.email ? (
                       <tr key={S.email}>
-                        <td colSpan={6}>
+                        <td colSpan={12}>
                           <strong>{S.name}</strong> <span className="cx-faint">{S.email}</span>
                           <Lg
                             p={S}
@@ -342,6 +444,12 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                             </span>
                           ) : null}
                         </td>
+                        <td>{S.position || '–'}</td>
+                        <td>{S.hiringDate || '–'}</td>
+                        <td>{S.gender || '–'}</td>
+                        <td>{S.mobile || '–'}</td>
+                        <td>{S.hrId || '–'}</td>
+                        <td>{S.employmentStatus || (S.active ? 'Current' : 'Left')}</td>
                         <td className="cx-muted">
                           {S.tlEmail ? (
                             w(S.tlEmail)

@@ -17,6 +17,7 @@ import {
   QA_ANSWERS, QA_FAIL_REASONS,
 } from './core'
 import { qeFmt_, qeQuotaFor_, qeCanonAgent_ } from './engine'
+import { CX_AGENT_POSITION, dqTitleLevel_ } from '@/features/shared/platform/identity'
 
 /** Engine Riyadh times ("yyyy-MM-dd HH:mm") stored as text with a leading apostrophe. */
 export const QA_QUEUE_TIME_FIELDS = ['interaction_at', 'action_at']
@@ -48,6 +49,21 @@ export function qaCleanInteractionAt_(v: unknown, nowMs?: number): string {
   const now = nowMs === undefined ? Date.now() : nowMs
   if (d.getTime() > now + 5 * 60000) throw new Error('The interaction date and time is in the future.')
   if (d.getTime() < now - 180 * 864e5) throw new Error('The interaction date and time is more than 180 days ago.')
+  return "'" + s
+}
+
+/** Offqueue audits enter only the interaction day: "yyyy-MM-dd" (a stray datetime degrades to its date). */
+export function qaCleanInteractionDate_(v: unknown, nowMs?: number): string {
+  const s = String(v || '')
+    .trim()
+    .replace('T', ' ')
+    .split(' ')[0]
+  if (!s) throw new Error('Enter the interaction date (yyyy-MM-dd).')
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(s + 'T00:00:00+03:00') : null
+  if (!d || isNaN(d.getTime()) || qeFmt_(d, 'yyyy-MM-dd') !== s) throw new Error('The interaction date is not valid (use yyyy-MM-dd).')
+  const now = nowMs === undefined ? Date.now() : nowMs
+  if (d.getTime() > now + 5 * 60000) throw new Error('The interaction date is in the future.')
+  if (d.getTime() < now - 180 * 864e5) throw new Error('The interaction date is more than 180 days ago.')
   return "'" + s
 }
 
@@ -409,7 +425,7 @@ export function qaStartedLogKeys_(rows: Record<string, unknown>[], today: string
 /** Why an active roster person can audit: 'team lead', 'position "<keyword>"', 'granted', or ''. Pure. */
 export function qaAuditorVia_(p: { email: string; role: string; position?: string }, keys: string[], granted: string[]): string {
   if (granted.indexOf(p.email) !== -1) return 'granted'
-  if (p.role === 'tl') return 'team lead'
+  if (dqTitleLevel_(p.position, p.role) === 'tl') return 'team lead'
   const pos = String(p.position || '').toLowerCase()
   const k = keys.filter((w) => pos.indexOf(w) !== -1)[0]
   return k ? 'position "' + k + '"' : ''
@@ -467,13 +483,13 @@ export function qaQueuedReason_(
 
 /**
  * Pure: per agent per day over the `days` dates ending todayKey (Quality.js qaCoverage_).
- * values: the Queue Log with its header row. Every active agent/specialist on the roster appears;
+ * values: the Queue Log with its header row. Every active CX Agent on the roster appears;
  * a log agent not on that list is added. hist = { outcomes, builds } or null (old app).
  * dateFmt formats a Date cell as yyyy-MM-dd in the engine tz (qeFmt_ when not given).
  */
 export function qaCoverage_(
   values: unknown[][],
-  people: { email: string; name: string; role: string; tlEmail?: string | null }[],
+  people: { email: string; name: string; role: string; tlEmail?: string | null; position?: string }[],
   headcount: { email: string; fdId?: string; fdName?: string }[],
   S: Record<string, unknown>,
   todayKey: string,
@@ -525,7 +541,7 @@ export function qaCoverage_(
     return rec
   }
   people.forEach((p) => {
-    if ((p.role === 'agent' || p.role === 'specialist') && excluded.indexOf(qeCanonAgent_(p.name)) === -1) add(normEmail_(p.email), p.name, p.tlEmail || '', true)
+    if (String(p.position || '').trim() === CX_AGENT_POSITION && excluded.indexOf(qeCanonAgent_(p.name)) === -1) add(normEmail_(p.email), p.name, p.tlEmail || '', true)
   })
   const idx = { people, byEmail: {} as Record<string, (typeof people)[number]>, byFdId: {} as Record<string, (typeof people)[number]>, byFdName: {} as Record<string, (typeof people)[number][]>, byName: {} as Record<string, (typeof people)[number][]> }
   // qaAgentIndex_ built inline to keep the people type

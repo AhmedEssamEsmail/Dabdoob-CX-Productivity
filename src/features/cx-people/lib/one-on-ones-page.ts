@@ -31,7 +31,7 @@ import {
 } from '@/features/shared/lib/adapters'
 import { cacheGet, cachePut, cacheRemove, findRow, updateRow, newId } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { requireRole, pwDirectory } from '@/features/shared/platform/identity'
+import { dqTitleLevel_, requireRole, pwDirectory } from '@/features/shared/platform/identity'
 import { getConfig, configAll, dqSetting } from '@/features/shared/platform/settings'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
@@ -108,7 +108,7 @@ export async function oneOnOnesPage() {
       ? dir.tls().concat(
           Object.keys(dir.by)
             .map((k) => dir.by[k])
-            .filter((p) => (p.role === 'agent' || p.role === 'specialist') && p.active),
+            .filter((p) => dqTitleLevel_(p.position, p.role) === 'agent' && p.active),
         )
       : dir.agentsOf(user.email)
 
@@ -116,7 +116,7 @@ export async function oneOnOnesPage() {
   const today = pwToday_(now)
   const people = await Promise.all(
     reports.map(async (p) => {
-      const kind = p.role === 'tl' ? 'tl' : 'agent'
+      const kind = dqTitleLevel_(p.position, p.role) === 'tl' ? 'tl' : 'agent'
       const pairLogs = logs
         .filter((l) => normEmail_(l.report_email) === p.email)
         .sort(pwNewestLogFirst_)

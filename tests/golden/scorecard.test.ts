@@ -101,8 +101,8 @@ describe('working hours', () => {
     // on the oracle side; inject the oracle's own calendar into the port so both sides
     // walk identical days.
     const roster = [
-      ['email', 'name', 'tl_email', 'country', 'source', 'role', 'active', 'days_off'],
-      ['e@x.com', 'Agent E', 'tl@x.com', 'Kuwait', 'hct', 'agent', 'true', ''],
+      ['email', 'name', 'tl_email', 'country', 'source', 'role', 'active', 'days_off', 'position'],
+      ['e@x.com', 'Agent E', 'tl@x.com', 'Kuwait', 'hct', 'agent', 'true', '', 'Customer Experience Agent'],
     ]
     const fx2 = baseFixtures({
       settings: { shift_break_hours: 1, days_off_default: [], days_off_by_country: {} },
@@ -286,9 +286,9 @@ describe('scorecard math', () => {
     const iso = (ms: number) => new Date(ms).toISOString()
     const D = 86400000
     const roster = [
-      ['email', 'name', 'tl_email', 'country', 'role', 'active', 'days_off', 'based_in_country'],
-      ['a@x.com', 'Agent A', 'tl@x.com', 'Kuwait', 'agent', 'true', '', 'Kuwait'],
-      ['b@x.com', 'Agent B', 'tl@x.com', 'Kuwait', 'agent', 'true', 'Fri,Sat', 'Kuwait'],
+      ['email', 'name', 'tl_email', 'country', 'role', 'active', 'days_off', 'based_in_country', 'position'],
+      ['a@x.com', 'Agent A', 'tl@x.com', 'Kuwait', 'agent', 'true', '', 'Kuwait', 'Customer Experience Agent'],
+      ['b@x.com', 'Agent B', 'tl@x.com', 'Kuwait', 'agent', 'true', 'Fri,Sat', 'Kuwait', 'Customer Experience Agent'],
     ]
     const fx = baseFixtures({
       settings: {

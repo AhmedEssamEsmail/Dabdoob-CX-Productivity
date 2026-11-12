@@ -16,6 +16,7 @@ import {
   appendRow,
   assistantOwnerEmail,
   configAll,
+  dqTitleLevel_,
   escapeHtml,
   getConfig,
   pwDirectory,
@@ -519,7 +520,7 @@ export function asFromEmail_(msg: { payload?: { headers?: { name: string; value:
 export async function asTlFollowUps_(nowMs: number): Promise<Record<string, unknown>[]> {
   const manager = normEmail_(await getConfig('assistant_followup_manager', AS_FOLLOWUP_MANAGER))
   const tls: Record<string, string> = {}
-  ;(await asTableOrEmpty_(ROSTER_TABLE, (r) => String(r.role) === 'tl' && (r.active === '' || isTrue_(r.active)))).forEach((r) => {
+  ;(await asTableOrEmpty_(ROSTER_TABLE, (r) => dqTitleLevel_(r.position, String(r.role || '')) === 'tl' && (r.active !== false && String(r.active).toLowerCase() !== 'false'))).forEach((r) => {
     tls[normEmail_(r.email)] = String(r.name || r.email)
   })
   const emails = Object.keys(tls)

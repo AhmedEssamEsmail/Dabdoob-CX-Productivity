@@ -13,7 +13,7 @@ import 'server-only'
 import { db, newId } from '@/features/shared/platform/repo'
 import { readStore, readStoreFiltered } from '@/features/shared/platform/stores'
 import { getConfig } from '@/features/shared/platform/settings'
-import { normEmail, pwDirectory, requireRole, type Directory, type PlatformUser } from '@/features/shared/platform/identity'
+import { isCxAgent_, normEmail, pwDirectory, requireRole, type Directory, type PlatformUser } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { pwIso, pwToday, dqAddDays } from '@/features/shared/platform/time'
 import { KPI_LEAVE_TYPES, kpiLogRows_ } from '@/features/cx-people/lib/kpi'
@@ -79,7 +79,7 @@ export async function kpiLogsPage() {
       })
   const agents = Object.keys(dir.by)
     .map((e) => dir.by[e])
-    .filter((p) => p.active && (p.role === 'agent' || p.role === 'specialist'))
+    .filter((p) => p.active && isCxAgent_(p))
     .map((p) => ({ email: p.email, name: p.name }))
     .sort((a, b) => a.name.localeCompare(b.name))
   const areas = await klAreas_()
@@ -137,7 +137,7 @@ export async function kpiLogSave(
   } else {
     const email = normEmail(input.email)
     const p = dir.person(email)
-    if (!p || !(p.role === 'agent' || p.role === 'specialist')) throw new Error('Choose the agent.')
+    if (!p || !isCxAgent_(p)) throw new Error('Choose the agent.')
     if (kind === 'behaviour') {
       if (note.length < 5) throw new Error('Describe the case as HR confirmed it.')
       rows = [{ log_id: newId('BH'), email, date: klDate_(input.date, 'date of the case'), note, logged_by: user.email, logged_at: now }]

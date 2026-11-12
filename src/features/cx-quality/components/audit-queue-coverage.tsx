@@ -185,6 +185,7 @@ export function AuditEntry({
         submitLabel="Submit audit"
         askReasons
         interactionAt={'interactionAt' in row ? row.interactionAt : ''}
+        dateOnly={'source' in row && row.source === 'offqueue'}
         memory={d.failMemory?.[row.agentEmail.toLowerCase()]}
         facts={
           <dl className="qa-facts">

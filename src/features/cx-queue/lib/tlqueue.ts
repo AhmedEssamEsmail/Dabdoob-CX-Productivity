@@ -35,7 +35,7 @@ import 'server-only'
 
 import { db, appendRow, readAllPaged } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
-import { requireJobCaller, requireRole } from '@/features/shared/platform/identity'
+import { isCxAgent_, requireJobCaller, requireRole } from '@/features/shared/platform/identity'
 import { readStore } from '@/features/shared/platform/stores'
 import { described } from '@/features/shared/lib/errors'
 import { hbRun } from '@/features/shared/platform/health'
@@ -462,7 +462,7 @@ export function tlqTeamRows_(
     return vals.length ? Math.round((vals.reduce((a: number, b) => a + Number(b), 0) / vals.length) * 10) / 10 : ''
   }
   return dir.tls().map((tl) => {
-    const agents = dir.agentsOf(tl.email)
+    const agents = dir.agentsOf(tl.email).filter((a) => isCxAgent_(a))
     const outs: Record<string, unknown>[] = []
     const kpis: KpiPayoutResult[] = []
     agents.forEach((a) => {

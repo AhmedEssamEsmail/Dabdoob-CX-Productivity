@@ -164,9 +164,9 @@ function auditRow(over: Record<string, unknown>) {
 function seed() {
   h.tables.config = [{ key: 'admin_emails', value: 'admin@dabdoob.com' }]
   h.tables.roster = [
-    { email: 'admin@dabdoob.com', name: 'Admin', role: 'admin', active: 'true' },
-    { email: 'a@dabdoob.com', name: 'Agent A', role: 'agent', active: 'true' },
-    { email: 'b@dabdoob.com', name: 'Agent B', role: 'agent', active: 'true' },
+    { email: 'admin@dabdoob.com', name: 'Admin', role: 'admin', active: 'true', position: 'Customer Experience Manager' },
+    { email: 'a@dabdoob.com', name: 'Agent A', role: 'agent', active: 'true', position: 'Customer Experience Agent' },
+    { email: 'b@dabdoob.com', name: 'Agent B', role: 'agent', active: 'true', position: 'Customer Experience Agent' },
   ]
   h.tables.qa_audits = [
     auditRow({ audit_id: 'in1', audit_date: '2026-01-05', score: 80, interaction_at: "'2026-01-05 09:30" }),

@@ -57,7 +57,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 /* os — attendees of a series get every person, minus agents outside it. */
 const eligibleOwners = (people: any[], members: any[]) =>
-  people.filter((p) => p.role !== 'agent' || members.some((m) => m.email === p.email))
+  people.filter((p) => p.titleLevel !== 'agent' || members.some((m) => m.email === p.email))
 
 /* ma / ha — fresh action rows for the multi-row editor. */
 let rowSeq = 0
@@ -738,7 +738,7 @@ function NewSeriesForm({ data, onCreated }: { data: any; onCreated: (view: any) 
             <span className="field-label">Chair</span>
             <Select className="select" value={chair} onChange={(e) => setChair(e.currentTarget.value)}>
               {data.people
-                .filter((p: any) => p.role !== 'agent')
+                .filter((p: any) => p.titleLevel !== 'agent')
                 .map((p: any) => (
                   <option key={p.email} value={p.email}>
                     {p.name}

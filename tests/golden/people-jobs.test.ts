@@ -89,10 +89,10 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 const ROSTER = [
-  { email: 'tl@dabdoob.com', name: 'Team Lead', role: 'tl', tl_email: 'admin@dabdoob.com', active: true, position: 'TL', based_in_country: 'Kuwait', days_off: 'Fri,Sat' },
-  { email: 'a@dabdoob.com', name: 'Agent A', role: 'agent', tl_email: 'tl@dabdoob.com', active: true, position: 'Agent', based_in_country: 'Kuwait', days_off: '' },
-  { email: 'b@dabdoob.com', name: 'Agent B', role: 'agent', tl_email: 'tl@dabdoob.com', active: true, position: 'Agent', based_in_country: 'Egypt', days_off: 'Fri,Sat' },
-  { email: 'admin@dabdoob.com', name: 'Admin', role: 'admin', tl_email: '', active: true, position: 'Manager', based_in_country: 'Kuwait', days_off: '' },
+  { email: 'tl@dabdoob.com', name: 'Team Lead', role: 'tl', tl_email: 'admin@dabdoob.com', active: true, position: 'Customer Experience Team Leader', based_in_country: 'Kuwait', days_off: 'Fri,Sat' },
+  { email: 'a@dabdoob.com', name: 'Agent A', role: 'agent', tl_email: 'tl@dabdoob.com', active: true, position: 'Customer Experience Agent', based_in_country: 'Kuwait', days_off: '' },
+  { email: 'b@dabdoob.com', name: 'Agent B', role: 'agent', tl_email: 'tl@dabdoob.com', active: true, position: 'Customer Experience Agent', based_in_country: 'Egypt', days_off: 'Fri,Sat' },
+  { email: 'admin@dabdoob.com', name: 'Admin', role: 'admin', tl_email: '', active: true, position: 'Customer Experience Manager', based_in_country: 'Kuwait', days_off: '' },
 ]
 const BASE_SETTINGS = {
   admin_emails: 'admin@dabdoob.com',
@@ -231,10 +231,10 @@ describe('working calendar — WP-23', () => {
     ...over,
     tables: {
       roster: [
-        { email: 'tl@dabdoob.com', name: 'TL', role: 'tl', tl_email: '', active: 'true', position: 'TL', based_in_country: 'Kuwait', days_off: '' },
-        { email: 'a@dabdoob.com', name: 'A', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Agent', based_in_country: 'Kuwait', days_off: 'Fri,Sat' },
-        { email: 'b@dabdoob.com', name: 'B', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Agent', based_in_country: 'Egypt', days_off: '' },
-        { email: 'c@dabdoob.com', name: 'C', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Agent', based_in_country: 'Egypt', days_off: 'Sat' },
+        { email: 'tl@dabdoob.com', name: 'TL', role: 'tl', tl_email: '', active: 'true', position: 'Customer Experience Team Leader', based_in_country: 'Kuwait', days_off: '' },
+        { email: 'a@dabdoob.com', name: 'A', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Customer Experience Agent', based_in_country: 'Kuwait', days_off: 'Fri,Sat' },
+        { email: 'b@dabdoob.com', name: 'B', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Customer Experience Agent', based_in_country: 'Egypt', days_off: '' },
+        { email: 'c@dabdoob.com', name: 'C', role: 'agent', tl_email: 'tl@dabdoob.com', active: 'true', position: 'Customer Experience Agent', based_in_country: 'Egypt', days_off: 'Sat' },
       ],
       holidays: [
         { holiday_id: 'H1', country: 'Kuwait', date: '2025-11-24', name: 'Day', deleted_at: '' },

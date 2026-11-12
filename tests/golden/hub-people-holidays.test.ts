@@ -25,37 +25,48 @@ import { cacheClear } from '@/features/shared/platform/repo'
 
 const NOW = Date.parse('2026-05-06T10:00:00Z')
 
+// Port-only headcount columns (S02) — the legacy oracle predates them, so
+// parity compares the legacy subset and the new keys get port-only asserts.
+const NEW_ROW_KEYS = ['gender', 'mobile', 'hr_id', 'employment_status']
+const NEW_PERSON_KEYS = ['hiringDate', 'gender', 'mobile', 'hrId', 'employmentStatus', 'titleLevel']
+
 /** HCT records in the dqReadHct_ output shape (the dq_hct mirror columns). */
 const HCT = [
   {
     name: 'Admin One', email: 'admin@dabdoob.com', position: 'Customer Experience Manager',
     department: 'Operations', section: 'Customer Experience', manager: '-', status: 'current', lwd: '',
     hiringDate: '2020-01-05', fdId: '11', fdName: 'Admin One', maqsamName: '',
+    code: '1001', gender: 'Male', contactNumber: '+201000000001',
   },
   {
     name: 'Lead One', email: 'tl@dabdoob.com', position: 'Team Leader',
     department: 'Operations', section: 'Customer Experience', manager: 'Admin One', status: 'current', lwd: '',
     hiringDate: '@@ms:' + Date.parse('2021-02-15T00:00:00Z'), fdId: '12', fdName: 'Lead One', maqsamName: '',
+    code: '1002', gender: 'Female', contactNumber: '+201000000002',
   },
   {
     name: 'Agent One', email: 'agent@dabdoob.com', position: 'CX Agent',
     department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '',
     hiringDate: '', fdId: '13', fdName: 'Agent One', maqsamName: 'Agent One',
+    code: '1003', gender: 'Female', contactNumber: '+201000000003',
   },
   {
     name: 'Ghost', email: 'gone@dabdoob.com', position: 'CX Agent',
     department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '2026-01-01',
     hiringDate: '', fdId: '', fdName: '', maqsamName: '',
+    code: '1004', gender: 'Male', contactNumber: '+201000000004',
   },
   {
     name: 'Outside', email: 'out@dabdoob.com', position: 'PM',
     department: 'Product', section: 'Other Section', manager: 'Someone Else', status: 'current', lwd: '',
     hiringDate: '', fdId: '', fdName: '', maqsamName: '',
+    code: '2001', gender: 'Male', contactNumber: '+96500000005',
   },
   {
     name: 'Unresolved Manager Row', email: 'un@dabdoob.com', position: 'CX Agent',
     department: 'Operations', section: 'Customer Experience', manager: 'No Such Person', status: 'current', lwd: '',
     hiringDate: '', fdId: '', fdName: '', maqsamName: '',
+    code: '1005', gender: 'Female', contactNumber: '+201000000005',
   },
 ]
 
@@ -64,20 +75,24 @@ const ROSTER = [
     email: 'admin@dabdoob.com', name: 'Admin One', role: 'admin', tl_email: '', country: 'Kuwait', active: true,
     hct_role: 'admin', hct_tl_email: '', source: 'hct', section: 'Customer Experience', position: 'Customer Experience Manager',
     based_in_country: 'Kuwait', days_off: '',
+    gender: 'Male', mobile: '+201000000001', hr_id: 'R001', employment_status: 'current',
   },
   {
     email: 'tl@dabdoob.com', name: 'Lead One', role: 'tl', tl_email: 'admin@dabdoob.com', country: 'Egypt', active: true,
     hct_role: 'tl', hct_tl_email: 'admin@dabdoob.com', source: 'hct', section: 'Customer Experience', position: 'Team Leader',
     based_in_country: 'Egypt', days_off: '',
+    gender: 'Female', mobile: '+201000000002', hr_id: 'R002', employment_status: 'current',
   },
   {
     email: 'agent@dabdoob.com', name: 'Agent One', role: 'agent', tl_email: 'tl@dabdoob.com', country: 'Egypt', active: true,
     hct_role: 'agent', hct_tl_email: 'tl@dabdoob.com', source: 'hct', section: 'Customer Experience', position: 'CX Agent',
     based_in_country: '', days_off: 'Sat,Sun',
+    gender: 'Female', mobile: '+201000000003', hr_id: 'R003', employment_status: 'current',
   },
   {
     email: 'manual@dabdoob.com', name: 'Manual Row', role: 'agent', tl_email: 'tl@dabdoob.com', country: '', active: true,
     source: 'manual', section: '', position: '',
+    gender: 'Male', mobile: '+201000000099', hr_id: '', employment_status: '',
   },
 ]
 
@@ -131,11 +146,28 @@ describe('dqRosterFromHct_ (pure HCT -> Roster conversion)', () => {
         ? new Date(+r.hiringDate.slice(5))
         : r.hiringDate,
     }))
+    const port = json(dqRosterFromHct_(portRecs, scope, 'Africa/Cairo', cfg))
+    port.rows.forEach((r: Record<string, unknown>) => NEW_ROW_KEYS.forEach((k) => { delete r[k] }))
     expectSame(
-      { ok: json(dqRosterFromHct_(portRecs, scope, 'Africa/Cairo', cfg)) },
+      { ok: port },
       hubCall('dqRosterFromHct_', [recs, scope, 'Africa/Cairo', cfg], lf),
       'dqRosterFromHct_'
     )
+  })
+
+  it('port rows carry the new headcount keys (the oracle never produced them)', () => {
+    const res = dqRosterFromHct_(
+      HCT.map((r) => ({ ...r })),
+      ['Customer Experience'],
+      'Africa/Cairo',
+      { aliases: {}, adminPositions: ['Customer Experience Manager'], nonAgentPositions: [], nonAgentEmails: [] }
+    )
+    const agent = res.rows.find((r) => r.email === 'agent@dabdoob.com')!
+    // hr_id <- HCT code, mobile <- HCT contactNumber, gender + employment_status verbatim.
+    expect(agent.hr_id).toBe('1003')
+    expect(agent.mobile).toBe('+201000000003')
+    expect(agent.gender).toBe('Female')
+    expect(agent.employment_status).toBe('current')
   })
 })
 
@@ -148,7 +180,22 @@ describe('getRosterAdmin', () => {
 
   it('matches the oracle payload (people + holidays + lastSync + defaults + literal countryList)', async () => {
     const lf = hubInstall(fx())
-    expectSame(await portCall(() => getRosterAdmin()), hubCall('getRosterAdmin', [], lf), 'getRosterAdmin')
+    const port = await portCall(() => getRosterAdmin())
+    const people = ((port.ok || {}) as Record<string, unknown>).people as Record<string, unknown>[] | undefined
+    ;(people || []).forEach((p) => NEW_PERSON_KEYS.forEach((k) => { delete p[k] }))
+    expectSame(port, hubCall('getRosterAdmin', [], lf), 'getRosterAdmin')
+  })
+
+  it('people carry the headcount fields + titleLevel (port-only)', async () => {
+    hubInstall(fx())
+    const admin = await getRosterAdmin()
+    const lead = (admin.people as Record<string, unknown>[]).find((p) => p.email === 'tl@dabdoob.com')!
+    expect(lead.titleLevel).toBe('tl') // position 'Team Leader'
+    expect(lead.gender).toBe('Female')
+    expect(lead.mobile).toBe('+201000000002')
+    expect(lead.hrId).toBe('R002')
+    expect(lead.employmentStatus).toBe('current')
+    expect(lead.hiringDate).toBe('') // no hiring_date column on the fixture row
   })
 
   it('refuses non-admin identically', async () => {
@@ -177,8 +224,12 @@ describe('setPersonV2Fields / setPersonOverrides', () => {
     ]
     for (const [email, fields] of cases) {
       const lf = hubInstall(fx())
+      const port = await portCall(() => setPersonV2Fields(email, fields))
+      // The port envelope echoes the headcount fields the legacy one lacks.
+      const env = (port.ok || {}) as Record<string, unknown>
+      NEW_PERSON_KEYS.concat('position').forEach((k) => { delete env[k] })
       expectSame(
-        await portCall(() => setPersonV2Fields(email, fields)),
+        port,
         hubCall('setPersonV2Fields', [email, fields], lf),
         'setPersonV2Fields ' + email + ' ' + JSON.stringify(fields)
       )
@@ -322,12 +373,12 @@ describe('syncRosterNow / dqSyncRoster_', () => {
       ['Admin One', 'admin@dabdoob.com', 'Customer Experience Manager', 'Operations', 'Customer Experience', '-', 'current', '', '', '11', 'Admin One', ''],
     ]
     const portHct = [
-      { name: 'New Person', email: 'new@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: new Date(1773878400000), fdId: '', fdName: 'New Person', maqsamName: '' },
-      { name: 'Lead One', email: 'tl@dabdoob.com', position: 'Team Leader', department: 'Operations', section: 'Customer Experience', manager: 'Admin One', status: 'current', lwd: '', hiringDate: '', fdId: '12', fdName: 'Lead One', maqsamName: '' },
-      { name: 'Agent One', email: 'agent@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: '', fdId: '13', fdName: 'Agent One', maqsamName: 'Agent One' },
-      { name: 'Gone Person', email: 'gone@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '2026-01-01', hiringDate: '', fdId: '', fdName: '', maqsamName: '' },
-      { name: 'Outside', email: 'out@dabdoob.com', position: 'PM', department: 'Product', section: 'Other Section', manager: 'Someone', status: 'current', lwd: '', hiringDate: '', fdId: '', fdName: '', maqsamName: '' },
-      { name: 'Admin One', email: 'admin@dabdoob.com', position: 'Customer Experience Manager', department: 'Operations', section: 'Customer Experience', manager: '-', status: 'current', lwd: '', hiringDate: '', fdId: '11', fdName: 'Admin One', maqsamName: '' },
+      { name: 'New Person', email: 'new@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: new Date(1773878400000), fdId: '', fdName: 'New Person', maqsamName: '', code: '1010', gender: 'Male', contactNumber: '+201000000010' },
+      { name: 'Lead One', email: 'tl@dabdoob.com', position: 'Team Leader', department: 'Operations', section: 'Customer Experience', manager: 'Admin One', status: 'current', lwd: '', hiringDate: '', fdId: '12', fdName: 'Lead One', maqsamName: '', code: '1002', gender: 'Female', contactNumber: '+201000000002' },
+      { name: 'Agent One', email: 'agent@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: '', fdId: '13', fdName: 'Agent One', maqsamName: 'Agent One', code: '1003', gender: 'Female', contactNumber: '+201000000003' },
+      { name: 'Gone Person', email: 'gone@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '2026-01-01', hiringDate: '', fdId: '', fdName: '', maqsamName: '', code: '1011', gender: 'Male', contactNumber: '+201000000011' },
+      { name: 'Outside', email: 'out@dabdoob.com', position: 'PM', department: 'Product', section: 'Other Section', manager: 'Someone', status: 'current', lwd: '', hiringDate: '', fdId: '', fdName: '', maqsamName: '', code: '2001', gender: 'Male', contactNumber: '+96500000005' },
+      { name: 'Admin One', email: 'admin@dabdoob.com', position: 'Customer Experience Manager', department: 'Operations', section: 'Customer Experience', manager: '-', status: 'current', lwd: '', hiringDate: '', fdId: '11', fdName: 'Admin One', maqsamName: '', code: '1001', gender: 'Male', contactNumber: '+201000000001' },
     ]
     const base = fx()
     base.settings = { ...base.settings, roster_hct_ss_id: 'hct-ss', ss_live_id: 'live-store' }
@@ -346,14 +397,21 @@ describe('syncRosterNow / dqSyncRoster_', () => {
     const legacyRoster = hubSheetRows('Roster')
       .map((r) => {
         const o: Record<string, unknown> = {}
-        Object.keys(r).forEach((k) => { if (k !== '_row' && r[k] !== '' && r[k] !== null) o[k] = r[k] })
+        // Port-only headcount columns: the oracle's sheet keeps fixture values
+        // on rows it never patches; the port writes HCT values. Neither is
+        // comparable — drop the keys from BOTH sides before diffPath.
+        Object.keys(r).forEach((k) => {
+          if (k !== '_row' && NEW_ROW_KEYS.indexOf(k) === -1 && r[k] !== '' && r[k] !== null) o[k] = r[k]
+        })
         return o
       })
       .sort((a, b) => (a.email as string).localeCompare(b.email as string))
     const portRoster = (hubDb.tables.roster || [])
       .map((r) => {
         const o: Record<string, unknown> = {}
-        Object.keys(r).forEach((k) => { if (k !== 'id' && r[k] !== '' && r[k] !== null) o[k] = r[k] })
+        Object.keys(r).forEach((k) => {
+          if (k !== 'id' && NEW_ROW_KEYS.indexOf(k) === -1 && r[k] !== '' && r[k] !== null) o[k] = r[k]
+        })
         return o
       })
       .sort((a, b) => (a.email as string).localeCompare(b.email as string))
@@ -364,6 +422,55 @@ describe('syncRosterNow / dqSyncRoster_', () => {
     const logged = hubDb.inserted.find((i) => i.table === 'refresh_log')
     expect(logged && logged.rows[0].job).toBe('roster_sync')
     expect(logged && ['ok', 'warn'].indexOf(String(logged.rows[0].status)) !== -1).toBe(true)
+    expect(logged && logged.rows[0].submitted_by).toBeTruthy()
+    expect(logged && logged.rows[0].submitted_at).toBeTruthy()
+
+    // the new headcount columns flowed HCT -> roster on the port
+    const synced = (hubDb.tables.roster || []).find((r) => r.email === 'agent@dabdoob.com')
+    expect(synced && synced.hr_id).toBe('1003')
+    expect(synced && synced.gender).toBe('Female')
+    expect(synced && synced.mobile).toBe('+201000000003')
+    expect(synced && synced.employment_status).toBe('current')
   })
 
+})
+
+describe('headcount fields (port-only)', () => {
+  beforeEach(() => {
+    cacheClear()
+    vi.useFakeTimers({ now: NOW })
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('setPersonV2Fields writes position/hiringDate/gender/mobile/hrId onto the roster row', async () => {
+    hubInstall(fx())
+    await setPersonV2Fields('agent@dabdoob.com', {
+      position: 'Senior CX Agent',
+      hiringDate: '2023-04-01',
+      gender: 'Female',
+      mobile: '+201001002003',
+      hrId: '1003',
+    })
+    const row = (hubDb.tables.roster || []).find((r) => r.email === 'agent@dabdoob.com')
+    expect(row && row.position).toBe('Senior CX Agent')
+    expect(row && row.hiring_date).toBe('2023-04-01')
+    expect(row && row.gender).toBe('Female')
+    expect(row && row.mobile).toBe('+201001002003')
+    expect(row && row.hr_id).toBe('1003')
+  })
+
+  it('employmentStatus Left marks the person inactive and stores the status', async () => {
+    hubInstall(fx())
+    await setPersonV2Fields('agent@dabdoob.com', { employmentStatus: 'Left' })
+    const row = (hubDb.tables.roster || []).find((r) => r.email === 'agent@dabdoob.com')
+    expect(row && row.active).toBe(false)
+    expect(row && row.employment_status).toBe('Left')
+  })
+
+  it('rejects a non-ISO hiringDate', async () => {
+    hubInstall(fx())
+    await expect(
+      setPersonV2Fields('agent@dabdoob.com', { hiringDate: '06/01/2026' })
+    ).rejects.toThrow('Enter the hiring date as yyyy-mm-dd.')
+  })
 })

@@ -9,6 +9,8 @@
  * Function names keep the trailing underscore so golden tests map 1:1 to the oracle.
  */
 
+import { dqTitleLevel_ } from './title-level'
+
 // ---------------------------------------------------------------- settings seams
 
 /** The parsed settings map (configAll_ equivalent): key -> already-parsed value. */
@@ -500,6 +502,7 @@ export interface DirectoryPerson {
   active: boolean
   position: string
   specialist?: boolean
+  titleLevel: 'agent' | 'tl' | 'manager'
 }
 
 export interface Directory {
@@ -522,8 +525,7 @@ export function pwDirectory_(rosterRows: RosterRow[], adminEmailsCfg: unknown): 
   rosterRows.forEach((r) => {
     const e = normEmail_(r.email)
     if (!e) return
-    const active =
-      r.active === '' || r.active === true || String(r.active).toLowerCase() === 'true'
+    const active = r.active !== false && String(r.active).toLowerCase() !== 'false'
     by[e] = {
       email: e,
       name: String(r.name || e),
@@ -531,11 +533,21 @@ export function pwDirectory_(rosterRows: RosterRow[], adminEmailsCfg: unknown): 
       tlEmail: normEmail_(r.tl_email) || null,
       active,
       position: String(r.position || ''),
+      titleLevel: dqTitleLevel_(r.position, String(r.role || '')),
     }
   })
   admins.forEach((a) => {
     if (by[a]) by[a].role = 'admin'
-    else by[a] = { email: a, name: a, role: 'admin', tlEmail: null, active: true, position: '' }
+    else
+      by[a] = {
+        email: a,
+        name: a,
+        role: 'admin',
+        tlEmail: null,
+        active: true,
+        position: '',
+        titleLevel: dqTitleLevel_('', 'admin'),
+      }
   })
   return {
     by,
@@ -550,20 +562,20 @@ export function pwDirectory_(rosterRows: RosterRow[], adminEmailsCfg: unknown): 
     managerOf: function (e: string) {
       const p = by[normEmail_(e)]
       if (!p) return null
-      if (p.role === 'agent' || p.role === 'specialist') return p.tlEmail
-      if (p.role === 'tl') return admins[0] || null
+      if (p.titleLevel === 'agent') return p.tlEmail
+      if (p.titleLevel === 'tl') return admins[0] || null
       return null
     },
     agentsOf: function (tl: string) {
       const t = normEmail_(tl)
       return Object.keys(by)
         .map((k) => by[k])
-        .filter((p) => (p.role === 'agent' || p.role === 'specialist') && p.active && p.tlEmail === t)
+        .filter((p) => p.titleLevel === 'agent' && p.active && p.tlEmail === t)
     },
     tls: function () {
       return Object.keys(by)
         .map((k) => by[k])
-        .filter((p) => p.role === 'tl' && p.active)
+        .filter((p) => p.titleLevel === 'tl' && p.active)
     },
   }
 }

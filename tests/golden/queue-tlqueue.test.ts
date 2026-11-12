@@ -446,11 +446,11 @@ describe('tlqTeamRows_ (TlQueue.js:378)', () => {
   qOracle().eval('globalThis.__tlqTeam__ = function (m, ol, l, h, t, s) { return tlqTeamRows_(pwDirectory_(), m, ol, l, h, t, s); }')
   const rosterTab = [
     ['email', 'name', 'role', 'tl_email', 'active', 'position'],
-    ['tl@x.com', 'T One', 'tl', '', 'true', 'TL'],
-    ['a@x.com', 'Agent A', 'agent', 'tl@x.com', 'true', 'Agent'],
-    ['b@x.com', 'Agent B', 'agent', 'tl@x.com', 'true', 'Agent'],
-    ['c@x.com', 'Agent C', 'agent', 'tl@x.com', 'false', 'Agent'],
-    ['tl2@x.com', 'T Two', 'tl', '', 'true', 'TL'],
+    ['tl@x.com', 'T One', 'tl', '', 'true', 'Customer Experience Team Leader'],
+    ['a@x.com', 'Agent A', 'agent', 'tl@x.com', 'true', 'Customer Experience Agent'],
+    ['b@x.com', 'Agent B', 'agent', 'tl@x.com', 'true', 'Customer Experience Agent'],
+    ['c@x.com', 'Agent C', 'agent', 'tl@x.com', 'false', 'Customer Experience Agent'],
+    ['tl2@x.com', 'T Two', 'tl', '', 'true', 'Customer Experience Team Leader'],
   ]
   const rosterRows = rosterTab.slice(1).map((r) => ({ email: r[0], name: r[1], role: r[2], tl_email: r[3], active: r[4], position: r[5] }))
   const month = { month: '2026-10', from: '2026-10-01', to: '2026-10-31', rows: [

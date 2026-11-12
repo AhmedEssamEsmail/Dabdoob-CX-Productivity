@@ -31,7 +31,7 @@ export async function coachingPage() {
   const topics = await safeRows('one_on_one_topics')
   const people = Object.keys(dir.by)
     .map((k) => dir.by[k])
-    .filter((p) => p.active && (p.role === 'agent' || p.role === 'tl') && p.email !== user.email)
+    .filter((p) => p.active && p.titleLevel !== 'manager' && p.email !== user.email)
     .map((p) => ({
       email: p.email,
       name: p.name,

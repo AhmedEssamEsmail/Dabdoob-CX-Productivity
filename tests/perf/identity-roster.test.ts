@@ -151,6 +151,7 @@ describe('pwDirectory', () => {
       tlEmail: null,
       active: true,
       position: '',
+      titleLevel: 'manager',
     })
     expect(d.name('ghost@dabdoob.com')).toBe('ghost@dabdoob.com')
     expect(d.managerOf('ghost@dabdoob.com')).toBeNull()

@@ -26,7 +26,7 @@ import {
   updateRows,
 } from '@/features/shared/platform'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { requireJobCaller } from '@/features/shared/platform/identity'
+import { requireJobCaller, dqTitleLevel_ } from '@/features/shared/platform/identity'
 import { hbBeat, hbFlush } from '@/features/shared/platform/health'
 import { wcReset, dqParseDaysOff } from '@/features/shared/platform/calendar'
 import { dqLogRun_ } from '@/features/cx-queue/lib/jobs'
@@ -36,17 +36,22 @@ export const ROSTER_TABLE = 'roster'
 export const DQ_HOLIDAYS_TABLE = 'holidays'
 export const DQ_ROSTER_EXTRA = [
   'freshdesk_id', 'freshdesk_name', 'maqsam_name', 'position', 'section', 'hiring_date', 'source',
+  'gender', 'mobile', 'hr_id', 'employment_status',
 ]
 export const DQ_ROSTER_V2_COLS = [
   'based_in_country', 'days_off', 'role_override', 'tl_override', 'updated_by', 'updated_at',
 ]
 export const DQ_ROSTER_ROLES = ['admin', 'tl', 'agent', 'specialist']
+const DQ_SYNC_KEEP_MANUAL = [
+  'position', 'hiring_date', 'gender', 'mobile', 'hr_id', 'employment_status',
+]
 export const DQ_COUNTRY_LIST = 'person.country'
 export const DQ_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 // The HCT mirror columns (the DQ_HCT_COLS map in legacy) are owned by the
 // hct adapter, which already returns {name,email,position,department,section,
-// manager,status,lwd,hiringDate,fdId,fdName,maqsamName} records.
+// manager,status,lwd,hiringDate,fdId,fdName,maqsamName,code,gender,
+// contactNumber} records.
 function dqNameKey_(s: unknown): string {
   return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase()
 }
@@ -216,6 +221,10 @@ export function dqRosterFromHct_(
       position: String(rec.position || '').trim(),
       section: String(rec.section || '').trim(),
       hiring_date: hd,
+      gender: String(rec.gender || '').trim(),
+      mobile: String(rec.contactNumber || '').trim(),
+      hr_id: String(rec.code || '').trim(),
+      employment_status: String(rec.status || '').trim(),
       source: 'hct',
     }
     row.hct_role = row.role
@@ -300,6 +309,12 @@ export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Pr
     if (cur.tl_override) row.tl_email = normEmail_(cur.tl_override)
     const patch: Record<string, unknown> = {}
     fields.forEach((f) => {
+      if (
+        DQ_SYNC_KEEP_MANUAL.indexOf(f) !== -1 &&
+        String(row[f] || '') === '' &&
+        String(cur[f] || '') !== ''
+      )
+        return
       if (String(cur[f]) !== String(row[f])) patch[f] = row[f]
     })
     if (Object.keys(patch).length) {
@@ -318,7 +333,7 @@ export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Pr
   })
   Object.keys(existing).forEach((e) => {
     const cur = existing[e]
-    const wasActive = cur.active === true || String(cur.active).toLowerCase() === 'true'
+    const wasActive = cur.active !== false && String(cur.active).toLowerCase() !== 'false'
     if (cur.source === 'hct' && !incoming[e] && wasActive) {
       updates.push({ key: String(cur.email), patch: { active: false, synced_at: now } })
       changes.push({
@@ -427,8 +442,12 @@ export async function setPersonOverrides(
     const mgr = byEmail[tl]
     if (!mgr) throw new Error(tl + ' is not on the roster.')
     const mgrActive =
-      mgr.active === '' || mgr.active === true || String(mgr.active).toLowerCase() === 'true'
-    if (!mgrActive || (mgr.role !== 'tl' && mgr.role !== 'admin')) {
+      mgr.active !== false && String(mgr.active).toLowerCase() !== 'false'
+    const mgrEligible =
+      mgr.role === 'admin' ||
+      mgr.role === 'tl' ||
+      dqTitleLevel_(mgr.position, String(mgr.role || '')) !== 'agent'
+    if (!mgrActive || !mgrEligible) {
       throw new Error(
         String(mgr.name || tl) +
           ' is not an active team lead or admin, so nobody can report to them.'
@@ -495,9 +514,15 @@ export async function getRosterAdmin(cfg?: Cfg): Promise<Record<string, unknown>
       section: String(r.section || ''),
       position: String(r.position || ''),
       source: String(r.source || 'manual'),
-      active: r.active === true || String(r.active).toLowerCase() === 'true',
+      active: r.active !== false && String(r.active).toLowerCase() !== 'false',
       basedInCountry: String(r.based_in_country || ''),
       daysOff: dqParseDaysOff_(r.days_off),
+      hiringDate: String(r.hiring_date || ''),
+      gender: String(r.gender || ''),
+      mobile: String(r.mobile || ''),
+      hrId: String(r.hr_id || ''),
+      employmentStatus: String(r.employment_status || ''),
+      titleLevel: dqTitleLevel_(r.position, String(r.role || '')),
     }))
     .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name))
   const holidays = (await readStore(DQ_HOLIDAYS_TABLE)).rows
@@ -524,7 +549,16 @@ export async function getRosterAdmin(cfg?: Cfg): Promise<Record<string, unknown>
 /** setPersonV2Fields verbatim. */
 export async function setPersonV2Fields(
   email: string,
-  fields: { basedInCountry?: unknown; daysOff?: unknown }
+  fields: {
+    basedInCountry?: unknown
+    daysOff?: unknown
+    position?: unknown
+    hiringDate?: unknown
+    gender?: unknown
+    mobile?: unknown
+    hrId?: unknown
+    employmentStatus?: unknown
+  }
 ): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin'])
   await assertWritable()
@@ -533,11 +567,51 @@ export async function setPersonV2Fields(
   if (country.length > 60) throw new Error('Keep the country under 60 characters.')
   const days = dqParseDaysOff_(fields.daysOff)
   if (days.length > 5) throw new Error('At least two working days a week, please check the days off.')
+  const patch: Record<string, unknown> = {
+    based_in_country: country,
+    days_off: days.join(','),
+  }
+  let position = ''
+  let hiringDate = ''
+  let gender = ''
+  let mobile = ''
+  let hrId = ''
+  let employmentStatus = ''
+  const f = fields as Record<string, unknown>
+  if (f.position !== undefined) {
+    position = String(f.position || '').trim()
+    if (position.length > 120) throw new Error('Keep the position under 120 characters.')
+    patch.position = position
+  }
+  if (f.hiringDate !== undefined) {
+    hiringDate = String(f.hiringDate || '').trim()
+    if (hiringDate !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(hiringDate))
+      throw new Error('Enter the hiring date as yyyy-mm-dd.')
+    patch.hiring_date = hiringDate
+  }
+  const short = (key: 'gender' | 'mobile' | 'hrId' | 'employmentStatus'): string => {
+    if (f[key] === undefined) return ''
+    const s = String(f[key] || '').trim()
+    if (s.length > 60) throw new Error('Keep the field under 60 characters.')
+    return s
+  }
+  gender = short('gender')
+  mobile = short('mobile')
+  hrId = short('hrId')
+  employmentStatus = short('employmentStatus')
+  if (f.gender !== undefined) patch.gender = gender
+  if (f.mobile !== undefined) patch.mobile = mobile
+  if (f.hrId !== undefined) patch.hr_id = hrId
+  if (f.employmentStatus !== undefined) {
+    patch.employment_status = employmentStatus
+    if (employmentStatus !== '')
+      patch.active = employmentStatus.toLowerCase() === 'current'
+  }
   let row = await updateRow(
     ROSTER_TABLE,
     'email',
     normEmail_(email),
-    { based_in_country: country, days_off: days.join(',') },
+    patch,
     { actor: user.email }
   )
   if (!row) {
@@ -549,12 +623,22 @@ export async function setPersonV2Fields(
       ROSTER_TABLE,
       'email',
       String(hit.email),
-      { based_in_country: country, days_off: days.join(',') },
+      patch,
       { actor: user.email }
     )
   }
   wcReset()
-  return { email: normEmail_(email), basedInCountry: country, daysOff: days }
+  return {
+    email: normEmail_(email),
+    basedInCountry: country,
+    daysOff: days,
+    position: String(row?.position ?? position),
+    hiringDate: String(row?.hiring_date ?? hiringDate),
+    gender: String(row?.gender ?? gender),
+    mobile: String(row?.mobile ?? mobile),
+    hrId: String(row?.hr_id ?? hrId),
+    employmentStatus: String(row?.employment_status ?? employmentStatus),
+  }
 }
 
 async function dqIsHoliday_(country: string, date: string): Promise<boolean> {

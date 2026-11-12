@@ -2,7 +2,7 @@ import 'server-only'
 
 import { db, readAllPaged } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
-import { pwDirectory } from '@/features/shared/platform/identity'
+import { isCxAgent_, pwDirectory } from '@/features/shared/platform/identity'
 import { dqAddDays_, isTrue_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { describeDbError } from '@/features/shared/lib/errors'
@@ -99,11 +99,11 @@ export interface TphPerson {
 
 export function tphPeople_(
   user: { email: string },
-  dir: { by: Record<string, { email: string; name: string; tlEmail?: string; active?: boolean; role?: string }> }
+  dir: { by: Record<string, { email: string; name: string; tlEmail?: string; active?: boolean; role?: string; position?: string }> }
 ): TphPerson[] {
   return Object.keys(dir.by)
     .map((k) => dir.by[k])
-    .filter((p) => p.active && (p.role === 'agent' || p.role === 'specialist'))
+    .filter((p) => p.active && isCxAgent_(p))
     .map((p) => ({ email: p.email, name: p.name, tlEmail: p.tlEmail || '', mine: p.tlEmail === user.email }))
     .sort((a, b) => Number(b.mine) - Number(a.mine) || a.name.localeCompare(b.name))
 }
@@ -116,7 +116,7 @@ interface Row {
 
 export interface TphStore {
   cfg: Cfg
-  dir: { by: Record<string, { email: string; name: string; tlEmail?: string; active?: boolean; role?: string }>
+  dir: { by: Record<string, { email: string; name: string; tlEmail?: string; active?: boolean; role?: string; position?: string }>
          name: (e: string) => string }
   days: Row[]        // prod_tph_days (all; filtered by date here)
   cases: Row[]       // prod_tph_cases
@@ -146,7 +146,7 @@ function tphDirFrom_(directory: Awaited<ReturnType<typeof pwDirectory>>): TphSto
   const by: TphStore['dir']['by'] = {}
   Object.keys(directory.by).forEach((k) => {
     const p = directory.by[k]
-    by[k] = { email: p.email, name: p.name, tlEmail: p.tlEmail || '', role: p.role, active: p.active }
+    by[k] = { email: p.email, name: p.name, tlEmail: p.tlEmail || '', role: p.role, active: p.active, position: p.position }
   })
   return { by, name: (e: string) => by[normEmail_(e)]?.name || '' }
 }

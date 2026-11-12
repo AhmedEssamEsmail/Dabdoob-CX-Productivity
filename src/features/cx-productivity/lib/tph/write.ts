@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { db } from '@/features/shared/platform/repo'
+import { isCxAgent_ } from '@/features/shared/platform/identity'
 import { normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import {
@@ -44,7 +45,7 @@ export function tphCheckAgent_(
   email: unknown
 ): string {
   const p = dir.by[normEmail_(email)]
-  if (!p || !p.active || (p.role !== 'agent' && p.role !== 'specialist'))
+  if (!p || !isCxAgent_(p))
     throw new Error('That person is not an active agent.')
   return p.email
 }

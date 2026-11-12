@@ -6,7 +6,7 @@
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, SettingsToc, Textarea, Toggle } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, SettingsToc, Textarea } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -240,7 +240,7 @@ const Em: [string, string][] = [
   ['rust', 'Rust'],
 ]
 const Mf = 'cx.appearance'
-const iu = { theme: 'auto', accent: 'pine', solid: !1, still: !1, lang: 'en' }
+const iu = { theme: 'auto', accent: 'pine', lang: 'en' }
 function Sf() {
   try {
     return { ...iu, ...JSON.parse(localStorage.getItem(Mf) || '{}') }
@@ -292,12 +292,6 @@ function Tm() {
           ))}
         </div>
       </fieldset>
-      <Toggle className="ap-check" checked={n.solid} onChange={(v) => t({ solid: v })}>
-        {D('Reduce transparency')}
-      </Toggle>
-      <Toggle className="ap-check" checked={n.still} onChange={(v) => t({ still: v })}>
-        {D('Reduce motion')}
-      </Toggle>
       <fieldset>
         <legend>{D('Language')}</legend>
         <div className="ap-themes">
@@ -344,24 +338,28 @@ function Rb({ rows, error, onSaved, onRetry }: { rows: ConfigRow[] | null; error
             <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>{' '}
             Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
           </span>
-          <Toggle
-            checked={pending ?? on}
-            disabled={busy || !row}
-            onChange={(next) => {
-              setPending(next)
-              Ln.saveConfigSetting('reminders_enabled', next)
-                .then(
-                  (updated) => {
-                    onSaved(updated)
-                    Ti(`Reminders are ${next ? 'on' : 'off'}`)
-                  },
-                  (error) => Ti((error as Error).message, 'error')
-                )
-                .finally(() => setPending(null))
-            }}
-          >
-            Reminders
-          </Toggle>
+          <label className="cx-switch">
+            <input
+              type="checkbox"
+              checked={pending ?? on}
+              disabled={busy || !row}
+              onChange={(e) => {
+                const next = e.currentTarget.checked
+                setPending(next)
+                Ln.saveConfigSetting('reminders_enabled', next)
+                  .then(
+                    (updated) => {
+                      onSaved(updated)
+                      Ti(`Reminders are ${next ? 'on' : 'off'}`)
+                    },
+                    (error) => Ti((error as Error).message, 'error')
+                  )
+                  .finally(() => setPending(null))
+              }}
+            />
+            <span className="cx-switch__track" aria-hidden="true" />
+            <span className="cx-sr">Reminders</span>
+          </label>
         </div>
       )}
     </SettingsSection>

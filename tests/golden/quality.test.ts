@@ -383,7 +383,7 @@ describe('parse & clean helpers', () => {
   it('qaAuditorVia_ why a roster person can audit', () => {
     const cases: [Record<string, unknown>, string[], string[]][] = [
       [{ email: 'a@x.com', role: 'agent', position: 'senior auditor' }, ['auditor'], ['a@x.com']],
-      [{ email: 'a@x.com', role: 'tl', position: 'tl' }, ['auditor'], []],
+      [{ email: 'a@x.com', role: 'tl', position: 'Customer Experience Team Leader' }, ['auditor'], []],
       [{ email: 'a@x.com', role: 'agent', position: 'support' }, ['auditor'], ['a@x.com']],
       [{ email: 'a@x.com', role: 'agent', position: 'QA auditor' }, ['auditor'], []],
       [{ email: 'a@x.com', role: 'agent', position: 'support' }, ['auditor'], []],
@@ -719,9 +719,9 @@ describe('coverage & queue-reason', () => {
     const days = 14
     const todayKey = '2026-03-04'
     const people = [
-      { email: 'a@x.com', name: 'Agent A', role: 'agent', tlEmail: 'tl@x.com' },
-      { email: 'b@x.com', name: 'Agent B', role: 'agent', tlEmail: 'tl@x.com' },
-      { email: 'tl@x.com', name: 'Lead T', role: 'tl', tlEmail: '' },
+      { email: 'a@x.com', name: 'Agent A', role: 'agent', tlEmail: 'tl@x.com', position: 'Customer Experience Agent' },
+      { email: 'b@x.com', name: 'Agent B', role: 'agent', tlEmail: 'tl@x.com', position: 'Customer Experience Agent' },
+      { email: 'tl@x.com', name: 'Lead T', role: 'tl', tlEmail: '', position: 'Customer Experience Team Leader' },
     ]
     const headcount = [{ email: 'a@x.com', fdId: 'FD1', fdName: 'Agent Alpha' }]
     const S = { excludeAgents: [] }
@@ -768,8 +768,8 @@ describe('queue parse & dir seams', () => {
       today: '2026-03-04',
       auditors: ['tl@x.com', 'tl2@x.com'],
       people: [
-        { email: 'a@x.com', name: 'Agent A', role: 'agent', tlEmail: 'tl@x.com' },
-        { email: 'b@x.com', name: 'Agent B', role: 'agent', tlEmail: 'tl@x.com' },
+        { email: 'a@x.com', name: 'Agent A', role: 'agent', tlEmail: 'tl@x.com', position: 'Customer Experience Agent' },
+        { email: 'b@x.com', name: 'Agent B', role: 'agent', tlEmail: 'tl@x.com', position: 'Customer Experience Agent' },
       ],
       headcount: [],
       map: {},

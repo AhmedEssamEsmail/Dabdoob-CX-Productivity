@@ -24,7 +24,6 @@ const SPLASH_CSS = `
 @keyframes bl-peek{0%,100%{transform:translateY(80%)}25%,70%{transform:translateY(8%) rotate(-5deg)}47%{transform:translateY(8%) rotate(6deg)}}
 .bl-peekskel{position:absolute;inset:auto 0 0;display:grid;gap:8px;padding:0 8px}
 .bl-peekskel i{display:block;height:12px;border-radius:6px;background:#e3e9f2}/* kept raw: verbatim pre-paint splash palette */.bl-peekskel i:nth-child(2){width:70%}.bl-peekskel i:nth-child(3){width:45%}/* kept raw: verbatim pre-paint splash palette */
-html[data-reduce-motion] .boot-splash *{animation:none!important}
 @media (prefers-color-scheme:dark){.boot-splash{background:radial-gradient(900px 500px at 8% -10%,#10305c 0,transparent 60%),radial-gradient(800px 500px at 100% 0,#4a1535 0,transparent 55%),#131b1d;color:#a9b8b5}.bl-peekskel i{background:#22324d}}/* kept raw: verbatim pre-paint splash palette */
 @media (prefers-reduced-motion:reduce){.boot-splash *{animation:none!important}}`
 

@@ -119,7 +119,7 @@ export async function meetingsPage() {
     people: Object.keys(ctx.dir.by)
       .map((k) => ctx.dir.by[k])
       .filter((p) => p.active)
-      .map((p) => ({ email: p.email, name: p.name, role: p.role })),
+      .map((p) => ({ email: p.email, name: p.name, role: p.role, titleLevel: p.titleLevel })),
     series: visible.map((s) => {
       const o = pwSeriesOut_(s, ctx) as Record<string, any>
       const inst = ctx.meetings
@@ -413,7 +413,7 @@ async function pwAddMeetingActions_(
     const r = rows[i]
     if (!r.track_as_task) continue
     const p = ctx.dir.person(String(r.owner_email))
-    if (!p || (p.role !== 'tl' && p.role !== 'admin'))
+    if (!p || p.titleLevel === 'agent')
       throw new Error('"' + String(r.title) + '": only team leads\' actions can be tracked as tasks.')
     const est = Number(list[i].estHours)
     if (!(est > 0)) throw new Error('"' + String(r.title) + '": enter the estimated hours to track it as a task.')

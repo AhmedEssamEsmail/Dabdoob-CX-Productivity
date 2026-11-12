@@ -205,8 +205,14 @@ describe('scorecard parse pure helpers', () => {
 
 
 describe('one-on-ones pure helpers — WP-23 extension', () => {
+  const POSITION: Record<string, string> = {
+    agent: 'Customer Experience Agent',
+    specialist: 'Enablemen Specialist',
+    tl: 'Customer Experience Team Leader',
+    admin: 'Customer Experience Manager',
+  }
   const person = (email: string, role: string, manager: string | null = null, active = true) => ({
-    email, name: email.split('@')[0], role, manager, active,
+    email, name: email.split('@')[0], role, manager, active, position: POSITION[role] || '',
   })
   const PERSONS = {
     'tl@x.com': person('tl@x.com', 'tl'),

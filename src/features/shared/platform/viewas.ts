@@ -16,7 +16,7 @@ import 'server-only'
 
 import { cache } from 'react'
 import { db, cacheGet, cachePut, cacheRemove, appendRow } from './repo'
-import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory } from './identity'
+import { realEmail, normEmail, assistantOwnerEmail, actorEmail, pwDirectory, dqTitleLevel_ } from './identity'
 import { getConfig, ccApp } from './settings'
 import { described } from '@/features/shared/lib/errors'
 
@@ -124,7 +124,7 @@ export async function viewAsAuditors(dir: Awaited<ReturnType<typeof pwDirectory>
   Object.keys(dir.by).forEach((k) => {
     const p = dir.by[k]
     const pos = String(p.position || '').toLowerCase()
-    if (p.active && (p.role === 'tl' || keys.some((w) => pos.indexOf(w as string) !== -1))) out[k] = true
+    if (p.active && (dqTitleLevel_(p.position, p.role) === 'tl' || keys.some((w) => pos.indexOf(w as string) !== -1))) out[k] = true
   })
   ;([] as unknown[])
     .concat((await getConfig('qa_auditor_emails', [])) || [])

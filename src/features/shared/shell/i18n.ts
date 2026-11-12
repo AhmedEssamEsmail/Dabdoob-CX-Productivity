@@ -15,16 +15,12 @@ export const APPEARANCE_KEY = 'cx.appearance' // la
 export interface Appearance {
   theme: 'auto' | 'light' | 'dark' | string
   accent: 'pine' | string
-  solid: boolean
-  still: boolean
   lang: 'en' | 'ar' | string
 }
 
 export const APPEARANCE_DEFAULTS: Appearance = {
   theme: 'auto',
   accent: 'pine',
-  solid: false,
-  still: false,
   lang: 'en',
 } // It
 
@@ -54,8 +50,6 @@ export function applyAppearance(t: Appearance): void {
   else n.setAttribute('data-theme', t.theme)
   if (t.accent === 'pine') n.removeAttribute('data-accent')
   else n.setAttribute('data-accent', t.accent)
-  n.toggleAttribute('data-reduce-transparency', t.solid)
-  n.toggleAttribute('data-reduce-motion', t.still)
   n.lang = t.lang
   n.dir = t.lang === 'ar' ? 'rtl' : 'ltr'
   queueMicrotask(() => listeners.forEach((fn) => fn()))

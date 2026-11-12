@@ -39,7 +39,7 @@ const plexMono = IBM_Plex_Mono({
  * index.html line 14 verbatim — stored appearance must hold before app JS
  * runs — plus the legacy `data-entry="first"` the bundle set at eval time.
  */
-const APPEARANCE_BOOT = `try{var a=JSON.parse(localStorage.getItem('cx.appearance')||'{}'),h=document.documentElement;if(a.still)h.setAttribute('data-reduce-motion','');if(a.lang==='ar'){h.lang='ar';h.dir='rtl'}}catch(e){}document.documentElement.dataset.entry='first'`;
+const APPEARANCE_BOOT = `try{var a=JSON.parse(localStorage.getItem('cx.appearance')||'{}'),h=document.documentElement;if(a.lang==='ar'){h.lang='ar';h.dir='rtl'}}catch(e){}document.documentElement.dataset.entry='first'`;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   /* Per-request bootstrap: __CC_BOOT__ wins over /api/bootstrap in

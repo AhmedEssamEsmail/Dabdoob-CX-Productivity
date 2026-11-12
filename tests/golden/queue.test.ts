@@ -136,10 +136,10 @@ describe('pure helpers', () => {
 
 describe('people + roster seams', () => {
   const rosterRows = [
-    ['email', 'name', 'freshdesk_id', 'freshdesk_name', 'maqsam_name', 'tl_email', 'source', 'active'],
-    ['a@x.com', 'Agent A', 'FD1', 'FD Agent A', 'A', 'tl@x.com', 'hct', 'true'],
-    ['b@x.com', 'Agent B', 'FD2', 'FD Agent B', 'B', 'tl@x.com', 'hct', 'true'],
-    ['tl@x.com', 'TL One', 'FD9', '', '', '', 'hct', 'true'],
+    ['email', 'name', 'freshdesk_id', 'freshdesk_name', 'maqsam_name', 'tl_email', 'source', 'active', 'position'],
+    ['a@x.com', 'Agent A', 'FD1', 'FD Agent A', 'A', 'tl@x.com', 'hct', 'true', 'Customer Experience Agent'],
+    ['b@x.com', 'Agent B', 'FD2', 'FD Agent B', 'B', 'tl@x.com', 'hct', 'true', 'Customer Experience Agent'],
+    ['tl@x.com', 'TL One', 'FD9', '', '', '', 'hct', 'true', 'Customer Experience Team Leader'],
   ]
   const fx = baseFixtures({
     data: { Roster: rosterRows },

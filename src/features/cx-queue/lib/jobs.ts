@@ -11,7 +11,7 @@ import 'server-only'
 
 import { appendRow, db, cachePut, cacheRemove } from '@/features/shared/platform/repo'
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
-import { requireJobCaller } from '@/features/shared/platform/identity'
+import { dqTitleLevel_, requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
 import { raisePopup } from '@/features/shared/platform/popups'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
@@ -270,13 +270,13 @@ export async function buildAgentAggregates_(): Promise<void> {
 
 /** dqActiveTlEmails_ verbatim: active TL emails on the roster. */
 async function dqActiveTlEmails_(): Promise<string[]> {
-  const { data } = await db().from('roster').select('email,name,role,active')
+  const { data } = await db().from('roster').select('email,name,role,active,position')
   const out: string[] = []
   ;(data || []).forEach((r) => {
     const row = r as Record<string, unknown>
-    const active = row.active === '' || row.active === true || String(row.active).toLowerCase() === 'true'
+    const active = row.active !== false && String(row.active).toLowerCase() !== 'false'
     const e = normEmail_(row.email)
-    if (active && String(row.role) === 'tl' && e && out.indexOf(e) === -1) out.push(e)
+    if (active && dqTitleLevel_(row.position, String(row.role || '')) === 'tl' && e && out.indexOf(e) === -1) out.push(e)
   })
   return out
 }

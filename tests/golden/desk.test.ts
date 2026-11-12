@@ -96,15 +96,15 @@ const KW = (d: string, hhmm: string) => Date.parse(d + 'T' + hhmm + ':00+03:00')
 const ISO = (ms: number) => new Date(ms).toISOString()
 
 const ROSTER = [
-  { email: 'admin@dabdoob.com', name: 'Admin Person', role: 'admin', tl_email: '', active: true },
-  { email: 'k.elnaggar@dabdoob.com', name: 'Karim Elnaggar', role: 'admin', tl_email: '', active: true }, // approver; also admin via roster
-  { email: 'noha@dabdoob.com', name: 'Noha Hassan Foaad Qandil', role: 'tl', tl_email: '', active: true },
-  { email: 'menna@dabdoob.com', name: 'Menna Mekawy', role: 'tl', tl_email: '', active: true },
-  { email: 'esmail@dabdoob.com', name: 'Ahmed Essam Ismail Ali', role: 'tl', tl_email: '', active: true },
-  { email: 'naguib@dabdoob.com', name: 'Ahmed Naguib', role: 'tl', tl_email: '', active: true },
-  { email: 'agent@dabdoob.com', name: 'Andy Agent', role: 'agent', tl_email: 'noha@dabdoob.com', active: true },
-  { email: 'agent2@dabdoob.com', name: 'Beth Agent', role: 'agent', tl_email: 'menna@dabdoob.com', active: true },
-  { email: 'finance@dabdoob.com', name: 'Farah Finance', role: 'agent', tl_email: 'noha@dabdoob.com', active: true },
+  { email: 'admin@dabdoob.com', name: 'Admin Person', role: 'admin', tl_email: '', active: true, position: 'Customer Experience Manager' },
+  { email: 'k.elnaggar@dabdoob.com', name: 'Karim Elnaggar', role: 'admin', tl_email: '', active: true, position: 'Customer Experience Manager' }, // approver; also admin via roster
+  { email: 'noha@dabdoob.com', name: 'Noha Hassan Foaad Qandil', role: 'tl', tl_email: '', active: true, position: 'Customer Experience Team Leader' },
+  { email: 'menna@dabdoob.com', name: 'Menna Mekawy', role: 'tl', tl_email: '', active: true, position: 'Customer Experience Team Leader' },
+  { email: 'esmail@dabdoob.com', name: 'Ahmed Essam Ismail Ali', role: 'tl', tl_email: '', active: true, position: 'Customer Experience Team Leader' },
+  { email: 'naguib@dabdoob.com', name: 'Ahmed Naguib', role: 'tl', tl_email: '', active: true, position: 'Customer Experience Team Leader' },
+  { email: 'agent@dabdoob.com', name: 'Andy Agent', role: 'agent', tl_email: 'noha@dabdoob.com', active: true, position: 'Customer Experience Agent' },
+  { email: 'agent2@dabdoob.com', name: 'Beth Agent', role: 'agent', tl_email: 'menna@dabdoob.com', active: true, position: 'Customer Experience Agent' },
+  { email: 'finance@dabdoob.com', name: 'Farah Finance', role: 'agent', tl_email: 'noha@dabdoob.com', active: true, position: 'Customer Experience Agent' },
 ]
 
 /** The config a normal Desk deployment carries (defaults cover the rest). */

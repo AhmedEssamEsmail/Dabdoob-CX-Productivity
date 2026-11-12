@@ -470,19 +470,8 @@ html[data-theme="dark"][data-accent="rust"] {
 }
 
 /* ========================================================================== */
-/* Reduced transparency — kill translucency / backdrop-filter */
+/* Reduced transparency — OS preference only, no app toggle */
 /* ========================================================================== */
-html[data-reduce-transparency] *,
-html[data-reduce-transparency] *::backdrop {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-html[data-reduce-transparency] {
-  --qg-glass: var(--surface);
-  --qg-glass-strong: var(--surface);
-  --qg-glass-edge: var(--line-strong);
-  --qg-blur: none;
-}
 @media (prefers-reduced-transparency: reduce) {
   :root {
     --qg-glass: var(--surface);
@@ -493,26 +482,8 @@ html[data-reduce-transparency] {
 }
 
 /* ========================================================================== */
-/* Reduced motion — zero durations, kill transitions/animations */
+/* Reduced motion — OS preference only, no app toggle */
 /* ========================================================================== */
-html[data-reduce-motion] {
-  --dur-fast: 0s;
-  --dur: 0s;
-  --dur-slow: 0s;
-  --cc-sweep: 0s;
-  --cc-stagger: 0s;
-  --cx-dur: 0s;
-  --cx-ease: linear;
-}
-html[data-reduce-motion] *,
-html[data-reduce-motion] *::before,
-html[data-reduce-motion] *::after {
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0s !important;
-  scroll-behavior: auto !important;
-}
 @media (prefers-reduced-motion: reduce) {
   :root {
     --dur-fast: 0s;

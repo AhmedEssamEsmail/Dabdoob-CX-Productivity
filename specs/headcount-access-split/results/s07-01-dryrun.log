@@ -1,0 +1,6 @@
+◇ injected env (36) from .env.pulled
+◇ injected env (0) from .env.production
+The `keyFilename` option is deprecated. Please use the `auth` object constructor instead. For more details, see https://cloud.google.com/docs/authentication/external/externally-sourced-credentials.
+hct Sheet1: 53 data rows; 0 dropped by require ["email","name"]; 2 duplicate email keys (last wins); 51 rows to upsert
+non-null counts: {"name":51,"email":51,"position":51,"code":46,"gender":51,"contactNumber":45,"status":51}
+--dry-run: no DB client created, nothing written.
