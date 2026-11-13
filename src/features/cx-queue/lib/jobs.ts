@@ -24,6 +24,7 @@ import {
 } from './index'
 import { dqAddDays_, dqDateKey_, dqRosterPeople_, dqSetting_, dqWallToUtc_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
 import { dqSyncedTo_, fdSyncIncremental_, hasFreshdeskKey } from '@/features/shared/jobs/freshdesk'
+import { freshchatCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 import { DQ_QUEUE_SUBMISSIONS_TABLE } from './server'
 
 export { dqSyncedTo_ }
@@ -132,7 +133,7 @@ export async function buildQueueAggregates_(now?: Date): Promise<Record<string, 
     r.source_as_of = syncedTo ? syncedTo.toISOString() : ''
   })
   try {
-    const chats = (await readStore('freshchat')).rows.map((r) => (Array.isArray(r.cols) ? r.cols : []) as unknown[])
+    const chats = (await readStore('freshchat')).rows.map((r) => freshchatCells_(r) as unknown[])
     if (chats.length) {
       const chatRow = dqBuildChatQueue_(chats, now, opts)
       res.queues.push(chatRow)
@@ -175,16 +176,16 @@ export async function buildInflowAggregates_(opts?: { hourly?: boolean }): Promi
   let chats: unknown[][] = []
   let calls: unknown[][] = []
   try {
-    const { data: chatRows, error: chatErr } = await db().from('freshchat').select('cols')
-    if (!chatErr) chats = ((chatRows || []) as Record<string, unknown>[]).map((r) => (Array.isArray(r.cols) ? r.cols : []) as unknown[])
+    const { data: chatRows, error: chatErr } = await db().from('freshchat').select('ts_ms,initiated_at,status,ref_key,updated_at,resolved_at,channel,conversation_id')
+    if (!chatErr) chats = ((chatRows || []) as Record<string, unknown>[]).map((r) => freshchatCells_(r) as unknown[])
   } catch (e) {
     hbBeat('daily_report', 'error', 'Freshchat read failed: ' + (e instanceof Error ? e.message : String(e)))
   }
   try {
-    const { data: callRows, error: callErr } = await db().from('maqsam_calls').select('cols,dedupe_key,ts_ms').gte('ts_ms', sinceMs)
+    const { data: callRows, error: callErr } = await db().from('maqsam_calls').select('dedupe_key,ts_ms,started_at,ended_at,duration,agent_email,state,direction,handling').gte('ts_ms', sinceMs)
     if (!callErr) {
       calls = ((callRows || []) as Record<string, unknown>[]).map((r) => {
-        const c = (Array.isArray(r.cols) ? r.cols : []) as unknown[]
+        const c = maqsamCells_(r) as unknown[]
         // Mirror cols are D..K; the legacy Maqsam read maps them back to [id, start, state, direction, country].
         return [r.dedupe_key || c[0] || '', c[0], c[2], c[3], c[7]]
       })

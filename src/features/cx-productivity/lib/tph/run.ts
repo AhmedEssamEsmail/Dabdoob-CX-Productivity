@@ -5,6 +5,7 @@ import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import { prodNowIso_, prodSetting_, prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
 import { prodNameToEmail_ } from '@/features/shared/lib/adapters'
 import { described } from '@/features/shared/lib/errors'
+import { fdActivityCells_, freshchatCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 import {
   TPH_CALLS,
   TPH_HISTORY_DAYS,
@@ -46,12 +47,12 @@ async function tphActivityTail_(store: TphStore, date: string, days: number): Pr
   const from = tphHourMs_(date, 0, 'Asia/Kuwait') - days * 86400000
   const { data, error } = await supabase
     .from('fd_activities')
-    .select('cols')
+    .select('ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name')
     .gte('ts_ms', from)
     .order('ts_ms', { ascending: true })
     .limit(50000)
   if (error) throw described(error, { table: 'fd_activities' })
-  return (data || []).map((r: { cols: unknown[] }) => r.cols)
+  return (data || []).map((r: Record<string, unknown>) => fdActivityCells_(r))
 }
 
 async function dqLogRun_(job: string, t0: number, status: string, info: Record<string, unknown>) {
@@ -111,9 +112,9 @@ async function tphBuildCallMinutes_(store: TphStore, dates: string[]): Promise<{
   let sourceRows = 0
   for (const m of Object.keys(months)) {
     const from = tphHourMs_(months[m].slice().sort()[0], 0, bizTz) - 86400000
-    const { data, error } = await supabase.from('maqsam_calls').select('cols').gte('ts_ms', from).limit(50000)
+    const { data, error } = await supabase.from('maqsam_calls').select('ts_ms,started_at,ended_at,duration,agent_email,state,direction,handling').gte('ts_ms', from).limit(50000)
     if (error) throw described(error, { table: 'maqsam_calls' })
-    const rows = (data || []).map((r: { cols: unknown[] }) => r.cols)
+    const rows = (data || []).map((r: Record<string, unknown>) => maqsamCells_(r))
     sourceRows += rows.length
     const got = tphCallMinutesFromRows_(
       rows, months[m], emails,
@@ -167,9 +168,9 @@ async function tphBuildCases_(
     try {
       const supabase = db()
       const histFrom = tphHourMs_(sorted[0], 0, bizTz) - TPH_HISTORY_DAYS * 86400000
-      const { data, error } = await supabase.from('freshchat').select('cols').gte('ts_ms', histFrom).limit(50000)
+      const { data, error } = await supabase.from('freshchat').select('ts_ms,initiated_at,status,ref_key,updated_at,resolved_at,channel,conversation_id').gte('ts_ms', histFrom).limit(50000)
       if (error) throw described(error, { table: 'freshchat' })
-      chats = (data || []).map((r: { cols: unknown[] }) => r.cols)
+      chats = (data || []).map((r: Record<string, unknown>) => freshchatCells_(r))
       sources.chats = chats.length
       if (!chats.length) chatErr = `Freshchat tab has no chats since ${dqAddDays_(sorted[0], -TPH_HISTORY_DAYS)}`
     } catch (e) {

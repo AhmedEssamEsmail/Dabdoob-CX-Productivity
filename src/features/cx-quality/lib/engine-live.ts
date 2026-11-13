@@ -16,14 +16,16 @@
  * transcribed verbatim from QaEngine.js so the same day rebuilds the same queue.
  */
 import 'server-only'
-import { db, readRows, sanitizeInput } from '@/features/shared/platform/repo'
+import { db, readRows, sanitizeInput, appendRow } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described } from '@/features/shared/lib/errors'
+import { fdActivityCells_ } from '@/features/shared/jobs/mirror-cells'
 import {
   QE_LOG_COL,
   QE_LOG_HEADERS,
   QE_OUTCOME_MAX_CHARS,
   QE_CANDIDATES_PER_AGENT,
+  QE_FD_CACHE_KEEP_DAYS,
   qeLocal_,
   qeWall_,
   qeFmt_,
@@ -49,6 +51,7 @@ const QE_TBL_CANDIDATES = 'qe_candidates'
 const QE_TBL_OUTCOMES = 'qe_outcomes'
 const QE_TBL_BUILDS = 'qe_builds'
 const QE_TBL_CATALOGUE = 'qe_catalogue'
+const QE_TBL_FD_CACHE = 'qe_fd_cache'
 const QE_MIG_DONE_KEY = 'qe_migration_done'
 const QE_MAX_TOUCH_ROWS = 60000
 
@@ -172,7 +175,7 @@ function qeTouchCells_(cols: unknown): { at: unknown; tid: unknown; name: unknow
 async function qeReadTouches_(since: Date, until: Date, roster: { byId: Record<string, Row>; byName: Record<string, Row> }): Promise<Row> {
   const { data, error } = await db()
     .from('fd_activities')
-    .select('cols')
+    .select('ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name')
     .gte('ts_ms', since.getTime())
     .lt('ts_ms', until.getTime())
     .order('ts_ms', { ascending: false })
@@ -188,8 +191,8 @@ async function qeReadTouches_(since: Date, until: Date, roster: { byId: Record<s
   let unresolved = 0
   let newest: Date | null = null
   const unresolvedSamples: Record<string, number> = {}
-  ;((data || []) as { cols: unknown }[]).forEach((r) => {
-    const c = qeTouchCells_(r.cols)
+  ;((data || []) as Row[]).forEach((r) => {
+    const c = qeTouchCells_(fdActivityCells_(r))
     const tid = c.tid
     if (!tid) return
     scanned++
@@ -261,28 +264,66 @@ async function qeFdFillMissingDetail_(_neededIds: Record<string, boolean>, _inde
 
 /**
  * qeReadTicketDetail_ verbatim: detail for the needed ticket ids. Postgres
- * stand-in is the `tickets` snapshot. It has no subject/order_id columns, so
- * those cells are '' (the FD API fallback that filled them is BLOCKED).
+ * stand-in is the `tickets` snapshot. `subject`/`order_id` are populated by
+ * the FD sync since S01-02 (PLAN D3); the FD-API fallback that once filled
+ * them stays unported (BLOCKED, see qeFdFillMissingDetail_).
+ *
+ * 'Ticket Detail Cache' sheet semantics on qe_fd_cache (S01-03): every row
+ * this read fetches is upserted on id with a fresh cached_at, and rows older
+ * than QE_FD_CACHE_KEEP_DAYS are pruned. Cache writes never break the build —
+ * failures go to refresh_log and are swallowed. Exported for tests.
  */
-async function qeReadTicketDetail_(neededIds: Record<string, boolean>, sinceHint: Date): Promise<{ index: Record<string, Row>; rowsScanned: number; tabName: string; fallback: Row }> {
+export async function qeReadTicketDetail_(neededIds: Record<string, boolean>, sinceHint: Date): Promise<{ index: Record<string, Row>; rowsScanned: number; tabName: string; fallback: Row }> {
   const want = Object.keys(neededIds)
   const idx: Record<string, Row> = {}
+  const cacheRows: Row[] = []
+  const cachedAt = new Date().toISOString()
   let scanned = 0
   for (let i = 0; i < want.length; i += 200) {
     const { data, error } = await db()
       .from('tickets')
-      .select('ticket_id,group_name,contact_type_1,contact_type_2,contact_type_3,status,country,channel,source,created_at')
+      .select('ticket_id,group_name,contact_type_1,contact_type_2,contact_type_3,status,country,channel,source,created_at,subject,order_id')
       .in('ticket_id', want.slice(i, i + 200))
     if (error) throw described(error, { table: 'tickets' })
     scanned += (data || []).length
     ;(data || []).forEach((r) => {
       idx[String(r.ticket_id)] = {
         groupName: String(r.group_name || ''), l1: String(r.contact_type_1 || ''), l2: String(r.contact_type_2 || ''),
-        l3: String(r.contact_type_3 || ''), subject: '', status: String(r.status || ''), country: String(r.country || ''),
-        orderId: '', sheetChannel: String(r.channel || ''), source: String(r.source || ''),
+        l3: String(r.contact_type_3 || ''), subject: String(r.subject || ''), status: String(r.status || ''), country: String(r.country || ''),
+        orderId: String(r.order_id || ''), sheetChannel: String(r.channel || ''), source: String(r.source || ''),
         createdAt: r.created_at ? String(r.created_at) : '',
       }
+      cacheRows.push({
+        id: String(r.ticket_id),
+        group_name: String(r.group_name || ''), contact_type_1: String(r.contact_type_1 || ''),
+        contact_type_2: String(r.contact_type_2 || ''), contact_type_3: String(r.contact_type_3 || ''),
+        subject: String(r.subject || ''), status: String(r.status || ''), country: String(r.country || ''),
+        order_id: String(r.order_id || ''), channel: String(r.channel || ''), source: String(r.source || ''),
+        created_at: r.created_at ? String(r.created_at) : null, cached_at: cachedAt,
+      })
     })
+  }
+  if (want.length) {
+    try {
+      if (cacheRows.length) {
+        const { error: ce } = await db().from(QE_TBL_FD_CACHE).upsert(cacheRows, { onConflict: 'id' })
+        if (ce) throw described(ce, { table: QE_TBL_FD_CACHE })
+      }
+      const staleBefore = new Date(Date.now() - QE_FD_CACHE_KEEP_DAYS * 86400000).toISOString()
+      const { error: pe } = await db().from(QE_TBL_FD_CACHE).delete().lt('cached_at', staleBefore)
+      if (pe) throw described(pe, { table: QE_TBL_FD_CACHE })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      try {
+        await appendRow('refresh_log', {
+          job: 'qe_fd_cache', started_at: cachedAt, finished_at: new Date().toISOString(),
+          rows_in: cacheRows.length, rows_out: 0, source_cursor: '', status: 'error',
+          error: msg, note: 'qe_fd_cache write during QE detail read', log_id: '', type: 'job',
+        }, 'system:job')
+      } catch {
+        console.log('qe_fd_cache not written (refresh_log also failed): ' + msg)
+      }
+    }
   }
   const fallback = await qeFdFillMissingDetail_(neededIds, idx)
   void sinceHint

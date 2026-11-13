@@ -1,15 +1,19 @@
 /**
- * Mirror sync — reads the source Google Sheet tabs and upserts them into the
- * Supabase mirror tables the interactive TPH path reads (fd_activities,
- * maqsam_calls, freshchat — created by migration 004).
+ * Mirror sync — pulls the vendor APIs (Freshdesk/Maqsam/Freshchat) and
+ * upserts them into the Supabase mirror tables the interactive TPH path
+ * reads (fd_activities, maqsam_calls, freshchat — created by migration 004).
  *
  * Row model (what the ported readers expect):
- *   fd_activities   'Activities' tab of fd_activity_ss_id, cols A..J;
- *                   ts = col A parsed in activity_local_tz
+ *   fd_activities   /api/v2/export/ticket_activities per UTC day, mapped to
+ *                   the same 10 cells the 'Activities' tab held; ts = col A (ISO)
  *   maqsam_calls    'Maqsam Calls' tab of each month workbook (prodFileFor_),
  *                   cols D..J; ts = col D parsed in data_tz
  *   freshchat       'Freshchat' tab of daily_report_ss_id, cols A..G;
  *                   ts = col A parsed in data_tz, else the epoch suffix of col C
+ *
+ * Typed columns (toRow) are canonical; the legacy `cols` jsonb cell array
+ * is no longer written (S05-03) — readers re-derive cells via
+ * mirror-cells.ts.
  *
  * Watermark: config mirror_state_<table> = { last_ts_ms, last_sync_at }.
  * Incremental runs re-read the whole tab (the Sheets API has to) but only
@@ -30,14 +34,16 @@ import { tphClock_ } from '@/features/cx-productivity/lib/tph'
 import { db } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described } from '@/features/shared/lib/errors'
-import { fetchWorkbookTabs } from './sheets'
-import { fetchMaqsamRows, fetchFreshchatRows } from './vendor-apis'
+import { fdActivityExport_, fdGroups_ } from './freshdesk'
+import { fetchMaqsamRows, fetchFreshchatRows, fdActivityToCells_ } from './vendor-apis'
 
 export type MirrorTable = 'fd_activities' | 'maqsam_calls' | 'freshchat'
 export const MIRROR_TABLES: MirrorTable[] = ['fd_activities', 'maqsam_calls', 'freshchat']
 
 const STATE_PREFIX = 'mirror_state_'
 const OVERLAP_MS = 86400000 // re-upsert the newest day on incremental runs
+// D4 purge floor — purged rows must never be re-imported.
+const RETENTION_FLOOR_MS = Date.parse('2026-09-01T00:00:00Z')
 const UPSERT_BATCH = 500
 
 interface MirrorSpec {
@@ -46,9 +52,11 @@ interface MirrorSpec {
    * sync); `untilMs` bounds the current window for windowed specs. */
   fetch: (cfg: Cfg, months: string[], sinceMs?: number, untilMs?: number) => Promise<{ id: string; tab: string; rows: unknown[][] }[]>
   /** Source row -> mirror cells ([] = skip the row entirely). */
-  cols: (r: unknown[]) => unknown[] | null
+  cells: (r: unknown[]) => unknown[] | null
   /** Mirror cells -> epoch ms (null skips the row; counted). */
   tsMs: (cells: unknown[], cfg: Cfg) => number | null
+  /** Mirror cells -> typed columns merged into the upsert row (canonical). */
+  toRow?: (cells: unknown[]) => Record<string, unknown>
   /** When set, the sync walks [start, now] in chunks of this many ms —
    * upserting + persisting the watermark per window so a maxDuration kill
    * resumes instead of losing the whole pull. */
@@ -56,17 +64,76 @@ interface MirrorSpec {
   hint: string
 }
 
+/** ISO timestamp cell -> ISO instant, '' -> null. */
+const isoCell = (v: unknown): string | null => {
+  if (v === '' || v === null || v === undefined) return null
+  const ms = Date.parse(String(v))
+  return Number.isNaN(ms) ? null : new Date(ms).toISOString()
+}
+
+/** Non-timestamp cell -> string, '' -> null. */
+const strCell = (v: unknown): string | null =>
+  v === '' || v === null || v === undefined ? null : String(v)
+
+/** Roster fd-directory for fdActivityToCells_: freshdesk_id -> freshdesk_name. */
+async function fdActivityRosterNames_(): Promise<Record<string, string>> {
+  const { data, error } = await db().from('roster').select('email,name,freshdesk_id,freshdesk_name')
+  if (error) throw described(error, { step: 'roster directory' })
+  const out: Record<string, string> = {}
+  for (const r of (data as Record<string, unknown>[] | null) || []) {
+    const id = String(r.freshdesk_id || '').trim()
+    const name = String(r.freshdesk_name || '').trim()
+    if (id && name) out[id] = name
+  }
+  return out
+}
+
 const SPECS: Record<MirrorTable, MirrorSpec> = {
   fd_activities: {
-    async fetch(cfg) {
-      const id = String(dqSetting_(cfg, 'fd_activity_ss_id') || '')
-      if (!id) throw described(new Error('fd_activity_ss_id is not configured'), { configKey: 'fd_activity_ss_id' })
-      const tabs = await fetchWorkbookTabs(id, ['Activities'])
-      return [{ id, tab: 'Activities', rows: (tabs['Activities'] || []).slice(1) }]
+    async fetch(_cfg, months, sinceMs, untilMs) {
+      // Freshdesk ticket_activities export — one call per UTC day covering
+      // [startOfDay(sinceMs), untilMs); a failing day fails the window.
+      const roster = await fdActivityRosterNames_()
+      const groups = await fdGroups_().catch(() => ({}) as Record<string, string>)
+      const startMs = sinceMs ?? Date.parse(months[months.length - 1] + '-01T00:00:00Z')
+      const endMs = untilMs ?? Date.now()
+      const d0 = new Date(startMs)
+      d0.setUTCHours(0, 0, 0, 0)
+      const rows: unknown[][] = []
+      for (const d = new Date(d0); d.getTime() < endMs; d.setUTCDate(d.getUTCDate() + 1)) {
+        const dateKey = d.toISOString().slice(0, 10)
+        let acts: Record<string, unknown>[]
+        try {
+          acts = await fdActivityExport_(dateKey)
+        } catch (e) {
+          throw described(e, { step: 'ticket_activities export ' + dateKey })
+        }
+        for (const a of acts) {
+          const cells = fdActivityToCells_(a, roster, groups)
+          if (cells) rows.push(...cells)
+        }
+      }
+      return [{ id: 'fd-activities-export', tab: 'ticket_activities', rows }]
     },
-    cols: (r) => r.slice(0, 10),
-    tsMs: (cells, cfg) => tphClock_(String(dqSetting_(cfg, 'activity_local_tz'))).ms(cells[0]),
-    hint: 'fd_activity_ss_id workbook, tab Activities',
+    // Export activities map straight to the 10-cell mirror layout.
+    cells: (r) => r,
+    tsMs: (cells) => {
+      const ms = Date.parse(String(cells[0]))
+      return Number.isNaN(ms) ? null : ms
+    },
+    toRow: (c) => ({
+      performed_at: isoCell(c[0]),
+      ticket_id: strCell(c[1]),
+      performer_name: strCell(c[2]),
+      performer_type: strCell(c[3]),
+      activity_type: strCell(c[4]),
+      field_changed: strCell(c[5]),
+      new_value: strCell(c[6]),
+      old_value: strCell(c[7]),
+      group_name: strCell(c[8]),
+    }),
+    windowMs: 86400000,
+    hint: 'Freshdesk ticket_activities export API',
   },
   maqsam_calls: {
     async fetch(_cfg, months, sinceMs, untilMs) {
@@ -76,8 +143,17 @@ const SPECS: Record<MirrorTable, MirrorSpec> = {
       return [{ id: 'maqsam-api', tab: 'v2/calls', rows }]
     },
     // API rows are already the 7-cell mirror shape (sheet cols D..J).
-    cols: (r) => r,
+    cells: (r) => r,
     tsMs: (cells, cfg) => tphClock_(String(dqSetting_(cfg, 'data_tz'))).ms(cells[0]),
+    toRow: (c) => ({
+      started_at: isoCell(c[0]),
+      ended_at: isoCell(c[1]),
+      duration: strCell(c[2]),
+      agent_email: strCell(c[3]),
+      state: strCell(c[4]),
+      direction: strCell(c[5]),
+      handling: strCell(c[6]),
+    }),
     windowMs: 7 * 86400000,
     hint: 'Maqsam Calls API v2 (MAQSAM_* env vars)',
   },
@@ -88,7 +164,7 @@ const SPECS: Record<MirrorTable, MirrorSpec> = {
       return [{ id: 'freshchat-api', tab: 'v2/conversations', rows }]
     },
     // API rows are already the 7-cell mirror shape (sheet cols A..G).
-    cols: (r) => r,
+    cells: (r) => r,
     tsMs: (cells, cfg) => {
       const clock = tphClock_(String(dqSetting_(cfg, 'data_tz')))
       // ts_ms tracks UPDATED so late resolutions move the watermark and
@@ -100,6 +176,15 @@ const SPECS: Record<MirrorTable, MirrorSpec> = {
       }
       return ms
     },
+    toRow: (c) => ({
+      initiated_at: isoCell(c[0]),
+      status: strCell(c[1]),
+      ref_key: strCell(c[2]),
+      updated_at: isoCell(c[3]),
+      resolved_at: isoCell(c[4]),
+      channel: strCell(c[5]),
+      conversation_id: strCell(c[6]),
+    }),
     hint: 'Freshchat conversations API (FRESHCHAT_* env vars)',
   },
 }
@@ -176,11 +261,11 @@ export async function syncMirror(
     const sources = await spec.fetch(cfg, monthsForSpec, sinceMs, untilMs)
     // Map dedupes within the window — identical cell-tuples collide on
     // dedupe_key and Postgres refuses a second ON CONFLICT hit in one batch.
-    const pending = new Map<string, { dedupe_key: string; ts_ms: number; cols: unknown[]; synced_at: string }>()
+    const pending = new Map<string, Record<string, unknown>>()
     for (const src of sources) {
       srcNotes.push(`${src.tab} (${src.rows.length})`)
       for (const r of src.rows) {
-        const cells = spec.cols(r)
+        const cells = spec.cells(r)
         if (!cells) {
           skipped++
           continue
@@ -191,11 +276,15 @@ export async function syncMirror(
           skipped++
           continue
         }
+        if (ts < RETENTION_FLOOR_MS) {
+          skipped++ // D4 purge floor — a sub-floor row inside a fetched window is never re-imported
+          continue
+        }
         if (ts <= cut) continue
         if (untilMs !== undefined && ts > untilMs) continue
         if (ts > maxTs) maxTs = ts
         const k = dedupeKey(table, cells)
-        pending.set(k, { dedupe_key: k, ts_ms: ts, cols: cells, synced_at: now })
+        pending.set(k, { dedupe_key: k, ts_ms: ts, synced_at: now, ...spec.toRow?.(cells) })
       }
     }
     const rows = [...pending.values()]
@@ -211,7 +300,9 @@ export async function syncMirror(
   if (spec.windowMs) {
     // Walk fixed windows; each is fully fetched+upserted before the watermark
     // advances past it, so a partial run resumes exactly where it stopped.
-    let w = cut === -Infinity ? Date.parse(months[0] + '-01T00:00:00Z') : cut
+    // Clamp to the retention floor: a full sync whose months[0] precedes
+    // Sep-2026 (or an incremental cut below it) starts at the floor instead.
+    let w = Math.max(cut === -Infinity ? Date.parse(months[0] + '-01T00:00:00Z') : cut, RETENTION_FLOOR_MS)
     while (w < endBound) {
       const until = Math.min(w + spec.windowMs, endBound)
       await consume(w, until)

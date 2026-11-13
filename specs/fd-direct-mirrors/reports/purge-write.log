@@ -1,0 +1,12 @@
+◇ injected env (11) from .env.local
+mode=write cutoff=2026-09-01T00:00:00.000Z ts_ms<1788220800000
+fd_activities: matching_ts_ms_lt_cutoff=301053
+maqsam_calls: matching_ts_ms_lt_cutoff=73690
+freshchat: matching_ts_ms_lt_cutoff=0
+tickets: matching_updated_at_lt_cutoff=120602
+TOTAL would_delete=495345
+fd_activities: before=301053 deleted=301053 remaining=0
+maqsam_calls: before=73690 deleted=73690 remaining=0
+freshchat: before=0 deleted=0 remaining=0
+tickets: before=120602 deleted=120602 remaining=0
+refresh_log job=mirror_purge rows_in=495345 rows_out=495345 note=fd_activities:301053->0;maqsam_calls:73690->0;freshchat:0->0;tickets:120602->0

@@ -138,6 +138,7 @@ vi.mock('@/features/shared/components/ui', () => ({
   PageShell: 'page-shell',
   Seg: 'seg',
   Select: 'select',
+  TableScroll: 'table-scroll',
 }))
 
 /* qa-shared fully stubbed: useSe returns the fixture payload; useQaSort's

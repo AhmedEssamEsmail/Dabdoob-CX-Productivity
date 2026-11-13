@@ -1,0 +1,39 @@
+◇ injected env (11) from .env.local
+mode=write page=500
+fd_activities: pending=404915 (cols not null, performed_at null)
+  sample id=87224 -> {"performed_at":"2026-09-01T02:13:50.000Z","ticket_id":"299164","performer_name":"966539060555","performer_type":"Requester","activity_type":"Ticket Created","field_changed":null,"new_value":"Open","old_value":"Phone","group_name":"Inbound 
+  sample id=87225 -> {"performed_at":"2026-09-01T02:14:08.000Z","ticket_id":"299165","performer_name":"966539060555","performer_type":"Requester","activity_type":"Ticket Created","field_changed":null,"new_value":"Open","old_value":"Phone","group_name":"Inbound 
+  sample id=87226 -> {"performed_at":"2026-09-01T03:26:53.000Z","ticket_id":"299095","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Resolved","old_value":"Portal","group_name":"R
+  sample id=87227 -> {"performed_at":"2026-09-01T03:33:06.000Z","ticket_id":"298676","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Pending on CX","old_value":"Portal","group_nam
+  sample id=87228 -> {"performed_at":"2026-09-01T03:35:24.000Z","ticket_id":"299050","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Pending on CX","old_value":"Portal","group_nam
+  sample id=87229 -> {"performed_at":"2026-09-01T03:37:09.000Z","ticket_id":"299062","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Pending on CX","old_value":"Portal","group_nam
+  sample id=87230 -> {"performed_at":"2026-09-01T03:38:07.000Z","ticket_id":"299068","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Pending on CX","old_value":"Portal","group_nam
+  sample id=87231 -> {"performed_at":"2026-09-01T03:39:10.000Z","ticket_id":"299166","performer_name":"971563344108","performer_type":"Requester","activity_type":"Ticket Created","field_changed":null,"new_value":"Open","old_value":"Phone","group_name":"Inbound 
+  sample id=87232 -> {"performed_at":"2026-09-01T03:48:40.000Z","ticket_id":"299167","performer_name":"Ali Abdelkhaliq","performer_type":"Requester","activity_type":"Ticket Created","field_changed":null,"new_value":"Open","old_value":"Portal","group_name":"Riya
+  sample id=87233 -> {"performed_at":"2026-09-01T03:48:55.000Z","ticket_id":"299167","performer_name":"Ali Abdelkhaliq","performer_type":"Agent","activity_type":"Status Change","field_changed":"status","new_value":"Resolved","old_value":"Portal","group_name":"R
+fd_activities: updated=404915 skipped=0 checkpoint=925668
+maqsam_calls: pending=42413 (cols not null, started_at null)
+  sample id=87184 -> {"started_at":"2026-09-01T20:52:34.000Z","ended_at":"2026-09-01T20:53:02.000Z","duration":"0:00:28","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87185 -> {"started_at":"2026-09-01T20:50:16.000Z","ended_at":"2026-09-01T20:50:41.000Z","duration":"0:00:25","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87186 -> {"started_at":"2026-09-01T20:32:36.000Z","ended_at":"2026-09-01T20:33:03.000Z","duration":"0:00:27","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87187 -> {"started_at":"2026-09-01T20:08:56.000Z","ended_at":"2026-09-01T20:09:02.000Z","duration":"0:00:06","agent_email":null,"state":"dropped","direction":"inbound","handling":null}
+  sample id=87188 -> {"started_at":"2026-09-01T20:08:09.000Z","ended_at":"2026-09-01T20:08:25.000Z","duration":"0:00:16","agent_email":null,"state":"dropped","direction":"inbound","handling":null}
+  sample id=87189 -> {"started_at":"2026-09-01T19:46:42.000Z","ended_at":"2026-09-01T19:47:13.000Z","duration":"0:00:31","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87190 -> {"started_at":"2026-09-01T19:46:29.000Z","ended_at":"2026-09-01T19:47:00.000Z","duration":"0:00:31","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87191 -> {"started_at":"2026-09-01T19:45:43.000Z","ended_at":"2026-09-01T19:46:18.000Z","duration":"0:00:35","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87192 -> {"started_at":"2026-09-01T19:43:29.000Z","ended_at":"2026-09-01T19:44:07.000Z","duration":"0:00:38","agent_email":null,"state":"out_of_hours","direction":"inbound","handling":null}
+  sample id=87193 -> {"started_at":"2026-09-01T19:42:40.000Z","ended_at":null,"duration":"0:00:00","agent_email":null,"state":"dropped","direction":"inbound","handling":null}
+maqsam_calls: updated=42413 skipped=0 checkpoint=137822
+freshchat: pending=1753 (cols not null, conversation_id null)
+  sample id=2 -> {"conversation_id":"05dee6e5-53fc-4a07-b5b3-3c43a4f84c19","initiated_at":"2026-10-28T13:08:21.000Z","updated_at":"2026-10-28T13:08:21.000Z","resolved_at":null,"status":null,"channel":"IG_dabdoobapp","ref_key":"05dee6e5-53fc-4a07-b5b3-3c43a4
+  sample id=3 -> {"conversation_id":"0084c839-5643-4000-84f5-542e1092350c","initiated_at":"2026-10-28T13:03:13.000Z","updated_at":"2026-10-28T13:03:13.000Z","resolved_at":null,"status":null,"channel":"IG_dabdoobkuwait","ref_key":"0084c839-5643-4000-84f5-542
+  sample id=4 -> {"conversation_id":"3a9ed720-9b8b-4fb4-81a8-e68f0c60fe07","initiated_at":"2026-10-28T12:59:28.000Z","updated_at":"2026-10-28T12:59:28.000Z","resolved_at":null,"status":null,"channel":"IG_dabdoobapp","ref_key":"3a9ed720-9b8b-4fb4-81a8-e68f0c
+  sample id=5 -> {"conversation_id":"9fa59562-6efa-4d92-9515-d33cf561672f","initiated_at":"2026-10-28T12:50:24.000Z","updated_at":"2026-10-28T12:50:24.000Z","resolved_at":null,"status":null,"channel":"IG_dabdoobapp","ref_key":"9fa59562-6efa-4d92-9515-d33cf5
+  sample id=6 -> {"conversation_id":"9fbb108b-86a3-43da-8255-907164101643","initiated_at":"2026-10-28T12:50:04.000Z","updated_at":"2026-10-28T13:05:28.000Z","resolved_at":"2026-10-28T13:05:28.000Z","status":"AGENT_RESOLVE","channel":"IG_dabdoobapp","ref_key
+  sample id=7 -> {"conversation_id":"9a514f8d-226b-4f8e-9b1c-dda0e1d42a93","initiated_at":"2026-10-28T12:48:56.000Z","updated_at":"2026-10-28T12:48:56.000Z","resolved_at":null,"status":null,"channel":"IG_dabdoobapp","ref_key":"9a514f8d-226b-4f8e-9b1c-dda0e1
+  sample id=8 -> {"conversation_id":"fa3cc21d-9e31-41b4-ac82-d7835d03cf96","initiated_at":"2026-10-28T12:47:34.000Z","updated_at":"2026-10-28T13:11:49.000Z","resolved_at":"2026-10-28T13:11:49.000Z","status":"AGENT_RESOLVE","channel":"IG_dabdoobapp","ref_key
+  sample id=9 -> {"conversation_id":"00783494-922a-4ef0-bbdc-da930c93aa60","initiated_at":"2026-10-28T12:42:57.000Z","updated_at":"2026-10-28T12:50:40.000Z","resolved_at":"2026-10-28T12:50:40.000Z","status":"AGENT_RESOLVE","channel":"IG_dabdoobapp","ref_key
+  sample id=10 -> {"conversation_id":"9eed912d-38df-40bc-8079-36b2746d4bc3","initiated_at":"2026-10-28T12:42:17.000Z","updated_at":"2026-10-28T12:43:54.000Z","resolved_at":"2026-10-28T12:43:54.000Z","status":"AGENT_RESOLVE","channel":"IG_dabdoobapp","ref_key
+  sample id=11 -> {"conversation_id":"5ce560cd-39b8-4ed4-ae28-442254a44495","initiated_at":"2026-10-28T12:36:14.000Z","updated_at":"2026-10-28T13:08:31.000Z","resolved_at":"2026-10-28T13:08:31.000Z","status":"AGENT_RESOLVE","channel":"IG_dabdoobkuwait","ref_
+freshchat: updated=1753 skipped=0 checkpoint=1754
+refresh_log job=mirror_backfill rows_out=449081 note=fd_activities:404915u/0s;maqsam_calls:42413u/0s;freshchat:1753u/0s

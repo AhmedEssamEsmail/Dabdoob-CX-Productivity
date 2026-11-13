@@ -7,6 +7,7 @@ import { apiError } from '@/features/shared/lib/api-error'
 import { described } from '@/features/shared/lib/errors'
 import { tphTouchList_, tphHourMs_ } from '@/features/cx-productivity/lib/tph'
 import { tphChannels_, tphHours_, tphLoadStore_ } from '@/features/cx-productivity/lib/tph/page'
+import { fdActivityCells_ } from '@/features/shared/jobs/mirror-cells'
 import { NextResponse } from 'next/server'
 
 /**
@@ -28,11 +29,11 @@ export async function GET(req: Request) {
     const from = tphHourMs_(d, 0, 'Asia/Kuwait') - 1 * 86400000
     const { data: rows, error } = await supabase
       .from('fd_activities')
-      .select('cols')
+      .select('ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name')
       .gte('ts_ms', from)
       .limit(20000)
     if (error) throw described(error, { table: 'fd_activities' })
-    const tail = (rows || []).map((r: { cols: unknown[] }) => r.cols)
+    const tail = (rows || []).map((r: Record<string, unknown>) => fdActivityCells_(r))
     const headcount = Object.values(store.dir.by).map((p) => ({ name: p.name, fdName: '', fdId: '', email: p.email }))
     const out = tphTouchList_(
       tail as unknown[][], d, email, prodNameToEmail_(headcount), 'Asia/Kuwait',

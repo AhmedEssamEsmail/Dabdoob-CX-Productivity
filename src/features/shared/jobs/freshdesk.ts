@@ -15,7 +15,7 @@ import 'server-only'
 
 import { db, appendRow, cacheGet, cachePut } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
-import { described } from '@/features/shared/lib/errors'
+import { described, DescribedError } from '@/features/shared/lib/errors'
 
 // FD_TICKET_HEADERS is in QueueCore.js (the Queue app's TL metrics read it too).
 export const FD_STATUS_NAMES: Record<number, string> = {
@@ -31,6 +31,17 @@ const FD_INC_CURSOR_PROP = 'v2_fd_inc_cursor'
 const FD_RUNNING_PROP = 'v2_fd_sync_running'
 const FD_PAGE_CAP = 300
 const FD_PER_PAGE = 100
+// D4 purge floor — re-importing sub-floor tickets undoes the purge.
+const FD_TICKETS_FLOOR = '2026-09-01T00:00:00Z'
+
+/**
+ * Clamp a fetch cursor to the D4 purge floor: any cursor below 2026-09-01 —
+ * including unparseable/empty values and the '2000-01-01' full-sync fallback —
+ * is raised to the floor so purged tickets can never be re-fetched.
+ */
+export function fdFloorCursor_(cursor: string): string {
+  return Date.parse(cursor) >= Date.parse(FD_TICKETS_FLOOR) ? cursor : FD_TICKETS_FLOOR
+}
 
 export function fdApiKey_(): string {
   const key = String(process.env.FRESHDESK_API_KEY || '')
@@ -90,12 +101,16 @@ export function fdIso_(s: unknown): string {
   return isNaN(d.getTime()) ? '' : d.toISOString()
 }
 
-/** fdTicketToRow_ verbatim: one Freshdesk ticket -> one `tickets` row; no PII. */
+/** fdTicketToRow_ verbatim: one Freshdesk ticket -> one `tickets` row; no PII.
+ * S01-02 adds `subject`/`order_id` (cf.cf_order_id) — ticket text fields the
+ * port originally skipped (PLAN D3). */
 export function fdTicketToRow_(t: Record<string, unknown>, groups: Record<string, string>, syncedAt: string): Record<string, unknown> {
   const cf = (t.custom_fields || {}) as Record<string, unknown>
   const st = (t.stats || {}) as Record<string, unknown>
   return {
     ticket_id: String(t.id),
+    subject: String(t.subject || ''),
+    order_id: String(cf.cf_order_id || ''),
     status: FD_STATUS_NAMES[t.status as number] || 'Status ' + t.status,
     group_name: t.group_id ? groups[String(t.group_id)] || 'Group ' + t.group_id : '',
     responder_id: t.responder_id ? String(t.responder_id) : '',
@@ -194,6 +209,75 @@ function fdTicketsPage_(since: string, page: number): Promise<Record<string, unk
   ) as Promise<Record<string, unknown>[]>
 }
 
+// ---------- ticket_activities export (Reference_Code.gs fetchDailyActivities :168-269) ----------
+const FD_EXPORT_POLL_TRIES = 10
+const FD_EXPORT_POLL_DEADLINE_MS = 60000
+// The legacy slept 2s before its single download; while the file is still
+// generating we re-poll every ~6s so 10 tries ~= the 60s deadline.
+const FD_EXPORT_FIRST_GAP_MS = 2000
+const FD_EXPORT_POLL_GAP_MS = 6000
+
+/**
+ * fdDownloadRes_ — the export download URL is NOT authed in the legacy flow
+ * (plain GET, no Authorization header); still retries 429 like fdGet_.
+ */
+async function fdDownloadRes_(url: string): Promise<Response> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(url, { method: 'get', cache: 'no-store' })
+    if (res.status === 429 && attempt < 3) {
+      const wait = Number(res.headers.get('Retry-After') || res.headers.get('retry-after') || 2)
+      await sleep(Math.min(60, Math.max(1, wait)) * 1000)
+      continue
+    }
+    return res
+  }
+  throw new Error('Freshdesk kept rate-limiting the activity export download.')
+}
+
+/**
+ * fdActivityExport_ — port of fetchDailyActivities. Requests the
+ * ticket_activities export for one UTC day (`YYYY-MM-DD`), polls the returned
+ * download URL until it serves JSON (up to ~60s / 10 tries) and returns the
+ * raw `activities_data` objects — `[]` when absent, the same tolerance as the
+ * legacy. Filtering/mapping is the caller's job.
+ */
+export async function fdActivityExport_(dateKey: string): Promise<Record<string, unknown>[]> {
+  if (!hasFreshdeskKey()) {
+    throw new DescribedError({
+      code: 'missing_credentials',
+      message: 'FRESHDESK_API_KEY is not configured',
+      hint: 'Set the Freshdesk API key in the environment (Freshdesk Profile Settings > Your API Key).',
+    })
+  }
+  const exportData = (await fdGet_('/api/v2/export/ticket_activities?created_at=' + encodeURIComponent(dateKey))) as {
+    url?: string
+    export?: { url?: string }[]
+  }
+  const downloadUrl = exportData.url || (exportData.export && exportData.export[0] && exportData.export[0].url)
+  if (!downloadUrl) return []
+  const deadline = Date.now() + FD_EXPORT_POLL_DEADLINE_MS
+  let lastStatus = 0
+  for (let tries = 0; tries < FD_EXPORT_POLL_TRIES; tries++) {
+    await sleep(tries === 0 ? FD_EXPORT_FIRST_GAP_MS : FD_EXPORT_POLL_GAP_MS)
+    const res = await fdDownloadRes_(String(downloadUrl))
+    lastStatus = res.status
+    if (res.status === 200) {
+      const json = (await res.json()) as { activities_data?: Record<string, unknown>[] }
+      return json.activities_data || []
+    }
+    if (Date.now() >= deadline) break
+  }
+  throw new Error(
+    'Freshdesk ticket_activities export for ' +
+      dateKey +
+      ' was still not ready after ' +
+      FD_EXPORT_POLL_TRIES +
+      ' tries (last HTTP ' +
+      lastStatus +
+      ').'
+  )
+}
+
 async function dqUpsertTickets_(rows: Record<string, unknown>[]): Promise<{ updated: number; appended: number }> {
   if (!rows.length) return { updated: 0, appended: 0 }
   const { error } = await db().from('tickets').upsert(rows, { onConflict: 'ticket_id' })
@@ -221,6 +305,7 @@ export async function fdSyncLoop_(
   budgetMs: number,
   started: number
 ): Promise<{ done: boolean; written: number; cursor: string }> {
+  cursor = fdFloorCursor_(cursor)
   const groups = await fdGroups_()
   let written = 0
   for (;;) {

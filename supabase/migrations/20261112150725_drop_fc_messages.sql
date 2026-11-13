@@ -1,0 +1,21 @@
+-- ============================================================================
+-- 20261112150725_drop_fc_messages.sql — retire public.fc_messages.
+--
+-- The table was dropped manually on the remote DB on 2026-11-12; this
+-- migration makes the repo schema match so local `db reset`/`db push` and
+-- future remote applies stay consistent.
+--
+-- Reason: dead mirror table — the 'Freshchat Detailed Msgs' sheet sink was
+-- never ported; no live reader/writer exists (`from('fc_messages')` is absent
+-- from src/). The sheet-based texting source (fc_messages_ss_id /
+-- fc_messages_tab / fc_messages_tz, read by tlqReadTexting_ from Google
+-- Sheets) is unrelated and unaffected.
+--
+-- Creating migration: 20261109131136_fc_messages.sql (kept as applied
+-- history — do not edit).
+--
+-- Idempotent: IF EXISTS makes re-apply and local reset safe since the table
+-- is already gone remotely.
+-- ============================================================================
+
+DROP TABLE IF EXISTS public.fc_messages;

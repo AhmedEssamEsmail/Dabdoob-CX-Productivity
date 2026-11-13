@@ -11,6 +11,7 @@ import { DescribedError } from '@/features/shared/lib/errors'
 import { epochMs, isoMs } from '@/features/shared/vendor/http'
 import { listMaqsamCalls, maqsamCredsFromEnv } from '@/features/shared/vendor/maqsam'
 import { listFreshchatConversations, freshchatCredsFromEnv } from '@/features/shared/vendor/freshchat'
+import { FD_STATUS_NAMES } from './freshdesk'
 
 const str = (v: unknown) => String(v === null || v === undefined ? '' : v).trim()
 const num = (v: unknown) => {
@@ -105,4 +106,114 @@ export async function fetchFreshchatRows(sinceMs?: number): Promise<unknown[][]>
     if (cols) rows.push(cols)
   }
   return rows
+}
+
+// ---------- fd_activities export -> 10-cell 'Activities' mirror rows ----------
+// (Reference_Code.gs :236-253 filter/expansion + :297-312 sheet write.)
+
+/**
+ * parseFdActivityDate_ — the .gs parseActivityDate rules:
+ *   1. ISO 8601 (YYYY-MM-DD...)          -> parse directly, unambiguous
+ *   2. anything else                     -> first part DD, second MM
+ *      (the export writes `DD-MM-YYYY HH:MM:SS +0000`; the offset is always
+ *      UTC so the captured HH:MM:SS is emitted with `Z`)
+ *   3. fallback `new Date`               -> null when unparseable
+ */
+export function parseFdActivityDate_(dateStr: unknown): Date | null {
+  if (!dateStr) return null
+  const s = String(dateStr)
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(s)) {
+    const d = new Date(s.replace(/\//g, '-'))
+    if (!isNaN(d.getTime())) return d
+  }
+  const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})(?:[T ](\d{2}):(\d{2}):(\d{2}))?/)
+  if (m) {
+    const [, dd, mm, yyyy, hh = '00', min = '00', ss = '00'] = m
+    const d = new Date(`${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}T${hh}:${min}:${ss}Z`)
+    if (!isNaN(d.getTime())) return d
+  }
+  const d = new Date(s)
+  return isNaN(d.getTime()) ? null : d
+}
+
+/** Status cell value -> the sheet's name: numeric codes via FD_STATUS_NAMES, name strings pass through. */
+function fdStatusName_(v: unknown): string {
+  const n = Number(v)
+  if (v !== '' && isFinite(n) && FD_STATUS_NAMES[n]) return FD_STATUS_NAMES[n]
+  return str(v)
+}
+
+const FD_ACT_CONSUMED_KEYS = new Set([
+  'new_ticket', 'status',
+  'old_status', 'previous_status', 'status_from', 'old_value', 'from',
+  'group', 'group_name', 'ticket_group', 'group_id',
+])
+const fdActivityWarnedKeys = new Set<string>()
+/** One console.warn per unmapped old/group-shaped payload key (S03-02 research guard). */
+function fdActivityWarnUnmapped_(data: Record<string, unknown>): void {
+  for (const k of Object.keys(data)) {
+    if (FD_ACT_CONSUMED_KEYS.has(k) || !/old|previous|from_|_from|group/i.test(k)) continue
+    if (fdActivityWarnedKeys.has(k)) continue
+    fdActivityWarnedKeys.add(k)
+    console.warn('fdActivityToCells_: unmapped export activity key "' + k + '" — extend the pick lists if it carries old-value/group.')
+  }
+}
+
+/**
+ * fdActivityToCells_ — one raw `activities_data` object -> the 10-cell
+ * 'Activities' mirror layout (cells 0-8 named + trailing ''), or null when
+ * the activity is skipped (`performer_type !== 'user'` or nothing the sheet
+ * logged). Like the legacy, ONE activity expands into up to TWO rows
+ * (new_ticket then status), so the return is a LIST of 10-cell rows.
+ *
+ *   [0] performed_at ISO | [1] ticket_id | [2] performer name |
+ *   [3] performer type | [4] activity type | [5] field changed |
+ *   [6] new value | [7] old value | [8] group | [9] '' (unread).
+ *
+ * rosterNames: roster fd-directory byId map (`freshdesk_id` -> `freshdesk_name`),
+ * `User <id>` fallback per the legacy. groupNames: optional group_id -> name
+ * map (`fdGroups_`); a numeric `activity.group` without it is left '' for the
+ * write-time `tickets` fallback (PLAN: current-group drift accepted).
+ */
+export function fdActivityToCells_(
+  activity: Record<string, unknown>,
+  rosterNames: Record<string, string>,
+  groupNames?: Record<string, string>
+): unknown[][] | null {
+  if (str(activity.performer_type) !== 'user') return null
+  const data = (activity.activity || {}) as Record<string, unknown>
+  const d = parseFdActivityDate_(activity.performed_at)
+  const at = d ? d.toISOString() : ''
+  const ticketId = str(activity.ticket_id)
+  const performerId = str(activity.performer_id)
+  const performerName = (performerId && rosterNames[performerId]) || `User ${performerId}`
+  const performerType = str(activity.performer_type) || 'system'
+  // Old value: no documented export field carries it — defensive pick across
+  // plausible keys (incl. `{from,to}` status objects), '' when absent.
+  let statusRaw: unknown = data.status
+  let oldRaw = pick(data, 'old_status', 'previous_status', 'status_from', 'old_value')
+  if (statusRaw !== null && typeof statusRaw === 'object') {
+    const o = statusRaw as Record<string, unknown>
+    oldRaw = oldRaw ?? pick(o, 'from', 'old', 'previous')
+    statusRaw = pick(o, 'to', 'new', 'value')
+  }
+  oldRaw = oldRaw ?? pick(data, 'from')
+  const oldValue = oldRaw === undefined ? '' : fdStatusName_(oldRaw)
+  // Group at activity time: the documented payload carries `activity.group`
+  // as a NAME string; a numeric id resolves via groupNames else ''.
+  const groupRaw = pick(data, 'group', 'group_name', 'ticket_group', 'group_id')
+  let group = ''
+  if (groupRaw !== undefined) {
+    const g = str(groupRaw)
+    group = /^\d+$/.test(g) ? str((groupNames || {})[g]) : g
+  }
+  fdActivityWarnUnmapped_(data)
+  const rows: unknown[][] = []
+  if (data.new_ticket === true) {
+    rows.push([at, ticketId, performerName, performerType, 'Field Change', 'new_ticket', data.new_ticket, oldValue, group, ''])
+  }
+  if (statusRaw !== undefined && statusRaw !== null) {
+    rows.push([at, ticketId, performerName, performerType, 'Status Change', 'status', fdStatusName_(statusRaw), oldValue, group, ''])
+  }
+  return rows.length ? rows : null
 }

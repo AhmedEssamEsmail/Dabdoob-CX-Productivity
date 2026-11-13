@@ -40,6 +40,7 @@ import { readStore } from '@/features/shared/platform/stores'
 import { described } from '@/features/shared/lib/errors'
 import { hbRun } from '@/features/shared/platform/health'
 import { fetchWorkbookTabs, sheetBook } from '@/features/shared/jobs/sheets'
+import { fdActivityCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 import { dqMarkRun_ } from './jobs'
 import type { TlsShift } from './index'
 import { dqInList_, FD_TICKET_HEADERS } from './index'
@@ -607,10 +608,18 @@ async function tlqIo_(): Promise<TlqIo> {
       return (data || []) as Row[]
     },
     maqsamRows: async (fromMs, toMs) => {
-      return (await readAllPaged('maqsam_calls', { columns: 'dedupe_key,ts_ms,cols', build: (q) => q.gte('ts_ms', fromMs - 86400000).lt('ts_ms', toMs + 86400000) })) as Row[]
+      const rows = (await readAllPaged('maqsam_calls', {
+        columns: 'dedupe_key,ts_ms,started_at,ended_at,duration,agent_email,state,direction,handling',
+        build: (q) => q.gte('ts_ms', fromMs - 86400000).lt('ts_ms', toMs + 86400000),
+      })) as Row[]
+      return rows.map((r) => ({ dedupe_key: r.dedupe_key, ts_ms: r.ts_ms, cols: maqsamCells_(r) }))
     },
     fdActivityRows: async (fromMs) => {
-      return (await readAllPaged('fd_activities', { columns: 'dedupe_key,ts_ms,cols', build: (q) => q.gte('ts_ms', fromMs - 86400000) })) as Row[]
+      const rows = (await readAllPaged('fd_activities', {
+        columns: 'dedupe_key,ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name',
+        build: (q) => q.gte('ts_ms', fromMs - 86400000),
+      })) as Row[]
+      return rows.map((r) => ({ dedupe_key: r.dedupe_key, ts_ms: r.ts_ms, cols: fdActivityCells_(r) }))
     },
     trackerRecords: async (trackerId) => {
       const { data, error } = await db().from('tracker_records').select('*').eq('tracker_id', trackerId).order('row_n', { ascending: true })

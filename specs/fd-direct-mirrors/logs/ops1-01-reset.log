@@ -1,0 +1,5 @@
+◇ injected env (12) from .env.local
+mode=write table=fd_activities watermark_key=mirror_state_fd_activities
+fd_activities: rows=404915 watermark_present=true
+fd_activities: before=404915 deleted=404915 remaining=0 watermark_present=false
+refresh_log job=fd_activities_reset rows_in=404915 rows_out=404915 note=fd_activities:404915->0;watermark:true->false
