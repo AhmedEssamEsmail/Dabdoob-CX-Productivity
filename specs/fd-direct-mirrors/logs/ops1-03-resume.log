@@ -1,1 +1,28 @@
 ◇ injected env (12) from .env.local
+fd-resume fetched=62291 written=62265 skipped=0 watermark=2026-10-25T00:00:00.000Z full=false partial=true
+◇ injected env (12) from .env.local
+Fatal: DescribedError: ticket_activities export 2026-11-13 — Freshdesk /api/v2/export/ticket_activities failed with HTTP 404.
+    at described (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\lib\errors.ts:193:10)
+    at Object.fetch (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:109:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async consume (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:261:21)
+    at async syncMirror (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:308:7)
+    at async resume (C:\Users\AHMED\KPIs\CX-Hub\migration\run-fd-mirror.ts:127:13) {
+  code: 'internal',
+  detail: undefined,
+  hint: undefined
+}
+EXIT=1
+◇ injected env (12) from .env.local
+Fatal: DescribedError: ticket_activities export 2026-11-13 — Freshdesk /api/v2/export/ticket_activities failed with HTTP 404.
+    at described (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\lib\errors.ts:193:10)
+    at Object.fetch (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:109:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async consume (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:261:21)
+    at async syncMirror (C:\Users\AHMED\KPIs\CX-Hub\src\features\shared\jobs\mirrors.ts:308:7)
+    at async resume (C:\Users\AHMED\KPIs\CX-Hub\migration\run-fd-mirror.ts:127:13) {
+  code: 'internal',
+  detail: undefined,
+  hint: undefined
+}
+EXIT=1

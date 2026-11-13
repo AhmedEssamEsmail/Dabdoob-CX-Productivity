@@ -22,7 +22,6 @@ Query: `select relname, n_live_tup from pg_stat_user_tables where schemaname = '
 | fd_activities | 686753 |
 | tickets | 176625 |
 | maqsam_calls | 116103 |
-| fc_messages | 84707 |
 | qe_fd_cache | 25295 |
 | prod_intervals | 23188 |
 | aux_spans | 13086 |

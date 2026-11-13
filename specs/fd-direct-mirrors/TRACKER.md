@@ -14,38 +14,38 @@ revert; scope checks use assignment-local diffs only):
 
 | ID | Kind/Parent | Owner | Depends | Budget f/a/lines/min | Size gate | Status | Result / evidence |
 |---|---|---|---|---|---|---|---|
-| S00 | package/- | - | - | n/a | not dispatchable | done | both children done; grep verified clean (only sheet keys + logs remain per D6) |
-| S00-01 | mini/S00 | supabase-expert | none | 1/3/20/5 | PASS | done | results/S00-01.md; migration 20261112150725, tsc clean; remote apply NEEDS_APPROVAL |
-| S00-02 | mini/S00 | dev | S00-01 | 8/6/50/10 | PASS | done | results file missing (worker killed); TL re-verified on disk: backfill-fc-messages.ts deleted, fc_messages grep clean (logs only), docs clean |
-| S01 | package/- | - | - | n/a | not dispatchable | done | all 3 children done; tsc+vitest+eslint clean |
-| S01-01 | mini/S01 | supabase-expert | none | 1/2/15/5 | PASS | done | results/S01-01.md; migration 20261112150724, tsc clean; remote apply NEEDS_APPROVAL |
-| S01-02 | mini/S01 | dev | S01-01 | 2/5/45/10 | PASS | done | results file missing (worker killed); TL re-verified: fdTicketToRow_ emits subject/order_id (freshdesk.ts:101-102); qeReadTicketDetail_ selects+maps them (engine-live.ts:284,291-292) |
-| S01-03 | mini/S01 | data-engineer | S01-02 | 2/5/70/10 | PASS | done | results/S01-03.md; qe_fd_cache upsert+30d prune non-fatal; qe-fd-cache.test 5/5, tsc+eslint clean |
-| S02 | package/- | - | - | n/a | not dispatchable | done | both migrations authored + tsc clean; remote apply NEEDS_APPROVAL |
-| S02-01 | mini/S02 | supabase-expert | none | 1/4/35/5 | PASS | done | results/S02-01.md; migration 20261112150305, tsc clean; remote apply NEEDS_APPROVAL |
-| S02-02 | mini/S02 | supabase-expert | none | 1/4/40/5 | PASS | done | results/S02-02.md; migration 20261112150304, tsc clean; remote apply NEEDS_APPROVAL |
-| S03 | package/- | - | - | n/a | not dispatchable | done | all 4 children done; integration gate tsc+vitest 27/27 green (reports/gate-s03.log) |
-| S03-01 | mini/S03 | data-engineer | none | 2/6/190/10 | PASS | done | freshdesk.ts fdActivityExport_ (:233) + tests/jobs/fd-activity-export.test.ts 5/5 green (TL-verified); results file missing (worker killed/oversight) |
-| S03-02 | mini/S03 | data-engineer | S03-01 | 2/6/160/10 | PASS | done | results/S03-02.md; fdActivityToCells_ returns unknown[][] (multi-row expansion, documented deviation); export has group (cell8), no old-value (cell7 ''); vitest 7/7 |
-| S03-03 | mini/S03 | dev | S03-02, S02-01 | 2/6/130/10 | PASS | done | results/S03-03.md (attempt 2, fresh dev); fd_activities API day-loop + 9-col toRow + windowMs + roster/groups; tsc clean, mirrors 9/9, zero fetchWorkbookTabs; TL gate reports/gate-s03.log |
-| S03-04 | mini/S03 | dev | S02-02 | 2/5/90/10 | PASS | done | results/S03-04.md; toRow hook added (S03-03 not yet landed) + typed emission; mirrors.test 9/9, tsc+eslint clean |
-| S04 | package/- | - | S03, S05-02 | n/a | not dispatchable | done | both children done; final integration gate PASS (reports/gate-final.log) |
-| S04-01 | mini/S04 | dev | S03-03, S03-04, S05-02 | 3/5/100/10 | PASS | done | results/S04-01.md; mirror-cells.ts created, tlqueue+engine-live typed selects; tsc clean, queue-tlqueue golden 50/50, eslint clean |
-| S04-02 | mini/S04 | dev | S04-01 | 3/5/80/10 | PASS | done | results/S04-02.md; jobs/tph-run/touches typed selects+adapters; tsc clean, golden tph+productivity 39/39, zero select('cols in src, eslint clean |
-| S05 | package/- | - | - | n/a | not dispatchable | done | all 4 children done; cols purge/backfill/removal complete; drop migration authored, ships merge-to-main |
-| S05-01 | mini/S05 | data-engineer | none | 1/4/110/10 | PASS | done | results/S05-01.md; --write on prod exit 0, 495345 deleted (fd=301053 maqsam=73690 fc=0 tickets=120602, matched dry counts), refresh_log row written; reports/purge-write.log |
-| S05-02 | mini/S05 | data-engineer | S02-01, S02-02, S05-01 | 2/5/140/10 | PASS | done | results/S05-02.md; --write on prod exit 0: fd=404915 maqsam=42413 fc=1753, skipped=0, refresh_log ok; post-write --dry pending=0; reports/backfill-write.log |
-| S05-03 | mini/S05 | dev | S04-02, S05-02 | 3/6/60/10 | PASS | done | results/S05-03.md; cols dropped from upsert payload, tests assert absent, dedupe_key unchanged; tsc clean, mirrors 9/9, eslint clean |
-| S05-04 | mini/S05 | supabase-expert | S05-03 | 1/3/25/5 | PASS | done | results/S05-04.md; migration 20261113115521_drop_mirror_cols.sql authored (DROP cols x3, IF EXISTS); remote apply = merge-to-main, NOT approved |
-| remote-ddl | op/- | supabase-expert | none | 4 migrations | n/a | done | results/remote-migrations.md; db query -f + batched repair (push refused on pre-existing remote-only versions); migration list confirms all 4 applied; Target=prod verified |
-| qa1-01 | mini/fix-qa-1 | data-engineer | none | 1/4/120/10 | PASS | done | results/qa1-01.md; migration/reset-fd-activities.ts (118 ln); --dry exit 0 rows=404915 watermark_present=true; tsc clean; --write NEEDS_APPROVAL |
-| qa1-02 | mini/fix-qa-1 | dev | none | 2/3/60/10 | PASS | done | results/qa1-02.md; roster select error -> throw described(step:'roster directory'); h.rosterErr seam + new test; mirrors 10/10, tsc clean |
-| qa1-03 | mini/fix-qa-1 | dev | none | 1/1/2/5 | PASS | done | results/qa1-03.md; FOREIGN repair: +`TableScroll: 'table-scroll'` in ui mock, 1 line; audit-queue-memo 4/4 |
-| data1-01 | mini/fix-data-1 | data-engineer | none | 2/4/140/10 | PASS | done | results/data1-01.md; RETENTION_FLOOR_MS + w-clamp + consume skip (mirrors.ts:46,279,305); mirrors 13/13; rebuild now floor-safe once deployed |
-| data1-02 | mini/fix-data-1 | data-engineer | none | 3/4/90/10 | PASS | done | results/data1-02.md; fdFloorCursor_ clamp at fdSyncLoop_ entry (freshdesk.ts:35,42,308) + PLAN.md D3 -> Sep-1; fd-ticket-floor 5/5 |
-| ops1-01 | mini/ops-1 | data-engineer | FRESHDESK_API_KEY in .env.local | 1/5/15/10 | PASS | blocked | results/ops1-01.md; reset exit0 404915→0 + refresh_log row; rebuild exit0 x2 written=66212 partial=true — `--write` forces full:true → cut=-Infinity → rerun treadmills at Sep-1 (mirrors.ts:242-244,305); table covers Sep-1→Oct-1, watermark re-seeded Oct-2; Oct-2→now gap needs deployed-cron incremental OR fresh approval for non-full invocation (grant #4c = literal cmd only) |
-| ops1-02 | mini/ops-1 | data-engineer | none | 1/4/15/5 | PASS | done | results/ops1-02.md; key was absent -> inserted `2026-09-01T00:00:00Z`, read-back exact, Target=prod x3, updated_by=system:ops; next job-data-tick starts Sep-1 repopulation |
-| ops1-03 | mini/ops-1 | data-engineer | ops1-01 partial (Oct-2 watermark) | 2/5/35/10 | PASS | in-progress | grant #6; add `--resume` (non-full syncMirror) to run-fd-mirror.ts, run ≤4 capped invocations to close Oct-2→now gap |
+| S00 | package/- | - | - | n/a | not dispatchable | verified | both children done; grep verified clean (only sheet keys + logs remain per D6) |
+| S00-01 | mini/S00 | supabase-expert | none | 1/3/20/5 | PASS | verified | results/S00-01.md; migration 20261112150725, tsc clean; remote apply NEEDS_APPROVAL |
+| S00-02 | mini/S00 | dev | S00-01 | 8/6/50/10 | PASS | verified | results file missing (worker killed); TL re-verified on disk: backfill-fc-messages.ts deleted, fc_messages grep clean (logs only), docs clean |
+| S01 | package/- | - | - | n/a | not dispatchable | verified | all 3 children done; tsc+vitest+eslint clean |
+| S01-01 | mini/S01 | supabase-expert | none | 1/2/15/5 | PASS | verified | results/S01-01.md; migration 20261112150724, tsc clean; remote apply NEEDS_APPROVAL |
+| S01-02 | mini/S01 | dev | S01-01 | 2/5/45/10 | PASS | verified | results file missing (worker killed); TL re-verified: fdTicketToRow_ emits subject/order_id (freshdesk.ts:101-102); qeReadTicketDetail_ selects+maps them (engine-live.ts:284,291-292) |
+| S01-03 | mini/S01 | data-engineer | S01-02 | 2/5/70/10 | PASS | verified | results/S01-03.md; qe_fd_cache upsert+30d prune non-fatal; qe-fd-cache.test 5/5, tsc+eslint clean |
+| S02 | package/- | - | - | n/a | not dispatchable | verified | both migrations authored + tsc clean; remote apply NEEDS_APPROVAL |
+| S02-01 | mini/S02 | supabase-expert | none | 1/4/35/5 | PASS | verified | results/S02-01.md; migration 20261112150305, tsc clean; remote apply NEEDS_APPROVAL |
+| S02-02 | mini/S02 | supabase-expert | none | 1/4/40/5 | PASS | verified | results/S02-02.md; migration 20261112150304, tsc clean; remote apply NEEDS_APPROVAL |
+| S03 | package/- | - | - | n/a | not dispatchable | verified | all 4 children done; integration gate tsc+vitest 27/27 green (reports/gate-s03.log) |
+| S03-01 | mini/S03 | data-engineer | none | 2/6/190/10 | PASS | verified | freshdesk.ts fdActivityExport_ (:233) + tests/jobs/fd-activity-export.test.ts 5/5 green (TL-verified); results file missing (worker killed/oversight) |
+| S03-02 | mini/S03 | data-engineer | S03-01 | 2/6/160/10 | PASS | verified | results/S03-02.md; fdActivityToCells_ returns unknown[][] (multi-row expansion, documented deviation); export has group (cell8), no old-value (cell7 ''); vitest 7/7 |
+| S03-03 | mini/S03 | dev | S03-02, S02-01 | 2/6/130/10 | PASS | verified | results/S03-03.md (attempt 2, fresh dev); fd_activities API day-loop + 9-col toRow + windowMs + roster/groups; tsc clean, mirrors 9/9, zero fetchWorkbookTabs; TL gate reports/gate-s03.log |
+| S03-04 | mini/S03 | dev | S02-02 | 2/5/90/10 | PASS | verified | results/S03-04.md; toRow hook added (S03-03 not yet landed) + typed emission; mirrors.test 9/9, tsc+eslint clean |
+| S04 | package/- | - | S03, S05-02 | n/a | not dispatchable | verified | both children done; final integration gate PASS (reports/gate-final.log) |
+| S04-01 | mini/S04 | dev | S03-03, S03-04, S05-02 | 3/5/100/10 | PASS | verified | results/S04-01.md; mirror-cells.ts created, tlqueue+engine-live typed selects; tsc clean, queue-tlqueue golden 50/50, eslint clean |
+| S04-02 | mini/S04 | dev | S04-01 | 3/5/80/10 | PASS | verified | results/S04-02.md; jobs/tph-run/touches typed selects+adapters; tsc clean, golden tph+productivity 39/39, zero select('cols in src, eslint clean |
+| S05 | package/- | - | - | n/a | not dispatchable | verified | all 4 children done; cols purge/backfill/removal complete; drop migration authored, ships merge-to-main |
+| S05-01 | mini/S05 | data-engineer | none | 1/4/110/10 | PASS | verified | results/S05-01.md; --write on prod exit 0, 495345 deleted (fd=301053 maqsam=73690 fc=0 tickets=120602, matched dry counts), refresh_log row written; reports/purge-write.log |
+| S05-02 | mini/S05 | data-engineer | S02-01, S02-02, S05-01 | 2/5/140/10 | PASS | verified | results/S05-02.md; --write on prod exit 0: fd=404915 maqsam=42413 fc=1753, skipped=0, refresh_log ok; post-write --dry pending=0; reports/backfill-write.log |
+| S05-03 | mini/S05 | dev | S04-02, S05-02 | 3/6/60/10 | PASS | verified | results/S05-03.md; cols dropped from upsert payload, tests assert absent, dedupe_key unchanged; tsc clean, mirrors 9/9, eslint clean |
+| S05-04 | mini/S05 | supabase-expert | S05-03 | 1/3/25/5 | PASS | verified | results/S05-04.md; migration 20261113115521_drop_mirror_cols.sql authored (DROP cols x3, IF EXISTS); remote apply = merge-to-main, NOT approved |
+| remote-ddl | op/- | supabase-expert | none | 4 migrations | n/a | verified | results/remote-migrations.md; db query -f + batched repair (push refused on pre-existing remote-only versions); migration list confirms all 4 applied; Target=prod verified |
+| qa1-01 | mini/fix-qa-1 | data-engineer | none | 1/4/120/10 | PASS | verified | results/qa1-01.md; migration/reset-fd-activities.ts (118 ln); --dry exit 0 rows=404915 watermark_present=true; tsc clean; --write NEEDS_APPROVAL |
+| qa1-02 | mini/fix-qa-1 | dev | none | 2/3/60/10 | PASS | verified | results/qa1-02.md; roster select error -> throw described(step:'roster directory'); h.rosterErr seam + new test; mirrors 10/10, tsc clean |
+| qa1-03 | mini/fix-qa-1 | dev | none | 1/1/2/5 | PASS | verified | results/qa1-03.md; FOREIGN repair: +`TableScroll: 'table-scroll'` in ui mock, 1 line; audit-queue-memo 4/4 |
+| data1-01 | mini/fix-data-1 | data-engineer | none | 2/4/140/10 | PASS | verified | results/data1-01.md; RETENTION_FLOOR_MS + w-clamp + consume skip (mirrors.ts:46,279,305); mirrors 13/13; rebuild now floor-safe once deployed |
+| data1-02 | mini/fix-data-1 | data-engineer | none | 3/4/90/10 | PASS | verified | results/data1-02.md; fdFloorCursor_ clamp at fdSyncLoop_ entry (freshdesk.ts:35,42,308) + PLAN.md D3 -> Sep-1; fd-ticket-floor 5/5 |
+| ops1-01 | mini/ops-1 | data-engineer | FRESHDESK_API_KEY in .env.local | 1/5/15/10 | PASS | verified (superseded by ops1-03) | results/ops1-01.md; reset exit0 404915→0 + refresh_log row; rebuild exit0 x2 written=66212 partial=true — `--write` forces full:true → cut=-Infinity → rerun treadmills at Sep-1 (mirrors.ts:242-244,305); table covers Sep-1→Oct-1, watermark re-seeded Oct-2; Oct-2→now gap needs deployed-cron incremental OR fresh approval for non-full invocation (grant #4c = literal cmd only) |
+| ops1-02 | mini/ops-1 | data-engineer | none | 1/4/15/5 | PASS | verified | results/ops1-02.md; key was absent -> inserted `2026-09-01T00:00:00Z`, read-back exact, Target=prod x3, updated_by=system:ops; next job-data-tick starts Sep-1 repopulation |
+| ops1-03 | mini/ops-1 | data-engineer | ops1-01 partial (Oct-2 watermark) | 2/5/35/10 | PASS | verified | results/ops1-03.md; `--resume` added (~21 ln) → full=false all runs; run1 exit0 written=62265 partial (Oct-2→25), runs2-3 walked→Nov-12 then deterministic FD 404 on today's unpublished export; TL-verified prod: n=183,410 (gap was ~117k vs ~90k est), max_pa=Nov-12 21:10Z, future_dated=0, ts_mismatch=0, watermark=Nov-13 00:00Z — residual = today only, cron picks up post-publish |
 
 ## Order / notes
 - S00, S01, S02, S03-01 are independent — can parallelize (S03-03 same-file
@@ -60,14 +60,14 @@ revert; scope checks use assignment-local diffs only):
 ## Review findings (FIX mode)
 | Finding | Source report | Assigned | Status | Evidence |
 |---|---|---|---|---|
-| qa-1 dedupe_key re-key gap (MED) | reports/qa-1.md | qa1-01 (data-engineer) | done | wipe+watermark-reset CLI authored+dry-run; remote --write NEEDS_APPROVAL |
-| qa-2 roster error swallowed (MED) | reports/qa-1.md | qa1-02 (dev) | done | described throw + regression test (mirrors 10/10) |
-| qa-3 TableScroll mock, vitest RED (HIGH) | reports/qa-1.md | qa1-03 (dev) | done | FOREIGN 1-line repair, attributed not reverted; suite green |
+| qa-1 dedupe_key re-key gap (MED) | reports/qa-1.md | qa1-01 (data-engineer) | verified | wipe+watermark-reset CLI authored+dry-run; remote --write NEEDS_APPROVAL |
+| qa-2 roster error swallowed (MED) | reports/qa-1.md | qa1-02 (dev) | verified | described throw + regression test (mirrors 10/10) |
+| qa-3 TableScroll mock, vitest RED (HIGH) | reports/qa-1.md | qa1-03 (dev) | verified | FOREIGN 1-line repair, attributed not reverted; suite green |
 | qa-4 drop-cols merge ordering (LOW) | reports/qa-1.md | - | deferred | LOW per workflow |
 | qa-5 results files at repo root (LOW) | reports/qa-1.md | - | deferred | LOW per workflow |
-| data-1 corrupt fd_activities ts_ms/performed_at (BLOCKER) | reports/data-1.md | ops only — reset --write + rebuild --write | done | corruption eliminated: 404,915 wiped, future_dated=0, performed_at≡ts_ms spot-check 3/3, floor enforced (min_pa=Sep-1); Sep-1→Oct-1 rebuilt API-direct (66,212); Oct-2→now gap = ops1-01 blocked row |
-| data-2 no Sep-1 retention floor in mirror sync (HIGH) | reports/data-1.md | data1-01 (data-engineer) | done | floor inside syncMirror covers run-fd-mirror + admin backfill; mirrors 13/13 |
-| data-3 D3 cursor reset would re-insert purged tickets (HIGH) | reports/data-1.md | data1-02 (data-engineer) | done | fdFloorCursor_ enforced in code + PLAN.md D3 corrected; prod cursor write still NEEDS_APPROVAL |
+| data-1 corrupt fd_activities ts_ms/performed_at (BLOCKER) | reports/data-1.md | ops only — reset --write + rebuild --write | verified | corruption eliminated: 404,915 wiped, future_dated=0, performed_at≡ts_ms spot-check 3/3, floor enforced (min_pa=Sep-1); Sep-1→Oct-1 rebuilt API-direct (66,212); Oct-2→now gap = ops1-01 blocked row |
+| data-2 no Sep-1 retention floor in mirror sync (HIGH) | reports/data-1.md | data1-01 (data-engineer) | verified | floor inside syncMirror covers run-fd-mirror + admin backfill; mirrors 13/13 |
+| data-3 D3 cursor reset would re-insert purged tickets (HIGH) | reports/data-1.md | data1-02 (data-engineer) | verified | fdFloorCursor_ enforced in code + PLAN.md D3 corrected; prod cursor write still NEEDS_APPROVAL |
 | data-4 group_name fallback missing (LOW) | reports/data-1.md | - | deferred | LOW per workflow |
 | data-5 --check sheet-era parity model (LOW) | reports/data-1.md | - | deferred | LOW per workflow |
 
@@ -93,9 +93,12 @@ revert; scope checks use assignment-local diffs only):
   re-inserts ~120,602 purged tickets). Repopulates subject/order_id on the
   56,014 retained tickets. APPROVALS #5 granted — ops1-02 dispatched;
   safe pre/post-deploy (value IS the floor `fdFloorCursor_` clamps to).
-- OPS round 3 (approval #6): ops1-03 dispatched — resume-mode `--resume` flag
-  (minimal local-script edit, in-scope per task) + incremental runs to close
-  Oct-2→now gap; verify n≈156k, future_dated=0, performed_at≡ts_ms, max≈now.
+- OPS round 3 (approval #6): ops1-03 DONE — `--resume` flag added to
+  run-fd-mirror.ts; 3 invocations closed Oct-2→Nov-12 (n=183,410; gap was
+  ~117k rows vs ~90k estimate); residual = today's window only (FD 404s
+  unpublished same-day export — pre-existing mirrors.ts constraint; deployed
+  incremental resumes at Nov-13 00:00 cut and fills it once published; each
+  cron run will log that same-day 404 until then — benign, flag to PM).
 - OPS round (approvals #4/#5): ops1-01 ran 2026-11-13 ~15:08-15:17 UTC
   (key pasted, len=20). Reset wiped 404,915; rebuild wrote 66,212 then
   stopped at the 240s SYNC_BUDGET (partial=true) — `--write` is full:true
@@ -126,3 +129,4 @@ revert; scope checks use assignment-local diffs only):
 | cont-2 | final integration | `npx tsc --noEmit && npx vitest run tests/jobs/{mirrors,fd-activity-export,fd-activity-cells,mirror-cells}.test.ts tests/golden/{queue-tlqueue,tph,productivity}.test.ts` + tests/quality/qe-fd-cache.test.ts | PASS — tsc clean, 121/121 (reports/gate-final.log) |
 | fix-qa-1 | FIX integration | `npx vitest run` + `npx tsc --noEmit` + `npx eslint <4 touched files>` | PASS — vitest 1347/1347 (was 4 failed), tsc clean, eslint 0 errors (migration/ ignored by config) — reports/gate-fix-qa1{,-tsc,-eslint}.log |
 | fix-data-1 | FIX integration | `npx vitest run tests/jobs/{mirrors,fd-ticket-floor,fd-activity-export,fd-activity-cells,backfill}.test.ts` + `npx tsc --noEmit` + `npx eslint <4 touched files>` | PASS — vitest 37/37, tsc clean, eslint 0 — reports/gate-fix-data1-{vitest,tsc,eslint}.log |
+| ops-3 | TL prod verify (read-only) | `npx supabase db query --remote --yes` count/max_pa/future_dated/ts_mismatch + config watermark | PASS — Target=prod; n=183,410 · max_pa=2026-11-12 21:10:40Z · future_dated=0 · ts_mismatch=0 · watermark last_ts_ms=1794528000000 (Nov-13 00:00Z) |
