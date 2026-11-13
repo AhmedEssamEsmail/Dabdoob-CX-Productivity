@@ -1,0 +1,60 @@
+--- 375px ---
+{
+ "innerWidth": 375,
+ "scrollWidth": 375,
+ "hScroll": false,
+ "whenWidth": 203,
+ "whenFieldWidth": 323,
+ "selectWidths": [
+  104,
+  104,
+  104
+ ],
+ "clips": [
+  {
+   "sel": 104,
+   "txt": "Fail"
+  },
+  {
+   "sel": 104,
+   "txt": "Agent"
+  },
+  {
+   "sel": 104,
+   "txt": ""
+  }
+ ],
+ "tableWidth": 300,
+ "scoreNum": "17px",
+ "tblscrollHasOverflow": true
+}
+--- 1024px ---
+{
+ "innerWidth": 1024,
+ "scrollWidth": 1024,
+ "hScroll": false,
+ "whenWidth": 203,
+ "whenFieldWidth": 972,
+ "selectWidths": [
+  104,
+  104,
+  104
+ ],
+ "clips": [
+  {
+   "sel": 104,
+   "txt": "Fail"
+  },
+  {
+   "sel": 104,
+   "txt": "Agent"
+  },
+  {
+   "sel": 104,
+   "txt": ""
+  }
+ ],
+ "tableWidth": 938,
+ "scoreNum": "17px",
+ "tblscrollHasOverflow": false
+}

@@ -1,0 +1,17 @@
+TSC_EXIT=0
+ESLINT_EXIT=0
+    [90m110|[39m     expect(res.index['9001']).toBeTruthy()
+    [90m111|[39m     const log = h.logs.find((l) => l.table === 'refresh_log')
+    [90m112|[39m     expect(log).toBeTruthy()
+    [90m   |[39m                 [31m^[39m
+    [90m113|[39m     expect(log!.job).toBe('qe_fd_cache')
+    [90m114|[39m     expect(log!.status).toBe('error')
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 19:58:44
+[2m   Duration [22m 307ms[2m (import 65%, transform 28%, tests 4%, worker 3%)[22m
+

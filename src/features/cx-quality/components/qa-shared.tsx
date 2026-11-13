@@ -923,34 +923,44 @@ export function AuditForm({
                         </td>
                         <td className="num">{ua}</td>
                         <td className="num">
-                          <Seg
-                            name={`qa-${F.id}`}
+                          <Select
                             value={Je ?? ''}
-                            onChange={(v) => O(F.id, v)}
-                            options={da.map((le) => ({
-                              value: le,
-                              label: QA_ANSWER[le],
-                            }))}
+                            onChange={(e) =>
+                              O(F.id, e.currentTarget.value)
+                            }
                             aria-label={F.text}
-                          />
+                            {...{ 'aria-required': 'true' }}
+                          >
+                            <option value="" />
+                            {da.map((le) => (
+                              <option value={le} key={le}>
+                                {QA_ANSWER[le]}
+                              </option>
+                            ))}
+                          </Select>
                           {l && Je === 'fail' ? (
                             <div className="qa-q__why">
                               <span className="cx-faint" id={`qa-why-${F.id}`}>
                                 Why it failed
                               </span>
-                              <Seg
-                                name={`qa-why-${F.id}`}
+                              <Select
                                 value={f[F.id] ?? ''}
-                                onChange={(v) =>
-                                  g((ha: any) => ({ ...ha, [F.id]: v }))
+                                onChange={(e) =>
+                                  g((ha: any) => ({
+                                    ...ha,
+                                    [F.id]: e.currentTarget.value,
+                                  }))
                                 }
-                                options={QA_WHY.map((le) => ({
-                                  value: le.v,
-                                  label: le.label,
-                                }))}
                                 aria-labelledby={`qa-why-${F.id}`}
                                 {...{ 'aria-required': 'true' }}
-                              />
+                              >
+                                <option value="" />
+                                {QA_WHY.map((le) => (
+                                  <option value={le.v} key={le.v}>
+                                    {le.label}
+                                  </option>
+                                ))}
+                              </Select>
                             </div>
                           ) : null}
                         </td>

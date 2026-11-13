@@ -1,0 +1,46 @@
+TSC_EXIT=0
+ESLINT_EXIT=0
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [32m✓[39m tests/quality/audit-form-controls.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/quality/qa-interaction-date.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[90mstdout[2m | tests/quality/qe-fd-cache.test.ts[2m > [22m[2mqe_fd_cache populate in qeReadTicketDetail_[2m > [22m[2mlogs cache failures to refresh_log instead of throwing
+[22m[39mqe_fd_cache not written (refresh_log also failed): qe_fd_cache write denied
+
+ [31m❯[39m tests/quality/qe-fd-cache.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 13[2mms[22m[39m
+   [31m❯[39m qe_fd_cache populate in qeReadTicketDetail_ [2m(5)[22m
+     [32m✓[39m upserts each fetched row on id in the 13-column cache shape[32m 5[2mms[22m[39m
+     [32m✓[39m stamps a fresh cached_at on every cached row[32m 0[2mms[22m[39m
+     [32m✓[39m prunes cached_at older than QE_FD_CACHE_KEEP_DAYS[32m 0[2mms[22m[39m
+[31m     [31m×[31m logs cache failures to refresh_log instead of throwing[39m[32m 5[2mms[22m[39m
+     [32m✓[39m is a cache no-op when no ticket ids are needed[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/quality/qe-fd-cache.test.ts[2m > [22mqe_fd_cache populate in qeReadTicketDetail_[2m > [22mlogs cache failures to refresh_log instead of throwing
+[31m[1mAssertionError[22m: expected undefined to be truthy[39m
+
+[32m- Expected:[39m
+true
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m tests/quality/qe-fd-cache.test.ts:[2m112:17[22m[39m
+    [90m110|[39m     expect(res.index['9001']).toBeTruthy()
+    [90m111|[39m     const log = h.logs.find((l) => l.table === 'refresh_log')
+    [90m112|[39m     expect(log).toBeTruthy()
+    [90m   |[39m                 [31m^[39m
+    [90m113|[39m     expect(log!.job).toBe('qe_fd_cache')
+    [90m114|[39m     expect(log!.status).toBe('error')
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 19:40:41
+[2m   Duration [22m 307ms[2m (import 66%, transform 27%, tests 5%, worker 3%)[22m
+
+VITEST_EXIT=1
