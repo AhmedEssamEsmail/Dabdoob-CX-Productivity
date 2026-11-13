@@ -95,10 +95,10 @@ export async function fdGroups_(): Promise<Record<string, string>> {
   return map
 }
 
-export function fdIso_(s: unknown): string {
-  if (!s) return ''
+export function fdIso_(s: unknown): string | null {
+  if (!s) return null
   const d = new Date(String(s))
-  return isNaN(d.getTime()) ? '' : d.toISOString()
+  return isNaN(d.getTime()) ? null : d.toISOString()
 }
 
 /** fdTicketToRow_ verbatim: one Freshdesk ticket -> one `tickets` row; no PII.
@@ -127,7 +127,7 @@ export function fdTicketToRow_(t: Record<string, unknown>, groups: Record<string
     source: FD_SOURCE_NAMES[t.source as number] || 'Source ' + t.source,
     contact_type_2: String(cf.cf_contact_type_2 || ''),
     contact_type_3: String(cf.cf_contact_type_3 || ''),
-    priority: t.priority || '',
+    priority: t.priority ?? null,
     is_escalated: t.is_escalated === true,
     first_responded_at: fdIso_(st.first_responded_at),
     status_updated_at: fdIso_(st.status_updated_at),
@@ -278,10 +278,16 @@ export async function fdActivityExport_(dateKey: string): Promise<Record<string,
   )
 }
 
-async function dqUpsertTickets_(rows: Record<string, unknown>[]): Promise<{ updated: number; appended: number }> {
+const TICKETS_UPSERT_BATCH = 500
+
+export async function dqUpsertTickets_(rows: Record<string, unknown>[]): Promise<{ updated: number; appended: number }> {
   if (!rows.length) return { updated: 0, appended: 0 }
-  const { error } = await db().from('tickets').upsert(rows, { onConflict: 'ticket_id' })
-  if (error) throw described(error, { table: 'tickets' })
+  for (let i = 0; i < rows.length; i += TICKETS_UPSERT_BATCH) {
+    const { error } = await db()
+      .from('tickets')
+      .upsert(rows.slice(i, i + TICKETS_UPSERT_BATCH), { onConflict: 'ticket_id' })
+    if (error) throw described(error, { table: 'tickets' })
+  }
   return { updated: rows.length, appended: 0 }
 }
 
