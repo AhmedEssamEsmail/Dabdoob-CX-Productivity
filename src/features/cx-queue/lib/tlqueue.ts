@@ -33,7 +33,7 @@
 
 import 'server-only'
 
-import { db, appendRow, readAllPaged } from '@/features/shared/platform/repo'
+import { db, appendRow, readAllPaged, newId } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
 import { isCxAgent_, requireJobCaller, requireRole } from '@/features/shared/platform/identity'
 import { readStore } from '@/features/shared/platform/stores'
@@ -866,7 +866,7 @@ export async function tlqBuild_(statDates?: string[] | null, io?: TlqIo): Promis
     {
       job: 'tl_queue_metrics', started_at: stamp, finished_at: new Date().toISOString(),
       rows_in: shifts.length, rows_out: shiftRows.length + statRows.length + teamRows.length + (olRows || []).length + areaRows.length,
-      status: 'ok', error: '', note, log_id: '', type: 'job',
+      status: 'ok', error: '', note, log_id: newId('rl'), type: 'job',
     },
     'system:job'
   )

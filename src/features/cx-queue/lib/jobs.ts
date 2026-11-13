@@ -9,7 +9,7 @@
 
 import 'server-only'
 
-import { appendRow, db, cachePut, cacheRemove } from '@/features/shared/platform/repo'
+import { appendRow, db, cachePut, cacheRemove, newId } from '@/features/shared/platform/repo'
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { dqTitleLevel_, requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
@@ -43,7 +43,7 @@ export async function dqLogRun_(job: string, started: number, status: string, in
     job, started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
     rows_in: Number(info.rowsIn || 0), rows_out: Number(info.rowsOut || 0),
     source_cursor: info.cursor ? String(info.cursor) : '', status, error: String(info.error || ''),
-    note: String(info.note || ''), log_id: '', type: 'job',
+    note: String(info.note || ''), log_id: newId('rl'), type: 'job',
   }, 'system:job')
 }
 

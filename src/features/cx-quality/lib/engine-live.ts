@@ -16,7 +16,7 @@
  * transcribed verbatim from QaEngine.js so the same day rebuilds the same queue.
  */
 import 'server-only'
-import { db, readRows, sanitizeInput, appendRow } from '@/features/shared/platform/repo'
+import { db, readRows, sanitizeInput, appendRow, newId } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described } from '@/features/shared/lib/errors'
 import { fdActivityCells_ } from '@/features/shared/jobs/mirror-cells'
@@ -318,7 +318,7 @@ export async function qeReadTicketDetail_(neededIds: Record<string, boolean>, si
         await appendRow('refresh_log', {
           job: 'qe_fd_cache', started_at: cachedAt, finished_at: new Date().toISOString(),
           rows_in: cacheRows.length, rows_out: 0, source_cursor: '', status: 'error',
-          error: msg, note: 'qe_fd_cache write during QE detail read', log_id: '', type: 'job',
+          error: msg, note: 'qe_fd_cache write during QE detail read', log_id: newId('rl'), type: 'job',
         }, 'system:job')
       } catch {
         console.log('qe_fd_cache not written (refresh_log also failed): ' + msg)

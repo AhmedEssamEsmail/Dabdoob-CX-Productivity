@@ -13,7 +13,7 @@
 
 import 'server-only'
 
-import { db, appendRow, cacheGet, cachePut } from '@/features/shared/platform/repo'
+import { db, appendRow, cacheGet, cachePut, newId } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { described, DescribedError } from '@/features/shared/lib/errors'
 
@@ -291,7 +291,7 @@ async function fdLogRun_(job: string, started: number, status: string, info: Rec
     job, started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
     rows_in: Number(info.rowsIn || 0), rows_out: Number(info.rowsOut || 0),
     source_cursor: info.cursor ? String(info.cursor) : '', status, error: String(info.error || ''),
-    note: String(info.note || ''), log_id: '', type: 'job',
+    note: String(info.note || ''), log_id: newId('rl'), type: 'job',
   }, 'system:job')
 }
 
