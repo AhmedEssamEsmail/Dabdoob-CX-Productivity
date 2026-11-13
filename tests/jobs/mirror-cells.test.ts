@@ -1,84 +1,84 @@
 /**
- * S05-02 — stored cells -> typed row -> cells round-trip for the backfill
- * parsers and the S04-01 adapter contract, both hosted in
- * migration/backfill-mirror-columns.ts until S04-01 lands src mirror-cells.ts.
- * Timestamp cells compare as instants (fd cell 0 is a display string whose
- * instant lives in ts_ms; the adapter emits ISO); text cells are verbatim.
+ * mirror-cells adapter contract — typed mirror row -> the positional cell
+ * arrays the shared TPH readers consume (S04-01). Repointed from the retired
+ * one-shot backfill script (migration/, gitignored) to the shipped adapter;
+ * the legacy DD/MM + tsMs parse direction died with the pre-Sep-2026 purge.
  */
 import { describe, expect, it } from 'vitest'
-import { colsToRow, rowToCells } from '../../migration/backfill-mirror-columns'
 
-/** Cell indexes that carry timestamps per table (instant-compare). */
-const TS_CELL: Record<string, Set<number>> = {
-  fd_activities: new Set([0]),
-  maqsam_calls: new Set([0, 1]),
-  freshchat: new Set([0, 3, 4]),
-}
-/** Cells with no typed column — dropped on purpose (S02-01: fd cell 9 unread). */
-const UNMAPPED: Record<string, Set<number>> = { fd_activities: new Set([9]) }
+import { fdActivityCells_, freshchatCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 
-/** Round-trips `cells` through colsToRow/rowToCells; fd's cell-0 instant is
- *  asserted against `tsMs` (its parsed form), every other cell verbatim. */
-function roundTrip(table: string, cells: unknown[], tsMs: number | null, cellsChecked: number) {
-  const row = colsToRow(table, cells, tsMs)
-  expect(row, `${table} parse`).not.toBeNull()
-  const back = rowToCells(table, row!)
-  for (let i = 0; i < cellsChecked; i++) {
-    const orig = cells[i] === null || cells[i] === undefined ? '' : String(cells[i])
-    if (TS_CELL[table].has(i)) {
-      const backMs = back[i] === '' ? null : Date.parse(String(back[i]))
-      const origMs = table === 'fd_activities' ? tsMs : orig === '' || Number.isNaN(Date.parse(orig)) ? null : Date.parse(orig)
-      expect(backMs, `${table} cell ${i}`).toBe(origMs)
-    } else if (UNMAPPED[table]?.has(i)) {
-      expect(back[i], `${table} cell ${i} unmapped`).toBe('')
-    } else {
-      expect(back[i], `${table} cell ${i}`).toBe(orig)
-    }
-  }
-  return row!
-}
-
-describe('mirror cells -> typed -> cells round-trip', () => {
-  it('fd_activities: display-timestamp row round-trips (cell 0 via ts_ms)', () => {
-    const tsMs = Date.UTC(2026, 10, 5, 11, 30) // '11-05-2026 14:30:00' Asia/Kuwait
-    const row = roundTrip('fd_activities',
-      ['11-05-2026 14:30:00', '12345', 'Agent A', 'user', 'status_change', 'status', '2', '1', 'Cairo', 'ignored'],
-      tsMs, 10)
-    expect(row.performed_at).toBe(new Date(tsMs).toISOString())
-    expect(row.group_name).toBe('Cairo')
+describe('mirror-cells adapters', () => {
+  it('fd_activities typed row -> 10-cell Activities layout (J blank)', () => {
+    const cells = fdActivityCells_({
+      performed_at: '2026-11-05T08:30:00.000Z',
+      ticket_id: '12345',
+      performer_name: 'Agent A',
+      performer_type: 'user',
+      activity_type: 'status_change',
+      field_changed: 'status',
+      new_value: '2',
+      old_value: '1',
+      group_name: 'Cairo',
+    })
+    expect(cells).toEqual([
+      '2026-11-05T08:30:00.000Z', '12345', 'Agent A', 'user',
+      'status_change', 'status', '2', '1', 'Cairo', '',
+    ])
   })
 
-  it('maqsam_calls: ISO row round-trips exactly', () => {
-    roundTrip('maqsam_calls',
-      ['2026-10-01T09:00:00.000Z', '2026-10-01T09:05:00.000Z', '0:05:00', 'a@b.com', 'ANSWERED', 'inbound', '0.0035'],
-      null, 7)
+  it('fd_activities nulls -> "" cells', () => {
+    const cells = fdActivityCells_({
+      performed_at: null, ticket_id: null, performer_name: null,
+      performer_type: 'user', activity_type: null, field_changed: null,
+      new_value: null, old_value: null, group_name: null,
+    })
+    expect(cells).toEqual(['', '', '', 'user', '', '', '', '', '', ''])
   })
 
-  it('freshchat: ISO row round-trips exactly', () => {
-    roundTrip('freshchat',
-      ['2026-10-01T09:00:00.000Z', 'AGENT_RESOLVE', 'conv1-1759300800000', '2026-10-02T10:00:00.000Z',
-        '2026-10-02T11:00:00.000Z', 'EMAIL', 'conv1'],
-      null, 7)
+  it('maqsam_calls typed row -> 7-cell D..J layout', () => {
+    const cells = maqsamCells_({
+      started_at: '2026-10-01T09:00:00.000Z',
+      ended_at: '2026-10-01T09:05:00.000Z',
+      duration: '0:05:00', agent_email: 'a@b.com',
+      state: 'ANSWERED', direction: 'inbound', handling: '0.0035',
+    })
+    expect(cells).toEqual([
+      '2026-10-01T09:00:00.000Z', '2026-10-01T09:05:00.000Z',
+      '0:05:00', 'a@b.com', 'ANSWERED', 'inbound', '0.0035',
+    ])
   })
 
-  it('blank cells -> NULL cols -> "" cells (blank-cell parity)', () => {
-    const row = roundTrip('freshchat',
-      ['2026-10-01T09:00:00.000Z', '', 'conv2-1759300800000', '2026-10-02T10:00:00.000Z', '', '', 'conv2'],
-      null, 7)
-    expect(row.resolved_at).toBeNull()
-    expect(row.status).toBeNull()
-    expect(row.channel).toBeNull()
+  it('freshchat typed row -> 7-cell A..G layout', () => {
+    const cells = freshchatCells_({
+      initiated_at: '2026-10-01T09:00:00.000Z', status: 'AGENT_RESOLVE',
+      ref_key: 'conv1-1759300800000', updated_at: '2026-10-02T10:00:00.000Z',
+      resolved_at: '2026-10-02T11:00:00.000Z', channel: 'EMAIL',
+      conversation_id: 'conv1',
+    })
+    expect(cells).toEqual([
+      '2026-10-01T09:00:00.000Z', 'AGENT_RESOLVE', 'conv1-1759300800000',
+      '2026-10-02T10:00:00.000Z', '2026-10-02T11:00:00.000Z', 'EMAIL', 'conv1',
+    ])
   })
 
-  it('unparseable timestamp cell -> NULL col -> "" cell (skipped field parity)', () => {
-    const row = roundTrip('maqsam_calls', ['not-a-date', '', '0:00:10', 'b@c.com', '', '', ''], null, 7)
-    expect(row.started_at).toBeNull()
-    expect(row.ended_at).toBeNull()
+  it('null timestamptz -> "" cell (blank-cell parity with legacy cols)', () => {
+    const cells = freshchatCells_({
+      initiated_at: '2026-10-01T09:00:00.000Z', status: null,
+      ref_key: 'conv2-1759300800000', updated_at: '2026-10-02T10:00:00.000Z',
+      resolved_at: null, channel: null, conversation_id: 'conv2',
+    })
+    expect(cells[1]).toBe('')
+    expect(cells[4]).toBe('')
+    expect(cells[5]).toBe('')
   })
 
-  it('non-array cols -> null (row counted skipped, typed cols stay NULL)', () => {
-    expect(colsToRow('fd_activities', { 0: 'x' }, 123)).toBeNull()
-    expect(colsToRow('maqsam_calls', null, null)).toBeNull()
-    expect(colsToRow('freshchat', 'oops', null)).toBeNull()
+  it('unparseable timestamp -> "" cell (readers see blank, not garbage)', () => {
+    const cells = maqsamCells_({
+      started_at: 'not-a-date', ended_at: '', duration: '0:00:10',
+      agent_email: 'b@c.com', state: null, direction: null, handling: null,
+    })
+    expect(cells[0]).toBe('')
+    expect(cells[1]).toBe('')
   })
 })
