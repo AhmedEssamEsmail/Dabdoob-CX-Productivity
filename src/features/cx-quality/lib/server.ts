@@ -505,15 +505,26 @@ async function qePassAndReplace_(key: string, queuedDate: string, reason: string
 // Access (getQaAccess / setQaAuditorGrant / qaBootFlags_)
 // =====================================================================
 
-/** getQaAccess verbatim: every importable person, whether they can audit and why, plus the grant log. */
+/** getQaAccess verbatim: every roster person, whether they can audit and why, plus the grant log. */
 export async function getQaAccess(): Promise<Row> {
   await qaRequireRole_(['admin'])
   const dir = await pwDirectory()
   const keys = (await qaAuditorPosKeywords_()).map((s) => String(s).toLowerCase().trim()).filter(String)
   const granted = await qaAuditorGrants_()
-  const people = qaImportablePeople_(dir)
+  // The whole roster is grantable, so the list is dir.by — plus stub rows for
+  // grant-holders who left the roster, so stale grants stay revocable.
+  const byEmail: Record<string, DirectoryPerson> = {}
+  Object.keys(dir.by).forEach((k) => { byEmail[k] = dir.by[k] })
+  granted.forEach((e) => {
+    const k = normEmail(e)
+    if (!byEmail[k]) {
+      byEmail[k] = dir.person(k) || { email: k, name: k, role: '', tlEmail: null, active: false, position: '', titleLevel: 'agent' }
+    }
+  })
+  const people = Object.keys(byEmail)
+    .map((k) => byEmail[k])
     .map((p) => ({
-      email: p.email, name: p.name, role: p.role, position: p.position || '',
+      email: p.email, name: p.name, role: p.role, position: p.position || '', active: p.active !== false,
       via: qaAuditorVia_({ email: p.email, role: p.role, position: p.position }, keys, granted),
     }))
     .sort((a, b) => Number(b.via ? 1 : 0) - Number(a.via ? 1 : 0) || a.name.localeCompare(b.name))
@@ -538,8 +549,8 @@ export async function setQaAuditorGrant(email: string, on: unknown): Promise<Row
   const e = normEmail(email)
   const dir = await pwDirectory()
   const p = dir.person(e)
-  const ok = !!on && p && qaImportablePeople_({ by: { x: p } }).length > 0
-  if (on && !ok) throw new Error('Choose an active agent, specialist or team lead from the list.')
+  const ok = !!on && p && p.active
+  if (on && !ok) throw new Error('Choose an active person from the list.')
   const list = await qaAuditorGrants_()
   const has = list.indexOf(e) !== -1
   if (!!on === has) return getQaAccess()

@@ -1467,7 +1467,7 @@ export function AccessPanel() {
                         >
                           {i === o.email ? 'Removing…' : 'Remove'}
                         </Button>
-                      ) : o.via ? null : (
+                      ) : o.via || o.active === false ? null : (
                         <Button
                           variant="primary"
                           disabled={!!i}
