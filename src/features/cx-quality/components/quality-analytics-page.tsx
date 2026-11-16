@@ -460,7 +460,7 @@ export function AgentWeeks({ d: t }: { d: any }) {
       hint={`Plain average of random and history audits in each quota week; under the score, how many audits. Weeks run ${t.weekStartsOn === 1 ? 'Monday to Sunday' : 'Sunday to Saturday'}, like the audit quota.`}
     >
       <TableScroll label="Agent scores by week" className="cx-panel cx-tablewrap">
-        <table className="cx-table">
+        <table className="cx-table qa-aw">
           <thead>
             <tr>
               <th scope="col" className="qa-cov__name">Agent</th>

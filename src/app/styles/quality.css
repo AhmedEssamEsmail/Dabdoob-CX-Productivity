@@ -169,6 +169,7 @@
 [data-app="quality"] .qa-cov__cell[data-noq=true] { background-image:repeating-linear-gradient(135deg,transparent 0 4px,color-mix(in srgb,currentColor 14%,transparent) 4px 5px) }
 [data-app="quality"] .qa-cov__cell[tabindex]:focus-visible { outline:2px solid var(--cx-focus, Highlight);outline-offset:-2px }
 [data-app="quality"] .qa-cov__cell[tabindex] { cursor:help }
+[data-app="quality"] .qa-aw td.cx-num { text-align:center }
 [data-app="quality"] .qa-cov-tip { font-size:var(--cx-text-xs);min-block-size:2.6em;margin-block:var(--cx-space-2);max-inline-size:80ch }
 [data-app="quality"] .qa-cov-why { min-inline-size:18rem;max-inline-size:40rem }
 [data-app="quality"] .qa-cov-why summary { cursor:pointer }
