@@ -91,6 +91,7 @@
 [data-app="quality"] .qa-diff { margin:0;padding-inline-start:1.1rem;font-size:var(--cx-text-sm) }
 [data-app="quality"] .qa-builder { display:grid;gap:var(--cx-space-4) }
 [data-app="quality"] .qa-bq { display:grid;gap:var(--cx-space-2);grid-template-columns:1fr 5.5rem auto auto;align-items:center;padding-block:var(--cx-space-2);border-block-start:1px solid var(--cx-line) }
+[data-app="quality"] .qa-bq :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 [data-app="quality"] .qa-bq__hint { grid-column:1 / -1 }
 [data-app="quality"] .qa-w { text-align:end }
 @media(max-width:40rem) {

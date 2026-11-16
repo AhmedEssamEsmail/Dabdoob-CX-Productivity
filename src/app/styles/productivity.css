@@ -115,6 +115,7 @@
 [data-app="productivity"] .tph-note {margin-block-start:var(--cx-space-2);font-size:var(--cx-text-sm)}
 [data-app="productivity"] .tph-taskform {display:flex;flex-wrap:wrap;gap:var(--cx-space-3);align-items:end}
 [data-app="productivity"] .tph-taskform .cx-field {min-inline-size:9rem}
+[data-app="productivity"] .tph-taskform :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 [data-app="productivity"] .tph-tasks {list-style:none;padding:0;margin:var(--cx-space-3) 0 0;display:grid;gap:var(--cx-space-2)}
 [data-app="productivity"] .tph-tasks li {display:flex;justify-content:space-between;gap:var(--cx-space-3);align-items:center;flex-wrap:wrap}
 [data-app="productivity"] .tph-num {inline-size:5.5rem}

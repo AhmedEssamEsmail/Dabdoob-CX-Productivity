@@ -212,6 +212,7 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
 [data-app="queue"] .sch-sources { margin-top: var(--cx-space-4); }
 [data-app="queue"] .sch-links { display: flex; gap: var(--cx-space-2); flex-wrap: wrap; }
 [data-app="queue"] .sch-edit-row { display: flex; gap: var(--cx-space-3); flex-wrap: wrap; align-items: flex-end; margin-bottom: var(--cx-space-3); }
+[data-app="queue"] .sch-edit-row :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 [data-app="queue"] .sch-grow { flex: 1 1 14rem; /* px-exact: field basis, no space step */ }
 [data-app="queue"] .sch-check { display: inline-flex; gap: var(--cx-space-2); align-items: center; padding-bottom: var(--cx-space-2); }
 [data-app="queue"] .sch-settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); /* px-exact: settings card min-width */ gap: var(--cx-space-3); margin-bottom: var(--cx-space-3); }

@@ -32,6 +32,7 @@
 :root .aging-page-head .cx-refresh { display: contents; }
 :root .aging-page-head .cx-refresh > button { grid-column: 3; inline-size: 100%; min-inline-size: 0; }
 :root .aging-page-head .cx-refresh > [role="status"] { grid-column: 1 / -1; min-inline-size: 0; overflow-wrap: anywhere; }
+:root .aging-page-head .page-actions :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 @media (max-width: 40rem) {
   :root .aging-page-head .page-actions { grid-template-columns: minmax(0, 1fr) 11rem; }
   :root .aging-page-head .page-actions > .cx-seg { grid-column: 1 / -1; justify-self: start; }
@@ -541,9 +542,11 @@
 :root .dq-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-inline-size:56rem;gap:var(--cx-space-4);align-items:start;margin-block-start:var(--cx-space-3)}
 :root .dq-editor .cx-error{grid-column:1 / -1}
 :root .dq-editor__actions{grid-column:1 / -1;display:flex;gap:var(--cx-space-2)}
+:root .dq-editor :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 :root .dq-days{display:flex;flex-wrap:wrap;gap:var(--cx-space-2);margin-block:var(--cx-space-1)}
 :root .dq-holform{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;max-inline-size:52rem;gap:var(--cx-space-3);align-items:end}
 :root .dq-holform .cx-error{grid-column:1 / -1}
+:root .dq-holform :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 @media(max-width:900px){:root .cx-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){:root .dq-holform, :root .dq-editor{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){:root .cx-headline{grid-template-columns:minmax(0,1fr)}}

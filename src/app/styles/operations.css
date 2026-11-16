@@ -51,6 +51,7 @@
 [data-app="operations"] .trk-add-choice { justify-self:start }
 [data-app="operations"] .trk-dep { margin:0;display:grid;gap:var(--cx-space-2) }
 [data-app="operations"] .trk-dep-row { display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:var(--cx-space-2);align-items:center }
+[data-app="operations"] .trk-dep-row :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 [data-app="operations"] .trk-dep dt { font-weight:var(--cx-weight-strong);overflow-wrap:anywhere }
 [data-app="operations"] .trk-dep dd { margin:0 }
 [data-app="operations"] .trk-check { display:flex;gap:var(--cx-space-2);align-items:center }

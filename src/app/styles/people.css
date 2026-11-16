@@ -29,6 +29,7 @@
 }
 [data-app="people"] .pw-inline { display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end }
 [data-app="people"] .pw-inline .field { flex:1 1 160px;min-inline-size:8rem }
+[data-app="people"] .pw-inline :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 @media(max-width:720px) {
   [data-app="people"] .pw-inline > .cx-btn { flex:0 0 100% }
 }
@@ -55,6 +56,7 @@
 [data-app="people"] .pw-topic-body { padding:14px 20px;display:grid;gap:14px }
 [data-app="people"] .pw-evidence { border-inline-start:4px solid var(--cx-age-2);background:color-mix(in srgb,var(--cx-age-1) 12%,transparent);padding:14px 16px;border-radius:0 var(--cx-radius-bar) var(--cx-radius-bar) 0;display:grid;gap:12px }
 [data-app="people"] .pw-new-action { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px;align-items:end;margin-bottom:8px }
+[data-app="people"] .pw-new-action :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 @media(max-width:720px) {
   [data-app="people"] .pw-new-action { grid-template-columns:minmax(0,1fr) }
 }
@@ -224,6 +226,7 @@
 [data-app="people"] .oo-proj-btns--start { justify-content:flex-start }
 [data-app="people"] .oo-proj-form { display:grid;gap:var(--cx-space-2);margin-top:var(--cx-space-2);padding:var(--cx-space-3);border:1px solid var(--cx-line);border-radius:var(--cx-radius-bar);background:color-mix(in srgb,var(--cx-bg) 60%,var(--cx-surface)) }
 [data-app="people"] .oo-proj-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--cx-space-2) }
+[data-app="people"] .oo-proj-grid :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
 [data-app="people"] .oo-proj-form .field-label { font-size:var(--cx-text-xs) }
 [data-app="people"] .oo-fit { border-inline-start:3px solid var(--cx-status-warn-edge);background:color-mix(in srgb,var(--cx-status-warn-edge) 12%,transparent);padding:var(--cx-space-2) var(--cx-space-3);border-radius:var(--cx-radius-bar);font-size:var(--cx-text-sm) }
 [data-app="people"] .oo-fit p { margin:0 }
