@@ -184,7 +184,7 @@ export function qaSampleBasis_(a: Record<string, unknown>): string {
 }
 
 /**
- * Pure: the simple column charts: plain average of random + old-form history audits per week
+ * Pure: the simple column charts: plain average of all audits (every sample basis) per week
  * (last 8), per month (last 6), and per week over a wider 12-week grid for the agents table,
  * ending at anchor, for the team and each agent.
  */
@@ -196,10 +196,7 @@ export function qaColumnTrend_(
   dateOf?: (a: Record<string, unknown>) => string
 ): Record<string, unknown> {
   const dof = dateOf || ((a) => String(a.audit_date).slice(0, 10))
-  const list = known.filter((a) => {
-    const b = qaSampleBasis_(a)
-    return b === 'random' || b === 'historical'
-  })
+  const list = known
   const cell = (l: Record<string, unknown>[]) => ({
     avg: l.length ? qaRound1_(l.reduce((s, a) => s + qaFinalScore_(a), 0) / l.length) : null,
     audits: l.length,

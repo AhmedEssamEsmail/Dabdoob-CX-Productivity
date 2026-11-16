@@ -238,8 +238,9 @@ export function Columns({ d: t }: { d: any }) {
         />
       </div>
       <p className="qa-trend__legend">
-        Includes old-form history audits (pale column: mostly history). Not the
-        team score above: every audit counts once, no 10-audit rule.
+        Every audit counts, whatever its sample basis (pale column: mostly
+        history). Not the team score above: every audit counts once, no
+        10-audit rule.
       </p>
     </QaSection>
   )

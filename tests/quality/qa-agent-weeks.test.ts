@@ -29,7 +29,7 @@ describe('qaColumnTrend_ agentWeeks grain', () => {
     audit('b@x.com', '2026-11-10', 'random', 80),
     audit('a@x.com', '2026-11-10', 'historical', 60),
     audit('b@x.com', '2026-06-01'), // older than the 12-week window
-    audit('a@x.com', '2026-11-11', 'targeted', 90), // targeted: not counted
+    audit('a@x.com', '2026-11-11', 'targeted', 90), // every basis counts
   ]
   const cols = qaColumnTrend_(known, '2026-11-14', 0, (e) => e) as unknown as Columns
 
@@ -46,13 +46,14 @@ describe('qaColumnTrend_ agentWeeks grain', () => {
     expect(last.audits).toBe(1)
     expect(last.history).toBe(0)
     const a = cols.agentWeeks.agents.find((g) => g.key === 'a@x.com')
-    expect(a!.cells[11].avg).toBe(60)
+    expect(a!.cells[11].avg).toBe(75)
+    expect(a!.cells[11].audits).toBe(2)
     expect(a!.cells[11].history).toBe(1)
   })
 
-  it('excludes audits outside the window or off random|historical basis', () => {
+  it('excludes audits outside the window but counts every basis', () => {
     const total = cols.agentWeeks.team.reduce((s, c) => s + c.audits, 0)
-    expect(total).toBe(2)
+    expect(total).toBe(3)
     expect(cols.week.periods).toHaveLength(8)
     expect(cols.month.periods).toHaveLength(6)
   })
