@@ -673,10 +673,20 @@ export function qaItemTag_(r: Record<string, unknown>): string {
   return qaIsNonTicket_(r) ? qaItemId_(r) : '#' + String(r.ticket_id || '')
 }
 
-/** A stored queue/audit time as display text (Quality.js 1271): ISO Z -> Riyadh 'yyyy-MM-dd HH:mm'; strips the leading '. */
+/** A stored queue/audit time as display text (Quality.js 1271): ISO Z -> Riyadh 'yyyy-MM-dd HH:mm'; sheet-era 'M/D/YYYY H:mm(:ss)' -> 'yyyy-MM-dd HH:mm' as-is (already Riyadh text); strips the leading '. */
 export function qaWhen_(v: unknown): string {
   const s = String(v === undefined || v === null ? '' : v).replace(/^'/, '')
-  if (/^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(s)) return qeFmt_(new Date(s), 'yyyy-MM-dd HH:mm')
+  if (/^\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:?\d{2})$/.test(s)) return qeFmt_(new Date(s), 'yyyy-MM-dd HH:mm')
+  const mdy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/.exec(s)
+  if (mdy) {
+    const mo = Number(mdy[1]), dy = Number(mdy[2]), yr = Number(mdy[3])
+    const hh = Number(mdy[4] || 0), mm = Number(mdy[5] || 0)
+    const valid = new Date(Date.UTC(yr, mo - 1, dy)).getUTCMonth() === mo - 1 && hh < 24 && mm < 60 && (mdy[6] === undefined || Number(mdy[6]) < 60)
+    if (valid) {
+      const p = (n: number) => String(n).padStart(2, '0')
+      return yr + '-' + p(mo) + '-' + p(dy) + ' ' + p(hh) + ':' + p(mm)
+    }
+  }
   return s
 }
 

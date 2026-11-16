@@ -635,7 +635,7 @@ async function qaHandledOf_(): Promise<(a: Row) => string> {
   try {
     const qs = (await readRows('qa_queue', { cols: 16 } as never).catch(() => [] as Row[])) as Row[]
     qs.forEach((q) => {
-      const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(q.interaction_at || ''))
+      const m = /^(\d{4}-\d{2}-\d{2})/.exec(qaWhen_(q.interaction_at))
       if (m && q.queue_id) at[String(q.queue_id)] = m[1]
     })
   } catch (e) {
