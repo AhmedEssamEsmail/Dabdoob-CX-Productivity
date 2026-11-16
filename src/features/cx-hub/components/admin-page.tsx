@@ -6,7 +6,7 @@
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, SettingsToc, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, Textarea } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -381,15 +381,6 @@ export function AdminPage({ route: n }: { route: { title: string; purpose?: stri
   }, [])
   return (
     <Pf route={n}>
-      <SettingsToc
-        label="Admin sections"
-        items={[
-          { id: 'dropdown-choices', label: 'Dropdown choices' },
-          { id: 'reminders', label: 'Reminders' },
-          { id: 'appearance', label: 'Appearance' },
-          { id: 'settings', label: 'Settings' },
-        ]}
-      />
       <SettingsSection id="dropdown-choices" title="Dropdown choices">
         <p className="cx-section__hint">
           Every dropdown ends with Other. A value typed there is added to that dropdown for everyone.
