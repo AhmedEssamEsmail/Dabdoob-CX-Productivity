@@ -2,11 +2,14 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { PAGES } from './registry'
 
 /**
  * sa() + the hash router, adapted: legacy deep links arrive either as
  * `#/<path>[?query]` or `?page=<path>&…`. Both rewrite to `/<path>?query`
  * (other params — e.g. ?tab= — are preserved; mock/role are dropped).
+ * Only registry paths rewrite: in-page anchors like `#reminders` are not
+ * routes — rewriting them bounced every section link to the catch-all.
  */
 export default function HashShim() {
   const router = useRouter()
@@ -17,7 +20,7 @@ export default function HashShim() {
 
       const params = new URLSearchParams(search)
       const page = params.get('page')
-      if (page && /^[a-z0-9-]+$/.test(page) && !hash.replace(/^#\/?/, '')) {
+      if (page && /^[a-z0-9-]+$/.test(page) && PAGES.some((p) => p.path === page) && !hash.replace(/^#\/?/, '')) {
         const rest = new URLSearchParams()
         params.forEach((value, key) => {
           if (key !== 'page' && key !== 'mock' && key !== 'role') rest.set(key, value)
@@ -30,7 +33,7 @@ export default function HashShim() {
       const match = /^#\/?([^?]+)(?:\?(.*))?$/.exec(hash)
       if (match) {
         const path = match[1]
-        if (/^[a-z0-9-]+$/.test(path))
+        if (/^[a-z0-9-]+$/.test(path) && PAGES.some((p) => p.path === path))
           router.replace(`/${path}${match[2] ? `?${match[2]}` : ''}`)
       }
     }

@@ -9,7 +9,7 @@
  */
 
 import 'server-only'
-import { db, cacheGet, cachePut, cacheRemove, readRows, updateRow, isTrue } from './repo'
+import { db, cacheGet, cachePut, cacheRemove, readRows, findRow, updateRow, isTrue } from './repo'
 import { normEmail } from './identity'
 import { assertWritable } from './viewas'
 
@@ -177,10 +177,20 @@ export async function getConfig(key: string, fallback?: unknown): Promise<unknow
   return key in all && all[key] !== '' ? all[key] : fallback
 }
 
-/** remindersOn: master switch for every reminder (popups, in-app alerts, emails). */
+/**
+ * remindersOn: master switch for every reminder (popups, in-app alerts, emails).
+ * Reads the row directly — configAll is cached 5 min per process, so a save on
+ * one instance left the switch stale (and reminders firing) on the others.
+ */
 export async function remindersOn(): Promise<boolean> {
-  const v = await getConfig('reminders_enabled', true)
-  return !(v === false || String(v).toLowerCase() === 'false')
+  let v: unknown
+  try {
+    const row = await findRow(CONFIG_TABLE, 'key', 'reminders_enabled')
+    v = row ? parseConfigValue(row.value) : await getConfig('reminders_enabled', true)
+  } catch {
+    v = await getConfig('reminders_enabled', true)
+  }
+  return !(v === false || v === 0 || /^(false|0|no|off)$/i.test(String(v).trim()))
 }
 
 /** dqSetting_: a Stores.js setting — table value, else the DQ_SETTINGS default, else ''. */
