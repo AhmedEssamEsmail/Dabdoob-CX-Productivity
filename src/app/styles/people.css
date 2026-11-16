@@ -54,7 +54,7 @@
 [data-app="people"] .pw-topic-head { display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;padding:12px 20px;border-bottom:1px solid var(--cx-line) }
 [data-app="people"] .pw-topic-body { padding:14px 20px;display:grid;gap:14px }
 [data-app="people"] .pw-evidence { border-inline-start:4px solid var(--cx-age-2);background:color-mix(in srgb,var(--cx-age-1) 12%,transparent);padding:14px 16px;border-radius:0 var(--cx-radius-bar) var(--cx-radius-bar) 0;display:grid;gap:12px }
-[data-app="people"] .pw-new-action { display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,150px) auto;gap:8px;align-items:end;margin-bottom:8px }
+[data-app="people"] .pw-new-action { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px;align-items:end;margin-bottom:8px }
 @media(max-width:720px) {
   [data-app="people"] .pw-new-action { grid-template-columns:minmax(0,1fr) }
 }
