@@ -400,6 +400,7 @@ function writeHash(t: any) {
   if (t.tl) n.set('tl', t.tl)
   if (t.agent) n.set('agent', t.agent)
   if (t.basis === 'audit') n.set('basis', 'audit')
+  if (t.active === 'all') n.set('act', 'all')
   history.replaceState(null, '', `${location.pathname || '/quality-scores'}?${n}`)
 }
 
@@ -426,6 +427,7 @@ function initialState() {
     tl: t.get('tl') ?? '',
     agent: t.get('agent') ?? '',
     basis: t.get('basis') === 'audit' ? 'audit' : 'interaction',
+    active: t.get('act') === 'all' ? 'all' : 'active',
   }
 }
 
@@ -434,7 +436,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
   const [n, a] = useState(initialState)
   const s = useRef(n)
   const { data: i, error: c, reload: l } = useSe(() =>
-    P.scoresPage(s.current.from, s.current.to, s.current.basis)
+    P.scoresPage(s.current.from, s.current.to, s.current.basis, s.current.active)
   )
   const [p, m] = useState(true)
   const [r, u] = useState(false)
@@ -443,7 +445,12 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
     const _ = { ...n, ...y }
     a(_)
     writeHash(_)
-    if (_.from !== s.current.from || _.to !== s.current.to || _.basis !== s.current.basis) {
+    if (
+      _.from !== s.current.from ||
+      _.to !== s.current.to ||
+      _.basis !== s.current.basis ||
+      _.active !== s.current.active
+    ) {
       s.current = _
       l()
     }
@@ -517,6 +524,16 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               Compare with the {i.days} days before
             </Toggle>
             <BasisSeg basis={n.basis} onChange={(y) => h({ basis: y, agent: '' })} />
+            <Seg
+              name="qs-active"
+              value={n.active}
+              onChange={(y) => h({ active: y, agent: '' })}
+              options={[
+                { value: 'active', label: 'Active only' },
+                { value: 'all', label: 'All users' },
+              ]}
+              aria-label="Show agents"
+            />
           </div>
           <p className="cx-faint qa-basisnote">
             {qaBasisNote(i.basis, i.fallbackDates)}
@@ -617,11 +634,12 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                 period: `${i.from}..${i.to}`,
                 basis: i.basis,
                 label: `${qaDayLabel(i.from)} to ${qaDayLabel(i.to)}`,
+                active: n.active,
               }}
               pick={{ agent: n.agent, agentName: g }}
               open={x}
               close={() => h({ agent: '' })}
-              key={`${n.agent}|${i.from}|${i.to}|${i.basis}`}
+              key={`${n.agent}|${i.from}|${i.to}|${i.basis}|${n.active}`}
             />
           ) : null}
           <BreakdownTable d={i} s={n} set={h} open={x} />

@@ -169,6 +169,7 @@ export function AuditEntry({
   startedAt,
   onCancel,
   onSubmitted,
+  onDirtyChange,
 }: {
   d: any
   row: any
@@ -176,6 +177,7 @@ export function AuditEntry({
   startedAt: string
   onCancel: () => void
   onSubmitted: () => void
+  onDirtyChange?: (dirty: boolean) => void
 }) {
   const T = 'auditType' in row ? row : ({} as any)
   return (
@@ -248,6 +250,7 @@ export function AuditEntry({
         }
         backLabel="Back to the queue"
         onCancel={onCancel}
+        onDirtyChange={onDirtyChange}
         onSubmit={(w, A, S, R) =>
           P.submitAudit({
             queueId: row.queueId,

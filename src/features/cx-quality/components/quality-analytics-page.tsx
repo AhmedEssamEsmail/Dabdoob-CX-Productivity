@@ -1026,7 +1026,8 @@ function Drill({
       t.period,
       n.agent ?? '',
       n.question ?? '',
-      t.basis
+      t.basis,
+      t.active
     )
   )
   const m = [n.agentName, n.questionText ? `“${n.questionText.slice(0, 80)}”` : '']
@@ -1202,15 +1203,20 @@ function BasisSeg({
 
 /* --- gl — the page -------------------------------------------------------------- */
 export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
-  const [n, setScope] = useState({ grain: 'week', period: '', basis: 'interaction' })
+  const [n, setScope] = useState({
+    grain: 'week',
+    period: '',
+    basis: 'interaction',
+    active: 'active',
+  })
   const { data: a, error: s, reload: i } = useSe(() =>
-    P.analyticsPage(n.grain, n.period, n.basis)
+    P.analyticsPage(n.grain, n.period, n.basis, n.active)
   )
   const [c, l] = useState<any>(null)
   const [p, m] = useState(false)
 
-  const r = (o: string, h: string, b = n.basis) => {
-    setScope({ grain: o, period: h, basis: b })
+  const r = (o: string, h: string, b = n.basis, f = n.active) => {
+    setScope({ grain: o, period: h, basis: b, active: f })
     l(null)
     i()
   }
@@ -1259,6 +1265,16 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
               basis={a.basis ?? 'interaction'}
               onChange={(o) => r(d, a.period, o)}
             />
+            <Seg
+              name="qa-active"
+              value={n.active}
+              onChange={(o) => r(d, a.period, a.basis, o)}
+              options={[
+                { value: 'active', label: 'Active only' },
+                { value: 'all', label: 'All users' },
+              ]}
+              aria-label="Show agents"
+            />
             <Button
               variant="quiet"
               aria-expanded={p}
@@ -1291,6 +1307,7 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
                 grain: a.grain,
                 period: a.period,
                 basis: a.basis,
+                active: n.active,
                 label: qaPeriodLabel(a),
               }}
               pick={c}

@@ -69,7 +69,7 @@ const L = qa
 
 /** P — verbatim call surface (all ten Quality pages). */
 export const P = {
-  queuePage: (t = '') => L('getQaQueuePage', t),
+  queuePage: (t = '', s = 'active') => L('getQaQueuePage', t, s),
   startAudit: (t: string) => L('startQaAudit', t),
   submitAudit: (t: Record<string, unknown>) => L('submitQaAudit', t),
   importNow: () => L('importQaQueueNow'),
@@ -96,12 +96,12 @@ export const P = {
   myAuditorKpis: (t?: string) => L('getQaMyAuditorKpis', t ?? ''),
   addKbGap: (t: Record<string, unknown>) => L('addQaKbGap', t),
   markKbGapAdded: (t: string) => L('markQaKbGapAdded', t),
-  scoresPage: (t: string, n: string, a = 'interaction') =>
-    L('getQaScoresPage', t, n, a),
-  analyticsPage: (t: string, n?: string, a = 'interaction') =>
-    L('getQaAnalyticsPage', t, n ?? '', a),
-  analyticsAudits: (t: string, n: string, a: string, s: string, i = 'interaction') =>
-    L('getQaAnalyticsAudits', t, n, a, s, i),
+  scoresPage: (t: string, n: string, a = 'interaction', s = 'active') =>
+    L('getQaScoresPage', t, n, a, s),
+  analyticsPage: (t: string, n?: string, a = 'interaction', s = 'active') =>
+    L('getQaAnalyticsPage', t, n ?? '', a, s),
+  analyticsAudits: (t: string, n: string, a: string, s: string, i = 'interaction', d = 'active') =>
+    L('getQaAnalyticsAudits', t, n, a, s, i, d),
   formsPage: () => L('getQaFormsPage'),
   saveForm: (t: any) => L('saveQaForm', t),
 }
@@ -709,6 +709,7 @@ export function AuditForm({
   memory: p,
   interactionAt: m = '',
   dateOnly = false,
+  onDirtyChange,
 }: {
   form: any
   facts: ReactNode
@@ -725,6 +726,7 @@ export function AuditForm({
   memory?: any
   interactionAt?: string
   dateOnly?: boolean
+  onDirtyChange?: (dirty: boolean) => void
 }) {
   const r = useMemo(() => ds(t), [t])
   const [u, d] = useState<any>(r)
@@ -773,11 +775,23 @@ export function AuditForm({
     )
   }
 
-  const I = () => {
-    const dirty =
+  const dirty = useMemo(
+    () =>
       [...new Set([...Object.keys(u), ...Object.keys(r)])].some(
         (X) => u[X] !== r[X]
-      ) || o.trim() !== ''
+      ) || o.trim() !== '',
+    [u, r, o]
+  )
+  const prevDirty = useRef(dirty)
+  useEffect(() => {
+    if (prevDirty.current !== dirty) {
+      prevDirty.current = dirty
+      onDirtyChange?.(dirty)
+    }
+    return () => onDirtyChange?.(false)
+  }, [dirty, onDirtyChange])
+
+  const I = () => {
     if (dirty) {
       C2(true)
       return
@@ -1367,7 +1381,7 @@ export function DrillSection({
   open,
   close,
 }: {
-  scope: { grain: string; period: string; basis: string; label: string }
+  scope: { grain: string; period: string; basis: string; label: string; active?: string }
   pick: { agent?: string; agentName?: string; question?: string; questionText?: string }
   open: (pick: any) => void
   close: () => void
@@ -1377,7 +1391,7 @@ export function DrillSection({
     error: c,
     reload: l,
   } = useSeLoader(() =>
-    P.analyticsAudits(scope.grain, scope.period, pick.agent ?? '', pick.question ?? '', scope.basis)
+    P.analyticsAudits(scope.grain, scope.period, pick.agent ?? '', pick.question ?? '', scope.basis, scope.active ?? 'active')
   )
   const m = [pick.agentName, pick.questionText ? `“${pick.questionText.slice(0, 80)}”` : '']
     .filter(Boolean)

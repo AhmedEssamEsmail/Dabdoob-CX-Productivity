@@ -1,0 +1,26 @@
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\components\audit-queue-page.tsx
+  140:73  error  Error: Cannot access variable before it is declared
+
+`actMode` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\components\audit-queue-page.tsx:140:73
+  138 |   onPick: (who: string) => void
+  139 | }) {
+> 140 |   const { data: s, error: i, reload: c } = useSe(() => P.queuePage(who, actMode))
+      |                                                                         ^^^^^^^ `actMode` accessed before it is declared
+  141 |   const [l, p] = useState<{ queueId: string; startedAt: string } | null>(null)
+  142 |   const [m, r] = useState('')
+  143 |   const [u, d] = useState(false)
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-quality\components\audit-queue-page.tsx:147:10
+  145 |   const [b, x] = useState('')
+  146 |   const [seg, setSeg] = useState<'todo' | 'doing' | 'done'>('todo')
+> 147 |   const [actMode, setActMode] = useState<'active' | 'all'>('active')
+      |          ^^^^^^^ `actMode` is declared here
+  148 |   const qaInvoker = useRef<HTMLElement | null>(null)
+  149 |   const passInvoker = useRef<HTMLElement | null>(null)
+  150 |   const f = useQaSort(QUEUE_COLS)  react-hooks/immutability
+
+✖ 1 problem (1 error, 0 warnings)
+

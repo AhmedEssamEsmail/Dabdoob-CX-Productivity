@@ -16,7 +16,7 @@
  *   AuditForm(Zn)/SortTh(M)/useQaSort(_e)/dates(dl,he,ul,Rt)/toast(Q). */
 import { Fragment, useMemo, useRef, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
-import { Button, Empty, PageShell, Seg, Select, TableScroll } from '@/features/shared/components/ui'
+import { Button, ConfirmInline, Empty, PageShell, Seg, Select, TableScroll } from '@/features/shared/components/ui'
 import {
   LinesSkeleton,
   LoadError,
@@ -136,21 +136,23 @@ function AuditQueuePage({
   who: string
   onPick: (who: string) => void
 }) {
-  const { data: s, error: i, reload: c } = useSe(() => P.queuePage(who))
+  const [actMode, setActMode] = useState<'active' | 'all'>('active')
+  const { data: s, error: i, reload: c } = useSe(() => P.queuePage(who, actMode))
   const [l, p] = useState<{ queueId: string; startedAt: string } | null>(null)
   const [m, r] = useState('')
   const [u, d] = useState(false)
   const [o, h] = useState('')
   const [b, x] = useState('')
   const [seg, setSeg] = useState<'todo' | 'doing' | 'done'>('todo')
+  const [formDirty, setFormDirty] = useState(false)
+  const [pendingAct, setPendingAct] = useState<'active' | 'all' | null>(null)
+  const [pendingStart, setPendingStart] = useState<string | null>(null)
   const qaInvoker = useRef<HTMLElement | null>(null)
   const passInvoker = useRef<HTMLElement | null>(null)
   const f = useQaSort(QUEUE_COLS)
   const g = useQaSort(PASSED_COLS)
-  const y = (w: string) => {
+  const start = (w: string) => {
     r(w)
-    qaInvoker.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null
     P.startAudit(w).then(
       (A) => {
         r('')
@@ -164,6 +166,16 @@ function AuditQueuePage({
       },
       (A) => (r(''), Q(A.message, 'error'))
     )
+  }
+  const y = (w: string) => {
+    qaInvoker.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    if (l && formDirty) {
+      setPendingStart(w)
+      setPendingAct(null)
+      return
+    }
+    start(w)
   }
   const sRows = s?.rows
   const sRequests = s?.requests
@@ -244,6 +256,60 @@ function AuditQueuePage({
                 { value: 'done', label: `Done · ${wiCounts.done}` },
               ]}
               aria-label="Audit status"
+            />
+          ) : null}
+          {s ? (
+            <Seg
+              name="qa-queue-active"
+              value={actMode}
+              onChange={(v) => {
+                const next = v as 'active' | 'all'
+                if (l && formDirty) {
+                  setPendingAct(next)
+                  setPendingStart(null)
+                  return
+                }
+                setActMode(next)
+                c()
+              }}
+              options={[
+                { value: 'active', label: 'Active only' },
+                { value: 'all', label: 'All users' },
+              ]}
+              aria-label="Show agents"
+            />
+          ) : null}
+          {pendingAct ? (
+            <ConfirmInline
+              label="Leave this audit? Your answers are not saved and will be lost."
+              confirmLabel="Leave without saving"
+              onConfirm={() => {
+                const next = pendingAct
+                setPendingAct(null)
+                p(null)
+                setActMode(next)
+                c()
+              }}
+              onCancel={() => {
+                setPendingAct(null)
+                setPendingStart(null)
+              }}
+            />
+          ) : null}
+          {pendingStart ? (
+            <ConfirmInline
+              label="Leave this audit? Your answers are not saved and will be lost."
+              confirmLabel="Leave without saving"
+              onConfirm={() => {
+                const w = pendingStart
+                setPendingStart(null)
+                setPendingAct(null)
+                start(w)
+              }}
+              onCancel={() => {
+                setPendingStart(null)
+                setPendingAct(null)
+              }}
             />
           ) : null}
           {s?.isAdmin ? (
@@ -367,6 +433,7 @@ function AuditQueuePage({
             </section>
             {_ && k ? (
               <AuditEntry
+                key={l!.queueId}
                 d={s}
                 row={_}
                 form={k}
@@ -384,6 +451,7 @@ function AuditQueuePage({
                   p(null)
                   c()
                 }}
+                onDirtyChange={setFormDirty}
               />
             ) : _ ? (
               <p className="cx-note" role="alert" id="qa-audit-open">

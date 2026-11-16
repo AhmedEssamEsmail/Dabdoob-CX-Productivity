@@ -25,6 +25,7 @@ import { notify, type NotifyInput } from '@/features/shared/platform/notify'
 import { pwToday } from '@/features/shared/platform/time'
 import { readStore } from '@/features/shared/platform/stores'
 import { tlsOnShift_, tlsShifts_ } from '@/features/cx-queue/lib'
+import { dqHctActive_, dqReadHct_ } from '@/features/cx-hub/lib/roster'
 import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
 import { described } from '@/features/shared/lib/errors'
 import { dqAddDays_ } from '@/features/shared/lib/adapters'
@@ -645,10 +646,11 @@ async function qaHandledOf_(): Promise<(a: Row) => string> {
 }
 
 /** qaQueuePageFor_ verbatim: the desk payload computed as one user. */
-async function qaQueuePageFor_(user: QaUser, dir: Directory): Promise<Row> {
+async function qaQueuePageFor_(user: QaUser, dir: Directory, act: Set<string> | null): Promise<Row> {
   const today = qaToday_()
   const from = dqAddDays_(today, -7)
-  const all = await qaRows_('qa_queue')
+  const allRaw = await qaRows_('qa_queue')
+  const all = act ? allRaw.filter((r) => qaActiveKeep_(r.agent_email, act)) : allRaw
   const passedFrom = dqAddDays_(today, -30)
   const passed = all
     .filter((q) => q.status === 'passed' && String(q.passed_at || q.queue_date).slice(0, 10) >= passedFrom)
@@ -692,6 +694,7 @@ async function qaQueuePageFor_(user: QaUser, dir: Directory): Promise<Row> {
     const ws = dqAddDays_(weekStart, -7 * wk)
     quotaWeeks.push({ weekStart: ws, rows: qaWeekQuota_(agents, audits, wk ? [] : all, ws, (n) => qeQuotaFor_(n, S)) as Row[] })
   }
+  if (act) quotaWeeks.forEach((w) => { w.rows = (w.rows as Row[]).filter((r) => qaActiveKeep_(r.email, act)) })
   const handledOf = await qaHandledOf_()
   const memory = qaFailMemory_(audits, await qaRows_('qa_ctls'), allForms as never, today, handledOf)
   const failMemory: Row = {}
@@ -711,7 +714,7 @@ async function qaQueuePageFor_(user: QaUser, dir: Directory): Promise<Row> {
 }
 
 /** getQaQueuePage verbatim: the Audit Desk; an admin may open any auditor's desk read-only. */
-export async function getQaQueuePage(auditorEmail: string): Promise<Row> {
+export async function getQaQueuePage(auditorEmail: string, active = 'active'): Promise<Row> {
   const me = await qaRequireRole_(['admin', 'tl', 'agent'])
   const dir = await pwDirectory()
   if (!(await qaIsAuditor_(me, dir))) throw new Error('The Audit Desk is for quality auditors.')
@@ -735,7 +738,8 @@ export async function getQaQueuePage(auditorEmail: string): Promise<Row> {
     const tp = dir.person(target) || ({} as DirectoryPerson)
     user = { email: target, name: dir.name(target), role: dqTitleLevel_(tp.position, tp.role) === 'tl' ? 'tl' : 'agent' }
   }
-  const page = await qaQueuePageFor_(user, dir)
+  const act = String(active) !== 'all' ? await qaActiveEmails_() : null
+  const page = await qaQueuePageFor_(user, dir, act)
   page.readOnly = user !== me
   page.viewing = page.readOnly ? { email: user.email, name: user.name } : null
   if (page.readOnly) {
@@ -1792,15 +1796,55 @@ export async function getQaMyAuditorKpis(month: string): Promise<Row> {
   }
 }
 
+/** qaActiveEmails_: normEmail'd live HCT Sheet1 emails (via dqReadHct_, cache 'qa_hct_active' TTL 600) with ANY row passing dqHctActive_; null = read failed or no active emails (never empty the pages). */
+async function qaActiveEmails_(): Promise<Set<string> | null> {
+  const hit = cacheGet('qa_hct_active')
+  if (hit) {
+    try {
+      const arr = JSON.parse(hit)
+      if (Array.isArray(arr) && arr.length && arr.every((v) => typeof v === 'string')) return new Set(arr.map(String))
+    } catch {
+      /* recompute */
+    }
+  }
+  try {
+    const recs = await dqReadHct_()
+    const act = new Set<string>()
+    recs.forEach((r) => {
+      if (!dqHctActive_(r)) return
+      const e = normEmail(r.email)
+      if (e) act.add(e)
+    })
+    if (act.size) {
+      try {
+        cachePut('qa_hct_active', JSON.stringify([...act]), 600)
+      } catch {
+        /* too big: serve uncached */
+      }
+      return act
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/** qaActiveKeep_: person-key keep rule — blank and non-'@' keys ('(no lead)') stay; emails must be in the active set. */
+function qaActiveKeep_(key: unknown, act: Set<string>): boolean {
+  const e = normEmail(key)
+  return e.indexOf('@') === -1 || act.has(e)
+}
+
 /** getQaScoresPage verbatim: the team scores over a from→to range, cached. */
-export async function getQaScoresPage(from: string, to: string, basis: string): Promise<Row> {
+export async function getQaScoresPage(from: string, to: string, basis: string, active: string = 'active'): Promise<Row> {
   await qaRequireRole_(['admin', 'tl'])
   from = String(from || '')
   to = String(to || '')
   qaCheckRange_(from, to)
   const b = basis === 'audit' ? 'audit' : 'interaction'
+  const actMode = String(active) !== 'all'
   const startsOn = Number((await qeSettings_()).weekStartsOn) === 1 ? 1 : 0
-  const key = 'qa_sc1:' + (await qaVersion_()) + ':' + from + ':' + to + ':' + b + ':' + startsOn
+  const key = 'qa_sc1:' + (await qaVersion_()) + ':' + from + ':' + to + ':' + b + ':' + startsOn + (actMode ? ':act' : '')
   const hit = cacheGet(key)
   if (hit) {
     try {
@@ -1811,10 +1855,12 @@ export async function getQaScoresPage(from: string, to: string, basis: string): 
       /* recompute */
     }
   }
+  const act = actMode ? await qaActiveEmails_() : null
   const dir = await pwDirectory()
-  const audits = b === 'audit'
+  let audits = b === 'audit'
     ? await qaRowsWhere_('qa_audits', { gte: { audit_date: dqAddDays_(from, -(qaDaysBetween_(from, to) + 1)) }, lte: { audit_date: to } })
     : await qaRowsWhere_('qa_audits', {})
+  if (act) audits = audits.filter((r) => qaActiveKeep_(r.agent_email, act))
   const out = qaScoresRange_(audits, from, to, { basis: b, weekStartsOn: startsOn, nameOf: (e: string) => dir.name(e) }) as Row
   out.asOf = qaNowIso_()
   try {
@@ -1826,16 +1872,17 @@ export async function getQaScoresPage(from: string, to: string, basis: string): 
 }
 
 /** getQaAnalyticsPage verbatim: the cached period payload + coverage. */
-export async function getQaAnalyticsPage(grain: string, period: string, basis: string): Promise<Row> {
+export async function getQaAnalyticsPage(grain: string, period: string, basis: string, active: string = 'active'): Promise<Row> {
   await qaRequireRole_(['admin', 'tl'])
   const g = grain === 'week' ? 'week' : 'month'
   const b = basis === 'audit' ? 'audit' : 'interaction'
+  const actMode = String(active) !== 'all'
   const today = qaToday_()
   const S = await qeSettings_()
   const startsOn = Number(S.weekStartsOn) === 1 ? 1 : 0
   const periods = qaPeriods_(g, today, startsOn)
   const p = periods.indexOf(String(period || '')) !== -1 ? String(period) : periods[0]
-  const key = 'qa_an7:' + (await qaVersion_()) + ':' + startsOn + ':' + g + ':' + p + ':' + b
+  const key = 'qa_an7:' + (await qaVersion_()) + ':' + startsOn + ':' + g + ':' + p + ':' + b + (actMode ? ':act' : '')
   const hit = cacheGet(key)
   if (hit) {
     try {
@@ -1857,10 +1904,13 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
   } catch (eQ) {
     console.log('quota not read: ' + ((eQ as Error)?.message || eQ))
   }
-  const [audits, formsRows, disputes, ctls, calibrations, kbGaps, volume, handledOf] = await Promise.all([
+  const [auditsAll, formsRows, disputes, ctlsAll, calibrations, kbGaps, volume, handledOf] = await Promise.all([
     qaRows_('qa_audits'), qaRows_('qa_forms'), qaRows_('qa_disputes'), qaRows_('qa_ctls'), qaRows_('qa_calibrations'), qaRows_('qa_kb_gaps'),
     qaRows_('qa_volume'), qaHandledOf_(),
   ])
+  const act = actMode ? await qaActiveEmails_() : null
+  const audits = act ? auditsAll.filter((r) => qaActiveKeep_(r.agent_email, act)) : auditsAll
+  const ctls = act ? ctlsAll.filter((r) => qaActiveKeep_(r.agent_email, act)) : ctlsAll
   const out = qaAnalytics_(
     audits, qaForms_(formsRows), disputes, ctls, calibrations, kbGaps,
     g, p, today, (e: string) => dir.name(e),
@@ -1869,6 +1919,19 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
   out.periods = periods
   out.targets = { alignment: Number(await qaSetting_('qa_alignment_target')), disputePass: Number(await qaSetting_('qa_dispute_pass_target')), ctlSla: Number(await qaSetting_('qa_ctl_sla_target')) }
   out.asOf = qaNowIso_()
+  if (act) {
+    const arr = (v: unknown) => (Array.isArray(v) ? (v as Row[]) : [])
+    out.attention = arr(out.attention).filter((r) => qaActiveKeep_(r.email, act))
+    out.byAgent = arr(out.byAgent).filter((r) => qaActiveKeep_(r.key, act))
+    out.byTl = arr(out.byTl).filter((r) => qaActiveKeep_(r.tlEmail, act))
+    out.ctlSla = arr(out.ctlSla).filter((r) => qaActiveKeep_(r.tlEmail, act))
+    out.auditors = arr(out.auditors).filter((r) => qaActiveKeep_(r.email, act))
+    out.repeats = arr(out.repeats).filter((r) => qaActiveKeep_(r.agentEmail, act))
+    out.nonTicket = arr(out.nonTicket).map((t) => ({
+      ...t,
+      agents: (Array.isArray(t.agents) ? (t.agents as Row[]) : []).filter((r) => qaActiveKeep_(r.email, act)),
+    }))
+  }
   try {
     cachePut(key, JSON.stringify(out), 600)
   } catch {
@@ -1879,7 +1942,7 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
 }
 
 /** getQaAnalyticsAudits verbatim: the audits behind an analytics row. */
-export async function getQaAnalyticsAudits(grain: string, period: string, agentEmail: string, questionKey: string, basis: string): Promise<Row> {
+export async function getQaAnalyticsAudits(grain: string, period: string, agentEmail: string, questionKey: string, basis: string, active: string = 'active'): Promise<Row> {
   await qaRequireRole_(['admin', 'tl'])
   const g = grain === 'week' || grain === 'range' ? grain : 'month'
   const b = basis === 'audit' ? 'audit' : 'interaction'
@@ -1906,8 +1969,10 @@ export async function getQaAnalyticsAudits(grain: string, period: string, agentE
   if (agent) filter.eq = { agent_email: agent }
   const S = await qeSettings_()
   const dir = await pwDirectory()
+  const act = String(active) !== 'all' ? await qaActiveEmails_() : null
+  const auditRows = await qaRowsWhere_('qa_audits', filter)
   return qaDrill_(
-    await qaRowsWhere_('qa_audits', filter), qaForms_(await qaRows_('qa_forms')), g, String(period || ''), Number(S.weekStartsOn) === 1 ? 1 : 0,
+    act ? auditRows.filter((r) => qaActiveKeep_(r.agent_email, act)) : auditRows, qaForms_(await qaRows_('qa_forms')), g, String(period || ''), Number(S.weekStartsOn) === 1 ? 1 : 0,
     agent, String(questionKey || ''), (e: string) => dir.name(e), await qaTicketUrl_(), b
   ) as Row
 }
