@@ -65,6 +65,7 @@ export const QA_SETTINGS: Record<string, { value: unknown; description: string }
   qa_engine_settings: { value: {}, description: 'JSON: sampling rules of the audit queue engine, overrides over its defaults (the old app\'s Settings, same keys: auditsPerDay, auditsPerWeek, offerMultiplier, channelWeights, tierByL2, ...). Paste the old project\'s Script Property QQ_SETTINGS here. Checked on every build; checkQaEngineSettings shows the result.' },
   qa_history_since: { value: '2026-06-01', description: 'yyyy-MM-dd: audits from the Voice and Texting QA forms with an interaction date from this day on are imported as history (the old scorecard\'s scoresStartDate).' },
   qa_auditor_emails: { value: [], description: 'Extra people Mohamed assigns to audit, added to team leads + qa_auditor_positions from the HCT roster.' },
+  qa_auditor_denied_emails: { value: [], description: 'Auto-auditors (team leads / qa_auditor_positions matches) whose audit access an admin revoked in the Audit Desk access panel. Explicit grants in qa_auditor_emails still win.' },
   qa_auditor_positions: { value: ['enablement'], description: 'HCT Position keywords (case-insensitive, contains) that give audit access. Team leads always have it.' },
   qa_auditor_map: { value: {}, description: 'JSON: agent email -> auditor email. Agents not listed are shared out evenly between the auditors.' },
   qa_ctl_days: { value: 2, description: 'Working days a TL has to submit the CTL for an audit.' },

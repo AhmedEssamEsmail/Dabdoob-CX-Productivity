@@ -232,6 +232,10 @@ async function qaAuditorPosKeywords_(): Promise<string[]> {
 async function qaAuditorGrants_(): Promise<string[]> {
   return qaEmailList_(await qaSetting_('qa_auditor_emails'))
 }
+/** qaAuditorDenied_: auto-auditors an admin revoked — blocks the TL/position path, not explicit grants. */
+async function qaAuditorDenied_(): Promise<string[]> {
+  return qaEmailList_(await qaSetting_('qa_auditor_denied_emails'))
+}
 /** qaKbNotifyList_ verbatim: the people emailed about, and marking, KB gaps. */
 async function qaKbNotifyList_(): Promise<string[]> {
   return qaEmailList_(await qaSetting_('qa_kb_notify_emails'))
@@ -243,11 +247,12 @@ async function qaWaiverList_(): Promise<string[]> {
 /** qaAuditors_ verbatim: every active title-TL or position-matching person, plus grants. */
 async function qaAuditors_(dir: Directory): Promise<string[]> {
   const keys = (await qaAuditorPosKeywords_()).map((s) => String(s).toLowerCase().trim()).filter(String)
+  const denied = await qaAuditorDenied_()
   const seen: Record<string, boolean> = {}
   Object.keys(dir.by).forEach((k) => {
     const p = dir.by[k]
     const pos = String(p.position || '').toLowerCase()
-    if (p.active && (dqTitleLevel_(p.position, p.role) === 'tl' || keys.some((w) => pos.indexOf(w) !== -1))) seen[k] = true
+    if (p.active && denied.indexOf(k) === -1 && (dqTitleLevel_(p.position, p.role) === 'tl' || keys.some((w) => pos.indexOf(w) !== -1))) seen[k] = true
   })
   ;([] as unknown[]).concat(((await qaSetting_('qa_auditor_emails')) as unknown[]) || [])
     .map(normEmail).filter(String).forEach((e) => { seen[e] = true })
@@ -521,12 +526,16 @@ export async function getQaAccess(): Promise<Row> {
       byEmail[k] = dir.person(k) || { email: k, name: k, role: '', tlEmail: null, active: false, position: '', titleLevel: 'agent' }
     }
   })
+  const denied = await qaAuditorDenied_()
   const people = Object.keys(byEmail)
     .map((k) => byEmail[k])
-    .map((p) => ({
-      email: p.email, name: p.name, role: p.role, position: p.position || '', active: p.active !== false,
-      via: qaAuditorVia_({ email: p.email, role: p.role, position: p.position }, keys, granted),
-    }))
+    .map((p) => {
+      const via = qaAuditorVia_({ email: p.email, role: p.role, position: p.position }, keys, granted)
+      return {
+        email: p.email, name: p.name, role: p.role, position: p.position || '', active: p.active !== false,
+        via: via !== 'granted' && denied.indexOf(normEmail(p.email)) !== -1 ? '' : via,
+      }
+    })
     .sort((a, b) => Number(b.via ? 1 : 0) - Number(a.via ? 1 : 0) || a.name.localeCompare(b.name))
   const log = (await readStore(QA_ACCESS_LOG).catch(() => ({ rows: [] as Row[] }))).rows || []
   return {
@@ -551,16 +560,39 @@ export async function setQaAuditorGrant(email: string, on: unknown): Promise<Row
   const p = dir.person(e)
   const ok = !!on && p && p.active
   if (on && !ok) throw new Error('Choose an active person from the list.')
+  if (!on && p && p.role === 'admin') throw new Error('Admins always have audit access.')
+  const keys = (await qaAuditorPosKeywords_()).map((s) => String(s).toLowerCase().trim()).filter(String)
   const list = await qaAuditorGrants_()
   const has = list.indexOf(e) !== -1
-  if (!!on === has) return getQaAccess()
-  const next = on ? list.concat([e]) : list.filter((x) => x !== e)
-  await setConfig('qa_auditor_emails', next, String((QA_SETTINGS['qa_auditor_emails'] || {}).description || ''), user.email)
-  try {
-    await appendRow(QA_ACCESS_LOG, { email: e, action: on ? 'granted audit access' : 'removed audit access' }, user.email)
-  } catch {
-    /* table may not exist yet */
+  const denied = await qaAuditorDenied_()
+  const autoVia = p
+    ? qaAuditorVia_({ email: p.email, role: p.role, position: p.position }, keys, [])
+    : ''
+  const log = (action: string) =>
+    appendRow(QA_ACCESS_LOG, { email: e, action }, user.email).catch(() => { /* table may not exist yet */ })
+  if (on) {
+    // Restore a denied auto-auditor instead of stacking a redundant grant.
+    if (denied.indexOf(e) !== -1) {
+      await setConfig('qa_auditor_denied_emails', denied.filter((x) => x !== e), String((QA_SETTINGS['qa_auditor_denied_emails'] || {}).description || ''), user.email)
+      if (autoVia) {
+        await log('granted audit access')
+        return getQaAccess()
+      }
+    }
+    if (has) return getQaAccess()
+    await setConfig('qa_auditor_emails', list.concat([e]), String((QA_SETTINGS['qa_auditor_emails'] || {}).description || ''), user.email)
+    await log('granted audit access')
+    return getQaAccess()
   }
+  // Remove: drop the grant (if any) and deny the auto path (if any) — either
+  // way the person ends with no audit access.
+  if (has) {
+    await setConfig('qa_auditor_emails', list.filter((x) => x !== e), String((QA_SETTINGS['qa_auditor_emails'] || {}).description || ''), user.email)
+  }
+  if (autoVia && denied.indexOf(e) === -1) {
+    await setConfig('qa_auditor_denied_emails', denied.concat([e]), String((QA_SETTINGS['qa_auditor_denied_emails'] || {}).description || ''), user.email)
+  }
+  await log('removed audit access')
   return getQaAccess()
 }
 

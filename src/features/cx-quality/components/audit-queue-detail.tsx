@@ -1459,15 +1459,15 @@ export function AccessPanel() {
                         <span className="cx-muted">No</span>
                       )}
                     </td>
-                    <td>
-                      {o.via === 'granted' ? (
+                    <td className="qa-access-act">
+                      {o.via ? (
                         <Button
                           disabled={!!i}
                           onClick={() => r(o.email, o.name, false)}
                         >
-                          {i === o.email ? 'Removing…' : 'Remove'}
+                          {i === o.email ? 'Removing…' : 'Remove Audit Access'}
                         </Button>
-                      ) : o.via || o.active === false ? null : (
+                      ) : o.active === false ? null : (
                         <Button
                           variant="primary"
                           disabled={!!i}

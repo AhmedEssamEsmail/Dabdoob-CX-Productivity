@@ -148,6 +148,8 @@
 }
 [data-app="quality"] .qa-details-panel { margin-block-start:var(--cx-space-5) }
 [data-app="quality"] .qa-details-panel :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
+[data-app="quality"] .qa-access-act { inline-size:11rem;text-align:center }
+[data-app="quality"] .qa-access-act .cx-btn { inline-size:100% }
 [data-app="quality"] .qa-details-panel>summary { cursor:pointer;font-weight:var(--cx-weight-strong);padding-block:var(--cx-space-2) }
 [data-app="quality"] .qa-details-panel__body { display:grid;gap:var(--cx-space-4) }
 [data-app="quality"] .qa-details-panel .qa-w { inline-size:5.5rem }
