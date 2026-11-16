@@ -16,7 +16,6 @@
  *   AuditForm(Zn)/SortTh(M)/useQaSort(_e)/dates(dl,he,ul,Rt)/toast(Q). */
 import { Fragment, useMemo, useRef, useState } from 'react'
 import { Chip } from '@/features/shared/components/shell/ui'
-import { getBoot } from '@/features/shared/shell/context'
 import { Button, Empty, PageShell, Seg, Select, TableScroll } from '@/features/shared/components/ui'
 import {
   LinesSkeleton,
@@ -77,12 +76,12 @@ function ViewingAs({ d, onPick }: { d: any; onPick: (email: string) => void }) {
         value={d.viewing?.email ?? d.selfEmail}
         onChange={(s) => onPick(s.currentTarget.value)}
       >
+        <option value={d.selfEmail}>You, with admin tools</option>
         {d.auditors.map((s: any) => (
           <option value={s.email} key={s.email}>
             {s.name}
           </option>
         ))}
-        <option value={d.selfEmail}>You, with admin tools</option>
       </Select>
     </span>
   )
@@ -648,6 +647,6 @@ function AuditQueuePage({
 
 /* --- qs — route wrapper: admin view-as remounts the desk ------------------- */
 export default function AuditQueueRoute({ route }: { route: { title: string } }) {
-  const [n, a] = useState(() => (getBoot()?.user.role === 'admin' ? '*' : ''))
+  const [n, a] = useState('')
   return <AuditQueuePage route={route} who={n} onPick={a} key={n} />
 }
