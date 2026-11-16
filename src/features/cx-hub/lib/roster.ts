@@ -7,8 +7,8 @@
  *
  * Seams: ROSTER_TABLE -> `roster`, DQ_HOLIDAYS_TABLE -> `holidays`,
  * scriptProps_().dq_last_roster_sync -> the config key of the same name,
- * dqReadHct_ -> the hct adapter (throws an honest error until a headcount
- * source is connected — Google Sheets cannot be read from here).
+ * dqReadHct_ -> the live HCT 'Sheet1' via the shared migration readSheet
+ * engine (same service-account creds /api/admin/migrate uses in prod).
  */
 
 import 'server-only'
@@ -48,10 +48,31 @@ const DQ_SYNC_KEEP_MANUAL = [
 export const DQ_COUNTRY_LIST = 'person.country'
 export const DQ_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// The HCT mirror columns (the DQ_HCT_COLS map in legacy) are owned by the
-// hct adapter, which already returns {name,email,position,department,section,
-// manager,status,lwd,hiringDate,fdId,fdName,maqsamName,code,gender,
-// contactNumber} records.
+// HCT Sheet1 projection — the DQ_HCT_COLS map moved verbatim from the
+// retired dq_hct mapping (mappings/hct.ts). DECISIONS preserved:
+// - tab is Sheet1 (Sheet2/Sheet3 are ignored);
+// - "Direct Repporter" is misspelled in the real sheet — mapped verbatim;
+// - row-1 cols U-W hold a side table whose dup headers surface as
+//   name#2/email#2 — never read #N keys;
+// - code = HR id, contactNumber = mobile. Unlisted columns (email,
+//   position, department, section, status, lwd) resolve to their own
+//   lowercase name.
+const DQ_HCT_COLUMNS = [
+  'name', 'email', 'position', 'department', 'section', 'manager',
+  'status', 'lwd', 'hiringDate', 'fdId', 'fdName', 'maqsamName',
+  'code', 'gender', 'contactNumber',
+]
+const DQ_HCT_SHEET_TO_DB: Record<string, string> = {
+  name: 'employee name',
+  manager: 'direct repporter',
+  hiringDate: 'hiring date',
+  fdId: 'fresh desk id',
+  fdName: 'freshdesk name',
+  maqsamName: 'maqsam name',
+  code: 'code',
+  gender: 'gender',
+  contactNumber: 'contact number',
+}
 function dqNameKey_(s: unknown): string {
   return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase()
 }
@@ -151,7 +172,7 @@ async function dqRosterCfg_(cfg: Cfg): Promise<Record<string, unknown>> {
   }
 }
 
-function dqHctActive_(rec: Record<string, unknown>): boolean {
+export function dqHctActive_(rec: Record<string, unknown>): boolean {
   const lwd =
     rec.lwd instanceof Date ? 'date' : String(rec.lwd === null || rec.lwd === undefined ? '' : rec.lwd).trim()
   return String(rec.status || '').trim().toLowerCase() === 'current' && (lwd === '' || lwd === '-')
@@ -240,19 +261,29 @@ export function dqRosterFromHct_(
 }
 
 /**
- * dqReadHct_ seam: the HCT employee sheet. There is no Google Sheets source in
- * this app; until one is connected (a `dq_hct` mirror or a Sheets adapter),
- * syncRosterNow throws the same honest failure the legacy reader produced.
+ * dqReadHct_: the live HCT employee sheet, read header-keyed through the
+ * shared migration readSheet engine — the same Google service-account creds
+ * /api/admin/migrate uses in prod. Projects Sheet1 to the dq_hct record
+ * shape: the 15 text columns above, ''/missing cells -> null (no coercion),
+ * require [email, name], last-wins dedupe on email (upsertOn parity). A
+ * Sheets/API error propagates; an empty sheet yields [].
  */
 export async function dqReadHct_(): Promise<Record<string, unknown>[]> {
-  const { readStore: rs } = await import('@/features/shared/platform')
-  const store = await rs('dq_hct')
-  if (!store.exists) {
-    throw new Error(
-      'Roster master is not connected: no dq_hct mirror table. The HCT source (the employee spreadsheet) cannot be read from this app yet.'
-    )
+  const { readSheet, SPREADSHEETS } = await import('@/features/shared/migration/engine')
+  const rows = await readSheet(SPREADSHEETS.hct, 'Sheet1')
+  const recs: Record<string, unknown>[] = []
+  for (const row of rows) {
+    const rec: Record<string, unknown> = {}
+    for (const col of DQ_HCT_COLUMNS) {
+      const v = row[DQ_HCT_SHEET_TO_DB[col] || col]
+      rec[col] = v === undefined || v === '' ? null : v
+    }
+    if (rec.email == null || rec.name == null) continue
+    recs.push(rec)
   }
-  return store.rows
+  const byEmail = new Map<string, Record<string, unknown>>()
+  for (const rec of recs) byEmail.set(String(rec.email), rec)
+  return Array.from(byEmail.values())
 }
 
 async function dqLastRosterSync_(): Promise<Record<string, unknown> | null> {
@@ -384,9 +415,9 @@ export async function syncRosterNow(): Promise<Record<string, unknown>> {
 /**
  * jobRosterSync (RosterSync.js:265) verbatim: the daily scheduled run —
  * dqStep_('roster_sync') semantics (ok/error heartbeat + dqLogRun_ on error,
- * never rethrows) inside hbFlush_. GATED G1: no cron route exists until the
- * HCT mirror (dq_hct) is populated; dqSyncRoster_ itself throws the adapter's
- * honest error while the source is unconnected.
+ * never rethrows) inside hbFlush_. The dq_hct gate is obsolete: sync now
+ * reads the live HCT Sheet1 via dqReadHct_; the cron route still does not
+ * exist.
  */
 export async function jobRosterSync(): Promise<Record<string, unknown> | null> {
   await requireJobCaller()

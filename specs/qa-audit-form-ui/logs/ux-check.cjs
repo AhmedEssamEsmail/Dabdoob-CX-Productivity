@@ -2,6 +2,7 @@
    stylesheets (theme -> cx-kit -> refresh -> quality.css) in Chromium at
    375px and 1024px, measures #qa-when + .qa-q selects, checks h-scroll.
    Usage: node ux-check.cjs  (run from repo root or spec logs dir) */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs')
 const path = require('path')
 const { chromium } = require('playwright')

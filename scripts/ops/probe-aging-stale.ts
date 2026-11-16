@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-require('dotenv').config({ path: '.env.local' })
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 const IDS = ['351136', '351351', '351068', '350945']

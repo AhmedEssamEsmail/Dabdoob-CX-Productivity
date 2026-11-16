@@ -1,0 +1,23 @@
+
+C:\Users\AHMED\KPIs\CX-Hub\scripts\ops\probe-aging-stale.ts
+  2:1  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\AHMED\KPIs\CX-Hub\scripts\ops\probe-sync-health.ts
+  2:1  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\AHMED\KPIs\CX-Hub\specs\qa-audit-form-ui\logs\ux-check.cjs
+  5:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  6:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  7:22  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\AHMED\KPIs\CX-Hub\specs\ux-ui-audit-v3\probe-qa2-extra.mjs
+  70:17  warning  'el' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\specs\ux-ui-audit-v3\ux3-people-capture.mjs
+  148:9  warning  'res' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-hub\components\admin-page.tsx
+  342:13  warning  Raw <input>/<select>/<textarea>/<button>; use the shared primitive from @/features/shared/components/ui (B3/A3)  local/no-raw-controls
+
+✖ 8 problems (5 errors, 3 warnings)
+

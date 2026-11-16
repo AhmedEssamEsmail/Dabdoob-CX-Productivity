@@ -7,6 +7,34 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('@/features/shared/lib/supabase', async () => (await import('./hub-fakes')).supabaseModule())
 vi.mock('@/features/shared/lib/auth', async () => (await import('./hub-fakes')).authModule())
+// dqReadHct_ reads the live HCT Sheet1 through the migration engine; the mock
+// serves hubDb.sheets[name] with the real headerKeys shape (widest row, dup ->
+// '#N') and revives '@@ms:N' cells to Dates — the same revival the oracle's
+// range reader applies to fixture cells. The dynamic import inside readSheet
+// is required: vi.mock factories hoist above the static imports.
+vi.mock('@/features/shared/migration/engine', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/features/shared/migration/engine')>()
+  return {
+    ...orig,
+    readSheet: async (_id: string, name: string) => {
+      const { hubDb } = await import('./hub-fakes')
+      const rows = hubDb.sheets[name]
+      if (!rows) throw new Error('no sheet fixture: ' + name)
+      if (rows.length < 2) return []
+      let width = rows[0]?.length ?? 0
+      for (const r of rows) if (r.length > width) width = r.length
+      const keys = orig.headerKeys(Array.from({ length: width }, (_, i) => rows[0][i]))
+      return rows.slice(1).map((row) => {
+        const obj: Record<string, unknown> = {}
+        keys.forEach((key, i) => {
+          const v = row[i]
+          obj[key] = typeof v === 'string' && v.indexOf('@@ms:') === 0 ? new Date(+v.slice(5)) : v
+        })
+        return obj
+      })
+    },
+  }
+})
 
 import {
   dqRosterFromHct_,
@@ -20,7 +48,7 @@ import {
 } from '@/features/cx-hub/lib/roster'
 import { hubInstall, hubCall, portCall, hubSheetRows, type HubFx } from './helpers-hub'
 import { expectSame, diffPath, json } from './helpers-oracle'
-import { hubDb } from './hub-fakes'
+import { hubDb, hubSetSheet } from './hub-fakes'
 import { cacheClear } from '@/features/shared/platform/repo'
 
 const NOW = Date.parse('2026-05-06T10:00:00Z')
@@ -30,7 +58,7 @@ const NOW = Date.parse('2026-05-06T10:00:00Z')
 const NEW_ROW_KEYS = ['gender', 'mobile', 'hr_id', 'employment_status']
 const NEW_PERSON_KEYS = ['hiringDate', 'gender', 'mobile', 'hrId', 'employmentStatus', 'titleLevel']
 
-/** HCT records in the dqReadHct_ output shape (the dq_hct mirror columns). */
+/** HCT records in the dqReadHct_ output shape (the projected Sheet1 columns). */
 const HCT = [
   {
     name: 'Admin One', email: 'admin@dabdoob.com', position: 'Customer Experience Manager',
@@ -341,7 +369,7 @@ describe('syncRosterNow / dqSyncRoster_', () => {
   it('with no HCT source both fail honestly (different seams, same refusal)', async () => {
     hubInstall(fx())
     const port = await portCall(() => syncRosterNow())
-    if (!port.err) throw new Error('expected the port to refuse without dq_hct')
+    if (!port.err) throw new Error('expected the port to refuse without an HCT sheet')
     // the oracle reaches dqReadHct_ -> book without a Sheet1 tab, also an error
     const lf = hubInstall(fx())
     lf.spreadsheets = {} // no hct-ss book: openSpreadsheet_ yields an empty Sheet1
@@ -350,41 +378,41 @@ describe('syncRosterNow / dqSyncRoster_', () => {
   })
 
   it('an empty connected source fails identically (No HCT rows matched)', async () => {
+    const SHEET1_HEADER_ONLY = [
+      ['Employee Name', 'Email', 'Position', 'Department', 'Section', 'Direct Repporter', 'Status', 'LWD', 'Hiring Date', 'Fresh desk ID', 'Freshdesk Name', 'Maqsam Name'],
+    ]
     const base = fx()
     base.settings = { ...base.settings, roster_hct_ss_id: 'hct-ss' }
-    base.tables = { ...base.tables, dq_hct: [] }
     const lf = hubInstall(base)
+    hubSetSheet('Sheet1', SHEET1_HEADER_ONLY) // port: readSheet mock -> [] (<2 rows)
     lf.spreadsheets = {
       ...lf.spreadsheets,
-      'hct-ss': { Sheet1: [['Employee Name', 'Email', 'Position', 'Department', 'Section', 'Direct Repporter', 'Status', 'LWD', 'Hiring Date', 'Fresh desk ID', 'Freshdesk Name', 'Maqsam Name']] },
+      'hct-ss': { Sheet1: SHEET1_HEADER_ONLY },
     }
     expectSame(await portCall(() => dqSyncRoster_()), hubCall('dqSyncRoster_', [], lf), 'dqSyncRoster_ empty')
   })
 
   it('a connected source runs the full legacy pipeline identically (rows, writes, refresh_log, last-sync)', async () => {
-    // Raw HCT Sheet1 for the oracle's dqReadHct_; the mapped records for the port's dq_hct.
+    // ONE raw Sheet1 drives both sides: the oracle reads it through its fake
+    // range (the extra columns after 'Maqsam Name' are invisible to the legacy
+    // stop-column reader, so oracle parity is preserved) while the port reads
+    // the same rows through the readSheet mock -> dqReadHct_ projection, which
+    // picks up Code/Gender/Contact Number for the port-only headcount columns.
     const SHEET1 = [
-      ['Employee Name', 'Email', 'Position', 'Department', 'Section', 'Direct Repporter', 'Status', 'LWD', 'Hiring Date', 'Fresh desk ID', 'Freshdesk Name', 'Maqsam Name'],
-      ['New Person', 'new@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '', '@@ms:1773878400000', '', 'New Person', ''],
-      ['Lead One', 'tl@dabdoob.com', 'Team Leader', 'Operations', 'Customer Experience', 'Admin One', 'current', '', '', '12', 'Lead One', ''],
-      ['Agent One', 'agent@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '', '', '13', 'Agent One', 'Agent One'],
-      ['Gone Person', 'gone@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '2026-01-01', '', '', '', ''],
-      ['Outside', 'out@dabdoob.com', 'PM', 'Product', 'Other Section', 'Someone', 'current', '', '', '', '', ''],
-      ['Admin One', 'admin@dabdoob.com', 'Customer Experience Manager', 'Operations', 'Customer Experience', '-', 'current', '', '', '11', 'Admin One', ''],
-    ]
-    const portHct = [
-      { name: 'New Person', email: 'new@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: new Date(1773878400000), fdId: '', fdName: 'New Person', maqsamName: '', code: '1010', gender: 'Male', contactNumber: '+201000000010' },
-      { name: 'Lead One', email: 'tl@dabdoob.com', position: 'Team Leader', department: 'Operations', section: 'Customer Experience', manager: 'Admin One', status: 'current', lwd: '', hiringDate: '', fdId: '12', fdName: 'Lead One', maqsamName: '', code: '1002', gender: 'Female', contactNumber: '+201000000002' },
-      { name: 'Agent One', email: 'agent@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '', hiringDate: '', fdId: '13', fdName: 'Agent One', maqsamName: 'Agent One', code: '1003', gender: 'Female', contactNumber: '+201000000003' },
-      { name: 'Gone Person', email: 'gone@dabdoob.com', position: 'CX Agent', department: 'Operations', section: 'Customer Experience', manager: 'Lead One', status: 'current', lwd: '2026-01-01', hiringDate: '', fdId: '', fdName: '', maqsamName: '', code: '1011', gender: 'Male', contactNumber: '+201000000011' },
-      { name: 'Outside', email: 'out@dabdoob.com', position: 'PM', department: 'Product', section: 'Other Section', manager: 'Someone', status: 'current', lwd: '', hiringDate: '', fdId: '', fdName: '', maqsamName: '', code: '2001', gender: 'Male', contactNumber: '+96500000005' },
-      { name: 'Admin One', email: 'admin@dabdoob.com', position: 'Customer Experience Manager', department: 'Operations', section: 'Customer Experience', manager: '-', status: 'current', lwd: '', hiringDate: '', fdId: '11', fdName: 'Admin One', maqsamName: '', code: '1001', gender: 'Male', contactNumber: '+201000000001' },
+      ['Employee Name', 'Email', 'Position', 'Department', 'Section', 'Direct Repporter', 'Status', 'LWD', 'Hiring Date', 'Fresh desk ID', 'Freshdesk Name', 'Maqsam Name', 'Code', 'Gender', 'Contact Number'],
+      ['New Person', 'new@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '', '@@ms:1773878400000', '', 'New Person', '', '1010', 'Male', '+201000000010'],
+      ['Lead One', 'tl@dabdoob.com', 'Team Leader', 'Operations', 'Customer Experience', 'Admin One', 'current', '', '', '12', 'Lead One', '', '1002', 'Female', '+201000000002'],
+      ['Agent One', 'agent@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '', '', '13', 'Agent One', 'Agent One', '1003', 'Female', '+201000000003'],
+      ['Gone Person', 'gone@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'current', '2026-01-01', '', '', '', '', '1011', 'Male', '+201000000011'],
+      ['Outside', 'out@dabdoob.com', 'PM', 'Product', 'Other Section', 'Someone', 'current', '', '', '', '', '', '2001', 'Male', '+96500000005'],
+      ['Admin One', 'admin@dabdoob.com', 'Customer Experience Manager', 'Operations', 'Customer Experience', '-', 'current', '', '', '11', 'Admin One', '', '1001', 'Male', '+201000000001'],
     ]
     const base = fx()
     base.settings = { ...base.settings, roster_hct_ss_id: 'hct-ss', ss_live_id: 'live-store' }
-    base.tables = { ...base.tables, dq_hct: portHct, refresh_log: [] }
+    base.tables = { ...base.tables, refresh_log: [] }
 
     const lf = hubInstall(base)
+    hubSetSheet('Sheet1', SHEET1) // the port's dqReadHct_ sees exactly these rows
     lf.spreadsheets = { 'hct-ss': { Sheet1: SHEET1 }, 'live-store': lf.spreadsheets?.['live-store'] || {} }
 
     const legacy = hubCall('dqSyncRoster_', [], lf)

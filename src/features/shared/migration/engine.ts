@@ -13,7 +13,6 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { MAPPINGS as QQ_MAPPINGS, ROW_TRANSFORMS as QQ_TRANSFORMS, SUGGESTED_INT_COLS as QQ_INT, SUGGESTED_NUM_COLS as QQ_NUM, SUGGESTED_JSON_COLS as QQ_JSON, DECISIONS as QQ_DECISIONS } from './mappings/queue-quality'
 import { MAPPINGS as PC_MAPPINGS } from './mappings/people-core'
 import { MAPPINGS as DO_MAPPINGS, ROW_TRANSFORMS as DO_TRANSFORMS, NULL_AS_EMPTY, SUGGESTED_INT_COLS as DO_INT, SUGGESTED_NUM_COLS as DO_NUM, SUGGESTED_JSON_COLS as DO_JSON, TRACKER_RECORD_BACKFILLS, DECISIONS as DO_DECISIONS } from './mappings/desk-operations'
-import { MAPPINGS as HCT_MAPPINGS, DECISIONS as HCT_DECISIONS } from './mappings/hct'
 import { MAPPINGS as V1_MAPPINGS, ROW_TRANSFORMS as V1_TRANSFORMS, DECISIONS as V1_DECISIONS } from './mappings/v1-ops'
 import { MAPPINGS as V1S_MAPPINGS, ROW_TRANSFORMS as V1S_TRANSFORMS, DECISIONS as V1S_DECISIONS } from './mappings/v1-ops-sched'
 import { MAPPINGS as V1P_MAPPINGS, ROW_TRANSFORMS as V1P_TRANSFORMS, DECISIONS as V1P_DECISIONS } from './mappings/v1-ops-people'
@@ -91,8 +90,8 @@ Object.entries(NULL_AS_EMPTY).forEach(([t, cols]) => { NULL_AS_EMPTY_MAP[t] = ne
 
 /** The route's original 16 entries live in route.ts (kept inline there — they
  * predate the module split); everything wave-3 produced is in ./mappings/. */
-export const MODULE_MAPPINGS: TableMapping[] = [...QQ_MAPPINGS, ...PC_MAPPINGS, ...DO_MAPPINGS, ...HCT_MAPPINGS, ...V1_MAPPINGS, ...V1S_MAPPINGS, ...V1P_MAPPINGS, ...V1M_MAPPINGS, ...OT_MAPPINGS]
-export const MAPPING_DECISIONS = [...QQ_DECISIONS, ...DO_DECISIONS, ...HCT_DECISIONS, ...V1_DECISIONS, ...V1S_DECISIONS, ...V1P_DECISIONS, ...V1M_DECISIONS, ...OT_DECISIONS]
+export const MODULE_MAPPINGS: TableMapping[] = [...QQ_MAPPINGS, ...PC_MAPPINGS, ...DO_MAPPINGS, ...V1_MAPPINGS, ...V1S_MAPPINGS, ...V1P_MAPPINGS, ...V1M_MAPPINGS, ...OT_MAPPINGS]
+export const MAPPING_DECISIONS = [...QQ_DECISIONS, ...DO_DECISIONS, ...V1_DECISIONS, ...V1S_DECISIONS, ...V1P_DECISIONS, ...V1M_DECISIONS, ...OT_DECISIONS]
 
 type GoogleApi = typeof import('googleapis')['google']
 let googleApiPromise: Promise<GoogleApi> | null = null

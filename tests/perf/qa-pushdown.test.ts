@@ -135,6 +135,15 @@ vi.mock('@/features/shared/lib/auth', async () => ({
   }),
   requireRole: async (roles: string[]) => (await import('@/features/shared/platform/identity')).requireRole(roles),
 }))
+// HCT reads are sheet-direct (dqReadHct_ -> readSheet). With no sheet wired
+// the read throws, so qaActiveEmails_ fails open (null -> unfiltered pages)
+// exactly like the old missing-table path — no real googleapis call.
+vi.mock('@/features/shared/migration/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/shared/migration/engine')>()),
+  readSheet: async () => {
+    throw new Error('test: no sheet source')
+  },
+}))
 
 import { cacheClear } from '@/features/shared/platform/repo'
 import { pwToday } from '@/features/shared/platform/time'

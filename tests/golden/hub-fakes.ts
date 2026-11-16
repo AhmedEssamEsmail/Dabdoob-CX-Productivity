@@ -14,6 +14,8 @@
  */
 export interface HubDb {
   tables: Record<string, Record<string, unknown>[]>
+  /** Raw 2D sheet rows keyed by tab name — served by the readSheet mock. */
+  sheets: Record<string, unknown[][]>
   userEmail: string
   /** Table names that do not exist (supabase would error on .from). */
   missing: Set<string>
@@ -23,6 +25,7 @@ export interface HubDb {
 
 export const hubDb: HubDb = {
   tables: {},
+  sheets: {},
   userEmail: 'admin@dabdoob.com',
   missing: new Set(),
   inserted: [],
@@ -31,7 +34,8 @@ export const hubDb: HubDb = {
 
 export function hubDbReset() {
   hubDb.tables = {}
-  hubDb.missing = new Set(['dq_hct'])
+  hubDb.sheets = {}
+  hubDb.missing = new Set()
   hubDb.inserted = []
   hubDb.updated = []
 }
@@ -39,6 +43,11 @@ export function hubDbReset() {
 export function hubSetTables(t: Record<string, Record<string, unknown>[]>) {
   hubDb.tables = t || {}
   Object.keys(hubDb.tables).forEach((k) => hubDb.missing.delete(k))
+}
+
+/** Fixture seam for the sheet-direct HCT read (dqReadHct_ via readSheet). */
+export function hubSetSheet(name: string, rows: unknown[][]) {
+  hubDb.sheets[name] = rows
 }
 
 export function hubSetUser(email: string) {
