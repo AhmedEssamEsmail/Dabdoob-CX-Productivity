@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Quality analytics page
  * (quality-analytics.closure.js — symbols: gl page; sections Ys health,
- * Gs attention, cl agents, sl columns, zs questions, Js by-channel, rl
+ * Gs attention, cl agents, sl columns, +aw agent-weeks, zs questions, Js by-channel, rl
  * non-ticket, details.qa-more(Xs coaching, el team leads, ll spread, Zs
  * outside), ol extras (+pl coverage, +ml totals, +_n columns); ea drill
  * drawer; ta basis seg; Count te machinery (is/rn/on/cs/Nt); constants
@@ -434,6 +434,72 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
             ) : (
               <tr>
                 <td colSpan={a ? 9 : 7}>No random audits in this period.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </TableScroll>
+    </QaSection>
+  )
+}
+
+/** aw — week key YYYY-MM-DD -> "08-Nov". */
+const awLabel = (p: string) =>
+  new Date(p + 'T00:00:00Z')
+    .toLocaleString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' })
+    .replace(' ', '-')
+
+/* --- +aw — agents by week ------------------------------------------- */
+export function AgentWeeks({ d: t }: { d: any }) {
+  const s = t.columns?.agentWeeks
+  if (!s) return null
+  return (
+    <QaSection
+      id="qa-agentweeks-h"
+      title="Agents by week"
+      hint={`Plain average of random and history audits in each quota week; under the score, how many audits. Weeks run ${t.weekStartsOn === 1 ? 'Monday to Sunday' : 'Sunday to Saturday'}, like the audit quota.`}
+    >
+      <TableScroll label="Agent scores by week" className="cx-panel cx-tablewrap">
+        <table className="cx-table">
+          <thead>
+            <tr>
+              <th scope="col" className="qa-cov__name">Agent</th>
+              {s.periods.map((p: string) => (
+                <th
+                  key={p}
+                  scope="col"
+                  className="cx-num"
+                  title={`Week of ${p}, ${t.weekStartsOn === 1 ? 'Mon–Sun' : 'Sun–Sat'}`}
+                >
+                  {awLabel(p)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {s.agents.length ? (
+              s.agents.map((g: any) => (
+                <tr key={g.key}>
+                  <th scope="row" className="qa-cov__name">
+                    {g.label}
+                  </th>
+                  {g.cells.map((c: any, j: number) => (
+                    <td className="cx-num" key={s.periods[j]}>
+                      {c.avg === null ? (
+                        '–'
+                      ) : (
+                        <>
+                          <Chip status={qaBand(c.avg, false)}>{qaPct(c.avg)}</Chip>{' '}
+                          <span className="cx-faint qa-sub">{c.audits}</span>
+                        </>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={13}>No audits in the last 12 weeks.</td>
               </tr>
             )}
           </tbody>
@@ -1236,6 +1302,7 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
             <HealthHead d={a} />
             <Attention d={a} open={u} />
             <Agents d={a} open={u} />
+            <AgentWeeks d={a} />
             <Columns d={a} />
             <Questions d={a} open={u} />
             <ByChannel d={a} />

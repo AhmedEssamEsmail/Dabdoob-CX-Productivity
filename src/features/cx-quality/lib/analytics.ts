@@ -185,7 +185,8 @@ export function qaSampleBasis_(a: Record<string, unknown>): string {
 
 /**
  * Pure: the simple column charts: plain average of random + old-form history audits per week
- * (last 8) and per month (last 6), ending at anchor, for the team and each agent.
+ * (last 8), per month (last 6), and per week over a wider 12-week grid for the agents table,
+ * ending at anchor, for the team and each agent.
  */
 export function qaColumnTrend_(
   known: Record<string, unknown>[],
@@ -228,7 +229,7 @@ export function qaColumnTrend_(
         .sort((x, y) => String(x.label).localeCompare(String(y.label))),
     }
   }
-  return { week: grainOf('week', 8), month: grainOf('month', 6) }
+  return { week: grainOf('week', 8), month: grainOf('month', 6), agentWeeks: grainOf('week', 12) }
 }
 
 // ---- Flat export ----
