@@ -489,7 +489,7 @@ export function AgentWeeks({ d: t }: { d: any }) {
                         '–'
                       ) : (
                         <>
-                          <Chip status={qaBand(c.avg, false)}>{qaPct(c.avg)}</Chip>{' '}
+                          <Chip plain status={qaBand(c.avg, false)}>{qaPct(c.avg)}</Chip>{' '}
                           <span className="cx-faint qa-sub">{c.audits}</span>
                         </>
                       )}
