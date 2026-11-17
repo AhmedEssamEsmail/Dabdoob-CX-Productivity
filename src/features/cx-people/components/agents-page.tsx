@@ -20,6 +20,8 @@ const api = {
   admin: () => fetchJson('/api/people/scorecard?view=admin'),
   saveSource: (month: string, link: string) => fetchJson('/api/people/scorecard', { op: 'save_source', month, link }),
   removeSource: (month: string) => fetchJson('/api/people/scorecard', { op: 'remove_source', month }),
+  addBehaviour: (email: string, date: string, note: string) =>
+    fetchJson('/api/people/scorecard', { op: 'add_behaviour', email, date, note }),
 }
 
 /* bt / Dt / yn / He */
@@ -245,9 +247,9 @@ function KpiBuild({ k, raw }: { k: any; raw: any }) {
 /* ol — the per-month read status chip. */
 function ReadChip({ m }: { m: any }) {
   if (m.status === 'never' || m.status === '')
-    return <Chip status="neutral">Not read yet</Chip>
-  if (m.status === 'error') return <Chip status="bad">Last read failed</Chip>
-  return <Chip status="ok">Read</Chip>
+    return <Chip status="neutral">Not built yet</Chip>
+  if (m.status === 'error') return <Chip status="bad">Last build failed</Chip>
+  return <Chip status="ok">Built</Chip>
 }
 
 /* cl — the admin "Productivity workbook per month" block. */
@@ -256,9 +258,13 @@ function ScorecardAdmin() {
   const [month, setMonth] = useState('')
   const [link, setLink] = useState('')
   const [busyKey, setBusyKey] = useState('')
-  const [found, setFound] = useState<any>(null)
   const [note, setNote] = useState('')
   const [noteErr, setNoteErr] = useState('')
+  const [behEmail, setBehEmail] = useState('')
+  const [behDate, setBehDate] = useState('')
+  const [behNote, setBehNote] = useState('')
+  const [behMsg, setBehMsg] = useState('')
+  const [behMsgErr, setBehMsgErr] = useState('')
 
   const run = (key: string, call: () => Promise<any>, done: (r: any) => void) => {
     setBusyKey(key)
@@ -276,34 +282,63 @@ function ScorecardAdmin() {
     )
   }
   const save = (m: string, l: string) =>
-    run('save', () => api.saveSource(m, l), (r) => {
-      setFound({ month: m, i: r.found })
-      setNote(`Saved for ${m}. Press Refresh to read it now.`)
+    run('save', () => api.saveSource(m, l), () => {
+      setNote(`Saved for ${m}. Press Refresh to rebuild it now.`)
       setLink('')
       reload()
     })
   const refresh = (m: string) =>
     run('r' + m, () => api.refresh([m]), (r) => {
       const a = r.months[0]
-      setNote(
-        a.status === 'error'
-          ? `${m}: ${a.error}`
-          : a.retryInS
-            ? `${m}: read a moment ago, try again in ${a.retryInS} s.`
-            : `${m}: read ${a.matrixRows} agent-days, ${a.agents} agents, ${a.fcrRows} FCR rows, ${a.behaviourCases} behaviour cases.`
-      )
+      if (a.status === 'error') {
+        setNoteErr(`${m}: ${a.error}`)
+      } else {
+        setNote(
+          a.retryInS
+            ? `${m}: rebuilt a moment ago, try again in ${a.retryInS} s.`
+            : `${m}: rebuilt ${a.matrixRows} agent-days, ${a.agents} agents, ${a.fcrRows} FCR rows, ${a.behaviourCases} behaviour cases.`
+        )
+      }
       reload()
     })
   const remove = (m: string) =>
     run('x' + m, () => api.removeSource(m), () => {
-      setNote(`Workbook removed for ${m}. The numbers already read stay until that month is read again.`)
+      setNote(`Workbook removed for ${m}. The numbers already built stay until that month is rebuilt.`)
       reload()
+    })
+  const runBehaviour = (call: () => Promise<any>, done: (r: any) => void) => {
+    setBusyKey('behaviour')
+    setBehMsg('')
+    setBehMsgErr('')
+    call().then(
+      (r) => {
+        setBusyKey('')
+        done(r)
+      },
+      (e) => {
+        setBusyKey('')
+        setBehMsgErr(e.message)
+      }
+    )
+  }
+  const logBehaviour = (email: string, date: string, note: string) =>
+    runBehaviour(() => api.addBehaviour(email, date, note), (r) => {
+      if (r.saved) {
+        setBehMsg(`Logged for ${date.slice(0, 7)}.`)
+        setBehEmail('')
+        setBehDate('')
+        setBehNote('')
+      } else if (r.duplicate) {
+        setBehMsg('Already logged.')
+      }
     })
 
   return (
     <div className="block">
       <h2 className="block-title">Productivity workbook per month</h2>
-      <p className="cx-section__hint">{D("Reads each month's workbook into V2; months without one use the fallback.")}</p>
+      <p className="cx-section__hint">
+        {D("Saving records which month's workbook applies; Refresh rebuilds the month's numbers from the live tables.")}
+      </p>
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
@@ -334,7 +369,7 @@ function ScorecardAdmin() {
               <Input id="ps-link" required value={link} onInput={(e) => setLink(e.currentTarget.value)} />
             </div>
             <Button type="submit" variant="primary" disabled={busyKey === 'save'}>
-              {busyKey === 'save' ? 'Checking…' : 'Check and save'}
+              {busyKey === 'save' ? 'Saving…' : 'Save'}
             </Button>
           </form>
           {noteErr ? (
@@ -347,18 +382,6 @@ function ScorecardAdmin() {
               <div>{note}</div>
             </div>
           ) : null}
-          {found ? (
-            <div className="cx-note" data-status={found.i.monthMatches ? 'info' : 'warn'} role="status">
-              <div>
-                <strong>{found.i.title}</strong>: Matrix{' '}
-                {found.i.matrix
-                  ? `${found.i.matrixDays} agent-days, ${found.i.agents} agents (${found.i.firstDate} to ${found.i.lastDate})`
-                  : 'missing'}
-                ; FCR tab {found.i.fcr ? 'found' : 'missing'}; behaviour tab {found.i.behaviour ? 'found' : 'missing'}.{' '}
-                {found.i.note}
-              </div>
-            </div>
-          ) : null}
           <TableScroll label="Productivity workbook per month" className="cx-panel cx-tablewrap">
             <table className="cx-table cx-table--nowrap">
               <thead>
@@ -366,8 +389,8 @@ function ScorecardAdmin() {
                   <th scope="col">Month</th>
                   <th scope="col">Workbook</th>
                   <th scope="col">Status</th>
-                  <th scope="col">What was read</th>
-                  <th scope="col">Last read</th>
+                  <th scope="col">What was rebuilt</th>
+                  <th scope="col">Last rebuilt</th>
                   <th scope="col">
                     <span className="cx-sr">Actions</span>
                   </th>
@@ -410,7 +433,7 @@ function ScorecardAdmin() {
                       {m.refreshedAt ? (
                         <AsOfHint
                           iso={m.refreshedAt}
-                          what={m.refreshedBy === 'nightly' ? 'Nightly' : m.refreshedBy ? `By ${m.refreshedBy.split('@')[0]}` : 'Read'}
+                          what={m.refreshedBy === 'nightly' ? 'Nightly' : m.refreshedBy ? `By ${m.refreshedBy.split('@')[0]}` : 'Rebuilt'}
                         />
                       ) : (
                         '–'
@@ -418,7 +441,7 @@ function ScorecardAdmin() {
                     </td>
                     <td>
                       <Button disabled={!!busyKey} onClick={() => refresh(m.month)}>
-                        {busyKey === 'r' + m.month ? 'Reading…' : 'Refresh now'}
+                        {busyKey === 'r' + m.month ? 'Rebuilding…' : 'Refresh now'}
                       </Button>{' '}
                       {m.usingFallback ? null : (
                         <Button variant="danger" disabled={!!busyKey} onClick={() => remove(m.month)}>
@@ -431,6 +454,64 @@ function ScorecardAdmin() {
               </tbody>
             </table>
           </TableScroll>
+          <h3 className="cx-section__title">Log a business-behaviour case</h3>
+          <form
+            className="cx-filters"
+            onSubmit={(e) => {
+              e.preventDefault()
+              logBehaviour(behEmail, behDate, behNote)
+            }}
+          >
+            <div className="cx-field">
+              <label className="cx-label" htmlFor="ps-beh-email">
+                Agent email
+              </label>
+              <Input
+                id="ps-beh-email"
+                type="email"
+                required
+                value={behEmail}
+                onInput={(e) => setBehEmail(e.currentTarget.value)}
+              />
+            </div>
+            <div className="cx-field">
+              <label className="cx-label" htmlFor="ps-beh-date">
+                Date
+              </label>
+              <Input
+                id="ps-beh-date"
+                type="date"
+                required
+                value={behDate}
+                onInput={(e) => setBehDate(e.currentTarget.value)}
+              />
+            </div>
+            <div className="cx-field pw-field-grow">
+              <label className="cx-label" htmlFor="ps-beh-note">
+                Note
+              </label>
+              <Input
+                id="ps-beh-note"
+                required
+                maxLength={500}
+                value={behNote}
+                onInput={(e) => setBehNote(e.currentTarget.value)}
+              />
+            </div>
+            <Button type="submit" variant="primary" disabled={busyKey === 'behaviour'}>
+              {busyKey === 'behaviour' ? 'Logging…' : 'Log case'}
+            </Button>
+          </form>
+          {behMsgErr ? (
+            <div className="cx-note" data-status="bad" role="alert">
+              <div>{behMsgErr}</div>
+            </div>
+          ) : null}
+          {behMsg ? (
+            <div className="cx-note" data-status="ok" role="status">
+              <div>{behMsg}</div>
+            </div>
+          ) : null}
         </>
       ) : (
         <LinesSkeleton lines={4} />
@@ -541,8 +622,8 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             m.status === 'error'
               ? `${m.month}: ${m.error}`
               : m.retryInS
-                ? `${m.month}: read a moment ago, try again in ${m.retryInS} s.`
-                : `${m.month}: read ${m.matrixRows} agent-days from "${m.title}".`
+                ? `${m.month}: rebuilt a moment ago, try again in ${m.retryInS} s.`
+                : `${m.month}: rebuilt ${m.matrixRows} agent-days.`
           )
         )
         reload()
@@ -595,8 +676,8 @@ export function AgentsPage({ route }: { route: { title: string } }) {
       purpose={
         data
           ? teamView
-            ? D('Team scorecard from the monthly productivity workbook: ranking and agent detail for any period.')
-            : D('Your scorecard from the monthly productivity workbook.')
+            ? D('Team scorecard from the live tables: ranking and agent detail for any period.')
+            : D('Your scorecard from the live tables.')
           : undefined
       }
       aside={
@@ -627,10 +708,10 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             <Button onClick={() => apply(monthStart(todayStr), todayStr)}>{D('This month')}</Button>
             {data.canRefresh ? (
               <Button variant="quiet" onClick={refreshNow} disabled={refreshing}>
-                {refreshing ? D('Reading the workbook…') : D('Refresh')}
+                {refreshing ? D('Rebuilding…') : D('Refresh')}
               </Button>
             ) : null}
-            <AsOfHint iso={data.dataAsOf} what={D('Workbook')} />
+            <AsOfHint iso={data.dataAsOf} what={D('Live tables')} />
           </div>
         ) : null
       }
@@ -676,7 +757,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 <div className="stat">
                   <span className="stat-l">{D('Data coverage')}</span>
                   <span className="stat-v num">{coverage}%</span>
-                  <span className="stat-d">{D('{n} agent-days read', { n: String(agentDays) })}</span>
+                  <span className="stat-d">{D('{n} agent-days', { n: String(agentDays) })}</span>
                 </div>
               ) : null}
             </div>
@@ -920,7 +1001,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 and the score is marked incomplete; it is not re-weighted. Behaviour is 0 with one case in the
                 workbook&apos;s log or the KPI logs. An operational-loss case halves the score; 3 unplanned leaves inside
                 2 months make it 0. On probation (first 3 months from the hiring date) each KPI is pass or fail. Raw
-                figures sum the whole period first and divide once; they are read from each month&apos;s workbook
+                figures sum the whole period first and divide once; they are computed from each month&apos;s data
                 overnight and on Refresh now.
               </p>
             </section>

@@ -19,20 +19,19 @@
 
 import 'server-only'
 import { inflateRawSync } from 'node:zlib'
-import { appendRow, db, findRow, newId } from '@/features/shared/platform/repo'
+import { appendRow, db, findRow, newId, readAllPaged } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { requireRole } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { InputError } from '@/features/shared/lib/api-error'
-import { formatDate_, tzOffsetMin, type SheetBookLike } from '@/features/shared/lib/adapters'
-import { fetchWorkbookTabs, sheetBook } from '@/features/shared/jobs/sheets'
+import { dqAddDays_, dqDateKey_, formatDate_, tzOffsetMin, type SheetBookLike } from '@/features/shared/lib/adapters'
+import { sheetBook } from '@/features/shared/jobs/sheets'
 
 export const HM_INPUTS_TABLE = 'heatmap_inputs'
 export const HM_INPUTS_HEADERS = ['input_id', 'name', 'source', 'interval_minutes', 'cells_count', 'window_json', 'notes',
   'data_1', 'data_2', 'data_3', 'data_4', 'archived_at', 'submitted_by', 'submitted_at']
 export const HM_SETS_TABLE = 'heatmap_assumption_sets'
 export const HM_SETS_HEADERS = ['set_id', 'name', 'assumptions_json', 'archived_at', 'submitted_by', 'submitted_at']
-export const HM_PRIOR_SHEET_ID = '1k63DAtnuHPQmLMVh29HgYbkoVO6QMSaLYItsoxwlfSM'
 export const HM_DEFAULT_COUNTRIES = ['Kuwait', 'KSA', 'UAE', 'Qatar', 'Bahrain']
 export const HM_DEFAULT_ALIASES: Record<string, string> = { 'Saudi Arabia': 'KSA', 'Kingdom of Saudi Arabia': 'KSA', 'United Arab Emirates': 'UAE', Emirates: 'UAE' }
 export const HM_MAX_CELLS = 30000
@@ -559,47 +558,109 @@ export async function parseHeatmapUpload(fileName: unknown, base64: unknown): Pr
   throw new InputError('Upload a .csv or .xlsx file.')
 }
 
-/** buildHeatmapFromSource verbatim (admin): builds a heatmap from a spreadsheet holding the raw tabs. */
-export async function buildHeatmapFromSource(spreadsheetId?: unknown, opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const user = await requireRole(['admin'])
-  await assertWritable()
-  const id = String(spreadsheetId || (await getConfig('heatmap_source_spreadsheet_id', '')) || '')
-  if (!/^[A-Za-z0-9_-]{20,80}$/.test(id)) throw new InputError('Paste the id of the spreadsheet that holds the raw tabs.')
-  const tabs = await fetchWorkbookTabs(id, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups'], { deferred: true })
-  const hm = buildHeatmapFromRawTabs_(sheetBook(tabs, id), opts || {})
-  if (!hm.cells.length) throw new InputError('No usable rows were found in the raw tabs.')
-  const meta = await storeHeatmapInput_(
-    'Raw tabs ' + (hm.window.from || '') + ' to ' + (hm.window.to || ''), 'raw_tabs',
-    { intervalMinutes: hm.intervalMinutes, cells: hm.cells, window: hm.window }, hm.notes.join(' '), user.email
-  )
-  return { meta, heatmap: { intervalMinutes: hm.intervalMinutes, cells: hm.cells, window: hm.window } }
+/** hmCairoWall_: an ISO instant (or Date) -> the Cairo wall-clock text the sheet cells held. */
+function hmCairoWall_(v: unknown): string {
+  if (v === null || v === undefined || v === '') return ''
+  const ms = v instanceof Date ? v.getTime() : Date.parse(String(v))
+  if (!isFinite(ms)) return ''
+  return formatDate_(ms, 'Africa/Cairo', 'yyyy-MM-dd HH:mm:ss')
 }
 
 /**
- * runPriorHeatmapRegression verbatim (admin): the skipped September regression.
- * Reads the prior sheet, rebuilds the volume heatmap from its raw tabs, stores
- * it as an input, and returns the outcome tab (HeatMap A1:BB51) so the page
- * compares the two with the engine. Throws the Sheets-credentials error when
- * the service account is absent — the legacy openSpreadsheet_ failure.
+ * hmSourceCells_: the five raw tabs synthesized from the DB mirrors + config,
+ * as header+rows grids for sheetBook. Country cells the mirrors do not carry
+ * emit '' (the builder's '*' bucket); ts cells are Cairo wall-clock text so
+ * hmKuwaitSlot_ lands the same Kuwait slot the sheets did.
+ *
+ * Size bounds: maqsam/freshchat/tickets are window-pushed; 'Excluded Groups'
+ * is a config array. The wa_parcels tracker_records read is the one
+ * whole-tracker scan — bounded only by tracker size (wa_parcels subset of
+ * tracker_records, ~2.3k rows total, paged via readAllPaged pk row_n +
+ * (tracker_id,row_n) index). No time predicate is pushed: every migrated
+ * wa_parcels row has submitted_at NULL (ops-tabs.ts ROW_TRANSFORMS.WA sets
+ * it null; the WA sheet has no submitted_at column), so a submitted_at gte
+ * would silently drop every row — exact parity with the legacy whole-WA-tab
+ * read requires the unbounded scan. Unmet precondition: a verified
+ * submitted_at <-> values.creation_date correlation on a live remote sample
+ * (blocked pending that sample; same dependency as data-9).
  */
-export async function runPriorHeatmapRegression(): Promise<Record<string, unknown>> {
+export async function hmSourceCells_(win: { from: string; to: string }): Promise<Record<string, unknown[][]>> {
+  const fromMs = Date.parse(win.from + 'T00:00:00Z')
+  const toMs = Date.parse(win.to + 'T00:00:00Z') + 86400000
+  const iso = (ms: number) => new Date(ms).toISOString()
+
+  const mqRows = await readAllPaged('maqsam_calls', {
+    columns: 'started_at,state,direction,ts_ms',
+    pk: 'ts_ms',
+    build: (q) => q.gte('ts_ms', fromMs - 86400000).lt('ts_ms', toMs),
+  })
+  const maqsam: unknown[][] = [['Start time', 'Call direction', 'Call state', 'Country']]
+  mqRows.forEach((r) => {
+    maqsam.push([hmCairoWall_(r.started_at), String(r.direction || ''), String(r.state || ''), ''])
+  })
+
+  const fcRows = await readAllPaged('freshchat', {
+    columns: 'initiated_at,status,channel,ts_ms',
+    pk: 'ts_ms',
+    build: (q) => q.gte('ts_ms', fromMs - 7 * 86400000).lt('ts_ms', toMs),
+  })
+  const freshchat: unknown[][] = [['Initiated At', 'Channel', 'Bot conversation flag', 'Status', 'Country']]
+  fcRows.forEach((r) => {
+    const ms = Date.parse(String(r.initiated_at || ''))
+    if (!isFinite(ms) || ms < fromMs || ms >= toMs) return
+    freshchat.push([hmCairoWall_(r.initiated_at), String(r.channel || ''), '', String(r.status || ''), ''])
+  })
+
+  const fdRows = await readAllPaged('tickets', {
+    columns: 'created_at,group_name,country',
+    build: (q) => q.gte('created_at', iso(fromMs)).lt('created_at', iso(toMs)),
+  })
+  const freshdesk: unknown[][] = [['Created date', 'Group name', 'Group Check', 'Country']]
+  fdRows.forEach((r) => {
+    freshdesk.push([hmCairoWall_(r.created_at), String(r.group_name || ''), '', String(r.country || '')])
+  })
+
+  const waRows = await readAllPaged('tracker_records', {
+    columns: 'values',
+    pk: 'row_n',
+    build: (q) => q.eq('tracker_id', 'wa_parcels'),
+  })
+  const wa: unknown[][] = [['invoice_creation_date', 'Address Confirmed3', "Customer Didn't Answer3", 'Country_Name']]
+  waRows.forEach((r) => {
+    const v = (typeof r.values === 'string' ? JSON.parse(String(r.values)) : r.values) as Record<string, unknown> | null
+    if (!v || typeof v !== 'object') return
+    const status3pl = String(v.status_3pl || '')
+    const confirmed = /address confirmed/i.test(status3pl) || Number(v.confirmed) === 1 ? 1 : ''
+    const didnt = /customer didn'?t answer/i.test(status3pl) ? 1 : ''
+    wa.push([String(v.creation_date || v.date_only || ''), confirmed, didnt, String(v.country || '')])
+  })
+
+  const excludedCfg = (await getConfig('heatmap_excluded_groups', [])) as unknown
+  const excludedGroups: unknown[][] = [['Group name', 'In/excluded']]
+  ;(Array.isArray(excludedCfg) ? excludedCfg : []).forEach((g) => {
+    excludedGroups.push([String(g), 'Excluded'])
+  })
+
+  return { Maqsam: maqsam, Freshchat: freshchat, Freshdesk: freshdesk, WA: wa, 'Excluded Groups': excludedGroups }
+}
+
+/** buildHeatmapFromSource (admin): builds a heatmap from the live DB mirrors — no sheet reads. */
+export async function buildHeatmapFromSource(_spreadsheetId?: unknown, opts?: Record<string, unknown>): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin'])
   await assertWritable()
-  const tabs = await fetchWorkbookTabs(HM_PRIOR_SHEET_ID, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups', 'HeatMap', 'Heatmap'], { deferred: true })
-  const ss = sheetBook(tabs, HM_PRIOR_SHEET_ID)
-  const hm = buildHeatmapFromRawTabs_(ss, { intervalMinutes: 30 })
-  const tab = ss.getSheetByName('HeatMap') || ss.getSheetByName('Heatmap')
-  const outcome = tab
-    ? tab.getRange(1, 1, 51, 54).getValues().map((r) => r.map((v) => (v instanceof Date ? formatDate_(v, 'Africa/Cairo', 'HH:mm') : String(v))))
-    : []
+  const now = new Date()
+  const from = String(opts?.from || '') || dqAddDays_(dqDateKey_(now), -56)
+  const to = String(opts?.to || '') || dqDateKey_(now)
+  const cells = await hmSourceCells_({ from, to })
+  const hm = buildHeatmapFromRawTabs_(sheetBook(cells, 'db'), { ...(opts || {}), from, to })
+  if (!hm.cells.length) throw new InputError('No usable rows were found in the live mirrors.')
+  if (!opts?.from) hm.notes.push('Defaulted to the last 8 weeks (no window given).')
+  if ((cells.Freshchat || []).length > 1) hm.notes.push('Bot flag unavailable in the freshchat mirror — bot-only chats are included.')
   const meta = await storeHeatmapInput_(
-    'Prior heatmap 03-Sep-2026 (rebuilt from raw tabs)', 'prior_sheet',
+    'DB mirrors ' + from + ' to ' + to, 'db_mirrors',
     { intervalMinutes: hm.intervalMinutes, cells: hm.cells, window: hm.window }, hm.notes.join(' '), user.email
   )
-  return {
-    meta, heatmap: { intervalMinutes: hm.intervalMinutes, cells: hm.cells, window: hm.window },
-    outcomeRows: outcome, notes: hm.notes, events: hm.events,
-  }
+  return { meta, heatmap: { intervalMinutes: hm.intervalMinutes, cells: hm.cells, window: hm.window } }
 }
 
 /** getHeatmapInput verbatim: one stored input -> {meta, heatmap}. */

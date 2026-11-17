@@ -52,7 +52,7 @@ import { notesSave } from '@/features/cx-people/lib/notes'
 import { refreshScorecard } from '@/features/cx-people/lib/scorecard-server'
 import { submitCheckin, refreshQueueNow, agingFlagTicket, agingResolveFlag } from '@/features/cx-queue/lib/pages'
 import { schedulerSave } from '@/features/cx-queue/lib/scheduler'
-import { runPriorHeatmapRegression } from '@/features/cx-queue/lib/heatmap'
+import { buildHeatmapFromSource } from '@/features/cx-queue/lib/heatmap'
 import { kbTrackerSave, setupDesk, installDeskTriggers } from '@/features/cx-desk/lib/tlperformance'
 import { mailApprovalDecide } from '@/features/cx-desk/lib/maildesk'
 import { kpiLogAppend, kpiLogRemove, olCaseUpsert } from '@/features/cx-people/lib/kpi/server'
@@ -283,7 +283,7 @@ describe('data-layer refusals — owner viewing as ANOTHER ADMIN (role gates pas
     ['syncRosterNow', () => syncRosterNow()],
     ['setPersonOverrides', () => setPersonOverrides('agent@dabdoob.com', {})],
     ['schedulerSave', () => schedulerSave({})],
-    ['runPriorHeatmapRegression', () => runPriorHeatmapRegression()],
+    ['buildHeatmapFromSource', () => buildHeatmapFromSource()],
     ['setupDesk', () => setupDesk()],
     ['installDeskTriggers', () => installDeskTriggers()],
     ['setQaAuditorGrant', () => setQaAuditorGrant('agent@dabdoob.com', true)],

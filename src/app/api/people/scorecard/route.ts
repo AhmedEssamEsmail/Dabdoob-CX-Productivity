@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { apiError } from '@/features/shared/lib/api-error'
 import {
   getScorecardPage, getScorecardDetail, getScorecardAdmin,
-  refreshScorecard, saveScorecardSource, removeScorecardSource,
+  refreshScorecard, saveScorecardSource, removeScorecardSource, addBehaviourCase,
 } from '@/features/cx-people/lib/scorecard-server'
 
 /** GET ?view=page|detail|admin plus the scorecard params (month, email, from, to). */
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   }
 }
 
-/** POST op: refresh | save_source | remove_source (admin-only inside the lib). */
+/** POST op: refresh | save_source | remove_source | add_behaviour (admin-only inside the lib). */
 export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>
@@ -33,6 +33,8 @@ export async function POST(req: Request) {
         return NextResponse.json(await saveScorecardSource(body.month, body.link))
       case 'remove_source':
         return NextResponse.json(await removeScorecardSource(body.month))
+      case 'add_behaviour':
+        return NextResponse.json(await addBehaviourCase(body))
       default:
         return NextResponse.json({ error: 'Unknown op' }, { status: 400 })
     }

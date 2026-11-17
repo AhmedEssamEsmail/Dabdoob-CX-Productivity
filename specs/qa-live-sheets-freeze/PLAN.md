@@ -119,3 +119,51 @@ Status: draft -> spec
   job later. Not this wave.
 - Remote cron.job verify + `supabase db push`: approved by user (pg_cron
   choice + "any needed tools"). Must still verify Target: line before apply.
+
+## Amendment 4 — Wave 2 (2026-11-17, user: "continue remaining spec work")
+Goal: finish the literal freeze — de-sheet the grandfathered readers and flip
+the guard to strict mode so `deferred` no longer exists.
+
+Success criteria (grep/behavior-verifiable):
+1. `scorecard-server.ts` performs ZERO sheet reads: scNightly_/refreshScorecard
+   compute sc_daily from `prod_daily_layers` + `roster` + `qa_audits`; FCR tab
+   cells preserve the prior month's stored verdicts on rebuild (no live source —
+   accepted); 'Business Behavior' cells read `public.sc_behaviour` (exists, 3
+   rows). The nightly pg_cron job `cxh-scorecard-nightly` (06:45) exercises it.
+2. Admin "Business Behaviour" entry form writes `sc_behaviour` (small UI leaf —
+   the S04b ii-lite design from DECISION).
+3. `heatmap.ts` buildHeatmapFromSource reads only DB: `maqsam_calls`,
+   `freshchat`, `tickets`, `tracker_records` (wa_parcels tracker), config key
+   `heatmap_excluded_groups`; runPriorHeatmapRegression retired; country-col
+   `'*'` alias fallback per DECISION.
+4. `tlqueue.ts`: fc_messages book read deleted (Freshdesk path always —
+   accepted degradation), `ol_sheet_id` fallback deleted (native-only),
+   'Activities' via dbbook.
+5. Admin readers: mirrors peek + source-health probes repoint to DB
+   mirror/table checks (sec-2/sec-3 closure); engine.ts `deferred` flags
+   removed so non-allowlisted mappings throw.
+6. STRICT FLIP (last): `sheets-freeze.ts` drops the deferred bypass — every
+   non-allowlisted sheet read throws SheetsFreezeError; `deferred:true` call
+   sites = 0 in src/; freeze-scan EXPECTED shrinks to the two seams
+   (sheets.ts readSheetRaw guard + engine.ts allowlist assert).
+7. Leftover LOWs (fix-batch): data-4 stale mirrors.ts docstring; migrate.ts
+   reconcile `.catch(()=>[])` must not silently swallow read errors;
+   `.in('key',…)` groups chunked (~100) — same function as approved perf-1.
+
+Non-goals (remain BLOCKED per DECISION open questions):
+FCR live verdict source (preserve semantics instead) · FD_AUX upstream (user
+holds for future mailbox ingestion; aux_spans stays 0 rows, dbbook emits
+empty) · freshchat message-level pairs (optional later) · cx-quality/** and
+/api/qa/* (user-owned — migrate.ts touches limited to the two LOW fixes in
+the already-approved reconcile function).
+
+Risk flags: data y (metric math replacing sheet cells) · db y (config keys;
+sc_behaviour writes) · ui y (behaviour form) · perf y (DB queries must stay
+window-bounded — same budget as wave-1) · external-api n · tests y · deploy y
+(ask at release step) · arch n (DECISION.md governs).
+Data verified on remote 2026-11-17: prod_daily_layers 1579 · maqsam_calls
+47501 · freshchat 1753 · tickets 65644 · tracker_records 2376 · sc_behaviour
+3 · roster 50 · aux_spans 0.
+Watch: cxh- cron jobs live (mail-desk/data-tick green; first qa-engine run
+2026-11-18 07:30 UTC); CRON_SECRET rotated 2026-11-17 — vault cxh_cron_secret
+= Vercel prod value.

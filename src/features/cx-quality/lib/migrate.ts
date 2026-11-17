@@ -405,7 +405,7 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
   const dir = await pwDirectory()
   const rows = (await readAllPaged('qe_queue_log', {
     build: (q) => q.or('state.is.null,state.neq.audited'),
-  }).catch(() => [] as Row[])) as Row[]
+  })) as Row[]
   let oldestDay = ''
   rows.forEach((r) => {
     const d = String(r.queued_date || '').slice(0, 10)
@@ -414,7 +414,7 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
   const audits = (oldestDay
     ? ((await readAllPaged('qa_audits', {
         build: (q) => q.eq('kind', 'audit').gte('submitted_at', oldestDay).or('status.is.null,status.neq.voided'),
-      }).catch(() => [] as Row[])) as Row[])
+      })) as Row[])
     : []
   )
     .filter((a) => a.kind === 'audit' && a.status !== 'voided' && a.source !== 'offqueue')
@@ -452,11 +452,13 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
     g.keys.push(String(c.key))
   })
   for (const g of Object.values(groups)) {
-    const { error } = await db().from('qe_queue_log')
-      .update({ state: 'audited', audited_at: g.audited_at, audited_by: g.audited_by })
-      .eq('queued_date', String(g.queued_date))
-      .in('key', g.keys)
-    if (error) throw described(error, { table: 'qe_queue_log' })
+    for (let i = 0; i < g.keys.length; i += 100) {
+      const { error } = await db().from('qe_queue_log')
+        .update({ state: 'audited', audited_at: g.audited_at, audited_by: g.audited_by })
+        .eq('queued_date', String(g.queued_date))
+        .in('key', g.keys.slice(i, i + 100))
+      if (error) throw described(error, { table: 'qe_queue_log' })
+    }
   }
   return { updated, revived }
 }

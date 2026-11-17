@@ -3,16 +3,18 @@
 /**
  * Scorecard.js — the server half: scReadRange_/scMonthRows_ on Postgres, the
  * page endpoints (getScorecardPage, getScorecardDetail, getScorecardAdmin), the
- * workbook write paths (saveScorecardSource / removeScorecardSource /
- * refreshScorecard / scNightly_) and the shared seams the 1:1 context reuses
- * (scIo_, scWho_, scKpiCtx_).
+ * month rebuild (scNightly_/refreshScorecard/scRefreshMonth_), the admin
+ * workbook-id config (saveScorecardSource / removeScorecardSource) and the
+ * shared seams the 1:1 context reuses (scIo_, scWho_, scKpiCtx_).
  *
  * Datastore change: the yearly data stores (dqSheet_(name, year)) collapse into
  * the flat Postgres tables sc_daily / sc_behaviour — one read each, the callers
  * slice by date like scReadRange_ did. sc_months stays a live table keyed on
- * month. The workbook itself is read through the Sheets API seam
- * (jobs/sheets fetchWorkbookTabs) — absent creds it throws like openSpreadsheet_
- * did, so refresh reports the failure instead of wiping a month.
+ * month. sc_daily is rebuilt from prod_daily_layers + qa_audits
+ * (scDailyRowsDb_) with stored fcr_* verdicts merged back (scMergeFcr_ — FCR
+ * has no live source); sc_behaviour is append-only via the admin behaviour
+ * form — refresh never touches it. No workbook is opened any more: the saved
+ * month -> workbook id is display metadata only.
  */
 
 import 'server-only'
@@ -21,7 +23,6 @@ import {
   dqDateKey_,
   dqKeyPart_,
   dqSetting_,
-  prodDateKey_,
   type Cfg,
   type Directory,
 } from '@/features/shared/lib/adapters'
@@ -30,7 +31,6 @@ import { db, readAllPaged } from '@/features/shared/platform/repo'
 import { assertWritable } from '@/features/shared/platform/viewas'
 import { requireRole, requireJobCaller, pwDirectory } from '@/features/shared/platform/identity'
 import { getConfig, setConfig, configAll } from '@/features/shared/platform/settings'
-import { fetchWorkbookTabs, sheetCreds } from '@/features/shared/jobs/sheets'
 import { dqStep_ } from '@/features/shared/jobs/steps'
 import type { JobEnv } from '@/features/shared/jobs/env'
 import { described } from '@/features/shared/lib/errors'
@@ -222,20 +222,119 @@ export async function scMonthRowsDb_(): Promise<Record<string, Record<string, un
 }
 
 /**
+ * One month's sc_daily rows rebuilt from the DB mirrors — prod_daily_layers
+ * ('effective' layer wins per date|email, else 'raw'/null) for the six
+ * target/achieved numbers, qa_audits (kind 'audit' — ''/null counts as audit;
+ * voided/disputed excluded, raw status compare) for
+ * audits/score_x_audits, roster for names. fcr_* stay 0: stored verdicts are
+ * merged back by the refresh caller (no live FCR source).
+ */
+export async function scDailyRowsDb_(month: string): Promise<{ rows: Record<string, unknown>[] }> {
+  const first = new Date(month + '-01T00:00:00Z')
+  const next = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 1))
+  const from = month + '-01'
+  const bound = next.toISOString().slice(0, 7) + '-01'
+  const num0 = (v: unknown): number => {
+    const n = Number(v)
+    return isFinite(n) ? n : 0
+  }
+
+  const [layers, audits, roster] = await Promise.all([
+    readAllPaged('prod_daily_layers', {
+      columns: 'id,date,email,layer,agent_name,inbound_target,inbound_achieved,texting_target,texting_achieved,wa_target,wa_achieved',
+      build: (q) => q.gte('date', from).lt('date', bound),
+    }),
+    readAllPaged('qa_audits', {
+      columns: 'audit_date,agent_email,kind,status,score_final,score',
+      build: (q) => q.gte('audit_date', from).lt('audit_date', bound),
+    }),
+    readStore('roster'),
+  ])
+
+  // prod_daily_layers: one row per date|email — 'effective' wins, else raw/null.
+  const cand: Record<string, { eff?: Record<string, unknown>; raw?: Record<string, unknown> }> = {}
+  layers.forEach((r) => {
+    const date = String(r.date || '').slice(0, 10)
+    const email = scEmail_(r.email)
+    if (!date || !email) return
+    const k = date + '|' + email
+    const c = (cand[k] = cand[k] || {})
+    if (String(r.layer) === 'effective') {
+      if (!c.eff) c.eff = r
+    } else if (String(r.layer || 'raw') === 'raw') {
+      if (!c.raw) c.raw = r
+    }
+  })
+
+  // qa_audits: audits + score_x_audits per audit_date|email (all sources count).
+  const auditByKey: Record<string, { audits: number; scoreX: number }> = {}
+  audits.forEach((r) => {
+    if (String(r.kind || 'audit') !== 'audit') return
+    if (r.status === 'voided' || r.status === 'disputed') return
+    const date = String(r.audit_date || '').slice(0, 10)
+    const email = scEmail_(r.agent_email)
+    if (!date || !email) return
+    const k = date + '|' + email
+    const a = (auditByKey[k] = auditByKey[k] || { audits: 0, scoreX: 0 })
+    a.audits += 1
+    a.scoreX += scPct100_(r.score_final ?? r.score)
+  })
+
+  const nameOf: Record<string, string> = {}
+  roster.rows.forEach((r) => {
+    const e = scEmail_(r.email)
+    if (e && !nameOf[e]) nameOf[e] = String(r.name || '').trim()
+  })
+
+  const byKey: Record<string, Record<string, any>> = {}
+  const zero = (date: string, email: string, name: string) => ({
+    month, date, email, name, matrix_day: 0, inb_target: 0, inb_achieved: 0, txt_target: 0,
+    txt_achieved: 0, wa_target: 0, wa_achieved: 0, audits: 0, score_x_audits: 0, fcr_passed: 0, fcr_failed: 0, fcr_excluded: 0,
+  })
+
+  Object.keys(cand).forEach((k) => {
+    const r = (cand[k].eff || cand[k].raw) as Record<string, unknown>
+    const date = String(r.date).slice(0, 10)
+    const email = scEmail_(r.email)
+    const o = (byKey[k] = byKey[k] || zero(date, email, nameOf[email] || String(r.agent_name || '').trim()))
+    o.matrix_day = 1
+    o.inb_target = num0(r.inbound_target); o.inb_achieved = num0(r.inbound_achieved)
+    o.txt_target = num0(r.texting_target); o.txt_achieved = num0(r.texting_achieved)
+    o.wa_target = num0(r.wa_target); o.wa_achieved = num0(r.wa_achieved)
+  })
+  Object.keys(auditByKey).forEach((k) => {
+    const [date, email] = k.split('|')
+    const o = (byKey[k] = byKey[k] || zero(date, email, nameOf[email] || ''))
+    o.audits = auditByKey[k].audits
+    o.score_x_audits = auditByKey[k].scoreX
+  })
+
+  const rows = Object.keys(byKey).map((k) => byKey[k])
+  rows.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.email < b.email ? -1 : a.email > b.email ? 1 : 0))
+  return { rows }
+}
+
+/**
  * The io seam scLoad_ / pwScoreMonths_ take: every table the scorecard reads
  * prefetched once, then exposed through the synchronous shape the pure layer
  * expects (missing tables read as []).
  */
-export async function scIo_(cfg: Cfg) {
+export async function scIo_(cfg: Cfg, range: { from: string; to: string }) {
+  // Prefetch covers the previous comparison window too: pf is `spanDays` before
+  // `from`, the same bound getScorecardPage / pwScoreMonths_ slice by.
+  const spanDays = Math.round((Date.parse(range.to + 'T00:00:00Z') - Date.parse(range.from + 'T00:00:00Z')) / 86400000) + 1
+  const pf = dqAddDays_(range.from, -spanDays)
   const [daily, behaviour, bhvLog, months] = await Promise.all([
-    readStore('sc_daily'),
-    readStore('sc_behaviour'),
-    readStore('kpi_behaviour_log'),
+    scReadRange_('sc_daily', pf, range.to),
+    scReadRange_('sc_behaviour', pf, range.to),
+    readAllPaged('kpi_behaviour_log', {
+      build: (q) => q.gte('date', pf).lte('date', range.to),
+    }),
     readStore('sc_months'),
   ])
   const tables: Record<string, Record<string, unknown>[]> = {
-    sc_daily: daily.rows,
-    sc_behaviour: behaviour.rows,
+    sc_daily: daily,
+    sc_behaviour: behaviour,
   }
   const monthMap = scMonthRows_(months.rows)
   return {
@@ -244,7 +343,7 @@ export async function scIo_(cfg: Cfg) {
         const d = dqKeyPart_('date', r.date)
         return d === '' ? name === 'sc_behaviour' : d >= from && d <= to
       }),
-    behaviourLogRows: bhvLog.rows,
+    behaviourLogRows: bhvLog,
     monthRows: () => monthMap,
     workbookFor: (m: string) => scWorkbookFor_(m, cfg),
   }
@@ -311,7 +410,7 @@ export async function getScorecardPage(params?: Record<string, unknown>) {
   const user = await requireRole(['admin', 'tl', 'agent'])
   const range = await scRange_(params)
   const cfg = (await configAll()) as Cfg
-  const io = await scIo_(cfg)
+  const io = await scIo_(cfg, range)
   const d = scLoad_(io, range)
   const dir = await pwDirectory()
   const kctx = await scKpiCtx_(range)
@@ -348,7 +447,7 @@ export async function getScorecardDetail(params?: Record<string, unknown>) {
   if (user.role === 'agent' && email !== user.email) throw new Error('You can only view your own scorecard.')
   const range = await scRange_(params)
   const cfg = (await configAll()) as Cfg
-  const io = await scIo_(cfg)
+  const io = await scIo_(cfg, range)
   const d = scLoad_(io, range)
   const dir = await pwDirectory()
   const who = scWho_(dir)
@@ -379,71 +478,6 @@ export function scSheetId_(text: unknown): string {
   return /^[A-Za-z0-9_-]{20,}$/.test(s) ? s : ''
 }
 
-// ---------- store: reading a workbook ----------
-
-/** Header cells of a tab's first row, lower-cased; '' when the tab is missing or empty. */
-function scHeaders_(cells: unknown[][]): string[] {
-  const first = cells && cells[0]
-  if (!first || !first.length) return []
-  return first.map((h) => String(h || '').trim().toLowerCase())
-}
-
-function scColumn_(cells: unknown[][], col: number, rows: number): unknown[] {
-  const out: unknown[] = []
-  for (let i = 0; i < rows; i++) out.push((cells[1 + i] || [])[col - 1])
-  return out
-}
-
-/**
- * Reads one month's three tabs of a prefetched workbook. Returns
- * { matrix, fcr, fcrDated, fcrNote, behaviour, behaviourNote, title }.
- * Throws only when the Matrix tab is missing; FCR and behaviour problems come back as notes.
- */
-export function scReadWorkbook_(cells: Record<string, unknown[][]>, title: string) {
-  const res: Record<string, any> = { title, matrix: [], fcr: [], fcrDated: true, fcrNote: '', fcrFound: false, behaviour: { found: false, cases: [] }, behaviourNote: '' }
-  const mx = cells[SC_MATRIX_TAB]
-  if (!mx) throw new Error('This workbook has no "' + SC_MATRIX_TAB + '" tab.')
-  if (mx.length >= SC_MATRIX_FIRST_ROW) {
-    res.matrix = scParseMatrix_(mx.slice(SC_MATRIX_FIRST_ROW - 1).map((r) => r.slice(0, SC_MATRIX_LAST_COL)), (v) => prodDateKey_(v, 'Africa/Cairo'))
-  }
-  const fs = cells[SC_FCR_TAB]
-  if (!fs) {
-    res.fcrNote = 'No "' + SC_FCR_TAB + '" tab.'
-  } else {
-    const headers = scHeaders_(fs)
-    const fcrCol = headers.indexOf('fcr') + 1
-    const fl = fs.length
-    if (!fcrCol) {
-      res.fcrNote = 'No column headed "FCR" on the FCR tab.'
-    } else if (fl >= 2) {
-      const n = fl - 1
-      let dateCol: number | null = SC_FCR_DATE_COL
-      let dates = scColumn_(fs, dateCol, n)
-      // Column D should hold dates; if not, look for a "date" header, else treat the tab as undated (V1).
-      if (!dates.some((v) => prodDateKey_(v, 'Africa/Cairo'))) {
-        const idx = headers.findIndex((h) => h.indexOf('date') !== -1)
-        dateCol = idx >= 0 ? idx + 1 : null
-        dates = dateCol ? scColumn_(fs, dateCol, n) : (null as never)
-      }
-      res.fcrFound = true
-      res.fcrDated = !!dates
-      if (!dates) res.fcrNote = 'The FCR tab has no date column: FCR is counted per month, not per day.'
-      res.fcr = scParseFcr_(scColumn_(fs, SC_FCR_EMAIL_COL, n), dates as unknown[] | null, scColumn_(fs, fcrCol, n), (v) => prodDateKey_(v, 'Africa/Cairo'))
-    } else {
-      res.fcrFound = true
-    }
-  }
-  for (let t = 0; t < SC_BEHAVIOUR_TABS.length && !res.behaviour.found; t++) {
-    const bs = cells[SC_BEHAVIOUR_TABS[t]]
-    if (!bs || bs.length < 1) continue
-    const rows = Math.min(bs.length, SC_BEHAVIOUR_SCAN_ROWS)
-    const cols = Math.min(bs.reduce((m, r) => Math.max(m, (r || []).length), 0) || 1, SC_BEHAVIOUR_SCAN_COLS)
-    res.behaviour = scParseBehaviour_(bs.slice(0, rows).map((r) => r.slice(0, cols)), (v) => prodDateKey_(v, 'Africa/Cairo'))
-  }
-  if (!res.behaviour.found) res.behaviourNote = 'No "' + SC_BEHAVIOUR_HEADER + '" header on the Business Behavior tab.'
-  return res
-}
-
 /** Upserts an sc_months meta row (dqUpsert_('sc_months', ['month'], ...)). */
 async function scMonthUpsert_(meta: Record<string, unknown>, actor: string) {
   const { error } = await db().from('sc_months').upsert({ ...meta, updated_by: actor, updated_at: new Date().toISOString() }, { onConflict: 'month' })
@@ -451,10 +485,45 @@ async function scMonthUpsert_(meta: Record<string, unknown>, actor: string) {
 }
 
 /**
- * scRefreshMonth_: reads a month's workbook into the three tables. Never wipes
- * a month: with no Matrix rows dated in the month the previous rows stay and
- * the error is recorded. The workbook tabs are fetched through the Sheets seam;
- * absent creds the refresh fails like openSpreadsheet_ failing did.
+ * Merges a DB rebuild (scDailyRowsDb_) with the month's stored sc_daily rows:
+ * stored fcr_* verdicts — FCR has no live source — land back on rebuilt rows by
+ * date|email, and stored keys the rebuild no longer produces are kept as zero
+ * rows (matrix_day 0, metrics 0, kept name). Returns the merged rows sorted like
+ * scBuildDaily_ plus fcrRows, the total preserved verdict count for meta.
+ */
+export function scMergeFcr_(month: string, built: Record<string, any>[], stored: Record<string, unknown>[]) {
+  const byKey: Record<string, Record<string, any>> = {}
+  built.forEach((r) => { byKey[String(r.date) + '|' + r.email] = r })
+  let fcrRows = 0
+  stored.forEach((s) => {
+    const fp = Number(s.fcr_passed) || 0
+    const ff = Number(s.fcr_failed) || 0
+    const fe = Number(s.fcr_excluded) || 0
+    fcrRows += fp + ff + fe
+    const o = byKey[String(s.date) + '|' + s.email]
+    if (o) {
+      o.fcr_passed = fp; o.fcr_failed = ff; o.fcr_excluded = fe
+      return
+    }
+    byKey[String(s.date) + '|' + s.email] = {
+      month, date: String(s.date), email: String(s.email), name: String(s.name || ''),
+      matrix_day: 0, inb_target: 0, inb_achieved: 0, txt_target: 0, txt_achieved: 0,
+      wa_target: 0, wa_achieved: 0, audits: 0, score_x_audits: 0,
+      fcr_passed: fp, fcr_failed: ff, fcr_excluded: fe,
+    }
+  })
+  const rows = Object.keys(byKey).map((k) => byKey[k])
+  rows.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.email < b.email ? -1 : a.email > b.email ? 1 : 0))
+  return { rows, fcrRows }
+}
+
+/**
+ * scRefreshMonth_: rebuilds a month's sc_daily from the DB (scDailyRowsDb_),
+ * merges the month's stored fcr_* verdicts back (scMergeFcr_ — FCR has no live
+ * source), counts the month's sc_behaviour rows for meta, and leaves
+ * sc_behaviour itself untouched (the admin behaviour form owns its writes).
+ * Never wipes a month: with no prod_daily_layers rows dated in the month the
+ * previous rows stay and the error is recorded.
  */
 export async function scRefreshMonth_(month: string, who: string, cfg?: Cfg) {
   const c = (cfg || ((await configAll()) as Cfg))
@@ -472,42 +541,45 @@ export async function scRefreshMonth_(month: string, who: string, cfg?: Cfg) {
     await scMonthUpsert_(meta, who || 'nightly')
     return scMonthView_(month, meta, src)
   }
-  if (!src.id) return fail('No workbook is set for ' + month + '.')
-  let data: Record<string, any>
+  let built: { rows: Record<string, any>[] }
+  let stored: Record<string, unknown>[]
+  let bhvCases = 0
   try {
-    const cells = await fetchWorkbookTabs(String(src.id), [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS), { deferred: true })
-    data = scReadWorkbook_(cells, String(src.id))
+    const [b, s, bh] = await Promise.all([
+      scDailyRowsDb_(month),
+      readAllPaged('sc_daily', { build: (q) => q.eq('month', month) }),
+      db().from('sc_behaviour').select('*', { count: 'exact', head: true }).eq('month', month),
+    ])
+    built = b
+    stored = s
+    bhvCases = Number(bh.count) || 0
   } catch (e) {
-    return fail('Could not read the workbook: ' + ((e as Error)?.message || e) + '.')
+    return fail('Could not rebuild from the database: ' + ((e as Error)?.message || e) + '.')
   }
-  const names: Record<string, string> = {}
-  data.matrix.forEach((m: Record<string, any>) => { if (m.name) names[m.email] = m.name })
-  const built = scBuildDaily_(month, data.matrix, data.fcr, data.fcrDated, names)
-  if (!built.rows.some((r) => r.matrix_day)) {
-    return fail('"' + data.title + '" has no Productivity Matrix rows dated in ' + month + (src.fallback ? " (it is the fallback workbook: add this month's workbook in Admin)" : '') + '.')
+  const merged = scMergeFcr_(month, built.rows, stored)
+  if (!merged.rows.some((r) => r.matrix_day)) {
+    return fail('No prod_daily_layers rows dated in ' + month + ' — earlier data for this month is kept.')
   }
   const stamp = new Date().toISOString()
-  built.rows.forEach((r) => { r.computed_at = stamp })
-  const cases = data.behaviour.cases.map((x: { date: string; email: string; note: string }) => ({ month, date: x.date, email: x.email, note: x.note }))
-  await scReplaceMonth_('sc_daily', month, built.rows, who || 'nightly')
-  await scReplaceMonth_('sc_behaviour', month, cases, who || 'nightly')
-  const days = built.rows.filter((r) => r.matrix_day).map((r) => String(r.date)).sort()
+  merged.rows.forEach((r) => { r.computed_at = stamp })
+  await scReplaceMonth_('sc_daily', month, merged.rows, who || 'nightly')
+  const days = merged.rows.filter((r) => r.matrix_day).map((r) => String(r.date)).sort()
   const agents: Record<string, boolean> = {}
-  built.rows.forEach((r) => { if (r.matrix_day) agents[r.email] = true })
+  merged.rows.forEach((r) => { if (r.matrix_day) agents[r.email] = true })
   meta.status = 'ok'
   meta.error = ''
-  meta.title = data.title
+  meta.title = 'DB rebuild (prod_daily_layers + qa_audits)'
   meta.matrix_rows = days.length
   meta.agents = Object.keys(agents).length
   meta.first_date = days[0]
   meta.last_date = days[days.length - 1]
-  meta.skipped_rows = built.skipped
-  meta.fcr_rows = data.fcr.length
-  meta.fcr_dated = data.fcrFound ? (data.fcrDated ? 1 : 0) : ''
-  meta.fcr_note = data.fcrNote
-  meta.behaviour_found = data.behaviour.found ? 1 : 0
-  meta.behaviour_cases = cases.length
-  meta.behaviour_note = data.behaviourNote
+  meta.skipped_rows = 0
+  meta.fcr_rows = merged.fcrRows
+  meta.fcr_dated = merged.fcrRows > 0
+  meta.fcr_note = 'Stored FCR verdicts preserved on rebuild (no live source).'
+  meta.behaviour_found = 1
+  meta.behaviour_cases = bhvCases
+  meta.behaviour_note = 'Managed via the admin behaviour form.'
   await scMonthUpsert_(meta, who || 'nightly')
   return scMonthView_(month, meta, src)
 }
@@ -524,25 +596,14 @@ export async function scNightly_() {
 
 /**
  * jobScorecardNightly (PeopleTriggers.js), verbatim: requireJobCaller_ +
- * hbRun_('scorecard', scNightly_). The workbook read needs the Sheets service
- * account; without creds the run degrades honestly ({configured:false,skipped})
- * instead of writing error rows for a read that could never succeed. The
- * /api/cron/scorecard-nightly route runs the identical step inline; this is the
- * verbatim-named entry for callers that already hold a JobEnv.
+ * hbRun_('scorecard', scNightly_). The rebuild reads Postgres only
+ * (prod_daily_layers + qa_audits + sc_daily), so no credential gate remains.
+ * The /api/cron/scorecard-nightly route runs the identical step inline; this
+ * is the verbatim-named entry for callers that already hold a JobEnv.
  */
 export async function jobScorecardNightly(env: JobEnv) {
   await requireJobCaller()
-  return dqStep_(env, 'scorecard', async () => {
-    if (!sheetCreds()) {
-      return {
-        configured: false,
-        skipped:
-          'Google Sheets credentials are not configured (GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY).',
-        months: [] as unknown[],
-      }
-    }
-    return { configured: true, months: await scNightly_() }
-  })
+  return dqStep_(env, 'scorecard', async () => ({ configured: true, months: await scNightly_() }))
 }
 
 /** Refresh now, for leaders: up to three months, each at most once a minute (the workbook read takes a few seconds). */
@@ -587,35 +648,7 @@ export async function getScorecardAdmin() {
            tabs: [SC_MATRIX_TAB, SC_FCR_TAB, SC_BEHAVIOUR_TABS[0]] }
 }
 
-/** Opens a workbook and reports what the scorecard would read from it, without storing anything. */
-export async function scInspect_(id: string, month: string) {
-  const cells = await fetchWorkbookTabs(id, [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS), { deferred: true })
-  const out: Record<string, unknown> = { title: id, matrix: false, fcr: false, behaviour: false, matrixDays: 0, firstDate: '', lastDate: '', agents: 0, monthMatches: false, note: '' }
-  const mx = cells[SC_MATRIX_TAB]
-  out.fcr = !!cells[SC_FCR_TAB]
-  out.behaviour = SC_BEHAVIOUR_TABS.some((t) => !!cells[t])
-  if (mx) {
-    out.matrix = true
-    if (mx.length >= SC_MATRIX_FIRST_ROW) {
-      const rows = scParseMatrix_(mx.slice(SC_MATRIX_FIRST_ROW - 1).map((r) => {
-        const x: unknown[] = []; x[SC_MC.name - 1] = r[0]; x[SC_MC.date - 1] = r[1]; x[SC_MC.email - 1] = r[2]; return x
-      }), (v) => prodDateKey_(v, 'Africa/Cairo'))
-      const dates = rows.map((r) => String(r.date)).sort()
-      const ag: Record<string, boolean> = {}
-      rows.forEach((r) => { ag[String(r.email)] = true })
-      out.matrixDays = rows.length
-      out.agents = Object.keys(ag).length
-      out.firstDate = dates[0] || ''
-      out.lastDate = dates[dates.length - 1] || ''
-      out.monthMatches = rows.some((r) => String(r.date).slice(0, 7) === month)
-    }
-  }
-  if (!out.matrix) out.note = 'No "' + SC_MATRIX_TAB + '" tab: this is not a productivity workbook.'
-  else if (!out.monthMatches) out.note = 'The Matrix has no rows dated in ' + month + (out.firstDate ? ' (it covers ' + out.firstDate + ' to ' + out.lastDate + ')' : '') + '.'
-  return out
-}
-
-/** Validates a pasted link or ID for a month and, when it opens and has the Matrix tab, saves it in Config productivity_files. */
+/** Validates a pasted link or ID for a month and saves it in Config productivity_files (display metadata — no workbook is opened). */
 export async function saveScorecardSource(month: unknown, link: unknown) {
   const user = await requireRole(['admin'])
   await assertWritable()
@@ -623,18 +656,31 @@ export async function saveScorecardSource(month: unknown, link: unknown) {
   if (!scMonthOk_(month)) throw new Error('Month is yyyy-MM.')
   const id = scSheetId_(link)
   if (!id) throw new Error('That is not a Google Sheets link or ID.')
-  let found: Record<string, unknown>
-  try {
-    found = await scInspect_(id, String(month))
-  } catch (e) {
-    throw new Error('The workbook could not be opened: ' + ((e as Error)?.message || e) + '. Share it with the script owner and try again.')
-  }
-  if (!found.matrix) throw new Error(String(found.note))
   const cfg = (await configAll()) as Cfg
   const files = JSON.parse(JSON.stringify(scSources_(cfg))) as Record<string, string>
   files[String(month)] = id
   await setConfig('productivity_files', files, undefined, user.email)
-  return { month, workbookId: id, found, saved: true }
+  return { month, workbookId: id, saved: true }
+}
+
+/** Admin behaviour log: one case into sc_behaviour (month = the date's month); a duplicate (month,date,email,note) answers {saved:false,duplicate:true}. */
+export async function addBehaviourCase(input: { email?: unknown; date?: unknown; note?: unknown }): Promise<Record<string, unknown>> {
+  const user = await requireRole(['admin'])
+  await assertWritable()
+  const email = scEmail_(input.email)
+  if (email.indexOf('@') === -1) throw new Error('Give a valid agent email.')
+  const date = String(input.date || '').trim()
+  if (!scDateOk_(date)) throw new Error('Date is yyyy-MM-dd.')
+  const note = String(input.note || '').trim()
+  if (note.length < 1 || note.length > 500) throw new Error('Note the behaviour in one line (1-500 chars).')
+  const month = date.slice(0, 7)
+  const { error } = await db().from('sc_behaviour').insert({ month, date, email, note, submitted_by: user.email })
+  if (error) {
+    const msg = String((error as { message?: string }).message || error)
+    if ((error as { code?: string }).code === '23505' || /23505|duplicate key/i.test(msg)) return { saved: false, duplicate: true }
+    throw described(error, { table: 'sc_behaviour' })
+  }
+  return { saved: true, month, date, email }
 }
 
 export async function removeScorecardSource(month: unknown) {

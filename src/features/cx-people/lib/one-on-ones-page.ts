@@ -34,6 +34,7 @@ import { assertWritable } from '@/features/shared/platform/viewas'
 import { dqTitleLevel_, requireRole, pwDirectory } from '@/features/shared/platform/identity'
 import { getConfig, configAll, dqSetting } from '@/features/shared/platform/settings'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
+import { pwPrevMonth } from '@/features/shared/platform/time'
 import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import {
@@ -453,7 +454,7 @@ export async function pwOneOnOneContext_(
   let scoreError = ''
   let scores: Record<string, any> | null = null
   try {
-    const io = await scIo_(cfg)
+    const io = await scIo_(cfg, { from: pwPrevMonth(today.slice(0, 7)) + '-01', to: today })
     const kctx = await scKpiCtx_({ from: today.slice(0, 7) + '-01', to: today })
     scores = pwScoreMonths_(io, scWho_(dir), today, kctx)
   } catch (e) {

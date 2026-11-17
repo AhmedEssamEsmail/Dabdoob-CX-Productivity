@@ -235,7 +235,7 @@ export async function migrateTable(supabase: SupabaseClient, mapping: TableMappi
   const spreadsheetId = SPREADSHEETS[mapping.spreadsheet] || mapping.spreadsheet
   let rows: Record<string, unknown>[]
   try {
-    rows = await readSheet(spreadsheetId, mapping.sheet, { deferred: true })
+    rows = await readSheet(spreadsheetId, mapping.sheet)
   } catch (err) {
     return { read: 0, migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
   }
@@ -297,7 +297,7 @@ export async function backfillTrackerRecords(supabase: SupabaseClient): Promise<
     const key = `tracker:${b.trackerId}`
     try {
       const spreadsheetId = SPREADSHEETS[b.spreadsheet] || b.spreadsheet
-      const raw = await readSheetRaw(spreadsheetId, b.sheet, { deferred: true })
+      const raw = await readSheetRaw(spreadsheetId, b.sheet)
       if (raw.length <= b.headerRow) { out[key] = { read: 0, migrated: 0, skipped: 0, errors: [`'${b.sheet}' empty`] }; continue }
       const normHeader = (s: unknown) => String(s ?? '').trim().replace(/\s+/g, ' ').toLowerCase()
       const headers = (raw[b.headerRow - 1] || []).map(normHeader)

@@ -2,13 +2,13 @@
  * /api/queue/heatmap — Heatmap.js page read + mutations.
  * GET            -> getHeatmapPage; GET ?input=<id> -> getHeatmapInput
  * POST {op:...}  -> saveHeatmapInput | parseHeatmapUpload | buildHeatmapFromSource |
- *                  runPriorHeatmapRegression | saveHeatmapAssumptions | setHeatmapCountries
+ *                  saveHeatmapAssumptions | setHeatmapCountries
  */
 import { NextResponse, type NextRequest } from 'next/server'
-import { apiError } from '@/features/shared/lib/api-error'
+import { apiError, InputError } from '@/features/shared/lib/api-error'
 import {
   buildHeatmapFromSource, getHeatmapInput, getHeatmapPage, parseHeatmapUpload,
-  runPriorHeatmapRegression, saveHeatmapAssumptions, saveHeatmapInput, setHeatmapCountries,
+  saveHeatmapAssumptions, saveHeatmapInput, setHeatmapCountries,
 } from '@/features/cx-queue/lib/heatmap'
 
 export async function GET(req: NextRequest) {
@@ -25,14 +25,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as Record<string, unknown>
     const op = String(body.op || 'save')
+    if (op === 'regression') throw new InputError('Unknown op.')
     const out =
       op === 'parse'
         ? await parseHeatmapUpload(body.fileName ?? body.name, body.base64 ?? body.data)
         : op === 'build'
           ? await buildHeatmapFromSource(body.spreadsheetId, body.opts as Record<string, unknown> | undefined)
-          : op === 'regression'
-            ? await runPriorHeatmapRegression()
-            : op === 'assumptions'
+          : op === 'assumptions'
               ? await saveHeatmapAssumptions(body.name, body.assumptions)
               : op === 'countries'
                 ? await setHeatmapCountries(body.countries, body.aliases)

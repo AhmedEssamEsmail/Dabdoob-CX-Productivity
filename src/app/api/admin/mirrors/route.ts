@@ -3,12 +3,19 @@ import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
 import { apiError } from '@/features/shared/lib/api-error'
 import { db } from '@/features/shared/platform/repo'
 import { configAll } from '@/features/shared/platform/settings'
-import { dqSetting_ } from '@/features/shared/lib/adapters'
-import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
+import { fdActivityCells_, freshchatCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 import { syncAllMirrors, type MirrorTable, MIRROR_TABLES } from '@/features/shared/jobs/mirrors'
 import { assertWritable } from '@/features/shared/platform/viewas'
 
 export const maxDuration = 300
+
+/* peek tab -> mirror table; rows map back to the legacy positional cell
+ * layout via the mirror-cells emitters. */
+const PEEK_SOURCES: Record<string, { table: MirrorTable; cells: (r: Record<string, unknown>) => unknown[] }> = {
+  Activities: { table: 'fd_activities', cells: fdActivityCells_ },
+  'Maqsam Calls': { table: 'maqsam_calls', cells: maqsamCells_ },
+  Freshchat: { table: 'freshchat', cells: freshchatCells_ },
+}
 
 /**
  * POST /api/admin/mirrors — sync the Google Sheet source tabs into the Supabase
@@ -26,28 +33,60 @@ export async function POST(req: Request) {
       monthsBack?: number
       peek?: { ssId?: string; tab?: string; head?: number; tail?: number; slice?: [number, number] }
     }
-    /* diagnostics: {peek:{tab, head?, tail?}} returns the first/last N rows of
-     * a source tab (Activities by default) — no writes. */
+    /* diagnostics: {peek:{tab, head?, tail?, slice?}} returns the first/last N
+     * rows of a DB mirror table (Activities by default) — no writes, no sheet
+     * reads. `peek.ssId` is ignored: the oracle is the mirror table now. */
     if (body.peek && typeof body.peek === 'object') {
-      const cfg0 = await configAll()
-      const id = body.peek.ssId || String(dqSetting_(cfg0, 'fd_activity_ss_id'))
       const tab = body.peek.tab || 'Activities'
-      const tabs = await fetchWorkbookTabs(id, [tab], {
-        deferred: true,
-        extraIds: [String(dqSetting_(cfg0, 'fd_activity_ss_id') || '')].filter(Boolean),
-      })
-      const rows = tabs[tab] || []
+      const spec = PEEK_SOURCES[tab]
+      if (!spec) {
+        return NextResponse.json(
+          { error: "Peek supports 'Activities' | 'Maqsam Calls' | 'Freshchat' (the DB mirror tables)." },
+          { status: 400 }
+        )
+      }
+      const supabase = db()
+      const { count } = await supabase.from(spec.table).select('*', { count: 'exact', head: true })
+      const totalRows = count ?? 0
       const head = Math.max(1, Math.min(50, Number(body.peek.head) || 5))
       const tail = Math.max(0, Math.min(50, Number(body.peek.tail) || 0))
+      const { data: headRows } = await supabase
+        .from(spec.table)
+        .select('*')
+        .order('ts_ms', { ascending: true })
+        .limit(head)
+      const headCells = (headRows ?? []).map(spec.cells)
+      let tailCells: unknown[] | undefined
+      if (tail) {
+        const { data: tailRows } = await supabase
+          .from(spec.table)
+          .select('*')
+          .order('ts_ms', { ascending: false })
+          .limit(tail)
+        tailCells = (tailRows ?? []).map(spec.cells).reverse()
+      }
       const sl = Array.isArray(body.peek.slice) ? body.peek.slice : null
+      let sliceCells: unknown[][] | undefined
+      if (sl) {
+        const s0 = Math.max(0, Number(sl[0]) || 0)
+        const s1 = Math.min(s0 + 500, Math.max(0, Number(sl[1]) || 0))
+        if (s1 > s0) {
+          const { data: sliceRows } = await supabase
+            .from(spec.table)
+            .select('*')
+            .order('ts_ms')
+            .range(s0, s1 - 1)
+          sliceCells = (sliceRows ?? []).map(spec.cells)
+        }
+      }
       return NextResponse.json({
         ok: true,
-        workbook: id,
+        table: spec.table,
         tab,
-        totalRows: rows.length,
-        head: rows.slice(0, head),
-        tail: tail ? rows.slice(-tail) : undefined,
-        slice: sl ? rows.slice(Math.max(0, Number(sl[0]) || 0), Math.min(rows.length, Number(sl[1]) || 0)) : undefined,
+        totalRows,
+        head: headCells,
+        tail: tailCells,
+        slice: sliceCells,
       })
     }
     await assertWritable()

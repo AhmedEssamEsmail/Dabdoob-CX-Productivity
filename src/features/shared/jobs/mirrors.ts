@@ -16,9 +16,9 @@
  * mirror-cells.ts.
  *
  * Watermark: config mirror_state_<table> = { last_ts_ms, last_sync_at }.
- * Incremental runs re-read the whole tab (the Sheets API has to) but only
- * upsert rows newer than last_ts_ms minus a 24 h overlap; dedupe_key makes
- * re-writes idempotent.
+ * Incremental runs re-pull the vendor API window but only upsert rows
+ * newer than last_ts_ms minus the 24 h overlap; dedupe_key makes re-writes
+ * idempotent.
  *
  * Composition layer: intentionally imports pure cx-productivity engines
  * (prodToday_, tphClock_) to sync mirror tables — sanctioned shared -> feature

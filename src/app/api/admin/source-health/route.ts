@@ -4,9 +4,7 @@ import { requireAdminCaller } from '@/features/shared/lib/admin-auth'
 import { apiError } from '@/features/shared/lib/api-error'
 import { describeDbError } from '@/features/shared/lib/errors'
 import { configAll } from '@/features/shared/platform/settings'
-import { dqSetting_, prodFileFor_ } from '@/features/shared/lib/adapters'
-import { prodToday_ } from '@/features/cx-productivity/lib/prod/engine'
-import { fetchWorkbookTabs, sheetCreds } from '@/features/shared/jobs/sheets'
+import { sheetCreds } from '@/features/shared/jobs/sheets'
 import { hbRowState } from '@/features/shared/platform/health'
 
 export const maxDuration = 120
@@ -14,13 +12,13 @@ export const maxDuration = 120
 /**
  * GET /api/admin/source-health — the definitive "why is everything zero" answer.
  * Probes every store the compute paths read, every config key they need, the
- * env vars, the source spreadsheets and the cron heartbeat. Each check is
+ * env vars, the data feeds and the cron heartbeat. Each check is
  * { name, ok, detail, hint? }; ok=false overall when any required check fails.
  */
 
 interface Check {
   name: string
-  kind: 'table' | 'config' | 'env' | 'sheet' | 'cron' | 'external' | 'legacy'
+  kind: 'table' | 'config' | 'env' | 'sheet' | 'cron' | 'external'
   ok: boolean
   detail: string
   hint?: string
@@ -74,10 +72,6 @@ const REQUIRED_ENV = [
 ]
 
 const CRON_JOBS = ['mirror_sync', 'prod_flags', 'productivity', 'prod_tph_touches', 'prod_tph_calls', 'prod_tph_cases_rebuilt', 'prod_tph_auto', 'prod_snapshot']
-
-/** The legacy productivity workbook the migrate route reads (shard 04 audit). */
-const LEGACY_PRODUCTIVITY_SS = '1h77da05ZjlxjGCArlr1tGJv7OEtmemFGde8sBnitc-g'
-const LEGACY_TABS = ['prod_tph_days', 'prod_tph_cases', 'prod_tph_touches', 'prod_tph_calls', 'prod_intervals', 'prod_flags', 'prod_daily_layers']
 
 export async function GET(req: Request) {
   try {
@@ -147,62 +141,62 @@ export async function GET(req: Request) {
     })
   }
 
-  /* ---- source sheets ------------------------------------------------------ */
-  if (!sheetCreds()) {
-    checks.push({
-      name: 'sheet credentials', kind: 'sheet', ok: false,
-      detail: 'GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY are not set',
-      hint: 'Set both env vars; the service account must have read access to the source spreadsheets.',
-    })
-  } else {
-    const sheetProbes: { name: string; id: string; tab: string; required: boolean }[] = [
-      { name: 'FD Activities workbook', id: String(dqSetting_(cfg, 'fd_activity_ss_id') || ''), tab: 'Activities', required: true },
-      { name: 'Daily report workbook', id: String(dqSetting_(cfg, 'daily_report_ss_id') || ''), tab: 'Freshchat', required: true },
-      { name: 'Current month productivity workbook', id: prodFileFor_(prodToday_(cfg).slice(0, 7), cfg), tab: 'Assumptions', required: true },
-    ]
-    await Promise.all(
-      sheetProbes.map(async (p) => {
-        if (!p.id) {
-          checks.push({ name: `sheet ${p.name}`, kind: 'sheet', ok: false, detail: 'no spreadsheet id configured', hint: 'Set the *_ss_id / productivity_files config key.' })
-          return
-        }
-        try {
-          const tabs = await fetchWorkbookTabs(p.id, [p.tab], {
-            deferred: true,
-            extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
-          })
-          const rows = (tabs[p.tab] || []).length
-          checks.push({
-            name: `sheet ${p.name}`, kind: 'sheet', ok: requiredOk(p.required, rows),
-            detail: rows ? `'${p.tab}' reachable, ${Math.max(0, rows - 1)} data rows` : `'${p.tab}' reachable but empty`,
-          })
-        } catch (e) {
-          const d = describeDbError(e, { workbook: p.id, tab: p.tab })
-          checks.push({ name: `sheet ${p.name}`, kind: 'sheet', ok: false, detail: d.message, hint: d.hint })
-        }
-      })
-    )
-  }
+  /* ---- data feeds (was: source sheets) ------------------------------------- */
+  const hasSheetCreds = !!sheetCreds()
+  checks.push({
+    name: 'sheet credentials (HCT + qa_audits allowlist)', kind: 'sheet', ok: hasSheetCreds,
+    detail: hasSheetCreds
+      ? 'set — still gates the HCT roster + qa_audits allowlisted reads'
+      : 'GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY are not set',
+    hint: hasSheetCreds ? undefined : 'Set both env vars; the service account still gates the two allowlisted reads.',
+  })
 
-  /* ---- legacy store audit (shard 04 input) --------------------------------- */
-  if (sheetCreds()) {
-    try {
-      const tabs = await fetchWorkbookTabs(LEGACY_PRODUCTIVITY_SS, LEGACY_TABS, {
-        deferred: true,
-        extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
-      })
-      const counts = LEGACY_TABS.map((t) => `${t}: ${Math.max(0, (tabs[t] || []).length - 1)}`).join(', ')
-      const hasData = LEGACY_TABS.some((t) => (tabs[t] || []).length > 1)
+  await Promise.all(
+    (['fd_activities', 'maqsam_calls', 'freshchat'] as const).map(async (t) => {
+      const p = await probeTable(t)
+      const wm = (cfg[`mirror_state_${t}`] as { last_sync_at?: string } | undefined)?.last_sync_at || 'never'
+      const empty = p.missing !== null || (p.count ?? 0) === 0
       checks.push({
-        name: 'legacy prod_* workbook', kind: 'legacy', ok: true,
-        detail: hasData ? `reachable — ${counts}` : `reachable but no legacy rows (${counts})`,
-        hint: hasData ? 'Run POST /api/admin/migrate to import rows a recompute cannot rebuild (grid slots, tl/auto cases, intervals).' : 'No legacy rows: only source-backed recomputation is possible.',
+        name: `mirror ${t}`, kind: 'table', ok: !empty,
+        detail: p.missing ? describeDbError(p.missing, { table: t }).message : `${p.count ?? 0} rows; watermark ${wm}`,
+        hint: empty ? `Run POST /api/admin/mirrors {table:'${t}', full:true}.` : undefined,
       })
-    } catch (e) {
-      const d = describeDbError(e, { workbook: LEGACY_PRODUCTIVITY_SS })
-      checks.push({ name: 'legacy prod_* workbook', kind: 'legacy', ok: false, detail: d.message, hint: d.hint })
-    }
-  }
+    })
+  )
+
+  const month = new Date().toISOString().slice(0, 7)
+  const { count: layersCount, error: layersErr } = await supabase
+    .from('prod_daily_layers')
+    .select('*', { count: 'exact', head: true })
+    .gte('date', `${month}-01`)
+  checks.push({
+    name: `prod_daily_layers ${month}`, kind: 'table',
+    ok: !layersErr && (layersCount ?? 0) > 0,
+    detail: layersErr ? describeDbError(layersErr, { table: 'prod_daily_layers' }).message : `${layersCount ?? 0} rows since ${month}-01`,
+    hint: layersErr || !(layersCount ?? 0) ? 'The nightly-aggregates job writes these rows — check cron prod_snapshot/daily-layers.' : undefined,
+  })
+
+  const pa = cfg.prod_assumptions as { mq?: unknown } | undefined
+  const paOk = !!pa && typeof pa === 'object' && typeof pa.mq === 'number'
+  checks.push({
+    name: 'config prod_assumptions', kind: 'config', ok: paOk,
+    detail: paOk ? `set (${JSON.stringify(pa).slice(0, 120)})` : 'missing or malformed — needs numeric mq',
+    hint: paOk ? undefined : 'Seed once via scripts/ops/seed-prod-assumptions.ts output in /admin/config.',
+  })
+
+  const { data: dqRows, count: dqCount, error: dqErr } = await supabase
+    .from('dq_hct')
+    .select('synced_at', { count: 'exact' })
+    .order('synced_at', { ascending: false })
+    .limit(1)
+  const dqEmpty = !!dqErr || (dqCount ?? 0) === 0
+  checks.push({
+    name: 'dq_hct roster snapshot', kind: 'external', ok: !dqEmpty,
+    detail: dqErr
+      ? describeDbError(dqErr, { table: 'dq_hct' }).message
+      : `${dqCount ?? 0} rows; latest synced_at ${dqRows?.[0]?.synced_at || 'never'}`,
+    hint: dqEmpty ? 'Manual "Sync roster from HCT now" (admin) writes it.' : undefined,
+  })
 
   /* ---- cron health ----------------------------------------------------------- */
   const { data: logRows } = await supabase
@@ -261,8 +255,4 @@ export async function GET(req: Request) {
     failed: failed.length,
     checks,
   })
-}
-
-function requiredOk(required: boolean, rows: number): boolean {
-  return required ? rows > 1 : true
 }

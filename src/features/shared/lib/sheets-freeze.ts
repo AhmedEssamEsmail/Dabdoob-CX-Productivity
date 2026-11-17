@@ -15,7 +15,6 @@ export class SheetsFreezeError extends Error {
 export interface SheetReadGateOpts {
   extraIds?: readonly string[] // caller-resolved extra allowed workbook ids; tab 'Activities' only
   manualHct?: boolean // caller is the manual "Sync roster from HCT now" path
-  deferred?: boolean // wave-1 grandfather: log [SHEETS_FREEZE_VIOLATION], allow
 }
 
 export function assertSheetReadAllowed_(
@@ -26,9 +25,6 @@ export function assertSheetReadAllowed_(
   if (spreadsheetId === SHEETS_FREEZE_QUALITY_ID && tab === 'qa_audits') return
   if (spreadsheetId === SHEETS_FREEZE_HCT_ID && tab === 'Sheet1' && opts?.manualHct) return
   if (tab === 'Activities' && opts?.extraIds?.includes(spreadsheetId)) return
-  if (opts?.deferred) {
-    console.error('[SHEETS_FREEZE_VIOLATION] ' + JSON.stringify({ spreadsheetId, tab }))
-    return
-  }
+  console.error('[SHEETS_FREEZE_VIOLATION] ' + JSON.stringify({ spreadsheetId, tab }))
   throw new SheetsFreezeError('Sheets read frozen: ' + spreadsheetId + ' / ' + tab)
 }

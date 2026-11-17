@@ -46,6 +46,50 @@ Baseline dirty tree (pre-existing, NOT ours — never revert):
 | perf1-02 | mini/fix-perf-1 | supabase-expert | none | 1/3/30/8 | PASS | verified | results/perf1-02.md (repo-root results/); 20261117123304_idx_qa_audits_audit_date.sql; plain CREATE INDEX IF NOT EXISTS (CONCURRENTLY illegal in runner txn); remote apply = PM batch |
 | perf1-03 | mini/fix-perf-1 | dev | none | 2/3/40/8 | PASS | verified | results/perf1-03.md (repo-root results/); fdAuxTab_(ctx) pk:ts_ms + tsBuild_(windowFor_); +1 filter assert; vitest 15/15 |
 | perf1-04 | mini/fix-perf-1 | supabase-expert | none | 1/2/10/5 | PASS | verified | results/perf1-04.md; scorecard '30 6'->'45 6' (:154) + header :18; aggregates untouched; ships with pending db push |
+|| W2-SC | package/- | - | - | n/a | not dispatchable | verified | all 4 children done; gate8 green; rg sheets-syms in cx-people = 0 |
+|| W2-SC-01 | mini/W2-SC | dev | none | 2/5/350/10 | PASS | done | results/W2-SC-01.md; scDailyRowsDb_ + 3 vitest cases green; tsc clean on touched files |
+|| W2-SC-02 | mini/W2-SC | dev | W2-SC-01 | 3/8/320/10 | PASS | done | results/W2-SC-02.md; DB rebuild + scMergeFcr_ preserve; sheet readers/gates deleted; vitest 43/43; tsc 0 (attempt 2) |
+|| W2-SC-03 | mini/W2-SC | dev | W2-SC-02 | 3/5/180/8 | PASS | done | results/W2-SC-03.md; addBehaviourCase + op:'add_behaviour'; 23505->duplicate; vitest 3/3; tsc 0 |
+|| W2-SC-04 | mini/W2-SC | dev | W2-SC-03 | 1/4/180/8 | PASS | done | results/W2-SC-04.md; found panel gone; behaviour form posts add_behaviour; tsc+eslint 0 |
+|| W2-HM | package/- | - | - | n/a | not dispatchable | verified | HM-01/02 + fix1 done; fetchWorkbookTabs/priorRegression/RegTable = 0 in cx-queue |
+|| W2-HM-01 | mini/W2-HM | dev | none | 3/8/400/10 | PASS | done | results/W2-HM-01.md; 5 DB grids + db_mirrors provenance; regression retired; vitest 3/3; viewas-sweep fallout -> fix1 |
+|| W2-HM-01-fix1 | mini/W2-HM | dev | W2-HM-01 | 1/1/4/3 | n/a (fix leaf) | done | results/W2-HM-01-fix1.md; tsc 0 errors; viewas-sweep 65/65 |
+|| W2-HM-02 | mini/W2-HM | dev | W2-HM-01 | 1/4/80/6 | PASS | done | agent exited silently (no results file); TL-verified: RegTable/priorRegression/ss-id input 0 hits, AdminBuild = contract, eslint 0 |
+|| W2-TLQ | package/- | - | - | n/a | not dispatchable | verified | W2-TLQ-01 done; TlqIo has no book member |
+|| W2-TLQ-01 | mini/W2-TLQ | dev | none | 2/7/260/10 | PASS | done | results/W2-TLQ-01.md; book seam/fc_messages/ol_sheet_id gone; golden 49/49; tsc clean on touched |
+|| W2-ADM | package/- | - | - | n/a | not dispatchable | verified | all 3 leaves done; fetchWorkbookTabs/deferred/googleapis gone from touched files |
+|| W2-ADM-01 | mini/W2-ADM | dev | none | 1/4/90/8 | PASS | done | results/W2-ADM-01.md; peek->DB mirror cells, slice<=500, fetchWorkbookTabs/deferred 0 hits |
+|| W2-ADM-02 | mini/W2-ADM | dev | none | 1/5/130/10 | PASS | done | results/W2-ADM-02.md; data-feeds block (mirrors/prod_daily_layers/prod_assumptions/dq_hct); creds check kept; sheet imports gone |
+|| W2-ADM-03 | mini/W2-ADM | dev | none | 2/3/60/5 | PASS | done | results/W2-ADM-03.md; engine {deferred:true} x2 removed; list-sheets 410 stub; greps clean |
+|| W2-FIX | package/- | - | - | n/a | not dispatchable | verified | both leaves done; closes sec-2(sec-1 LOW), data-4, perf-1 reconcile leftovers |
+|| W2-FIX-01 | mini/W2-FIX | dev | none | 1/1/10/5 | PASS | done | results/W2-FIX-01.md; docblock vendor-API wording; stale phrases 0 hits |
+|| W2-FIX-02 | mini/W2-FIX | dev | none | 1/3/50/6 | PASS | done | results/W2-FIX-02.md; catch(()=>[]) x2 removed; .in() chunked @100; tsc 0 |
+|| W2-STRICT | package/- | - | - | n/a | not dispatchable | verified | strict flip live; deferred gone from SheetReadGateOpts + src/ |
+|| W2-STRICT-01 | mini/W2-STRICT | dev | W2-SC-02, W2-HM-01, W2-TLQ-01, W2-ADM-01/02/03 | 4/7/160/10 | PASS | done | results/W2-STRICT-01.md; guard log-then-throw; EXPECTED shrunk; 8/8 vitest; deferred: in src = 0 |
+| fix-qa-5 | package/- | - | - | n/a | not dispatchable | verified | reports/qa-5.md; 4 findings -> 5 leaves all done; gate9 green |
+| qa5-01 | mini/fix-qa-5 | dev | none | 2/3/80/8 | PASS | verified | results/qa5-01.md; columns projection + snake reads; snake fixtures; vitest 6/6; tsc clean |
+| qa5-02 | mini/fix-qa-5 | dev | none | 2/3/60/8 | PASS | verified | results/qa5-02.md; tickets+tracker_records via readAllPaged (pk row_n); vitest 3/3; tsc clean |
+| qa5-03 | mini/fix-qa-5 | dev | qa5-02 (heatmap.ts + hm-db-source.test.ts serial) | 2/2/25/5 | PASS | verified | results/qa5-03.md; bot-gap note in buildHeatmapFromSource; engine untouched; 51/51 incl. golden |
+| qa5-04 | mini/fix-qa-5 | dev | none | 6/2/10/3 | PASS | verified | results/qa5-04.md; 6 W2 files moved to spec results/ |
+| qa5-05 | mini/fix-qa-5 | dev | none | 5/2/10/3 | PASS | verified | results/qa5-05.md; 5 W2 files moved; repo-root results/ free of ?? strays |
+| fix-data-3 | package/- | - | - | n/a | not dispatchable | verified | reports/data-3.md; 3 leaves done (data-6/7/8); data-9..12 LOW deferred; gate10 green |
+| data3-01 | mini/fix-data-3 | dev | none | 2/3/40/6 | PASS | done | results/data3-01.md; fcr_dated=merged.fcrRows>0 :569; upsert-type asserts; vitest 7/7; tsc 0 |
+| data3-02 | mini/fix-data-3 | dev | data3-01 (scorecard-server.ts + sc-daily-db.test.ts serial) | 2/3/40/6 | PASS | done | results/data3-02.md; predicate = qaRollupAudits_ verbatim (:269-270); disputed/kind'' cases; 7/7; tsc 0 |
+| data3-03 | mini/fix-data-3 | data-engineer | none | 2/3/120/8 | PASS | done | results/data3-03.md; tlqIo_ exported; both reads paged (:617-626); tlq-io-paged.test.ts new; 51/51; tsc 0 |
+| fix-perf-3 | package/- | - | - | n/a | not dispatchable | done | reports/perf-3.md; 5 leaves done (4 landed + 1 justified no-op); gate11 green |
+| perf3-01 | mini/fix-perf-3 | dev | none | 4/5/140/10 | PASS | done | results/perf3-01.md; attempt2: 4 call sites pass range, scReadRange_ bounds + bhvLog gte/lte, +scIo_ bound/parity cases; 66/66 vitest; tsc 0 |
+| perf3-02 | mini/fix-perf-3 | dev | perf3-01 (scorecard-server.ts serial) | 1/2/10/4 | PASS | done | results/perf3-02.md; 6-col projection :248; sc-daily-db 7/7; tsc 0 |
+| perf3-03 | mini/fix-perf-3 | dev | none | 2/4/30/8 | PASS | done | agent exited silently (no results file); TL-verified: fallback docblock heatmap.ts:574-585, submitted_at NULL for all WA rows (ops-tabs.ts:165) so gte would drop every row — bound disproven, not just unverifiable |
+| perf3-04 | mini/fix-perf-3 | dev | perf3-03 (heatmap.ts serial) | 2/2/15/4 | PASS | done | agent exited silently (no results file); TL-verified: pk:'ts_ms' + .lt(ts_ms,toMs) heatmap.ts:604-605, pushed-lt/gte asserts :164-165; vitest 51/51 (perf3-04-vitest.log) |
+| perf3-05 | mini/fix-perf-3 | supabase-expert | none | 1/3/20/6 | PASS | done | results/perf3-05.md; no-op satisfied-by-existing sc_daily_month_date_email_key (people.sql:315 UNIQUE month,date,email, leftmost month) |
+| fix-ux-1 | package/- | - | - | n/a | not dispatchable | verified | reports/ux-1.md; 4 MED -> 4 leaves all done; gate12 green (ux-5/6/7 LOW deferred) |
+| ux1-01 | mini/fix-ux-1 | dev | none | 1/1/4/3 | PASS | done | results/ux1-01.md; 'live data' @:981, 'raw tabs' 0 hits, eslint 0 |
+| ux1-02 | mini/fix-ux-1 | dev | ux1-01 (heatmap-page.tsx serial) | 1/3/6/4 | PASS | done | results/ux1-02.md; role="alert" on :55/:101/:157; all 5 field-error covered, eslint 0 |
+| ux1-03 | mini/fix-ux-1 | dev | none | 1/6/20/5 | PASS | done | results/ux1-03.md; rebuild vocabulary on all 6 contracted sites, eslint 0 |
+| ux1-04 | mini/fix-ux-1 | dev | ux1-03 (agents-page.tsx serial) | 1/4/60/8 | PASS | done | results/ux1-04.md; behMsg/behMsgErr + runBehaviour; cx-note pair after form :503-512 |
+| fix-ux-2 | package/- | - | - | n/a | not dispatchable | done | reports/ux-2.md; both leaves done; gate13 green |
+| ux2-01 | mini/fix-ux-2 | dev | none | 1/8/12/6 | PASS | done | results/ux2-01.md; rebuild vocabulary at all 8 sites, eslint 0 |
+| ux2-02 | mini/fix-ux-2 | dev | ux2-01 (agents-page.tsx serial) | 1/1/6/3 | PASS | done | results/ux2-02.md; error arm -> setNoteErr :293-295, eslint 0 |
 
 ## Re-sharding
 | Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |
@@ -81,6 +125,24 @@ Baseline dirty tree (pre-existing, NOT ours — never revert):
 | 7 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate7-tsc.log) — incl. user's migrate.ts hand-back fix |
 | 7 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate7-eslint.log) |
 | 7 | unit | `npx vitest run` | 1449/1450; sole FAIL qe-fd-cache.test.ts — known-external; +1 perf1-03 FD_AUX bound case (gate7-vitest.log) |
+|| 8 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate8-tsc.log) — wave-2 final integration |
+|| 8 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate8-eslint.log) |
+|| 8 | unit | `npx vitest run` | 1461/1462; sole FAIL qe-fd-cache.test.ts — known-external tolerated (gate8-vitest.log) |
+| 9 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate9-tsc.log) |
+| 9 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate9-eslint.log) |
+| 9 | unit | `npx vitest run` | 1462/1463; sole FAIL qe-fd-cache.test.ts — known-external tolerated; +1 qa5-03 case (gate9-vitest.log) |
+| 10 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate10-tsc.log) |
+| 10 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate10-eslint.log) |
+| 10 | unit | `npx vitest run` | 1465/1466; sole FAIL qe-fd-cache.test.ts — known-external tolerated; +3 fix-data-3 cases (gate10-vitest.log) |
+| 11 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate11-tsc.log) — fix-perf-3 integration |
+| 11 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate11-eslint.log) |
+| 11 | unit | `npx vitest run` | 1467/1468; sole FAIL qe-fd-cache.test.ts — known-external tolerated; +scIo_ bound cases (gate11-vitest.log) |
+| 12 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate12-tsc.log) — fix-ux-1 integration |
+| 12 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate12-eslint.log) |
+| 12 | unit | `npx vitest run` | 1467/1468; sole FAIL qe-fd-cache.test.ts — known-external tolerated (gate12-vitest.log) |
+| 13 | typecheck | `npx tsc --noEmit` | PASS 0 errors (gate13-tsc.log) — fix-ux-2 integration |
+| 13 | lint | `npx eslint .` | PASS 0 errors; same 5 pre-existing warnings, untouched files (gate13-eslint.log) |
+| 13 | unit | `npx vitest run` | 1467/1468; sole FAIL qe-fd-cache.test.ts — known-external tolerated (gate13-vitest.log) |
 
 ## Review findings (FIX mode)
 | Finding | Source report | Assigned | Status | Evidence |
@@ -102,6 +164,31 @@ Baseline dirty tree (pre-existing, NOT ours — never revert):
 | perf-3 LOW qa_audits audit_date seq-scan | reports/perf-1.md | perf1-02 (supabase-expert) | verified | results/perf1-02.md; 20261117123304_idx_qa_audits_audit_date.sql; remote apply pending PM batch |
 | perf-4 LOW fdAuxTab_ unbounded aux_spans read | reports/perf-1.md | perf1-03 (dev) | verified | results/perf1-03.md; pk:ts_ms + window bound; vitest 15/15 |
 | perf-5 LOW two heavy pg_cron jobs same minute | reports/perf-1.md | perf1-04 (supabase-expert) | verified | results/perf1-04.md; scorecard '45 6 * * *'; edit-in-place valid (migration still unapplied) |
+| qa-5-1 BLOCKER scDailyRowsDb_ reads camelCase keys off snake_case prod_daily_layers | reports/qa-5.md | qa5-01 (dev) | verified | results/qa5-01.md; columns projection + snake reads; snake fixtures 6/6 |
+| qa-5-2 HIGH hmSourceCells_ unpaged tickets/tracker_records reads | reports/qa-5.md | qa5-02 (dev) | verified | results/qa5-02.md; readAllPaged pk row_n / id order; 3/3 |
+| qa-5-3 MED no note that freshchat mirror lacks bot flag | reports/qa-5.md | qa5-03 (dev) | verified | results/qa5-03.md; note in buildHeatmapFromSource, golden parity kept |
+| qa-5-4 LOW 11 wave-2 result files in repo-root results/ | reports/qa-5.md | qa5-04+qa5-05 (dev) | verified | results/qa5-04.md + qa5-05.md; 11 files relocated, no content edits |
+| data-6 HIGH fcr_dated='' breaks sc_months upsert | reports/data-3.md | data3-01 (dev) | done | spec/fix-data-3.md#data3-01; results/data3-01.md |
+| data-7 MED audit filter diverges from qaRollupAudits_ | reports/data-3.md | data3-02 (dev) | done | spec/fix-data-3.md#data3-02; results/data3-02.md |
+| data-8 MED tlqueue ticketsSince/trackerRecords unpaged | reports/data-3.md | data3-03 (data-engineer) | done | spec/fix-data-3.md#data3-03; results/data3-03.md; in-scope: tlqIo_ was wave-2-touched |
+| data-9 LOW WA date_only ts never parses | reports/data-3.md | - | deferred | LOW; needs live remote sample of tracker_records values |
+| data-10 LOW audit-only union rows dead audits cols | reports/data-3.md | - | deferred | LOW; parity-preserving |
+| data-11 LOW 'Group Check' formula loss + unreachable '^exclu' skip | reports/data-3.md | - | deferred | LOW; spec-accepted residual |
+| data-12 LOW orphan-append ghosts rows with all-zero fcr | reports/data-3.md | - | deferred | LOW; contract-mandated |
+| perf-6 MED scIo_ whole-table prefetch (sc_daily/sc_behaviour/kpi_behaviour_log/sc_months) | reports/perf-3.md | perf3-01 (dev) | done | spec/fix-perf-3.md#perf3-01; scIo_(cfg,range), pf=from-spanDays; results/perf3-01.md |
+| perf-7 MED wa_parcels tracker_records read no time bound | reports/perf-3.md | perf3-03 (dev) | done | fallback taken: submitted_at disproven (NULL on all migrated WA rows, ops-tabs.ts:165); bound documented in hmSourceCells_ docblock |
+| perf-8 LOW freshchat one-sided gte + id ordering | reports/perf-3.md | perf3-04 (dev) | done | pk:'ts_ms' + .lt(ts_ms) heatmap.ts:604-605; 51/51 vitest |
+| perf-9 LOW qa_audits SELECT * in scDailyRowsDb_ | reports/perf-3.md | perf3-02 (dev) | done | 6-col projection scorecard-server.ts:248 |
+| perf-10 LOW sc_daily eq(month) seq-scan | reports/perf-3.md | perf3-05 (supabase-expert) | done | satisfied-by-existing: sc_daily_month_date_email_key leftmost-covers month; no migration needed |
+| ux-1 MED Empty copy "from the raw tabs" | reports/ux-1.md | ux1-01 (dev) | done | spec/fix-ux-1.md#ux1-01; results/ux1-01.md; 'live data' @:981 |
+| ux-2 MED stale "read" vocabulary in ScorecardAdmin | reports/ux-1.md | ux1-03 (dev) | done | spec/fix-ux-1.md#ux1-03; results/ux1-03.md; rebuild vocabulary 6 sites |
+| ux-3 MED behaviour feedback not adjacent at 375px | reports/ux-1.md | ux1-04 (dev) | done | spec/fix-ux-1.md#ux1-04; results/ux1-04.md; behMsg/behMsgErr after form |
+| ux-4 MED field-error missing role="alert" x3 | reports/ux-1.md | ux1-02 (dev) | done | spec/fix-ux-1.md#ux1-02; results/ux1-02.md; role="alert" :55/:101/:157 |
+| ux-5 LOW missing name/autoComplete + hint on behaviour inputs | reports/ux-1.md | - | deferred | LOW per FIX rules |
+| ux-6 LOW "Already logged." shown as ok not info | reports/ux-1.md | - | deferred | LOW per FIX rules |
+| ux-7 LOW .pw-field-grow 288px marginal h-scroll at 320px | reports/ux-1.md | - | deferred | LOW per FIX rules; contract widths pass |
+| ux-8 MED residual read/workbook vocabulary on main path | reports/ux-2.md | ux2-01 (dev) | done | spec/fix-ux-2.md#ux2-01; results/ux2-01.md; rebuild vocabulary at all 8 sites |
+| ux-9 LOW rebuild error shown via green role=status note | reports/ux-2.md | ux2-02 (dev) | done | spec/fix-ux-2.md#ux2-02; results/ux2-02.md; PM promoted to blocking; setNoteErr :293-295 |
 
 ## Blocked / needs user
 - RESOLVED 2026-11-17: all 5 pending migrations applied via `db query --linked --yes` + `migration repair --status applied` (db push blocked by 2 foreign remote-only versions 20261112162628/20261112165502 — left untouched). dq_hct, aux_spans, idx_qa_audits_audit_date verified on remote; 5 cxh- pg_cron jobs active (scorecard 06:45 staggered).

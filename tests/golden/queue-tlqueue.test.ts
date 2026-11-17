@@ -8,7 +8,6 @@ import { describe, it } from 'vitest'
 import { baseFixtures, callPort, expectSame, json, rint, rng, rpick } from './helpers-oracle'
 import { qCallLegacy, qOracle } from './queue-oracle'
 import { pwDirectory_ } from '@/features/shared/lib/adapters'
-import { sheetBook } from '@/features/shared/jobs/sheets'
 import { FD_TICKET_HEADERS } from '@/features/cx-queue/lib/index'
 import {
   tlqAreaRows_,
@@ -29,23 +28,13 @@ import {
   tlqWorkingMinutes_,
   type TlqIo,
 } from '@/features/cx-queue/lib/tlqueue'
-import type { Cfg, Directory, SheetBookLike } from '@/features/shared/lib/adapters'
+import type { Cfg, Directory } from '@/features/shared/lib/adapters'
 
 const same = (fn: string, args: unknown[], portFn: () => unknown, label?: string) =>
   expectSame(callPort(portFn), qCallLegacy(fn, args, baseFixtures({ nowMs: Date.parse('2026-10-15T12:00:00Z') })), label || fn)
 
 const NOW = Date.parse('2026-10-15T12:00:00Z')
 const fx = (over: Record<string, unknown>) => baseFixtures({ nowMs: NOW, ...over })
-
-/** io.book fake mirroring __mkSs__: a named tab reads its cells, a missing one reads null. */
-const bookFor = (spreadsheets: Record<string, Record<string, unknown[][]>>) => async (id: string): Promise<SheetBookLike> => {
-  const cells = spreadsheets[id] || {}
-  const sb = sheetBook(cells, id)
-  return {
-    getId: () => id,
-    getSheetByName: (n: string) => (cells[n] && cells[n].length ? sb.getSheetByName(n) : null),
-  } as SheetBookLike
-}
 
 /** A minimal TlqIo for the read-path tests: every seam inert unless the test fills it. */
 const fakeIo = (over: Partial<TlqIo>): TlqIo => ({
@@ -55,7 +44,6 @@ const fakeIo = (over: Partial<TlqIo>): TlqIo => ({
   maqsamRows: async () => [],
   fdActivityRows: async () => [],
   trackerRecords: async () => [],
-  book: async () => sheetBook({}) as SheetBookLike,
   ticketsSince: async () => [],
   storeRows: async () => [],
   scores: async () => ({}),
@@ -394,9 +382,6 @@ describe('tlqReadTexting_ (TlQueue.js:248)', () => {
     fc_messages_ss_id: 'fc-book', fc_messages_tab: 'Freshchat Messages (auto)', fc_messages_tz: 'Africa/Cairo',
     tlp_texting_groups: ['FreshChat'], fd_activity_ss_id: 'fd-activity', activity_local_tz: 'Asia/Kuwait',
   } as unknown as Cfg
-  const FC = { 'fc-book': { 'Freshchat Messages (auto)': [['conversation_id', 'created_time', 'actor_type'],
-    ['c1', '2026-10-14T09:00:00+03:00', 'user'], ['c1', '2026-10-14T09:05:00+03:00', 'agent'],
-    ['c2', '2026-10-14T10:00:00+03:00', 'customer'], ['c2', '2026-10-14T10:30:00+03:00', 'agent']] } }
   const ACT = { 'fd-activity': { Activities: [
     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
     ['10-14-2026 09:20:00', 't-100', 'x', 'agent', '', '', '', '', 'FreshChat', ''],
@@ -411,31 +396,29 @@ describe('tlqReadTexting_ (TlQueue.js:248)', () => {
   ]
   const tixTab = [FD_TICKET_HEADERS.slice() as unknown[]].concat(
     TIX.map((t) => FD_TICKET_HEADERS.map((h) => (t as Record<string, unknown>)[h] ?? '')))
-  const textingIo = (spreadsheets: Record<string, Record<string, unknown[][]>>, cfg: Cfg, tickets: Record<string, unknown>[]) =>
-    fakeIo({ cfg, book: bookFor(spreadsheets), ticketsSince: async () => tickets, fdActivityRows: async () => [] })
+  // The fd_activities mirror rows are the Activities tab's A..J cells without the header.
+  const ACT_ROWS = ACT['fd-activity'].Activities.slice(1).map((cols) => ({ cols })) as never[]
+  const textingIo = (cfg: Cfg, tickets: Record<string, unknown>[]) =>
+    fakeIo({ cfg, ticketsSince: async () => tickets, fdActivityRows: async () => [] })
 
-  it('freshchat sheet: pairs + notes + source', async () => {
-    const fixtures = fx({ settings: CFG as unknown as Record<string, unknown>, spreadsheets: FC })
-    const notes: string[] = []
-    const r = await tlqReadTexting_(textingIo(FC, CFG, []), FROM, TO, notes)
-    expectSame({ ok: json({ r, notes }) }, qCallLegacy('__tlqText__', [FROM, TO], fixtures), 'texting freshchat')
-  })
-  it('freshdesk fallback when the fc tab is absent', async () => {
+  it('freshdesk path: the fd_activities mirror feeds touches and tickets feed pairs', async () => {
     const fixtures = fx({ settings: CFG as unknown as Record<string, unknown>, spreadsheets: { ...ACT, 'tickets-store': { tickets: tixTab } } })
     const notes: string[] = []
-    const r = await tlqReadTexting_(textingIo({ ...ACT }, CFG, TIX as never[]), FROM, TO, notes)
-    expectSame({ ok: json({ r, notes }) }, qCallLegacy('__tlqText__', [FROM, TO], fixtures), 'texting freshdesk')
-  })
-  it('fd_activities mirror stands in when the Activities sheet fails', async () => {
-    // vm side: same data via the sheet path (the mirror is the same tab's copy).
-    const fixtures = fx({ settings: CFG as unknown as Record<string, unknown>, spreadsheets: { ...ACT, 'tickets-store': { tickets: tixTab } } })
-    const notes: string[] = []
-    const io = textingIo({}, CFG, TIX as never[])
-    ;(io as { book: TlqIo['book'] }).book = async () => { throw new Error('sheets credentials missing') }
-    io.fdActivityRows = async () => ACT['fd-activity'].Activities.slice(1).map((cols) => ({ cols })) as never[]
+    const io = textingIo(CFG, TIX as never[])
+    io.fdActivityRows = async () => ACT_ROWS
     const r = await tlqReadTexting_(io, FROM, TO, notes)
-    // Same r as the sheet path; notes differ (sheet failure + fallback is reported).
-    const legacy = qCallLegacy('__tlqText__', [FROM, TO], fixtures) as { ok?: { r: unknown; notes: string[] } }
+    // Same r as the oracle's freshdesk leg (the Activities sheet and its mirror share the layout).
+    const legacy = qCallLegacy('__tlqText__', [FROM, TO], fixtures) as { ok?: { r: unknown } }
+    expectSame({ ok: json(r) }, { ok: legacy.ok?.r }, 'texting freshdesk')
+    expectSame({ ok: json(notes) }, { ok: ['Texting from the fd_activities mirror (Freshdesk path).'] }, 'texting notes')
+  })
+  it('the fd_activities mirror IS the path — malformed rows are ignored', async () => {
+    const fixtures = fx({ settings: CFG as unknown as Record<string, unknown>, spreadsheets: { ...ACT, 'tickets-store': { tickets: tixTab } } })
+    const notes: string[] = []
+    const io = textingIo(CFG, TIX as never[])
+    io.fdActivityRows = async () => ACT_ROWS.concat([{ cols: null }, { dedupe_key: 'no-cols' }] as never[])
+    const r = await tlqReadTexting_(io, FROM, TO, notes)
+    const legacy = qCallLegacy('__tlqText__', [FROM, TO], fixtures) as { ok?: { r: unknown } }
     expectSame({ ok: json(r) }, { ok: legacy.ok?.r }, 'texting mirror rows')
   })
 })

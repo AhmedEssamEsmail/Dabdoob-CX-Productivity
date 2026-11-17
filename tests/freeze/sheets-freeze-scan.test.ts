@@ -7,11 +7,11 @@
  * sheet-read pattern outside EXPECTED — a NEW reader must either go through the
  * guarded seams or get an explicit, reviewed allowlist entry here.
  *
- * EXPECTED snapshot = post-S01-03 tree. Entries tagged DEFERRED log
- * [SHEETS_FREEZE_VIOLATION] and pass until wave-2 leaves replace them with DB
- * reads; USER-OWNED files are cx-quality hand-backs; NON-SHEETS entries match
- * only the `googleapis` literal (gmail/drive scopes) and stay gated on the
- * other four patterns. Wave-2 end state shrinks EXPECTED to the two seams.
+ * EXPECTED snapshot = wave-2 strict end-state: the freeze is final — every
+ * non-allowlisted read logs [SHEETS_FREEZE_VIOLATION] and throws; there is no
+ * deferred mode. USER-OWNED files are cx-quality hand-backs; NON-SHEETS
+ * entries match only the `googleapis` literal (gmail/drive scopes) and stay
+ * gated on the other four patterns.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
@@ -31,31 +31,23 @@ const PATTERNS: Record<string, RegExp> = {
 }
 type PatternName = keyof typeof PATTERNS
 
-/** file -> patterns it may contain (verified against the post-S01-03 tree) */
+/** file -> patterns it may contain (verified against the wave-2 strict tree) */
 const EXPECTED: Record<string, readonly PatternName[]> = {
-  // --- the two guarded seams; wave-2 keeps ONLY these as sheet readers ---
+  // --- the only two live sheet readers; both assert through the guard ---
   'src/features/shared/jobs/sheets.ts': ['googleapis', 'spreadsheets.values', 'fetchWorkbookTabs'], // fetchWorkbookTabs def; per-tab assert before values.get
-  'src/features/shared/migration/engine.ts': ['googleapis', 'spreadsheets.values', 'readSheet(', 'readSheetRaw('], // readSheet/readSheetRaw defs + internal DEFERRED migration calls
-  // --- DEFERRED wave-1 fetchWorkbookTabs readers (log + pass; wave-2 removes) ---
-  'src/features/cx-queue/lib/tlqueue.ts': ['fetchWorkbookTabs'],
-  'src/features/cx-queue/lib/heatmap.ts': ['fetchWorkbookTabs'],
-  'src/features/cx-people/lib/scorecard-server.ts': ['fetchWorkbookTabs'],
-  'src/app/api/admin/source-health/route.ts': ['fetchWorkbookTabs'], // diagnostics; S10 -> DB probes
-  'src/app/api/admin/mirrors/route.ts': ['fetchWorkbookTabs'], // peek probe
+  'src/features/shared/migration/engine.ts': ['googleapis', 'spreadsheets.values', 'readSheet(', 'readSheetRaw('], // readSheet/readSheetRaw defs; no DEFERRED calls remain — every read is allowlisted or throws
   // --- manual allowlist (fail-closed roster sync) ---
   'src/features/cx-hub/lib/roster.ts': ['readSheet('], // manualHct 'Sheet1'
   // --- USER-OWNED cx-quality (hand-back; dead 'Queue Log' path throws by design) ---
   'src/features/cx-quality/lib/server.ts': ['fetchWorkbookTabs'],
   'src/features/cx-quality/lib/migrate.ts': ['googleapis', 'spreadsheets.values'],
-  // --- admin diagnostic: lists tab names (read-only) ---
-  'src/app/api/admin/list-sheets/route.ts': ['googleapis', 'spreadsheets.values'],
   // --- NON-SHEETS googleapis literals (gmail/calendar/drive); still gated on the other patterns ---
   'src/features/cx-hub/lib/myday-google.ts': ['googleapis'],
   'src/features/shared/components/shell/registry.ts': ['googleapis'], // gmail.send scope URL string only
   // --- ops scripts ---
   'scripts/ops/qa-recon-sheet.ts': ['fetchWorkbookTabs'], // qa_queue read now throws by design
   'scripts/ops/check-sheet-access.mts': ['googleapis', 'spreadsheets.values'], // access-diagnostic script
-  'scripts/ops/seed-prod-assumptions.ts': ['fetchWorkbookTabs'], // EXEMPT one-time prod seed (S11-02, PLAN Amendment 3); passes {deferred:true}
+  'scripts/ops/seed-prod-assumptions.ts': ['fetchWorkbookTabs'], // consumed one-time exempt seed (Amendment 3); flag removed — re-run throws SheetsFreezeError by design
 }
 
 function* walk(dir: string): Generator<string> {
@@ -105,5 +97,11 @@ describe('sheets-freeze repo-scan gate', () => {
     const text = readFileSync(guard, 'utf8')
     expect(text).toContain('SHEETS_FREEZE_VIOLATION')
     expect(text).toContain('SheetsFreezeError')
+  })
+
+  it('sheets-freeze.ts carries no deferred mode (strict flip)', () => {
+    const guard = path.join(ROOT, 'src/features/shared/lib/sheets-freeze.ts')
+    const text = readFileSync(guard, 'utf8')
+    expect(text).not.toMatch(/\bdeferred\b/)
   })
 })

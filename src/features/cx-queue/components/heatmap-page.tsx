@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Heatmap page (heatmap.closure.js symbol wl and
- * its children: Al RegTable, Cl AdminBuild, Ml SavedSets, Sl CountryChips,
+ * its children: Cl AdminBuild, Ml SavedSets, Sl CountryChips,
  * He/Pn/Ze/ne/bl AssumptionPanel, kl HmResult, xl HmGrid, vl UploadDialog,
  * gs/Bt/fs/On the animated count, Oe/Qe the grid sweep). The engine and the
  * upload parsers live in ../lib/heatmap-engine (As/Cs/cl/dl/hl/ul/xs + rn/Ts/
@@ -20,95 +20,22 @@ const be = {
   input: (id: string) => fetchJson('/api/queue/heatmap?input=' + encodeURIComponent(id)),
   saveInput: (name: string, source: string, hm: any) => fetchJson('/api/queue/heatmap', { op: 'save', name, source, heatmap: hm }),
   parseUpload: (fileName: string, base64: string) => fetchJson('/api/queue/heatmap', { op: 'parse', fileName, base64 }),
-  buildFromSource: (sid: string) => fetchJson('/api/queue/heatmap', { op: 'build', spreadsheetId: sid }),
-  priorRegression: () => fetchJson('/api/queue/heatmap', { op: 'regression' }),
+  buildFromSource: () => fetchJson('/api/queue/heatmap', { op: 'build' }),
   saveSet: (name: string, assumptions: any) => fetchJson('/api/queue/heatmap', { op: 'assumptions', name, assumptions }),
   setCountries: (countries: string[], aliases: any) => fetchJson('/api/queue/heatmap', { op: 'countries', countries, aliases }),
 }
 
 const OTHER = '__other__' // Re sentinel for the wide upload's country choice
 
-/** Al: the prior-sheet regression table. */
-function RegTable({ reg, full }: { reg: any; full: any }) {
-  const s = useMemo(() => {
-    const l = (reg.outcomeRows || []).slice(0, 16).filter((u: any[]) => u.some((c) => String(c).trim()))
-    let r: any = null
-    let i = ''
-    try {
-      const u = l.map((o: any[]) => o.map((f) => (/[",\n]/.test(f) ? `"${String(f).replace(/"/g, '""')}"` : f)).join(',')).join('\n')
-      const c = hmWideParse_(u, { country: '*', intervalMinutes: 60 })
-      r = { intervalMinutes: c.intervalMinutes, cells: c.cells }
-    } catch (u: any) {
-      i = u.message
-    }
-    const h = (u: any) => {
-      const c: Record<string, number> = {}
-      for (const o of u.cells) c[o.channel] = (c[o.channel] ?? 0) + o.volume
-      return c
-    }
-    const p = { ...full, countries: null, countryList: null }
-    const d = (u: any) => {
-      try {
-        return hmPlan_(u, p).headcount.hires
-      } catch {
-        return NaN
-      }
-    }
-    return { prior: r, err: i, v2: h(reg.heatmap), old: r ? h(r) : {}, v2Hires: d(reg.heatmap), oldHires: r ? d(r) : NaN }
-  }, [reg, full])
-  const a = [...new Set([...Object.keys(s.v2), ...Object.keys(s.old)])]
-  return (
-    <div className="hm-reg">
-      <TableScroll label="Contacts per week, by channel">
-      <table className="trk-table hm-reg-table">
-        <caption>Contacts per week, by channel</caption>
-        <thead>
-          <tr>
-            <th scope="col">Channel</th>
-            <th scope="col">September tab</th>
-            <th scope="col">Rebuilt here</th>
-          </tr>
-        </thead>
-        <tbody>
-          {a.map((l) => (
-            <tr key={l}>
-              <th scope="row" title={l}>{l}</th>
-              <td title={s.old[l] !== undefined ? hmFmt_(s.old[l]) : 'not in tab'}>{s.old[l] !== undefined ? hmFmt_(s.old[l]) : 'not in tab'}</td>
-              <td title={s.v2[l] !== undefined ? hmFmt_(s.v2[l]) : 'none'}>{s.v2[l] !== undefined ? hmFmt_(s.v2[l]) : 'none'}</td>
-            </tr>
-          ))}
-          <tr>
-            <th scope="row">Hires with these assumptions</th>
-            <td>{isNaN(s.oldHires) ? 'n/a' : s.oldHires}</td>
-            <td>{isNaN(s.v2Hires) ? 'n/a' : s.v2Hires}</td>
-          </tr>
-        </tbody>
-      </table>
-      </TableScroll>
-      {s.err ? <p className="field-error">The HeatMap tab could not be read as a heatmap: {s.err}</p> : null}
-      <p className="hm-hint">
-        {(reg.notes || []).join(' ')} Rows 17 to 51 of the HeatMap tab ({(reg.outcomeRows || []).slice(16).filter((l: any[]) => l.some((r) => String(r).trim())).length} non-empty) are not compared yet.
-      </p>
-    </div>
-  )
-}
-
-/** Cl: the admin tools — build from raw tabs, and the September regression. */
-function AdminBuild({ full, onLoaded }: { full: any; onLoaded: (r: any) => void }) {
-  const [s, a] = useState('')
+/** Cl: the admin tools — build volumes from the live tables. */
+function AdminBuild({ onLoaded }: { onLoaded: (r: any) => void }) {
   const [l, r] = useState('')
   const [i, h] = useState('')
-  const [p, d] = useState<any>(null)
-  async function u(c: string) {
-    r(c)
+  async function u() {
+    r('source')
     h('')
     try {
-      if (c === 'source') onLoaded(await be.buildFromSource(s.trim()))
-      else {
-        const o = await be.priorRegression()
-        d(o)
-        onLoaded(o)
-      }
+      onLoaded(await be.buildFromSource())
     } catch (o: any) {
       h(o.message)
     } finally {
@@ -117,28 +44,15 @@ function AdminBuild({ full, onLoaded }: { full: any; onLoaded: (r: any) => void 
   }
   return (
     <details className="hm-admin">
-      <summary>Build volumes from raw data (admin)</summary>
+      <summary>Build volumes from live data (admin)</summary>
       <div className="hm-admin-body">
-        <div className="field">
-          <label className="field-label" htmlFor="hm-sid">
-            Spreadsheet with the raw tabs (Maqsam, Freshchat, Freshdesk, WA)
-          </label>
-          <div className="hm-save-set">
-            <Input id="hm-sid" className="input" placeholder="Spreadsheet id" value={s} onInput={(c) => a(c.currentTarget.value)} />
-            <Button variant="quiet" disabled={!!l || !s.trim()} onClick={() => u('source')}>
-              {l === 'source' ? 'Building…' : 'Build volumes'}
-            </Button>
-          </div>
-          <p className="hm-hint">Cairo timestamps are moved to Kuwait time before they are counted. Large tabs take up to a few minutes.</p>
-        </div>
         <div>
-          <Button variant="quiet" disabled={!!l} onClick={() => u('prior')}>
-            {l === 'prior' ? 'Reading the September sheet…' : 'Compare with the September heatmap'}
+          <Button variant="quiet" disabled={!!l} onClick={u}>
+            {l === 'source' ? 'Building…' : 'Build volumes from live data'}
           </Button>
-          <p className="hm-hint">Rebuilds the 03-Sep-2026 heatmap from its own raw tabs and compares it with its HeatMap tab.</p>
+          <p className="hm-hint">Rebuilds call/chat/ticket/WA volumes from the live tables. Cairo timestamps are moved to Kuwait time before they are counted.</p>
         </div>
-        {i ? <p className="field-error">{i}</p> : null}
-        {p ? <RegTable reg={p} full={full} /> : null}
+        {i ? <p className="field-error" role="alert">{i}</p> : null}
       </div>
     </details>
   )
@@ -184,7 +98,7 @@ function SavedSets({ page, over, setOver, onSets }: { page: any; over: any; setO
           {p ? 'Saving…' : 'Save assumptions'}
         </Button>
       </div>
-      {i ? <p className="field-error">{i}</p> : null}
+      {i ? <p className="field-error" role="alert">{i}</p> : null}
     </div>
   )
 }
@@ -240,7 +154,7 @@ function CountryChips({ page, selected, setSelected, onSaved }: { page: any; sel
               Other spellings in the data, one per line as &quot;Saudi Arabia = KSA&quot;
             </label>
             <Textarea id="hm-al" className="input" rows={3} value={p} onInput={(b) => d(b.currentTarget.value)} />
-            {u ? <p className="field-error">{u}</p> : null}
+            {u ? <p className="field-error" role="alert">{u}</p> : null}
             <div className="hm-dialog-actions">
               <Button variant="quiet" onClick={() => r(false)}>Cancel</Button>
               <Button variant="primary" onClick={m}>Save countries</Button>
@@ -1064,7 +978,7 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
                 title="No volumes yet."
                 body={
                   <>
-                    Upload a heatmap{n.canAdmin ? ', or build one from the raw tabs below' : ''}. Not sure what the file looks like? Download an example,
+                    Upload a heatmap{n.canAdmin ? ', or build one from the live data below' : ''}. Not sure what the file looks like? Download an example,
                     replace its numbers with yours, then upload it.
                   </>
                 }
@@ -1092,7 +1006,6 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
           ) : null}
           {n?.canAdmin ? (
             <AdminBuild
-              full={M}
               onLoaded={(S) => {
                 l(S.heatmap)
                 i(S.meta)

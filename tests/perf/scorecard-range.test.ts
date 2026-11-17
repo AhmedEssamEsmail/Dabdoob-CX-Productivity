@@ -72,7 +72,7 @@ vi.mock('@/features/shared/lib/supabase', () => ({
 }))
 
 import { dqKeyPart_ } from '@/features/shared/lib/adapters'
-import { scReadRange_ } from '@/features/cx-people/lib/scorecard-server'
+import { scIo_, scReadRange_ } from '@/features/cx-people/lib/scorecard-server'
 
 const FROM = '2026-01-10'
 const TO = '2026-01-20'
@@ -101,6 +101,14 @@ function seed() {
     { id: 'b3', date: '', email: 'a@dabdoob.com', kpi: 'undated' },
     { id: 'b4', date: '2026-01-01', email: 'b@dabdoob.com', kpi: 'edge-old' },
   ]
+  h.tables.kpi_behaviour_log = [
+    { id: 'l1', date: '2026-01-15', email: 'a@dabdoob.com', note: 'in' },
+    { id: 'l2', date: '2026-01-25', email: 'a@dabdoob.com', note: 'after-to' },
+    { id: 'l3', date: '2025-12-29', email: 'a@dabdoob.com', note: 'before-pf' },
+    { id: 'l4', date: '2025-12-31', email: 'b@dabdoob.com', note: 'prev-window' },
+    { id: 'l5', date: null, email: 'a@dabdoob.com', note: 'undated' },
+  ]
+  h.tables.sc_months = [{ id: 'm1', month: '2026-01', status: 'ok' }]
   h.reads.length = 0
 }
 
@@ -122,5 +130,38 @@ describe('scReadRange_ date pushdown (S03-01)', () => {
     expect(read?.ops).toContainEqual(['or', `date.is.null,date.eq.,and(date.gte.${FROM},date.lte.${TO})`])
     expect(rows).toEqual(legacyFilter('sc_behaviour', FROM, TO))
     expect(rows.map((r) => r.id)).toEqual(['b1', 'b3'])
+  })
+})
+
+// perf3-01: scIo_(cfg, range) prefetches [pf, to] where pf = from - spanDays,
+// covering the previous comparison window; sc_months stays a whole-table read.
+describe('scIo_ range-bound prefetch (perf3-01)', () => {
+  // spanDays = (TO - FROM)/86400000 + 1 = 11 -> pf = FROM - 11d = 2025-12-30.
+  const PF = '2025-12-30'
+
+  beforeEach(seed)
+
+  it('pushes gte/lte/or bounds on the three date tables and keeps sc_months unbounded', async () => {
+    await scIo_({}, { from: FROM, to: TO })
+    const daily = h.reads.find((r) => r.table === 'sc_daily')
+    const beh = h.reads.find((r) => r.table === 'sc_behaviour')
+    const log = h.reads.find((r) => r.table === 'kpi_behaviour_log')
+    const months = h.reads.find((r) => r.table === 'sc_months')
+    expect(daily?.ops).toContainEqual(['gte', 'date', PF])
+    expect(daily?.ops).toContainEqual(['lte', 'date', TO])
+    expect(beh?.ops).toContainEqual(['or', `date.is.null,date.eq.,and(date.gte.${PF},date.lte.${TO})`])
+    expect(log?.ops).toContainEqual(['gte', 'date', PF])
+    expect(log?.ops).toContainEqual(['lte', 'date', TO])
+    expect(months).toBeTruthy()
+    expect(months?.ops.some((op) => op[0] === 'gte' || op[0] === 'lte' || op[0] === 'or')).toBe(false)
+  })
+
+  it('io.readRange and behaviourLogRows match the legacy whole-table filter', async () => {
+    const io = await scIo_({}, { from: FROM, to: TO })
+    expect(io.readRange('sc_daily', FROM, TO)).toEqual(legacyFilter('sc_daily', FROM, TO))
+    expect(io.readRange('sc_behaviour', FROM, TO)).toEqual(legacyFilter('sc_behaviour', FROM, TO))
+    // behaviourLogRows is the [pf, to] prefetch: undated log rows never surface.
+    expect(io.behaviourLogRows).toEqual(legacyFilter('kpi_behaviour_log', PF, TO))
+    expect(io.behaviourLogRows.map((r) => r.id)).toEqual(['l1', 'l4'])
   })
 })

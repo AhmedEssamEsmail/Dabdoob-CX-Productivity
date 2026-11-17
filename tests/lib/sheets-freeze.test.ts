@@ -24,7 +24,7 @@ describe('assertSheetReadAllowed_', () => {
     expect(() =>
       assertSheetReadAllowed_(SHEETS_FREEZE_HCT_ID, 'Sheet1')
     ).toThrowError(SheetsFreezeError)
-    expect(ERR).not.toHaveBeenCalled()
+    expect(ERR).toHaveBeenCalledTimes(1)
   })
 
   it('allows Activities on an extraIds workbook id, nothing else on that id', () => {
@@ -37,10 +37,15 @@ describe('assertSheetReadAllowed_', () => {
     ).toThrowError(SheetsFreezeError)
   })
 
-  it('deferred logs [SHEETS_FREEZE_VIOLATION] once and does not throw', () => {
-    expect(() =>
-      assertSheetReadAllowed_('some-id', 'Queue Log', { deferred: true })
-    ).not.toThrow()
+  it('non-allowlisted logs [SHEETS_FREEZE_VIOLATION] once then throws', () => {
+    try {
+      assertSheetReadAllowed_('some-id', 'Queue Log')
+      expect.unreachable()
+    } catch (e) {
+      expect(e).toBeInstanceOf(SheetsFreezeError)
+      expect((e as Error).message).toContain('some-id')
+      expect((e as Error).message).toContain('Queue Log')
+    }
     expect(ERR).toHaveBeenCalledTimes(1)
     expect(ERR.mock.calls[0][0]).toContain('[SHEETS_FREEZE_VIOLATION]')
     expect(ERR.mock.calls[0][0]).toContain('some-id')
@@ -56,6 +61,6 @@ describe('assertSheetReadAllowed_', () => {
       expect((e as Error).message).toContain('nonallow-id')
       expect((e as Error).message).toContain('prod-month-tab')
     }
-    expect(ERR).not.toHaveBeenCalled()
+    expect(ERR).toHaveBeenCalledTimes(1)
   })
 })

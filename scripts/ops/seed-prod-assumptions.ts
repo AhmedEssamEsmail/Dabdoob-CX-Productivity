@@ -23,7 +23,9 @@ async function main() {
   const id = fromMonth || String(dqSetting_(cfg, 'productivity_fallback_id') || '')
   if (!id) throw new Error('No productivity workbook id: productivity_files is empty and productivity_fallback_id is unset.')
 
-  const tabs = await fetchWorkbookTabs(id, ['Assumptions'], { deferred: true })
+  // Amendment-3 exemption is consumed: strict freeze — a re-run throws
+  // SheetsFreezeError unless prod_assumptions is reseeded via another route.
+  const tabs = await fetchWorkbookTabs(id, ['Assumptions'])
   const grid = tabs.Assumptions || []
   const value = {
     mq: Number(grid[3] && grid[3][1]),

@@ -17,18 +17,17 @@
  *     '' lands as null on numeric columns;
  *   - tlp_team upserts key on (tl_email, month), the 014 unique — the
  *     sheet keyed on tl_email alone;
- *   - the operational_loss tracker migrated to storage_mode 'native'
- *     (WP-51): its live rows are read from tracker_records and rebuilt into
- *     the sheet-shaped grid tlqReadOlRows_ parses — the configured OL sheet
- *     is read only while the tracker stays external (the frozen copy).
+ *   - the operational_loss tracker is storage_mode 'native' (WP-51): its live
+ *     rows are read from tracker_records and rebuilt into the sheet-shaped
+ *     grid tlqReadOlRows_ parses; a tracker that is not native throws — the
+ *     configured OL sheet is a frozen pre-migration copy and is not read.
  *
- * Texting stays verbatim: the Freshchat messages sheet (fc_messages_ss_id)
- * when it reads and parses, else the Freshdesk Activities log + tickets
- * first_responded_at — with the fd_activities mirror (the migrated copy of
- * the same tab) standing in when the Activities sheet cannot be read. A
- * missing workbook or credential lands in the run note ('Freshchat messages
- * sheet not read', 'Texting not read') and text_source '' — never fabricated
- * numbers.
+ * Texting reads the Freshdesk path only: the fd_activities mirror (the
+ * migrated copy of the Activities tab) feeds tlqTextTouches_ and tickets
+ * first_responded_at feeds tlqTextPairs_. A missing mirror or credential
+ * lands in the run note ('Texting not read') and text_source '' — never
+ * fabricated numbers. The Freshchat messages sheet and the Sheets workbooks
+ * are not read (no message-level DB source exists yet).
  */
 
 import 'server-only'
@@ -37,9 +36,9 @@ import { db, appendRow, readAllPaged, newId } from '@/features/shared/platform/r
 import { configAll } from '@/features/shared/platform/settings'
 import { isCxAgent_, requireJobCaller, requireRole } from '@/features/shared/platform/identity'
 import { readStore } from '@/features/shared/platform/stores'
+import { pwPrevMonth } from '@/features/shared/platform/time'
 import { described } from '@/features/shared/lib/errors'
 import { hbRun } from '@/features/shared/platform/health'
-import { fetchWorkbookTabs, sheetBook } from '@/features/shared/jobs/sheets'
 import { fdActivityCells_, maqsamCells_ } from '@/features/shared/jobs/mirror-cells'
 import { dqMarkRun_ } from './jobs'
 import type { TlsShift } from './index'
@@ -50,14 +49,12 @@ import {
   dqSetting_,
   getConfig_,
   normEmail_,
-  prodReadCols_,
   pwDirectory_,
   pwKwDate_,
   pwKwTime_,
   pwToday_,
   type Cfg,
   type Directory,
-  type SheetBookLike,
 } from '@/features/shared/lib/adapters'
 import { SCH_TABLES } from './scheduler'
 import { pwScoreMonths_, pwScoreOut_ } from '@/features/cx-people/lib/scorecard'
@@ -581,8 +578,6 @@ export interface TlqIo {
   fdActivityRows(fromMs: number): Promise<Row[]>
   /** tracker_records rows for one tracker, row_n order (the native OL store). */
   trackerRecords(trackerId: string): Promise<Row[]>
-  /** A prefetched workbook (fetchWorkbookTabs -> SheetBookLike); unfetched tabs read null. */
-  book(id: string, tabs: string[]): Promise<SheetBookLike>
   /** dqReadLean_('tickets', ..., created_at >= since) picked rows. */
   ticketsSince(since: string): Promise<Row[]>
   /** dqReadObjects_(name, null, {missingOk:true}) rows. */
@@ -594,11 +589,10 @@ export interface TlqIo {
   nowMs(): number
 }
 
-/** The production TlqIo: Supabase tables, readStore stores and Sheets API workbooks. */
-async function tlqIo_(): Promise<TlqIo> {
+/** The production TlqIo: Supabase tables, readStore stores and the mirror tables. */
+export async function tlqIo_(): Promise<TlqIo> {
   const cfg = (await configAll()) as Cfg
   const dir = pwDirectory_((await readStore('roster')).rows, cfg.admin_emails)
-  const books: Record<string, SheetBookLike> = {}
   return {
     cfg,
     dir,
@@ -621,34 +615,19 @@ async function tlqIo_(): Promise<TlqIo> {
       })) as Row[]
       return rows.map((r) => ({ dedupe_key: r.dedupe_key, ts_ms: r.ts_ms, cols: fdActivityCells_(r) }))
     },
-    trackerRecords: async (trackerId) => {
-      const { data, error } = await db().from('tracker_records').select('*').eq('tracker_id', trackerId).order('row_n', { ascending: true })
-      if (error) throw described(error, { table: 'tracker_records' })
-      return (data || []) as Row[]
-    },
-    book: async (id, tabs) => {
-      if (!books[id]) {
-        const cells = await fetchWorkbookTabs(id, tabs, {
-          deferred: true,
-          extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
-        })
-        const sb = sheetBook(cells, id)
-        // An empty grid is how fetchWorkbookTabs reports a missing tab — read it
-        // like openSpreadsheet_ did: getSheetByName -> null ('no tab' note).
-        books[id] = {
-          getId: () => id,
-          getSheetByName: (n) => (cells[n] && cells[n].length ? sb.getSheetByName(n) : null),
-        }
-      }
-      return books[id]
-    },
-    ticketsSince: async (since) => {
-      const { data, error } = await db().from('tickets').select(FD_TICKET_HEADERS.join(',')).gte('created_at', since)
-      if (error) throw described(error, { table: 'tickets' })
-      return (data || []) as unknown as Row[]
-    },
+    trackerRecords: async (trackerId) =>
+      (await readAllPaged('tracker_records', {
+        pk: 'row_n',
+        build: (q) => q.eq('tracker_id', trackerId),
+      })) as Row[],
+    ticketsSince: async (since) =>
+      (await readAllPaged('tickets', {
+        columns: FD_TICKET_HEADERS.join(','),
+        build: (q) => q.gte('created_at', since),
+      })) as Row[],
     storeRows: async (name) => (await readStore(name)).rows,
-    scores: async (today) => pwScoreMonths_(await scIo_(cfg), scWho_(dir), today) as Record<string, unknown>,
+    scores: async (today) =>
+      pwScoreMonths_(await scIo_(cfg, { from: pwPrevMonth(today.slice(0, 7)) + '-01', to: today }), scWho_(dir), today) as Record<string, unknown>,
     upsert: async (table, keyFields, rows) => {
       if (!rows.length) return
       const { error } = await db()
@@ -666,42 +645,13 @@ async function tlqShiftsDb_(io: TlqIo, dates: string[]): Promise<TlsShift[]> {
   return tlqShiftsFromTimeline_(await io.schedPlanRows(months), dates)
 }
 
-/** tlqReadTexting_ verbatim: the Freshchat messages sheet when usable, else Freshdesk. */
+/** tlqReadTexting_: the Freshdesk path only — the fd_activities mirror is the Activities tab's migrated copy. */
 export async function tlqReadTexting_(io: TlqIo, fromMs: number, toMs: number, notes: string[]): Promise<TlqTexting> {
   const cfg = io.cfg
-  const ssId = String(tlqSetting_(cfg, 'fc_messages_ss_id') || '')
-  if (ssId) {
-    try {
-      const sh = (await io.book(ssId, [String(tlqSetting_(cfg, 'fc_messages_tab'))])).getSheetByName(String(tlqSetting_(cfg, 'fc_messages_tab')))
-      if (!sh) throw new Error('no tab "' + String(tlqSetting_(cfg, 'fc_messages_tab')) + '"')
-      const last = sh.getLastRow()
-      const width = sh.getLastColumn ? sh.getLastColumn() : 0
-      const header = sh.getRange(1, 1, 1, width).getValues()
-      // shortcut: reads the newest 40,000 rows (a few days of chats); move to a dated cursor if two days ever exceed that.
-      const from = Math.max(2, last - 40000 + 1)
-      const body = last >= 2 ? sh.getRange(from, 1, last - from + 1, width).getValues() : []
-      const p = tlqParseFcMessages_(header.concat(body), String(tlqSetting_(cfg, 'fc_messages_tz')), fromMs, toMs)
-      if (p.ok) {
-        const pairs = tlqMessagePairs_(p.msgs)
-        notes.push('Texting from Freshchat messages (' + p.msgs.length + ' messages).')
-        return { source: 'freshchat', touches: pairs.touches, pairs: pairs.pairs }
-      }
-      notes.push('Freshchat messages sheet not usable, missing ' + p.missing.join(', ') + '. Its header: ' + p.header.join(' | '))
-    } catch (e) {
-      notes.push('Freshchat messages sheet not read: ' + (e as Error).message)
-    }
-  }
   const groups = tlqSetting_(cfg, 'tlp_texting_groups')
   const tz = String(dqSetting_(cfg, 'activity_local_tz'))
-  let rows: unknown[][] = []
-  try {
-    rows = prodReadCols_(await io.book(String(dqSetting_(cfg, 'fd_activity_ss_id')), ['Activities']), 'Activities', 1, 10, 1)
-  } catch (e) {
-    // The fd_activities mirror is the migrated copy of the same tab — the
-    // same A..J layout feeds the same parse (a real source, not a stand-in).
-    notes.push('Freshdesk Activities sheet not read: ' + (e as Error).message)
-    rows = (await io.fdActivityRows(fromMs)).map((r) => (Array.isArray(r.cols) ? r.cols : []))
-  }
+  notes.push('Texting from the fd_activities mirror (Freshdesk path).')
+  const rows = (await io.fdActivityRows(fromMs)).map((r) => (Array.isArray(r.cols) ? r.cols : []))
   const touches = tlqTextTouches_(rows, groups, tz, fromMs, toMs)
   const since = new Date(fromMs - 86400000).toISOString().slice(0, 10)
   const pairs = tlqTextPairs_(await io.ticketsSince(since), groups, fromMs, toMs)
@@ -738,14 +688,13 @@ export function tlqOlGridFromRecords_(
 }
 
 /**
- * tlqReadOl_ verbatim: the OL sheet values for the month, attributed to roster emails.
- * WP-51 flipped the operational_loss tracker to storage_mode 'native' — new rows land
- * in tracker_records and the configured sheet is the frozen pre-migration copy. The
- * live store wins when native (tlqOlGridFromRecords_ rebuilds the sheet-shaped grid);
- * an external/absent registry row keeps the sheet read.
+ * tlqReadOl_ verbatim: the OL values for the month, attributed to roster emails.
+ * The operational_loss tracker is storage_mode 'native' (WP-51): new rows land
+ * in tracker_records and the configured sheet is the frozen pre-migration copy.
+ * The native store is the only live source — tlqOlGridFromRecords_ rebuilds the
+ * sheet-shaped grid; a tracker that is absent or external throws.
  */
 async function tlqReadOlDb_(io: TlqIo, month: string, dir: Directory): Promise<{ byEmail: Record<string, number>; unmatched: string[] }> {
-  const cfg = io.cfg
   const t = (await io.storeRows('trackers')).filter((r) => String(r.tracker_id) === 'operational_loss')[0]
   if (t && String(t.storage_mode) === 'native') {
     const fields = (await io.storeRows('tracker_fields'))
@@ -755,11 +704,7 @@ async function tlqReadOlDb_(io: TlqIo, month: string, dir: Directory): Promise<{
     const values = tlqOlGridFromRecords_(t, fields, await io.trackerRecords('operational_loss'))
     return tlqReadOlRows_(values, month, dir)
   }
-  const tab = String(tlqSetting_(cfg, 'ol_tab'))
-  const sh = (await io.book(String(tlqSetting_(cfg, 'ol_sheet_id')), [tab])).getSheetByName(tab)
-  if (!sh) throw new Error('no tab "' + tab + '"')
-  const values = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn ? sh.getLastColumn() : 1).getValues()
-  return tlqReadOlRows_(values, month, dir)
+  throw new Error('operational_loss tracker is not in native storage mode')
 }
 
 /** tlqAreaRows_' reads: sources + owners + the lean ticket pick + the exclusions set. */
