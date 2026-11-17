@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- verbatim legacy port: closure code uses any. */
 /* verbatim port of the legacy Agent performance (scorecard) page
  * (agents.closure.js symbols hl/cl/ft/ml/ue/ol/pl). */
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { AsOfHint, LoadError, fetchJson, useSe } from './shared'
 import { D } from '@/features/shared/shell/i18n'
 import { LinesSkeleton } from '@/features/shared/components/shell/ui'
@@ -502,6 +502,32 @@ export function AgentsPage({ route }: { route: { title: string } }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, agent, data?.from, data?.to, data?.dataAsOf])
+
+  /* The scorecard Tabs scroll the selected tab into view on mount; on narrow
+   * screens that smooth-scroll drags the window down after this effect's
+   * first pass, so pin the top for the animation's duration. */
+  const didPinTop = useRef(false)
+  useEffect(() => {
+    if (!data || didPinTop.current) return
+    didPinTop.current = true
+    const until = performance.now() + 800
+    let raf = 0
+    const pin = () => {
+      window.scrollTo(0, 0)
+      if (performance.now() < until) raf = requestAnimationFrame(pin)
+    }
+    const stop = () => cancelAnimationFrame(raf)
+    const intents = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as const
+    const opts: AddEventListenerOptions = { once: true }
+    raf = requestAnimationFrame(pin)
+    for (const ev of intents) {
+      window.addEventListener(ev, stop, ev === 'keydown' ? opts : { ...opts, passive: true })
+    }
+    return () => {
+      cancelAnimationFrame(raf)
+      for (const ev of intents) window.removeEventListener(ev, stop)
+    }
+  }, [data])
 
   const refreshNow = () => {
     if (!data) return

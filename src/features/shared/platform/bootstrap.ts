@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { connection } from 'next/server'
 import { currentUser, currentEmail, assistantOwnerEmail, type PlatformUser } from './identity'
 import { viewAsState } from './viewas'
 import { pendingPopupsFor } from './popups'
@@ -10,6 +11,7 @@ import { appUrls } from './settings'
 export async function getAppBootstrap(
   loadQuality: (user: PlatformUser) => Promise<unknown>
 ): Promise<Record<string, unknown>> {
+  await connection()
   /* The three identity reads are independent: each resolves from the session
      (realEmail) and config, none consumes another's result — parallelize them. */
   const [user, st, email] = await Promise.all([currentUser(), viewAsState(), currentEmail()])

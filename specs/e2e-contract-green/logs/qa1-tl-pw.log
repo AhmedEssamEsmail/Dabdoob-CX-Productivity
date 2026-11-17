@@ -1,0 +1,6 @@
+
+Running 2 tests using 2 workers
+
+[1/2] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[2/2] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+  2 passed (10.5s)

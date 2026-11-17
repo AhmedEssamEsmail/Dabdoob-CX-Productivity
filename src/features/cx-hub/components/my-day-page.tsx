@@ -1059,7 +1059,7 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
         <div className="page-actions md-head-actions">
           <Button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-primary md-book-btn"
             disabled={!w || !openGaps.length || bb}
             onClick={() => void bookFirst()}
           >

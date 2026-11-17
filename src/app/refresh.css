@@ -26,6 +26,7 @@
   display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
 }
 :root .page-actions > [role="status"] { flex-basis: 100%; min-inline-size: 0; overflow-wrap: anywhere; }
+:root .page-actions .roster-add-btn { min-inline-size: 5.5rem; }
 :root .aging-page-head { display: grid; grid-template-columns: minmax(0, 1fr); }
 :root .aging-page-head .page-actions { display: grid; grid-template-columns: auto minmax(0, 1fr) 12rem; min-inline-size: 0; }
 :root .aging-page-head .page-actions > .cx-section__hint { min-inline-size: 0; overflow-wrap: anywhere; }

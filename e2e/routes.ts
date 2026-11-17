@@ -50,6 +50,13 @@ export const QUIRKS: Record<string, { skipToolbar?: boolean; note?: string }> = 
     skipToolbar: true,
     note: 'primary action opens an inline edit form, unmounting .page-actions',
   },
+  // "Book focus block" fires a real mutating POST /api/hub/my-day
+  // {action:focusBlock} -> createFocusBlock writes a live Google Calendar
+  // event. The contract must never click it. Recorded in the baseline.
+  '/my-day': {
+    skipToolbar: true,
+    note: 'primary action books a real calendar event (mutating POST /api/hub/my-day)',
+  },
 }
 
 /** Append the parent rel-path of every page.tsx under `dir` to `out`. */

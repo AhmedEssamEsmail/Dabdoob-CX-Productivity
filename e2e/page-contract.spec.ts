@@ -17,24 +17,41 @@ import { E2E_USERS, login } from './users'
 
 const WIDTHS = [375, 1024] as const
 
+/**
+ * Routes whose server data path is heavy enough that a remote login + route
+ * ready-wait can outrun even the raised base budget under fullyParallel load
+ * (S06 — e2e-contract-green). Everything is remote-auth (login() per test);
+ * these get the top budget.
+ */
+const SLOW_DATA = new Set([
+  '/scheduler',
+  '/status-validation',
+  '/tl-performance',
+  '/tl-tasks',
+  '/tph',
+  '/tph-grid',
+  '/trackers',
+])
+
 /** Known-benign console noise (exact-ish patterns; tune in P3-C1-03 only). */
 const CONSOLE_ALLOWLIST: RegExp[] = [
   /favicon/,
   /devtools/i,
   /Hydration/i,
   /supabase.*(token|refresh)/i,
-  // Dev-only prerender diagnostic emitted via the RSC error chunk on every
-  // route (RootLayout render path); same dev-overlay class as /Hydration/i.
-  // Root cause recorded as FINDING in results/page-contract-baseline.md.
-  /unstable value `Date\.now\(\)` while prerendering/,
-  // The coupled symptom of the same dev prerender crash (RSC/doc request 500).
-  // Exact single message — re-tighten once the prerender root cause is fixed.
-  /^Failed to load resource: the server responded with a status of 500 \(Internal Server Error\)$/,
+  // WebKit-on-Windows/Playwright env quirk: same-origin localhost fetches
+  // (incl. Next dev internals) fail engine-level access-control checks.
+  // Verdict + evidence: specs/e2e-contract-green/results/S05.md.
+  /Fetch API cannot load .*localhost:3000.* due to access control checks/,
 ]
 
-/** Generic ready-wait: network idle, then all aria-busy regions settle. */
+/**
+ * Generic ready-wait: best-effort network idle, then all aria-busy regions
+ * settle. networkidle is capped — under fullyParallel dev-server load it can
+ * never settle (S06); the aria-busy gate is the real settle check.
+ */
 async function ready(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
 }
 
@@ -81,7 +98,9 @@ function unnamedControls(page: Page): Promise<string[]> {
 for (const r of ROUTES) {
   for (const w of WIDTHS) {
     test(`${r.path} contract @${w}px`, async ({ page }) => {
-      test.setTimeout(45000) // login + remote ready-wait can exceed 30s
+      // login() retries + remote ready-wait under load exceed 45s (S06);
+      // heavy-data routes get the top budget.
+      test.setTimeout(SLOW_DATA.has(r.path) ? 150000 : 90000)
       await page.setViewportSize({ width: w, height: 720 })
 
       await login(page, E2E_USERS[r.user])
@@ -94,7 +113,9 @@ for (const r of ROUTES) {
       })
       page.on('pageerror', (err) => consoleErrors.push(String(err)))
 
-      await page.goto(r.path)
+      // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      // unboundedly under dev-server load — ready() covers settling (S06).
+      await page.goto(r.path, { waitUntil: 'domcontentloaded' })
       await ready(page)
 
       // 1. no horizontal scroll

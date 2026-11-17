@@ -94,6 +94,7 @@ export function AdminRosterPage() {
       aside={
         <div className="page-actions">
           <Button
+            className="roster-add-btn"
             variant={showAddForm ? 'quiet' : 'primary'}
             onClick={() => setShowAddForm(!showAddForm)}
           >
