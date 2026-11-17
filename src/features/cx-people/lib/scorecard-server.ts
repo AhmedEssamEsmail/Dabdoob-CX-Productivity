@@ -475,7 +475,7 @@ export async function scRefreshMonth_(month: string, who: string, cfg?: Cfg) {
   if (!src.id) return fail('No workbook is set for ' + month + '.')
   let data: Record<string, any>
   try {
-    const cells = await fetchWorkbookTabs(String(src.id), [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS))
+    const cells = await fetchWorkbookTabs(String(src.id), [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS), { deferred: true })
     data = scReadWorkbook_(cells, String(src.id))
   } catch (e) {
     return fail('Could not read the workbook: ' + ((e as Error)?.message || e) + '.')
@@ -589,7 +589,7 @@ export async function getScorecardAdmin() {
 
 /** Opens a workbook and reports what the scorecard would read from it, without storing anything. */
 export async function scInspect_(id: string, month: string) {
-  const cells = await fetchWorkbookTabs(id, [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS))
+  const cells = await fetchWorkbookTabs(id, [SC_MATRIX_TAB, SC_FCR_TAB].concat(SC_BEHAVIOUR_TABS), { deferred: true })
   const out: Record<string, unknown> = { title: id, matrix: false, fcr: false, behaviour: false, matrixDays: 0, firstDate: '', lastDate: '', agents: 0, monthMatches: false, note: '' }
   const mx = cells[SC_MATRIX_TAB]
   out.fcr = !!cells[SC_FCR_TAB]

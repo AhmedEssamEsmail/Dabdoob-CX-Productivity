@@ -32,7 +32,10 @@ export async function POST(req: Request) {
       const cfg0 = await configAll()
       const id = body.peek.ssId || String(dqSetting_(cfg0, 'fd_activity_ss_id'))
       const tab = body.peek.tab || 'Activities'
-      const tabs = await fetchWorkbookTabs(id, [tab])
+      const tabs = await fetchWorkbookTabs(id, [tab], {
+        deferred: true,
+        extraIds: [String(dqSetting_(cfg0, 'fd_activity_ss_id') || '')].filter(Boolean),
+      })
       const rows = tabs[tab] || []
       const head = Math.max(1, Math.min(50, Number(body.peek.head) || 5))
       const tail = Math.max(0, Math.min(50, Number(body.peek.tail) || 0))

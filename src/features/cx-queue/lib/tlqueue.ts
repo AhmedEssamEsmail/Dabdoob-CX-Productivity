@@ -628,7 +628,10 @@ async function tlqIo_(): Promise<TlqIo> {
     },
     book: async (id, tabs) => {
       if (!books[id]) {
-        const cells = await fetchWorkbookTabs(id, tabs)
+        const cells = await fetchWorkbookTabs(id, tabs, {
+          deferred: true,
+          extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
+        })
         const sb = sheetBook(cells, id)
         // An empty grid is how fetchWorkbookTabs reports a missing tab — read it
         // like openSpreadsheet_ did: getSheetByName -> null ('no tab' note).

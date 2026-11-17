@@ -1,0 +1,797 @@
+=== supabase/migrations/20261030163812_core_tables.sql ===
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+INSERT 0 6
+=== supabase/migrations/20261031193119_platform.sql ===
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+=== supabase/migrations/20261031193219_domain_tables.sql ===
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+=== supabase/migrations/20261101175759_mirror_tables.sql ===
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+psql:<stdin>:45: NOTICE:  column "job" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:46: NOTICE:  column "finished_at" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:47: NOTICE:  column "rows_in" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:48: NOTICE:  column "rows_out" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:49: NOTICE:  column "source_cursor" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:50: NOTICE:  column "error" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+psql:<stdin>:51: NOTICE:  column "note" of relation "refresh_log" already exists, skipping
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+=== supabase/migrations/20261105171948_hub.sql ===
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE TABLE
+=== supabase/migrations/20261105172048_quality.sql ===
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+=== supabase/migrations/20261105172148_queue.sql ===
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+psql:<stdin>:148: NOTICE:  relation "tlp_shifts" already exists, skipping
+CREATE INDEX
+CREATE TABLE
+psql:<stdin>:158: NOTICE:  relation "tlp_queue_daily" already exists, skipping
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+=== supabase/migrations/20261105172248_people.sql ===
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+=== supabase/migrations/20261105172348_operations.sql ===
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 5
+=== supabase/migrations/20261105172448_desk.sql ===
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+psql:<stdin>:139: NOTICE:  relation "actions" already exists, skipping
+CREATE INDEX
+psql:<stdin>:168: NOTICE:  relation "action_task_details" already exists, skipping
+CREATE TABLE
+psql:<stdin>:184: NOTICE:  relation "action_updates" already exists, skipping
+CREATE TABLE
+CREATE INDEX
+=== supabase/migrations/20261106151132_remote_reconcile.sql ===
+psql:<stdin>:20: NOTICE:  relation "options" already exists, skipping
+CREATE TABLE
+psql:<stdin>:21: NOTICE:  relation "idx_options_list_key" already exists, skipping
+CREATE INDEX
+psql:<stdin>:22: NOTICE:  relation "idx_options_list_value" already exists, skipping
+CREATE INDEX
+psql:<stdin>:36: NOTICE:  relation "popups" already exists, skipping
+CREATE TABLE
+psql:<stdin>:37: NOTICE:  relation "idx_popups_pending" already exists, skipping
+CREATE INDEX
+psql:<stdin>:38: NOTICE:  relation "idx_popups_kind_ref" already exists, skipping
+CREATE INDEX
+psql:<stdin>:53: NOTICE:  relation "mail_log" already exists, skipping
+CREATE TABLE
+psql:<stdin>:54: NOTICE:  relation "idx_mail_log_sent_at" already exists, skipping
+CREATE INDEX
+psql:<stdin>:64: NOTICE:  relation "holidays" already exists, skipping
+CREATE TABLE
+psql:<stdin>:65: NOTICE:  relation "idx_holidays_date" already exists, skipping
+CREATE INDEX
+psql:<stdin>:77: NOTICE:  relation "one_on_one_schedule" already exists, skipping
+CREATE TABLE
+psql:<stdin>:78: NOTICE:  relation "idx_ooo_status_at" already exists, skipping
+CREATE INDEX
+psql:<stdin>:79: NOTICE:  relation "idx_ooo_manager" already exists, skipping
+CREATE INDEX
+psql:<stdin>:80: NOTICE:  relation "idx_ooo_report" already exists, skipping
+CREATE INDEX
+psql:<stdin>:87: NOTICE:  relation "kpi_behaviour_log" already exists, skipping
+CREATE TABLE
+psql:<stdin>:92: NOTICE:  relation "kpi_leave_log" already exists, skipping
+CREATE TABLE
+psql:<stdin>:101: NOTICE:  relation "tlp_team" already exists, skipping
+CREATE TABLE
+psql:<stdin>:106: NOTICE:  relation "tlp_area_metrics" already exists, skipping
+CREATE TABLE
+psql:<stdin>:112: NOTICE:  relation "dq_aging_flags" already exists, skipping
+CREATE TABLE
+CREATE TABLE
+psql:<stdin>:119: NOTICE:  relation "queue_submissions" already exists, skipping
+DO
+psql:<stdin>:162: NOTICE:  relation "tickets" already exists, skipping
+CREATE TABLE
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.follow_up_done" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.cache_stamps" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.options" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.popups" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.mail_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.holidays" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.one_on_one_schedule" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.kpi_behaviour_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.kpi_leave_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_team" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_area_metrics" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.dq_aging_flags" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.queue_submissions" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qa_forms" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qa_ctls" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qa_disputes" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qa_calibrations" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qa_kb_gaps" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qe_queue_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qe_candidates" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qe_outcomes" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qe_builds" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.qe_catalogue" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.actions" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.action_reviews" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.action_updates" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.action_task_details" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.action_planned_milestones" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.one_on_one_logs" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.one_on_one_topics" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.one_on_one_private_notes" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.meeting_series" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.meeting_series_members" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.meetings" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.meeting_attendees" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.pw_reminder_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.people_signals" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.my_notes" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.one_on_one_topic_prompts" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.sc_daily" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.sc_behaviour" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.sc_months" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.trackers" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tracker_fields" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tracker_records" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_resp_ratings" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_kb" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_otd" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tlp_ticket_exclusions" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.mail_sla" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.mail_approvals" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.mail_approval_log" does not exist, skipping
+psql:<stdin>:193: NOTICE:  policy "app_all" for relation "public.tickets" does not exist, skipping
+DO
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.roster" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.config" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.view_as" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.refresh_log" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.health" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_intervals" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_flags" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_flag_log" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_daily_layers" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_window_hist" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_flag_analytics" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_quarterly_reports" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_tph_days" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_tph_tasks" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_tph_cases" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_tph_touches" does not exist, skipping
+psql:<stdin>:218: NOTICE:  policy "app_all" for relation "public.prod_tph_calls" does not exist, skipping
+psql:<stdin>:218: ERROR:  relation "public.qa_flags" does not exist
+CONTEXT:  SQL statement "DROP POLICY IF EXISTS app_all ON public.qa_flags"
+PL/pgSQL function inline_code_block line 16 at EXECUTE
+CREATE EXTENSION
+CREATE EXTENSION
+=== supabase/migrations/20261106201210_pg_cron_schedule.sql ===
+psql:<stdin>:25: NOTICE:  extension "pg_cron" already exists, skipping
+CREATE EXTENSION
+psql:<stdin>:26: NOTICE:  extension "pg_net" already exists, skipping
+CREATE EXTENSION
+DO
+ schedule 
+----------
+        1
+(1 row)
+
+ schedule 
+----------
+        2
+(1 row)
+
+ schedule 
+----------
+        3
+(1 row)
+
+ schedule 
+----------
+        4
+(1 row)
+
+ schedule 
+----------
+        5
+(1 row)
+
+ schedule 
+----------
+        6
+(1 row)
+
+ schedule 
+----------
+        7
+(1 row)
+
+ schedule 
+----------
+        8
+(1 row)
+
+ schedule 
+----------
+        9
+(1 row)
+
+ schedule 
+----------
+       10
+(1 row)
+
+=== supabase/migrations/20261106202413_tracker_fields_seed.sql ===
+INSERT 0 61
+=== supabase/migrations/20261106202513_migration_hardening.sql ===
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+psql:<stdin>:62: NOTICE:  column "removed" of relation "prod_tph_tasks" already exists, skipping
+ALTER TABLE
+DO
+psql:<stdin>:127: NOTICE:  relation "esc_seen" already exists, skipping
+CREATE TABLE
+psql:<stdin>:135: NOTICE:  relation "agg_queue_now" already exists, skipping
+CREATE TABLE
+psql:<stdin>:141: NOTICE:  relation "agg_inflow_daily" already exists, skipping
+CREATE TABLE
+psql:<stdin>:147: NOTICE:  relation "agg_inflow_weekly" already exists, skipping
+CREATE TABLE
+psql:<stdin>:153: NOTICE:  relation "agg_inflow_monthly" already exists, skipping
+CREATE TABLE
+psql:<stdin>:164: NOTICE:  relation "agg_agent_perf" already exists, skipping
+CREATE TABLE
+psql:<stdin>:170: NOTICE:  relation "agg_agent_daily" already exists, skipping
+CREATE TABLE
+psql:<stdin>:178: NOTICE:  relation "agg_snapshots_today" already exists, skipping
+CREATE TABLE
+psql:<stdin>:183: NOTICE:  relation "kpi_ol_cases" already exists, skipping
+CREATE TABLE
+psql:<stdin>:189: NOTICE:  relation "prod_quarterly_reports" already exists, skipping
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+psql:<stdin>:222: NOTICE:  policy "app_all" for relation "public.kpi_ol_cases" does not exist, skipping
+psql:<stdin>:222: NOTICE:  policy "app_all" for relation "public.prod_quarterly_reports" does not exist, skipping
+psql:<stdin>:222: NOTICE:  policy "app_all" for relation "public.qe_fd_cache" does not exist, skipping
+psql:<stdin>:222: NOTICE:  policy "app_all" for relation "public.qa_access_log" does not exist, skipping
+DO
+=== supabase/migrations/20261108204952_dedupe_uniques_prod_daily_layers_queue_submissions.sql ===
+DELETE 0
+DELETE 0
+psql:<stdin>:37: NOTICE:  relation "prod_daily_layers_date_email_layer_uidx" already exists, skipping
+CREATE INDEX
+CREATE INDEX
+=== supabase/migrations/20261108205258_lookup_indexes_prod_roster_agg.sql ===
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+=== supabase/migrations/20261108205536_lookup_indexes_tickets_refresh_queue.sql ===
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+=== supabase/migrations/20261108205645_app_cache_table.sql ===
+CREATE TABLE
+ALTER TABLE
+CREATE INDEX
+=== supabase/migrations/20261108205852_rls_lockdown_drop_app_all_policies.sql ===
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.action_planned_milestones
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.action_reviews
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.action_task_details
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.action_updates
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.actions
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_agent_daily
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_agent_perf
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_inflow_daily
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_inflow_hourly
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_inflow_monthly
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_inflow_weekly
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_queue_now
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.agg_snapshots_today
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.aging_open_tickets
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.cache_stamps
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.dq_aging_flags
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.esc_seen
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.fd_activities
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.follow_up_done
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.freshchat
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.heatmap_assumption_sets
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.heatmap_inputs
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.holidays
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.kpi_behaviour_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.kpi_leave_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.kpi_ol_cases
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.mail_approval_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.mail_approvals
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.mail_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.mail_sla
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.maqsam_calls
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.meeting_attendees
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.meeting_series
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.meeting_series_members
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.meetings
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.my_notes
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.one_on_one_logs
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.one_on_one_private_notes
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.one_on_one_schedule
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.one_on_one_topic_prompts
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.one_on_one_topics
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.options
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.people_signals
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.popups
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.prod_quarterly_reports
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.pw_reminder_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_access_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_calibrations
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_ctls
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_disputes
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_forms
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qa_kb_gaps
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_builds
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_candidates
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_catalogue
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_fd_cache
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_outcomes
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.qe_queue_log
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.queue_snapshots
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.queue_submissions
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sc_behaviour
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sc_daily
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sc_months
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_config
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_hour_overrides
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_offdays
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_overrides
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_plan
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_requests
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.sched_team
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tickets
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_area_metrics
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_kb
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_otd
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_queue_daily
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_resp_ratings
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_shifts
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_team
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tlp_ticket_exclusions
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tracker_fields
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.tracker_records
+psql:<stdin>:42: NOTICE:  dropped policy app_all on public.trackers
+DO
+DO
+=== supabase/migrations/20261108231643_job_data_tick_pg_cron.sql ===
+psql:<stdin>:28: NOTICE:  extension "pg_cron" already exists, skipping
+CREATE EXTENSION
+psql:<stdin>:29: NOTICE:  extension "pg_net" already exists, skipping
+CREATE EXTENSION
+DO
+ schedule 
+----------
+       11
+(1 row)
+
+ schedule 
+----------
+       12
+(1 row)
+
+=== supabase/migrations/20261108234911_roster_email_unique.sql ===
+DO
+CREATE INDEX
+=== supabase/migrations/20261109130415_dedupe_uniques_logs_ops.sql ===
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+psql:<stdin>:106: NOTICE:  extension "pgcrypto" already exists, skipping
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+=== supabase/migrations/20261109130633_dedupe_uniques_people_sched.sql ===
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+CREATE INDEX
+DELETE 0
+psql:<stdin>:107: NOTICE:  extension "pgcrypto" already exists, skipping
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 0
+CREATE INDEX
+=== supabase/migrations/20261109130706_dedupe_uniques_queue_agg.sql ===
+DELETE 0
+psql:<stdin>:56: NOTICE:  aging_open_tickets: conflict target (ticket_id)
+DO
+DELETE 0
+psql:<stdin>:85: NOTICE:  agg_queue_now: conflict target (queue, kind)
+DO
+DELETE 0
+psql:<stdin>:115: NOTICE:  agg_inflow_weekly: conflict target (period, channel, country)
+DO
+DELETE 0
+psql:<stdin>:145: NOTICE:  agg_inflow_monthly: conflict target (period, channel, country)
+DO
+DELETE 0
+psql:<stdin>:174: NOTICE:  agg_agent_perf: conflict target (email, period)
+DO
+DELETE 0
+psql:<stdin>:203: NOTICE:  agg_agent_daily: conflict target (date, email)
+DO
+DELETE 0
+psql:<stdin>:231: NOTICE:  agg_snapshots_today: conflict target (snapshot_key)
+DO
+DELETE 0
+psql:<stdin>:265: NOTICE:  qa_volume: conflict target (date, channel, contact_type)
+DO
+=== supabase/migrations/20261109131136_fc_messages.sql ===
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+=== supabase/migrations/20261109131140_dq_hct_table.sql ===
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+=== supabase/migrations/20261109134359_s06_new_tables.sql ===
+psql:<stdin>:27: NOTICE:  relation "aux_spans" already exists, skipping
+CREATE TABLE
+psql:<stdin>:28: NOTICE:  relation "idx_aux_spans_ts" already exists, skipping
+CREATE INDEX
+psql:<stdin>:40: NOTICE:  relation "call_transcripts" already exists, skipping
+CREATE TABLE
+psql:<stdin>:41: NOTICE:  relation "idx_call_transcripts_ts" already exists, skipping
+CREATE INDEX
+CREATE TABLE
+psql:<stdin>:59: NOTICE:  relation "v1_task_occurrences" already exists, skipping
+psql:<stdin>:62: NOTICE:  relation "idx_v1_task_occurrences_task" already exists, skipping
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+INSERT 0 2
+INSERT 0 16
+=== supabase/migrations/20261110151613_before_user_created_domain_gate.sql ===
+CREATE FUNCTION
+REVOKE
+GRANT
+=== supabase/migrations/20261112142701_headcount_access_split.sql ===
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+=== supabase/migrations/20261112150304_maqsam_freshchat_columns.sql ===
+ALTER TABLE
+CREATE INDEX
+ALTER TABLE
+CREATE INDEX
+=== supabase/migrations/20261112150305_fd_activities_columns.sql ===
+ALTER TABLE
+CREATE INDEX
+=== supabase/migrations/20261112150724_tickets_subject_order_id.sql ===
+ALTER TABLE
+=== supabase/migrations/20261112150725_drop_fc_messages.sql ===
+DROP TABLE
+=== supabase/migrations/20261112165047_roster_active_not_null.sql ===
+UPDATE 0
+ALTER TABLE
+=== supabase/migrations/20261113115521_drop_mirror_cols.sql ===
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+=== supabase/migrations/20261116171029_drop_dead_v1_tables.sql ===
+DROP TABLE
+psql:<stdin>:11: NOTICE:  table "headcount" does not exist, skipping
+DROP TABLE
+psql:<stdin>:12: NOTICE:  table "team_structure" does not exist, skipping
+DROP TABLE
+psql:<stdin>:13: NOTICE:  table "schedule" does not exist, skipping
+DROP TABLE
+psql:<stdin>:14: NOTICE:  table "days_off" does not exist, skipping
+DROP TABLE
+psql:<stdin>:15: NOTICE:  table "weekly_schedule" does not exist, skipping
+DROP TABLE
+psql:<stdin>:16: NOTICE:  table "tls" does not exist, skipping
+DROP TABLE
+psql:<stdin>:17: NOTICE:  table "tlp" does not exist, skipping
+DROP TABLE
+psql:<stdin>:18: NOTICE:  table "md" does not exist, skipping
+DROP TABLE
+=== supabase/migrations/20261116175742_drop_dead_and_mirror_only_tables.sql ===
+psql:<stdin>:28: NOTICE:  table "sc_daily_legacy_pre008" does not exist, skipping
+DROP TABLE
+psql:<stdin>:29: NOTICE:  table "sc_behaviour_legacy_pre008" does not exist, skipping
+DROP TABLE
+psql:<stdin>:30: NOTICE:  table "sc_months_legacy_pre008" does not exist, skipping
+DROP TABLE
+psql:<stdin>:31: NOTICE:  table "tickets_legacy_pre003" does not exist, skipping
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+psql:<stdin>:36: NOTICE:  table "fcr_monthly" does not exist, skipping
+psql:<stdin>:37: NOTICE:  table "fcr_weekly" does not exist, skipping
+DROP TABLE
+psql:<stdin>:38: NOTICE:  table "kpi_logs" does not exist, skipping
+DROP TABLE
+psql:<stdin>:39: NOTICE:  table "kpi_unplanned_leave" does not exist, skipping
+DROP TABLE
+psql:<stdin>:40: NOTICE:  table "qa_daily" does not exist, skipping
+DROP TABLE
+psql:<stdin>:41: NOTICE:  table "qa_flag_log" does not exist, skipping
+DROP TABLE
+psql:<stdin>:42: NOTICE:  table "qa_flags" does not exist, skipping
+DROP TABLE
+psql:<stdin>:43: NOTICE:  table "qa_months" does not exist, skipping
+DROP TABLE
+=== supabase/migrations/20261116202604_recreate_dq_hct.sql ===
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+=== supabase/migrations/20261116202809_pg_cron_scoped_wave1.sql ===
+psql:<stdin>:57: NOTICE:  extension "pg_cron" already exists, skipping
+CREATE EXTENSION
+psql:<stdin>:58: NOTICE:  extension "pg_net" already exists, skipping
+CREATE EXTENSION
+DO
+ schedule 
+----------
+       13
+(1 row)
+
+ schedule 
+----------
+       14
+(1 row)
+
+ schedule 
+----------
+       15
+(1 row)
+
+ schedule 
+----------
+       16
+(1 row)
+
+ schedule 
+----------
+       17
+(1 row)
+
+=== supabase/migrations/20261116204115_recreate_aux_spans.sql ===
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE

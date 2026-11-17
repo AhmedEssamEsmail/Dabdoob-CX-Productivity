@@ -15,6 +15,7 @@ import 'server-only'
 
 import type { SheetBookLike, SheetRangeLike, SheetTabLike } from '@/features/shared/lib/adapters'
 import { describeDbError, described } from '@/features/shared/lib/errors'
+import { assertSheetReadAllowed_, type SheetReadGateOpts } from '@/features/shared/lib/sheets-freeze'
 
 /** Tabs read from each productivity month workbook (prodFileFor_). */
 export const PROD_MONTH_TABS = ['Assumptions', 'Maqsam Calls', 'FD_AUX', 'AUXes Exceptions', 'Quality', 'Headcount']
@@ -77,7 +78,7 @@ export function sheetCreds(): { client_email: string; private_key: string } | nu
  * spreadsheet is unreachable — the caller treats that like the legacy
  * openSpreadsheet_ failure (the step that opens it fails).
  */
-export async function fetchWorkbookTabs(id: string, tabs: string[]): Promise<Record<string, unknown[][]>> {
+export async function fetchWorkbookTabs(id: string, tabs: string[], opts?: SheetReadGateOpts): Promise<Record<string, unknown[][]>> {
   const creds = sheetCreds()
   if (!creds) throw new Error('Google Sheets credentials are not configured (GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY).')
   const { google } = await import('googleapis')
@@ -89,6 +90,7 @@ export async function fetchWorkbookTabs(id: string, tabs: string[]): Promise<Rec
   const out: Record<string, unknown[][]> = {}
   await Promise.all(
     tabs.map(async (tab) => {
+      assertSheetReadAllowed_(id, tab, opts)
       try {
         /* values.get caps at the range end — big tabs (Activities ~193k rows) are
          * paged 100k rows at a time until a short page. */

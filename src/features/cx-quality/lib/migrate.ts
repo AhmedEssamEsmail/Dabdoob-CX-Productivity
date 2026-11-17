@@ -16,7 +16,7 @@
  * `qa_history_secret` config when set — POST /api/qa/importHistory {secret}.
  */
 import 'server-only'
-import { db, readRows, sanitizeInput } from '@/features/shared/platform/repo'
+import { db, readAllPaged, sanitizeInput } from '@/features/shared/platform/repo'
 import { getConfig, setConfig } from '@/features/shared/platform/settings'
 import { normEmail, pwDirectory } from '@/features/shared/platform/identity'
 import { described } from '@/features/shared/lib/errors'
@@ -403,13 +403,25 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
   const S = (await getConfig('qa_engine_settings', {})) as Row
   if (S.autoMarkFromBackend === false) return { skipped: 'autoMarkFromBackend is off in qa_engine_settings' }
   const dir = await pwDirectory()
-  const audits = ((await readRows('qa_audits').catch(() => [] as Row[])) as Row[])
+  const rows = (await readAllPaged('qe_queue_log', {
+    build: (q) => q.or('state.is.null,state.neq.audited'),
+  }).catch(() => [] as Row[])) as Row[]
+  let oldestDay = ''
+  rows.forEach((r) => {
+    const d = String(r.queued_date || '').slice(0, 10)
+    if (d && (!oldestDay || d < oldestDay)) oldestDay = d
+  })
+  const audits = (oldestDay
+    ? ((await readAllPaged('qa_audits', {
+        build: (q) => q.eq('kind', 'audit').gte('submitted_at', oldestDay).or('status.is.null,status.neq.voided'),
+      }).catch(() => [] as Row[])) as Row[])
+    : []
+  )
     .filter((a) => a.kind === 'audit' && a.status !== 'voided' && a.source !== 'offqueue')
     .map((a) => {
       const sub = qaParseIso_(a.submitted_at)
       return { ticket: String(a.ticket_id), agentName: String(a.source_agent || dir.name(String(a.agent_email))), submitted: sub ? qeFmt_(sub, 'yyyy-MM-dd HH:mm') : '', auditor: String(a.auditor_email || '') }
     })
-  const rows = (await readRows('qe_queue_log').catch(() => [] as Row[])) as Row[]
   const byKey: Record<string, { submitted: string; auditor: string }> = {}
   audits.forEach((a) => {
     const tid = String(a.ticket || '').trim()
@@ -433,10 +445,17 @@ export async function qaReconcileQueueLog_(): Promise<Row> {
     changed.push({ key: r.key, queued_date: r.queued_date, audited_at: hit.submitted, audited_by: hit.auditor || 'scoring form' })
     updated++
   })
-  for (const c of changed) {
+  const groups: Record<string, { queued_date: unknown; audited_at: string; audited_by: string; keys: string[] }> = {}
+  changed.forEach((c) => {
+    const gk = String(c.queued_date) + '|' + String(c.audited_at) + '|' + String(c.audited_by)
+    const g = groups[gk] || (groups[gk] = { queued_date: c.queued_date, audited_at: String(c.audited_at), audited_by: String(c.audited_by), keys: [] })
+    g.keys.push(String(c.key))
+  })
+  for (const g of Object.values(groups)) {
     const { error } = await db().from('qe_queue_log')
-      .update({ state: 'audited', audited_at: c.audited_at, audited_by: c.audited_by })
-      .eq('key', String(c.key)).eq('queued_date', String(c.queued_date))
+      .update({ state: 'audited', audited_at: g.audited_at, audited_by: g.audited_by })
+      .eq('queued_date', String(g.queued_date))
+      .in('key', g.keys)
     if (error) throw described(error, { table: 'qe_queue_log' })
   }
   return { updated, revived }

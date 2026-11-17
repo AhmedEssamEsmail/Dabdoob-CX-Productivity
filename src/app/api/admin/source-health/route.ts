@@ -167,7 +167,10 @@ export async function GET(req: Request) {
           return
         }
         try {
-          const tabs = await fetchWorkbookTabs(p.id, [p.tab])
+          const tabs = await fetchWorkbookTabs(p.id, [p.tab], {
+            deferred: true,
+            extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
+          })
           const rows = (tabs[p.tab] || []).length
           checks.push({
             name: `sheet ${p.name}`, kind: 'sheet', ok: requiredOk(p.required, rows),
@@ -184,7 +187,10 @@ export async function GET(req: Request) {
   /* ---- legacy store audit (shard 04 input) --------------------------------- */
   if (sheetCreds()) {
     try {
-      const tabs = await fetchWorkbookTabs(LEGACY_PRODUCTIVITY_SS, LEGACY_TABS)
+      const tabs = await fetchWorkbookTabs(LEGACY_PRODUCTIVITY_SS, LEGACY_TABS, {
+        deferred: true,
+        extraIds: [String(dqSetting_(cfg, 'fd_activity_ss_id') || '')].filter(Boolean),
+      })
       const counts = LEGACY_TABS.map((t) => `${t}: ${Math.max(0, (tabs[t] || []).length - 1)}`).join(', ')
       const hasData = LEGACY_TABS.some((t) => (tabs[t] || []).length > 1)
       checks.push({

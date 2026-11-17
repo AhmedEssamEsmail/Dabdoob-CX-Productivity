@@ -18,6 +18,7 @@ import { MAPPINGS as V1S_MAPPINGS, ROW_TRANSFORMS as V1S_TRANSFORMS, DECISIONS a
 import { MAPPINGS as V1P_MAPPINGS, ROW_TRANSFORMS as V1P_TRANSFORMS, DECISIONS as V1P_DECISIONS } from './mappings/v1-ops-people'
 import { MAPPINGS as V1M_MAPPINGS, DECISIONS as V1M_DECISIONS } from './mappings/v1-ops-misc'
 import { MAPPINGS as OT_MAPPINGS, ROW_TRANSFORMS as OT_TRANSFORMS, DECISIONS as OT_DECISIONS } from './mappings/ops-tabs'
+import { assertSheetReadAllowed_, type SheetReadGateOpts } from '@/features/shared/lib/sheets-freeze'
 
 export interface TableMapping {
   spreadsheet: string
@@ -122,7 +123,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 /** WP-51: raw values read with ~700 ms pacing + transient-quota retry —
  * the Sheets per-minute read limit turned un-paced full runs into dropped
  * tabs (dry-run §3 ops note; same treatment validate.ts's readTabError got). */
-async function readSheetRaw(spreadsheetId: string, sheetName: string): Promise<unknown[][]> {
+async function readSheetRaw(spreadsheetId: string, sheetName: string, opts?: SheetReadGateOpts): Promise<unknown[][]> {
+  assertSheetReadAllowed_(spreadsheetId, sheetName, opts)
   const sheets = await getSheetsClient()
   for (let attempt = 0; attempt < 3; attempt++) {
     const wait = 700 - (Date.now() - lastSheetCall)
@@ -164,8 +166,8 @@ export function headerKeys(rawHeader: unknown[]): string[] {
   })
 }
 
-export async function readSheet(spreadsheetId: string, sheetName: string) {
-  const rows = await readSheetRaw(spreadsheetId, sheetName)
+export async function readSheet(spreadsheetId: string, sheetName: string, opts?: SheetReadGateOpts) {
+  const rows = await readSheetRaw(spreadsheetId, sheetName, opts)
   if (rows.length < 2) return []
   // Sheets trims trailing blank header cells, so rows[0] can be shorter than
   // data rows — size keys off the widest row so col_<letter> keys still emit
@@ -233,7 +235,7 @@ export async function migrateTable(supabase: SupabaseClient, mapping: TableMappi
   const spreadsheetId = SPREADSHEETS[mapping.spreadsheet] || mapping.spreadsheet
   let rows: Record<string, unknown>[]
   try {
-    rows = await readSheet(spreadsheetId, mapping.sheet)
+    rows = await readSheet(spreadsheetId, mapping.sheet, { deferred: true })
   } catch (err) {
     return { read: 0, migrated: 0, skipped: 0, errors: [`Sheet '${mapping.sheet}' read failed: ${err}`] }
   }
@@ -295,7 +297,7 @@ export async function backfillTrackerRecords(supabase: SupabaseClient): Promise<
     const key = `tracker:${b.trackerId}`
     try {
       const spreadsheetId = SPREADSHEETS[b.spreadsheet] || b.spreadsheet
-      const raw = await readSheetRaw(spreadsheetId, b.sheet)
+      const raw = await readSheetRaw(spreadsheetId, b.sheet, { deferred: true })
       if (raw.length <= b.headerRow) { out[key] = { read: 0, migrated: 0, skipped: 0, errors: [`'${b.sheet}' empty`] }; continue }
       const normHeader = (s: unknown) => String(s ?? '').trim().replace(/\s+/g, ' ').toLowerCase()
       const headers = (raw[b.headerRow - 1] || []).map(normHeader)

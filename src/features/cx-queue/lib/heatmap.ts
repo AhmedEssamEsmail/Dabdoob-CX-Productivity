@@ -565,7 +565,7 @@ export async function buildHeatmapFromSource(spreadsheetId?: unknown, opts?: Rec
   await assertWritable()
   const id = String(spreadsheetId || (await getConfig('heatmap_source_spreadsheet_id', '')) || '')
   if (!/^[A-Za-z0-9_-]{20,80}$/.test(id)) throw new InputError('Paste the id of the spreadsheet that holds the raw tabs.')
-  const tabs = await fetchWorkbookTabs(id, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups'])
+  const tabs = await fetchWorkbookTabs(id, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups'], { deferred: true })
   const hm = buildHeatmapFromRawTabs_(sheetBook(tabs, id), opts || {})
   if (!hm.cells.length) throw new InputError('No usable rows were found in the raw tabs.')
   const meta = await storeHeatmapInput_(
@@ -585,7 +585,7 @@ export async function buildHeatmapFromSource(spreadsheetId?: unknown, opts?: Rec
 export async function runPriorHeatmapRegression(): Promise<Record<string, unknown>> {
   const user = await requireRole(['admin'])
   await assertWritable()
-  const tabs = await fetchWorkbookTabs(HM_PRIOR_SHEET_ID, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups', 'HeatMap', 'Heatmap'])
+  const tabs = await fetchWorkbookTabs(HM_PRIOR_SHEET_ID, ['Maqsam', 'Freshchat', 'Freshdesk', 'WA', 'Excluded Groups', 'HeatMap', 'Heatmap'], { deferred: true })
   const ss = sheetBook(tabs, HM_PRIOR_SHEET_ID)
   const hm = buildHeatmapFromRawTabs_(ss, { intervalMinutes: 30 })
   const tab = ss.getSheetByName('HeatMap') || ss.getSheetByName('Heatmap')

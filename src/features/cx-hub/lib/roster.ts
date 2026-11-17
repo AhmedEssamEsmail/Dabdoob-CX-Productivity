@@ -17,6 +17,7 @@ import {
   appendRow,
   appendRows,
   configAll,
+  db,
   getConfig,
   readStore,
   readStoreFiltered,
@@ -26,11 +27,12 @@ import {
   updateRows,
 } from '@/features/shared/platform'
 import { assertWritable } from '@/features/shared/platform/viewas'
-import { requireJobCaller, dqTitleLevel_ } from '@/features/shared/platform/identity'
+import { dqTitleLevel_ } from '@/features/shared/platform/identity'
 import { hbBeat, hbFlush } from '@/features/shared/platform/health'
 import { wcReset, dqParseDaysOff } from '@/features/shared/platform/calendar'
 import { dqLogRun_ } from '@/features/cx-queue/lib/jobs'
 import { normEmail_, dqKeyPart_, dqSetting_, formatDate_, type Cfg } from '@/features/shared/lib/adapters'
+import type { SheetReadGateOpts } from '@/features/shared/lib/sheets-freeze'
 
 export const ROSTER_TABLE = 'roster'
 export const DQ_HOLIDAYS_TABLE = 'holidays'
@@ -266,11 +268,20 @@ export function dqRosterFromHct_(
  * /api/admin/migrate uses in prod. Projects Sheet1 to the dq_hct record
  * shape: the 15 text columns above, ''/missing cells -> null (no coercion),
  * require [email, name], last-wins dedupe on email (upsertOn parity). A
- * Sheets/API error propagates; an empty sheet yields [].
+ * Sheets/API error propagates; an empty sheet yields []. The Sheet1 freeze
+ * exemption ({manualHct:true}) is granted by the CALLER via opts — this read
+ * site never self-grants it; any other caller logs
+ * [SHEETS_FREEZE_VIOLATION] and is then rejected by the freeze guard.
  */
-export async function dqReadHct_(): Promise<Record<string, unknown>[]> {
+export async function dqReadHct_(opts?: SheetReadGateOpts): Promise<Record<string, unknown>[]> {
   const { readSheet, SPREADSHEETS } = await import('@/features/shared/migration/engine')
-  const rows = await readSheet(SPREADSHEETS.hct, 'Sheet1')
+  if (!opts?.manualHct) {
+    console.error(
+      '[SHEETS_FREEZE_VIOLATION] ' +
+        JSON.stringify({ spreadsheetId: SPREADSHEETS.hct, tab: 'Sheet1', caller: 'dqReadHct_' })
+    )
+  }
+  const rows = await readSheet(SPREADSHEETS.hct, 'Sheet1', opts)
   const recs: Record<string, unknown>[] = []
   for (const row of rows) {
     const rec: Record<string, unknown> = {}
@@ -299,8 +310,28 @@ async function dqLastRosterSync_(): Promise<Record<string, unknown> | null> {
 export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Promise<Record<string, unknown>> {
   const started = Date.now()
   if (!cfg) cfg = await configAll()
+  const now = new Date().toISOString()
+  const hct = await dqReadHct_({ manualHct: true })
+  // Full HCT snapshot -> public.dq_hct: every record including out-of-scope
+  // rows, upserted on email in <=500 batches, stamped with this run's `now`.
+  // Fail-closed like the rest of the sync — a batch error throws, so the
+  // snapshot never half-writes. Runs before the empty-scope check so a fully
+  // out-of-scope HCT still persists its rows.
+  const stamp = now
+  const snapByEmail = new Map<string, Record<string, unknown>>()
+  for (const rec of hct) {
+    const email = dqCleanEmail_(rec.email)
+    snapByEmail.set(email, { ...rec, email, synced_at: stamp })
+  }
+  const snap = Array.from(snapByEmail.values()).filter((rec) => rec.email)
+  for (let i = 0; i < snap.length; i += 500) {
+    const { error } = await db()
+      .from('dq_hct')
+      .upsert(snap.slice(i, i + 500), { onConflict: 'email' })
+    if (error) throw new Error('dq_hct snapshot write failed: ' + error.message)
+  }
   const res = dqRosterFromHct_(
-    await dqReadHct_(),
+    hct,
     (dqSetting_(cfg, 'roster_scope') as unknown[]) || [],
     // Session.getScriptTimeZone() in the GAS build — the app's data timezone,
     // not business_tz (Kuwait is where check-ins live; Cairo is where dates stamp).
@@ -314,7 +345,6 @@ export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Pr
         '. Departments/sections seen: ' +
         Object.keys(res.outOfScope).join('; ')
     )
-  const now = new Date().toISOString()
   const existing: Record<string, Record<string, unknown>> = {}
   ;(await readStore(ROSTER_TABLE)).rows.forEach((r) => {
     existing[normEmail_(r.email)] = r
@@ -415,12 +445,13 @@ export async function syncRosterNow(): Promise<Record<string, unknown>> {
 /**
  * jobRosterSync (RosterSync.js:265) verbatim: the daily scheduled run —
  * dqStep_('roster_sync') semantics (ok/error heartbeat + dqLogRun_ on error,
- * never rethrows) inside hbFlush_. The dq_hct gate is obsolete: sync now
- * reads the live HCT Sheet1 via dqReadHct_; the cron route still does not
- * exist.
+ * never rethrows) inside hbFlush_. MANUAL-ONLY: gated to an admin session —
+ * no sessionless/cron path may reach dqReadHct_ (no scheduled caller exists
+ * and none is to be added).
  */
 export async function jobRosterSync(): Promise<Record<string, unknown> | null> {
-  await requireJobCaller()
+  await requireRole(['admin'])
+  await assertWritable()
   try {
     const r = await dqSyncRoster_()
     hbBeat('roster_sync', 'ok', '')

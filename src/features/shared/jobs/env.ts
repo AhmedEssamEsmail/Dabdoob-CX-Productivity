@@ -56,7 +56,8 @@ import { cacheRemove, db, newId as repoNewId, readAllPaged, readRows } from '@/f
 import { configAll } from '@/features/shared/platform/settings'
 import { hbBeat as platformHbBeat, hbFlush as platformHbFlush } from '@/features/shared/platform/health'
 import { getGmailReadAdapter, sendMail, type GmailReadAdapter, type MailMessage, type SendResult } from '@/features/shared/platform/mail'
-import { FD_ACTIVITY_TABS, PROD_MONTH_TABS, fetchWorkbookTabs, sheetBook } from './sheets'
+import { FD_ACTIVITY_TABS, PROD_MONTH_TABS, sheetBook } from './sheets'
+import { dbBookMonthForId_, dbBookTabCells_ } from './dbbook'
 
 export type Row = Record<string, unknown>
 
@@ -301,6 +302,10 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
     })
     return rows as Row[]
   }
+  /** dbbook grids share the table preloads' window: intervalBound (widened by
+   *  ensureIntervals) minus the same -1d slack tickets get, in business_tz ms.
+   *  Lazy so a later ensureIntervals widening still reaches sheet prefetches. */
+  const sinceBoundMs = () => tphHourMs_(intervalBound, 0, String(dqSetting_(cfg, 'business_tz'))) - 86400000
   await Promise.all(
     (opts.tables || []).map(async (name) => {
       try {
@@ -313,7 +318,10 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
   )
 
   const ops: WriteOp[] = []
-  const books: Record<string, { cells: Record<string, unknown[][]>; book: SheetBookLike } | Error> = {}
+  const books: Record<
+    string,
+    { cells: Record<string, unknown[][]>; book: SheetBookLike; tabErrors?: Record<string, Error> } | Error
+  > = {}
   let activityMemo: unknown[][] | null = null
   let headcount: JobEnv['headcount'] = roster || []
 
@@ -445,18 +453,35 @@ export async function buildJobEnv(opts: BuildJobEnvOptions = {}): Promise<JobEnv
       const have = existing && !(existing instanceof Error) ? Object.keys((existing as { cells: Record<string, unknown[][]> }).cells) : []
       const missing = tabs.filter((t) => have.indexOf(t) === -1)
       if (existing && !missing.length) return // already fetched (or a stored open error)
-      try {
-        const cells = await fetchWorkbookTabs(key, missing.length ? missing : tabs)
-        if (existing && !(existing instanceof Error)) {
-          const hold = existing as { cells: Record<string, unknown[][]>; book: SheetBookLike }
-          Object.assign(hold.cells, cells)
-          hold.book = sheetBook(hold.cells, key)
-        } else {
-          books[key] = { cells, book: sheetBook(cells, key) }
-        }
-      } catch (e) {
-        books[key] = e as Error
+      // DB-backed grids: dbbook synthesizes each tab from the mirror tables —
+      // no sheet reads on the job path. month resolves via prodFileFor_ in
+      // reverse (month ids -> that month's rows); fallback/unmatched ids get
+      // the since-bound superset and downstream date filters keep correctness.
+      const month = dbBookMonthForId_(key, cfg)
+      const cells: Record<string, unknown[][]> = {}
+      const tabErrors: Record<string, Error> = {}
+      await Promise.all(
+        missing.map(async (tab) => {
+          try {
+            cells[tab] = await dbBookTabCells_(tab, { cfg, sinceMs: sinceBoundMs(), month })
+          } catch (e) {
+            tabErrors[tab] = e as Error
+          }
+        })
+      )
+      // Sheet-era fail-the-book parity: ANY real tab error stores that Error
+      // so openSpreadsheet throws — no partial book for engines to compute on.
+      if (Object.keys(tabErrors).length) {
+        books[key] = tabErrors[missing.find((t) => tabErrors[t])!]
+        return
       }
+      if (existing && !(existing instanceof Error)) {
+        const hold = existing as { cells: Record<string, unknown[][]>; book: SheetBookLike }
+        Object.assign(hold.cells, cells)
+        hold.book = sheetBook(hold.cells, key)
+        return
+      }
+      books[key] = { cells, book: sheetBook(cells, key) }
     },
     async prefetchMonthBooks(dates) {
       const months = dates.map((d) => d.slice(0, 7)).filter((m, i, a) => a.indexOf(m) === i)
