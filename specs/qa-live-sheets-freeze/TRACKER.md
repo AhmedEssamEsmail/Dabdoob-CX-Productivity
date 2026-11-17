@@ -47,25 +47,25 @@ Baseline dirty tree (pre-existing, NOT ours — never revert):
 | perf1-03 | mini/fix-perf-1 | dev | none | 2/3/40/8 | PASS | verified | results/perf1-03.md (repo-root results/); fdAuxTab_(ctx) pk:ts_ms + tsBuild_(windowFor_); +1 filter assert; vitest 15/15 |
 | perf1-04 | mini/fix-perf-1 | supabase-expert | none | 1/2/10/5 | PASS | verified | results/perf1-04.md; scorecard '30 6'->'45 6' (:154) + header :18; aggregates untouched; ships with pending db push |
 || W2-SC | package/- | - | - | n/a | not dispatchable | verified | all 4 children done; gate8 green; rg sheets-syms in cx-people = 0 |
-|| W2-SC-01 | mini/W2-SC | dev | none | 2/5/350/10 | PASS | done | results/W2-SC-01.md; scDailyRowsDb_ + 3 vitest cases green; tsc clean on touched files |
-|| W2-SC-02 | mini/W2-SC | dev | W2-SC-01 | 3/8/320/10 | PASS | done | results/W2-SC-02.md; DB rebuild + scMergeFcr_ preserve; sheet readers/gates deleted; vitest 43/43; tsc 0 (attempt 2) |
-|| W2-SC-03 | mini/W2-SC | dev | W2-SC-02 | 3/5/180/8 | PASS | done | results/W2-SC-03.md; addBehaviourCase + op:'add_behaviour'; 23505->duplicate; vitest 3/3; tsc 0 |
-|| W2-SC-04 | mini/W2-SC | dev | W2-SC-03 | 1/4/180/8 | PASS | done | results/W2-SC-04.md; found panel gone; behaviour form posts add_behaviour; tsc+eslint 0 |
+|| W2-SC-01 | mini/W2-SC | dev | none | 2/5/350/10 | PASS | verified | results/W2-SC-01.md; scDailyRowsDb_ + 3 vitest cases green; tsc clean on touched files |
+|| W2-SC-02 | mini/W2-SC | dev | W2-SC-01 | 3/8/320/10 | PASS | verified | results/W2-SC-02.md; DB rebuild + scMergeFcr_ preserve; sheet readers/gates deleted; vitest 43/43; tsc 0 (attempt 2) |
+|| W2-SC-03 | mini/W2-SC | dev | W2-SC-02 | 3/5/180/8 | PASS | verified | results/W2-SC-03.md; addBehaviourCase + op:'add_behaviour'; 23505->duplicate; vitest 3/3; tsc 0 |
+|| W2-SC-04 | mini/W2-SC | dev | W2-SC-03 | 1/4/180/8 | PASS | verified | results/W2-SC-04.md; found panel gone; behaviour form posts add_behaviour; tsc+eslint 0 |
 || W2-HM | package/- | - | - | n/a | not dispatchable | verified | HM-01/02 + fix1 done; fetchWorkbookTabs/priorRegression/RegTable = 0 in cx-queue |
-|| W2-HM-01 | mini/W2-HM | dev | none | 3/8/400/10 | PASS | done | results/W2-HM-01.md; 5 DB grids + db_mirrors provenance; regression retired; vitest 3/3; viewas-sweep fallout -> fix1 |
-|| W2-HM-01-fix1 | mini/W2-HM | dev | W2-HM-01 | 1/1/4/3 | n/a (fix leaf) | done | results/W2-HM-01-fix1.md; tsc 0 errors; viewas-sweep 65/65 |
-|| W2-HM-02 | mini/W2-HM | dev | W2-HM-01 | 1/4/80/6 | PASS | done | agent exited silently (no results file); TL-verified: RegTable/priorRegression/ss-id input 0 hits, AdminBuild = contract, eslint 0 |
+|| W2-HM-01 | mini/W2-HM | dev | none | 3/8/400/10 | PASS | verified | results/W2-HM-01.md; 5 DB grids + db_mirrors provenance; regression retired; vitest 3/3; viewas-sweep fallout -> fix1 |
+|| W2-HM-01-fix1 | mini/W2-HM | dev | W2-HM-01 | 1/1/4/3 | n/a (fix leaf) | verified | results/W2-HM-01-fix1.md; tsc 0 errors; viewas-sweep 65/65 |
+|| W2-HM-02 | mini/W2-HM | dev | W2-HM-01 | 1/4/80/6 | PASS | verified | agent exited silently (no results file); TL-verified: RegTable/priorRegression/ss-id input 0 hits, AdminBuild = contract, eslint 0 |
 || W2-TLQ | package/- | - | - | n/a | not dispatchable | verified | W2-TLQ-01 done; TlqIo has no book member |
-|| W2-TLQ-01 | mini/W2-TLQ | dev | none | 2/7/260/10 | PASS | done | results/W2-TLQ-01.md; book seam/fc_messages/ol_sheet_id gone; golden 49/49; tsc clean on touched |
+|| W2-TLQ-01 | mini/W2-TLQ | dev | none | 2/7/260/10 | PASS | verified | results/W2-TLQ-01.md; book seam/fc_messages/ol_sheet_id gone; golden 49/49; tsc clean on touched |
 || W2-ADM | package/- | - | - | n/a | not dispatchable | verified | all 3 leaves done; fetchWorkbookTabs/deferred/googleapis gone from touched files |
-|| W2-ADM-01 | mini/W2-ADM | dev | none | 1/4/90/8 | PASS | done | results/W2-ADM-01.md; peek->DB mirror cells, slice<=500, fetchWorkbookTabs/deferred 0 hits |
-|| W2-ADM-02 | mini/W2-ADM | dev | none | 1/5/130/10 | PASS | done | results/W2-ADM-02.md; data-feeds block (mirrors/prod_daily_layers/prod_assumptions/dq_hct); creds check kept; sheet imports gone |
-|| W2-ADM-03 | mini/W2-ADM | dev | none | 2/3/60/5 | PASS | done | results/W2-ADM-03.md; engine {deferred:true} x2 removed; list-sheets 410 stub; greps clean |
+|| W2-ADM-01 | mini/W2-ADM | dev | none | 1/4/90/8 | PASS | verified | results/W2-ADM-01.md; peek->DB mirror cells, slice<=500, fetchWorkbookTabs/deferred 0 hits |
+|| W2-ADM-02 | mini/W2-ADM | dev | none | 1/5/130/10 | PASS | verified | results/W2-ADM-02.md; data-feeds block (mirrors/prod_daily_layers/prod_assumptions/dq_hct); creds check kept; sheet imports gone |
+|| W2-ADM-03 | mini/W2-ADM | dev | none | 2/3/60/5 | PASS | verified | results/W2-ADM-03.md; engine {deferred:true} x2 removed; list-sheets 410 stub; greps clean |
 || W2-FIX | package/- | - | - | n/a | not dispatchable | verified | both leaves done; closes sec-2(sec-1 LOW), data-4, perf-1 reconcile leftovers |
-|| W2-FIX-01 | mini/W2-FIX | dev | none | 1/1/10/5 | PASS | done | results/W2-FIX-01.md; docblock vendor-API wording; stale phrases 0 hits |
-|| W2-FIX-02 | mini/W2-FIX | dev | none | 1/3/50/6 | PASS | done | results/W2-FIX-02.md; catch(()=>[]) x2 removed; .in() chunked @100; tsc 0 |
+|| W2-FIX-01 | mini/W2-FIX | dev | none | 1/1/10/5 | PASS | verified | results/W2-FIX-01.md; docblock vendor-API wording; stale phrases 0 hits |
+|| W2-FIX-02 | mini/W2-FIX | dev | none | 1/3/50/6 | PASS | verified | results/W2-FIX-02.md; catch(()=>[]) x2 removed; .in() chunked @100; tsc 0 |
 || W2-STRICT | package/- | - | - | n/a | not dispatchable | verified | strict flip live; deferred gone from SheetReadGateOpts + src/ |
-|| W2-STRICT-01 | mini/W2-STRICT | dev | W2-SC-02, W2-HM-01, W2-TLQ-01, W2-ADM-01/02/03 | 4/7/160/10 | PASS | done | results/W2-STRICT-01.md; guard log-then-throw; EXPECTED shrunk; 8/8 vitest; deferred: in src = 0 |
+|| W2-STRICT-01 | mini/W2-STRICT | dev | W2-SC-02, W2-HM-01, W2-TLQ-01, W2-ADM-01/02/03 | 4/7/160/10 | PASS | verified | results/W2-STRICT-01.md; guard log-then-throw; EXPECTED shrunk; 8/8 vitest; deferred: in src = 0 |
 | fix-qa-5 | package/- | - | - | n/a | not dispatchable | verified | reports/qa-5.md; 4 findings -> 5 leaves all done; gate9 green |
 | qa5-01 | mini/fix-qa-5 | dev | none | 2/3/80/8 | PASS | verified | results/qa5-01.md; columns projection + snake reads; snake fixtures; vitest 6/6; tsc clean |
 | qa5-02 | mini/fix-qa-5 | dev | none | 2/3/60/8 | PASS | verified | results/qa5-02.md; tickets+tracker_records via readAllPaged (pk row_n); vitest 3/3; tsc clean |
