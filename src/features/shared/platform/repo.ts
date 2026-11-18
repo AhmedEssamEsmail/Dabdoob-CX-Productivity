@@ -54,6 +54,36 @@ export function cachePut(key: string, value: string, ttlSeconds: number): void {
   }
 }
 
+const SHARED_CACHE_TABLE = 'app_cache'
+
+/** Cross-instance cache: the local Map first, then public.app_cache. Never throws; a miss or any error is null. */
+export async function sharedCacheGet(key: string, maxLocalSeconds = Infinity): Promise<string | null> {
+  const local = cacheGet(key)
+  if (local) return local
+  try {
+    const { data } = await db().from(SHARED_CACHE_TABLE).select('value,expires_at').eq('key', key).maybeSingle()
+    const left = data ? Math.floor((new Date(String(data.expires_at)).getTime() - Date.now()) / 1000) : 0
+    if (!data || !(left > 0)) return null
+    cachePut(key, String(data.value), Math.min(left, maxLocalSeconds))
+    return String(data.value)
+  } catch {
+    return null
+  }
+}
+
+/** Writes the local Map and public.app_cache (best-effort, awaited so a serverless freeze cannot drop it). */
+export async function sharedCachePut(key: string, value: string, ttlSeconds: number, maxLocalSeconds = Infinity): Promise<void> {
+  cachePut(key, value, Math.min(ttlSeconds, maxLocalSeconds))
+  try {
+    const now = Date.now()
+    await db()
+      .from(SHARED_CACHE_TABLE)
+      .upsert({ key, value, expires_at: new Date(now + ttlSeconds * 1000).toISOString(), updated_at: new Date(now).toISOString() }, { onConflict: 'key' })
+  } catch {
+    /* best-effort, like the local cache */
+  }
+}
+
 export function cacheRemove(key: string): void {
   CACHE.delete(key)
 }
@@ -202,19 +232,41 @@ export async function readAllPaged(name: string, opts: ReadAllPagedOptions = {})
   const pageSize = opts.pageSize && opts.pageSize > 0 ? Math.floor(opts.pageSize) : 1000
   const columns = opts.columns || '*'
   const rows: Record<string, unknown>[] = []
-  for (let from = 0; ; from += pageSize) {
-    let query = db().from(name).select(columns) as TableQuery
+  const fetchPage = async (from: number, withCount = false) => {
+    let query = db().from(name).select(columns, withCount ? { count: 'exact' } : undefined) as TableQuery
     if (opts.build) query = opts.build(query)
     pks.forEach((k) => {
       query = query.order(k, { ascending: true })
     })
-    const { data, error } = await query.range(from, from + pageSize - 1)
+    const { data, error, count } = await query.range(from, from + pageSize - 1)
     if (error) throw new Error(error.message)
-    const page = (data || []) as Record<string, unknown>[]
+    return { page: (data || []) as Record<string, unknown>[], count: count as number | null | undefined }
+  }
+  let from = 0
+  const first = await fetchPage(0, true)
+  rows.push(...first.page)
+  if (first.page.length < pageSize) return rows
+  from = pageSize
+  /* The first page reports the total, so the remaining pages are independent
+     range reads: fetch them concurrently (waves of PAGE_CONCURRENCY) instead of
+     one round trip after another. Without a count, fall through to sequential. */
+  if (typeof first.count === 'number' && first.count > pageSize) {
+    const starts: number[] = []
+    for (let f = pageSize; f < first.count; f += pageSize) starts.push(f)
+    for (let i = 0; i < starts.length; i += PAGE_CONCURRENCY) {
+      const wave = await Promise.all(starts.slice(i, i + PAGE_CONCURRENCY).map((f) => fetchPage(f)))
+      wave.forEach((w) => rows.push(...w.page))
+    }
+    return rows
+  }
+  for (; ; from += pageSize) {
+    const { page } = await fetchPage(from)
     rows.push(...page)
     if (page.length < pageSize) return rows
   }
 }
+
+const PAGE_CONCURRENCY = 6
 
 /**
  * readTable_ equivalent: rows of a table as plain objects, optionally filtered.

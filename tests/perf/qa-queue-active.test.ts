@@ -179,8 +179,10 @@ function seed() {
   h.tables.qa_forms = []
   h.tables.qa_ctls = []
   h.hct = { rows: HCT }
+  h.tables.dq_hct = HCT
   h.reads.length = 0
   cacheClear()
+  h.tables.app_cache = []
 }
 
 const emailsOf = (rows: Record<string, unknown>[]) => rows.map((r) => String(r.agentEmail ?? r.agent_email ?? ''))
@@ -235,8 +237,9 @@ describe('getQaQueuePage active filter (S03 / qa-2-1)', () => {
     expect(all.quota.map((r) => String(r.email))).toContain(B)
   })
 
-  it('fails open when the HCT sheet read throws — page is unfiltered', async () => {
+  it('fails open when the dq_hct snapshot is empty — page is unfiltered', async () => {
     h.hct = { err: new Error('test: sheet down') }
+    h.tables.dq_hct = []
     const page = (await getQaQueuePage('*', 'active')) as Page
     expect(emailsOf(page.rows)).toContain(B)
     expect(idsOf(page.passed)).toContain('b-pass')

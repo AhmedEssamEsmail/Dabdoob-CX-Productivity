@@ -97,21 +97,24 @@ export const currentUser = cache(async (): Promise<PlatformUser> => {
  * OAuth callback, which already holds the email.
  */
 export async function roleForEmail(email: string): Promise<PlatformUser> {
-  const domain = String((await getConfig('allowed_domain', 'dabdoob.com')) || '').toLowerCase()
+  /* Config (cached) and the roster row are independent: read them together (one round trip on a cold cache). */
+  const [domainCfg, adminsCfg, rosterRes] = await Promise.all([
+    getConfig('allowed_domain', 'dabdoob.com'),
+    getConfig('admin_emails', ''),
+    db().from('roster').select('email,name,role,tl_email,active').eq('email', email),
+  ])
+  const domain = String(domainCfg || '').toLowerCase()
   if (email.split('@')[1] !== domain) {
     return { email, name: email, role: 'unknown', tlEmail: null }
   }
-  const admins = String((await getConfig('admin_emails', '')) || '')
+  const admins = String(adminsCfg || '')
     .split(',')
     .map(normEmail)
     .filter(String)
   // roster_email_uidx makes .eq exact; baseline precondition (0 non-lower emails)
   // means ilike's case-insensitive miss was never exercised — kept only as an
   // error fallback so a failed eq still gets the legacy path.
-  let { data: rosterRows, error: rosterErr } = await db()
-    .from('roster')
-    .select('email,name,role,tl_email,active')
-    .eq('email', email)
+  let { data: rosterRows, error: rosterErr } = rosterRes
   if (rosterErr) {
     ;({ data: rosterRows, error: rosterErr } = await db()
       .from('roster')
@@ -206,11 +209,14 @@ export interface Directory {
  * (roster tl_email); TL -> the first admin.
  */
 export const pwDirectory = cache(async (): Promise<Directory> => {
-  const admins = String((await getConfig('admin_emails', '')) || '')
+  const [adminsCfg, { data: rosterRows, error: rosterErr }] = await Promise.all([
+    getConfig('admin_emails', ''),
+    db().from('roster').select('*'),
+  ])
+  const admins = String(adminsCfg || '')
     .split(',')
     .map(normEmail)
     .filter(String)
-  const { data: rosterRows, error: rosterErr } = await db().from('roster').select('*')
   if (rosterErr) throw described(rosterErr, { table: 'roster' })
   const by: Record<string, DirectoryPerson> = {}
   ;(rosterRows || []).forEach((r) => {

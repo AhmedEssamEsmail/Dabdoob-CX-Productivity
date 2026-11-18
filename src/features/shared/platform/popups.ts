@@ -32,16 +32,19 @@ export interface PendingPopup {
 
 /** Every open row for the caller (pendingPopupsFor_). queue_checkin_missed stays mail-only. */
 export async function pendingPopupsFor(email: string): Promise<PendingPopup[]> {
-  if (!(await remindersOn())) return []
   let rows: Record<string, unknown>[]
   try {
-    const { data, error } = await db()
-      .from(POPUPS_TABLE)
-      .select('popup_id,kind,title,body,link,created_at,submitted_at')
-      .eq('recipient', normEmail(email))
-      .is('resolved_at', null)
-      .neq('kind', 'queue_checkin_missed')
-    if (error) return []
+    /* The switch read and the popups read are independent: run them together (one round trip). */
+    const [on, { data, error }] = await Promise.all([
+      remindersOn(),
+      db()
+        .from(POPUPS_TABLE)
+        .select('popup_id,kind,title,body,link,created_at,submitted_at')
+        .eq('recipient', normEmail(email))
+        .is('resolved_at', null)
+        .neq('kind', 'queue_checkin_missed'),
+    ])
+    if (!on || error) return []
     rows = (data || []) as Record<string, unknown>[]
   } catch {
     return []

@@ -13,7 +13,7 @@
  */
 
 import 'server-only'
-import { appendRow, cacheGet, cachePut, db, newId, readAllPaged, readRows, sanitizeInput } from '@/features/shared/platform/repo'
+import { appendRow, db, newId, readAllPaged, readRows, sanitizeInput, sharedCacheGet, sharedCachePut } from '@/features/shared/platform/repo'
 import { getConfig, setConfig, remindersOn } from '@/features/shared/platform/settings'
 import { requireRole, requireJobCaller, actorEmail, normEmail, pwDirectory, assistantOwnerEmail, isCxAgent_, dqTitleLevel_, type Directory, type DirectoryPerson } from '@/features/shared/platform/identity'
 import { assertWritable } from '@/features/shared/platform/viewas'
@@ -25,7 +25,7 @@ import { notify, type NotifyInput } from '@/features/shared/platform/notify'
 import { pwToday } from '@/features/shared/platform/time'
 import { readStore } from '@/features/shared/platform/stores'
 import { tlsOnShift_, tlsShifts_ } from '@/features/cx-queue/lib'
-import { dqHctActive_, dqReadHct_ } from '@/features/cx-hub/lib/roster'
+import { dqHctActive_ } from '@/features/cx-hub/lib/roster'
 import { fetchWorkbookTabs } from '@/features/shared/jobs/sheets'
 import { described } from '@/features/shared/lib/errors'
 import { dqAddDays_ } from '@/features/shared/lib/adapters'
@@ -67,6 +67,8 @@ const QE_TBL_BUILDS = 'qe_builds'
 const QA_ACCESS_LOG = 'qa_access_log'
 const MAIL_LOG_TABLE = 'mail_log'
 const HEALTH_TABLE = 'health'
+const QA_IN_CHUNK = 150
+const QA_VER_LOCAL_S = 30
 
 type QaUser = { email: string; name: string; role: string }
 
@@ -96,18 +98,28 @@ async function qaRowsWhere_(name: string, filter: { eq?: Record<string, unknown>
   try {
     const f = filter || {}
     for (const list of Object.values(f.in || {})) if (!list.length) return []
-    return (await readAllPaged(name, {
-      build: (q) => {
-        let query = q
-        for (const [k, v] of Object.entries(f.eq || {})) query = query.eq(k, v as string)
-        for (const [k, list] of Object.entries(f.in || {})) query = query.in(k, list)
-        for (const k of Object.keys(f.is || {})) query = query.is(k, null)
-        for (const [k, v] of Object.entries(f.gte || {})) query = query.gte(k, v as string)
-        for (const [k, v] of Object.entries(f.lte || {})) query = query.lte(k, v as string)
-        if (f.or) query = query.or(f.or)
-        return query
-      },
-    })) as Row[]
+    /* A long IN list overflows the request URL: split one list into chunks and
+       read them concurrently (a single list is the only shape callers use). */
+    const inKeys = Object.keys(f.in || {})
+    const chunkKey = inKeys.find((k) => (f.in as Record<string, unknown[]>)[k].length > QA_IN_CHUNK)
+    const run = async (inMap: Record<string, unknown[]>) =>
+      (await readAllPaged(name, {
+        build: (q) => {
+          let query = q
+          for (const [k, v] of Object.entries(f.eq || {})) query = query.eq(k, v as string)
+          for (const [k, list] of Object.entries(inMap)) query = query.in(k, list)
+          for (const k of Object.keys(f.is || {})) query = query.is(k, null)
+          for (const [k, v] of Object.entries(f.gte || {})) query = query.gte(k, v as string)
+          for (const [k, v] of Object.entries(f.lte || {})) query = query.lte(k, v as string)
+          if (f.or) query = query.or(f.or)
+          return query
+        },
+      })) as Row[]
+    if (!chunkKey) return await run(f.in || {})
+    const all = (f.in as Record<string, unknown[]>)[chunkKey]
+    const parts: Promise<Row[]>[] = []
+    for (let i = 0; i < all.length; i += QA_IN_CHUNK) parts.push(run({ ...(f.in as Record<string, unknown[]>), [chunkKey]: all.slice(i, i + QA_IN_CHUNK) }))
+    return (await Promise.all(parts)).flat()
   } catch (e) {
     const err = e as { code?: string; status?: number }
     if (err.code === '42P01' || err.status === 404) return []
@@ -168,16 +180,16 @@ let qaLock_: Promise<void> = Promise.resolve()
 
 /** qaVersion_ verbatim: analytics cache-buster bumped on every write. */
 async function qaVersion_(): Promise<string> {
-  let v = cacheGet('qa_ver')
+  let v = await sharedCacheGet('qa_ver', QA_VER_LOCAL_S)
   if (!v) {
     v = String(Date.now())
-    cachePut('qa_ver', v, 21600)
+    await sharedCachePut('qa_ver', v, 21600, QA_VER_LOCAL_S)
   }
   return v
 }
 async function qaBumpVersion_(): Promise<void> {
   try {
-    cachePut('qa_ver', String(Date.now()) + Math.random().toString(36).slice(2, 5), 21600)
+    await sharedCachePut('qa_ver', String(Date.now()) + Math.random().toString(36).slice(2, 5), 21600, QA_VER_LOCAL_S)
   } catch {
     /* ignore */
   }
@@ -631,10 +643,10 @@ async function qaQuotaAgents_(dir: Directory, S: Row): Promise<{ email: string; 
 }
 
 /** qaHandledOf_ verbatim: the queue's agent handled date per audit (interaction_at). */
-async function qaHandledOf_(): Promise<(a: Row) => string> {
+async function qaHandledOf_(preloaded?: Row[]): Promise<(a: Row) => string> {
   const at: Record<string, string> = {}
   try {
-    const qs = (await readRows('qa_queue', { cols: 16 } as never).catch(() => [] as Row[])) as Row[]
+    const qs = preloaded || ((await readRows('qa_queue', { cols: 16 } as never).catch(() => [] as Row[])) as Row[])
     qs.forEach((q) => {
       const m = /^(\d{4}-\d{2}-\d{2})/.exec(qaWhen_(q.interaction_at))
       if (m && q.queue_id) at[String(q.queue_id)] = m[1]
@@ -649,7 +661,12 @@ async function qaHandledOf_(): Promise<(a: Row) => string> {
 async function qaQueuePageFor_(user: QaUser, dir: Directory, act: Set<string> | null): Promise<Row> {
   const today = qaToday_()
   const from = dqAddDays_(today, -7)
-  const allRaw = await qaRows_('qa_queue')
+  const queueP = qaRows_('qa_queue')
+  const [allRaw, formRowsQ, S, audits, ctlRows, handledOf] = await Promise.all([
+    queueP, qaRows_('qa_forms'), qeSettings_(),
+    qaRowsWhere_('qa_audits', { gte: { audit_date: dqAddDays_(today, -90) } }),
+    qaRows_('qa_ctls'), queueP.then((rows) => qaHandledOf_(rows)),
+  ])
   const all = act ? allRaw.filter((r) => qaActiveKeep_(r.agent_email, act)) : allRaw
   const passedFrom = dqAddDays_(today, -30)
   const passed = all
@@ -683,20 +700,17 @@ async function qaQueuePageFor_(user: QaUser, dir: Directory, act: Set<string> | 
       takenByOther: qaTakenByOther_(q, user),
     }))
     .sort((a, b) => qaQueueClosed_(String(a.status)) - qaQueueClosed_(String(b.status)) || String(a.date).localeCompare(String(b.date)) || String(a.agentName).localeCompare(String(b.agentName)))
-  const allForms = qaForms_(await qaRows_('qa_forms'))
+  const allForms = qaForms_(formRowsQ)
   const forms = allForms.list.filter((f) => f.active)
-  const S = await qeSettings_()
   const weekStart = String(qeWeekKeyFor_(new Date(), S)).slice(1)
   const agents = await qaQuotaAgents_(dir, S)
-  const audits = await qaRowsWhere_('qa_audits', { gte: { audit_date: dqAddDays_(today, -90) } })
   const quotaWeeks: { weekStart: string; rows: Row[] }[] = []
   for (let wk = 0; wk < 8; wk++) {
     const ws = dqAddDays_(weekStart, -7 * wk)
     quotaWeeks.push({ weekStart: ws, rows: qaWeekQuota_(agents, audits, wk ? [] : all, ws, (n) => qeQuotaFor_(n, S)) as Row[] })
   }
   if (act) quotaWeeks.forEach((w) => { w.rows = (w.rows as Row[]).filter((r) => qaActiveKeep_(r.email, act)) })
-  const handledOf = await qaHandledOf_()
-  const memory = qaFailMemory_(audits, await qaRows_('qa_ctls'), allForms as never, today, handledOf)
+  const memory = qaFailMemory_(audits, ctlRows, allForms as never, today, handledOf)
   const failMemory: Row = {}
   const requests = qaRequestRows_(all, dir as never, user, dqAddDays_(today, -7))
   ;((rows as Row[]).concat(requests as Row[]) as Row[]).forEach((r) => {
@@ -1178,20 +1192,25 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
 export async function getQaCtlPage(): Promise<Row> {
   const user = await qaRequireRole_(['admin', 'tl'])
   const dir = await pwDirectory()
-  const forms = qaForms_(await qaRows_('qa_forms'))
   const today = qaToday_()
-  const all = await qaRows_('qa_ctls')
+  const [formRows, all] = await Promise.all([qaRows_('qa_forms'), qaRows_('qa_ctls')])
+  const forms = qaForms_(formRows)
   const mine = all.filter((c) => qaCtlVisibleTo_(c, user))
+  const shownCtls = mine.filter((c) => c.status !== 'cancelled' && (c.status === 'open' || c.status === 'on_hold' || String(c.opened_date) >= dqAddDays_(today, -45)))
+  const disputeIds = [...new Set(shownCtls.filter((c) => c.dispute_id).map((c) => String(c.dispute_id)))]
+  const [auditRows, disputeRows] = await Promise.all([
+    shownCtls.length ? qaRowsWhere_('qa_audits', { in: { audit_id: [...new Set(shownCtls.map((c) => String(c.audit_id)))] } }) : Promise.resolve([] as Row[]),
+    disputeIds.length ? qaRowsWhere_('qa_disputes', { in: { dispute_id: disputeIds } }) : Promise.resolve([] as Row[]),
+  ])
   const auditsBy: Record<string, Row> = {}
-  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: mine.map((c) => String(c.audit_id)) } })).forEach((a) => {
+  auditRows.forEach((a) => {
     auditsBy[String(a.audit_id)] = a
   })
   const disputesBy: Record<string, Row> = {}
-  ;(await qaRows_('qa_disputes')).forEach((d) => {
+  disputeRows.forEach((d) => {
     disputesBy[String(d.dispute_id)] = d
   })
-  const rows = mine
-    .filter((c) => c.status !== 'cancelled' && (c.status === 'open' || c.status === 'on_hold' || String(c.opened_date) >= dqAddDays_(today, -45)))
+  const rows = shownCtls
     .map((c) => {
       const a = auditsBy[String(c.audit_id)]
       const d = c.dispute_id ? disputesBy[String(c.dispute_id)] : null
@@ -1355,16 +1374,17 @@ async function qaDisputeAccess_(): Promise<{ user: QaUser; owner: string; isOwne
 export async function getQaDisputesPage(): Promise<Row> {
   const acc = await qaDisputeAccess_()
   const dir = await pwDirectory()
-  const forms = qaForms_(await qaRows_('qa_forms'))
-  const disputes = await qaRows_('qa_disputes')
+  const month = qaToday_().slice(0, 7)
+  const [formRows, disputes, monthAudits] = await Promise.all([
+    qaRows_('qa_forms'), qaRows_('qa_disputes'), qaRowsWhere_('qa_audits', { gte: { audit_date: month + '-01' } }),
+  ])
+  const forms = qaForms_(formRows)
   const since = dqAddDays_(qaToday_(), -60)
   const shown = disputes.filter((d) => d.status === 'open' || d.status === 'escalated' || String(d.decided_at).slice(0, 10) >= since)
   const auditsBy: Record<string, Row> = {}
-  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: shown.map((d) => String(d.audit_id)) } })).forEach((a) => {
+  ;(await qaRowsWhere_('qa_audits', { in: { audit_id: [...new Set(shown.map((d) => String(d.audit_id)))] } })).forEach((a) => {
     auditsBy[String(a.audit_id)] = a
   })
-  const month = qaToday_().slice(0, 7)
-  const monthAudits = await qaRowsWhere_('qa_audits', { gte: { audit_date: month + '-01' } })
   const who = (e: unknown) => (e ? dir.name(String(e)) : '')
   const rows = shown
     .map((d) => {
@@ -1796,9 +1816,9 @@ export async function getQaMyAuditorKpis(month: string): Promise<Row> {
   }
 }
 
-/** qaActiveEmails_: normEmail'd live HCT Sheet1 emails (via dqReadHct_, cache 'qa_hct_active' TTL 600) with ANY row passing dqHctActive_; null = read failed or no active emails (never empty the pages). */
+/** qaActiveEmails_: normEmail'd dq_hct emails passing dqHctActive_ (cache 'qa_hct_active' TTL 600); null = read failed or no active emails (never empty the pages). */
 async function qaActiveEmails_(): Promise<Set<string> | null> {
-  const hit = cacheGet('qa_hct_active')
+  const hit = await sharedCacheGet('qa_hct_active')
   if (hit) {
     try {
       const arr = JSON.parse(hit)
@@ -1808,7 +1828,9 @@ async function qaActiveEmails_(): Promise<Set<string> | null> {
     }
   }
   try {
-    const recs = await dqReadHct_()
+    /* The live HCT Sheet is frozen (every read logged SHEETS_FREEZE_VIOLATION and failed): read the
+       synced public.dq_hct snapshot instead; an empty table fails open (null). */
+    const recs = (await readAllPaged('dq_hct', { columns: 'email,status,lwd' })) as Row[]
     const act = new Set<string>()
     recs.forEach((r) => {
       if (!dqHctActive_(r)) return
@@ -1817,7 +1839,7 @@ async function qaActiveEmails_(): Promise<Set<string> | null> {
     })
     if (act.size) {
       try {
-        cachePut('qa_hct_active', JSON.stringify([...act]), 600)
+        await sharedCachePut('qa_hct_active', JSON.stringify([...act]), 600)
       } catch {
         /* too big: serve uncached */
       }
@@ -1845,7 +1867,7 @@ export async function getQaScoresPage(from: string, to: string, basis: string, a
   const actMode = String(active) !== 'all'
   const startsOn = Number((await qeSettings_()).weekStartsOn) === 1 ? 1 : 0
   const key = 'qa_sc1:' + (await qaVersion_()) + ':' + from + ':' + to + ':' + b + ':' + startsOn + (actMode ? ':act' : '')
-  const hit = cacheGet(key)
+  const hit = await sharedCacheGet(key)
   if (hit) {
     try {
       const o = JSON.parse(hit) as Row
@@ -1864,7 +1886,7 @@ export async function getQaScoresPage(from: string, to: string, basis: string, a
   const out = qaScoresRange_(audits, from, to, { basis: b, weekStartsOn: startsOn, nameOf: (e: string) => dir.name(e) }) as Row
   out.asOf = qaNowIso_()
   try {
-    cachePut(key, JSON.stringify(out), 600)
+    await sharedCachePut(key, JSON.stringify(out), 600)
   } catch {
     /* too big: serve uncached */
   }
@@ -1883,7 +1905,7 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
   const periods = qaPeriods_(g, today, startsOn)
   const p = periods.indexOf(String(period || '')) !== -1 ? String(period) : periods[0]
   const key = 'qa_an7:' + (await qaVersion_()) + ':' + startsOn + ':' + g + ':' + p + ':' + b + (actMode ? ':act' : '')
-  const hit = cacheGet(key)
+  const hit = await sharedCacheGet(key)
   if (hit) {
     try {
       const o = JSON.parse(hit) as Row
@@ -1896,17 +1918,19 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
   }
   const dir = await pwDirectory()
   const quota: Row = {}
-  try {
-    ;(await qaQuotaAgents_(dir, S)).forEach((pp) => {
-      const q = qeQuotaFor_(pp.name, S)
-      quota[pp.email] = { name: pp.name, perWeek: q.perWeek, perDay: q.perDay }
-    })
-  } catch (eQ) {
-    console.log('quota not read: ' + ((eQ as Error)?.message || eQ))
+  const loadQuota = async () => {
+    try {
+      ;(await qaQuotaAgents_(dir, S)).forEach((pp) => {
+        const q = qeQuotaFor_(pp.name, S)
+        quota[pp.email] = { name: pp.name, perWeek: q.perWeek, perDay: q.perDay }
+      })
+    } catch (eQ) {
+      console.log('quota not read: ' + ((eQ as Error)?.message || eQ))
+    }
   }
   const [auditsAll, formsRows, disputes, ctlsAll, calibrations, kbGaps, volume, handledOf] = await Promise.all([
     qaRows_('qa_audits'), qaRows_('qa_forms'), qaRows_('qa_disputes'), qaRows_('qa_ctls'), qaRows_('qa_calibrations'), qaRows_('qa_kb_gaps'),
-    qaRows_('qa_volume'), qaHandledOf_(),
+    qaRows_('qa_volume'), qaHandledOf_(), loadQuota(),
   ])
   const act = actMode ? await qaActiveEmails_() : null
   const audits = act ? auditsAll.filter((r) => qaActiveKeep_(r.agent_email, act)) : auditsAll
@@ -1933,7 +1957,7 @@ export async function getQaAnalyticsPage(grain: string, period: string, basis: s
     }))
   }
   try {
-    cachePut(key, JSON.stringify(out), 600)
+    await sharedCachePut(key, JSON.stringify(out), 600)
   } catch {
     /* too big: serve uncached */
   }
@@ -1981,7 +2005,7 @@ export async function getQaAnalyticsAudits(grain: string, period: string, agentE
 async function qaCoverageCached_(): Promise<Row> {
   const today = qaToday_()
   const key = 'qa_cov3:' + (await qaVersion_()) + ':' + today
-  const hit = cacheGet(key)
+  const hit = await sharedCacheGet(key)
   if (hit) {
     try {
       return JSON.parse(hit) as Row
@@ -2016,7 +2040,7 @@ async function qaCoverageCached_(): Promise<Row> {
   out.source = live ? 'engine' : 'old'
   out.asOf = qaNowIso_()
   try {
-    cachePut(key, JSON.stringify(out), 600)
+    await sharedCachePut(key, JSON.stringify(out), 600)
   } catch {
     /* too big: serve uncached */
   }

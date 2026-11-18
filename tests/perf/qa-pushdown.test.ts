@@ -188,6 +188,7 @@ function seed() {
   ]
   h.reads.length = 0
   cacheClear()
+  h.tables.app_cache = []
 }
 
 const auditReads = () => h.reads.filter((r) => r.table === 'qa_audits')
@@ -227,6 +228,7 @@ describe('qaRowsWhere_ lte + readAllPaged (S08-01)', () => {
     )
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = await getQaScoresPage(FROM, TO, 'audit')
     expect(auditReads().length).toBeGreaterThanOrEqual(2)
@@ -268,6 +270,7 @@ describe('kb-gaps myAudits pushdown (S08-02)', () => {
     ]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = (await getQaKbGapsPage()) as { myAudits: Record<string, unknown>[] }
     const read = auditReads()[0]
@@ -309,6 +312,7 @@ describe('auditor KPIs pushdown + Promise.all (S08-03)', () => {
     ]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = (await getQaMyAuditorKpis('2026-01')) as Record<string, unknown>
 
@@ -385,6 +389,7 @@ describe('analytics reads Promise.all, no pushdown (S08-04)', () => {
     h.tables.qa_queue = [{ queue_id: 'Q1', interaction_at: '2026-01-10 08:00', ticket_id: '100', agent_email: 'a@dabdoob.com', status: 'done' }]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const HELD = ['qa_audits', 'qa_forms', 'qa_disputes', 'qa_ctls', 'qa_calibrations', 'qa_kb_gaps', 'qa_volume']
     h.holds.clear()
@@ -468,6 +473,7 @@ describe('analytics drill pushdown (S08-05)', () => {
     h.tables.config = [...(h.tables.config || []), { key: 'freshdesk_domain', value: 'help.example.com' }]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('month grain + audit basis pushes audit_date -01/-31 and agent_email eq; parity holds', async () => {
@@ -513,6 +519,7 @@ describe('qaCtlReminders CTL read pushdown (S08-06)', () => {
     h.tables.config = [...(h.tables.config || []), { key: 'reminders_enabled', value: 'false' }]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('bounds the open read to status=open and the re-read to due ctl_ids; same due/reminded write set', async () => {
@@ -532,6 +539,7 @@ describe('qaCtlReminders CTL read pushdown (S08-06)', () => {
     expect(expectedDueIds).toEqual(['due-1', 'due-2'])
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = (await qaCtlReminders()) as Record<string, unknown>
 
@@ -558,6 +566,7 @@ describe('qaEnsureCtlPopups_ read pushdown (S08-07)', () => {
     seed()
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('bounds the CTL read to status=open and the audits read to referenced audit_ids; same popups raised', async () => {
@@ -575,6 +584,7 @@ describe('qaEnsureCtlPopups_ read pushdown (S08-07)', () => {
     ]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = (await qaCtlReminders()) as Record<string, unknown>
 
@@ -598,6 +608,7 @@ describe('backfillQaSampleBasis read pushdown (S08-08)', () => {
     seed()
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('reads only kind=audit rows; same sample_basis write set as whole-table parity', async () => {
@@ -614,6 +625,7 @@ describe('backfillQaSampleBasis read pushdown (S08-08)', () => {
     h.tables.qa_audits = fixture
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const msg = await backfillQaSampleBasis()
 
@@ -635,6 +647,7 @@ describe('backfillQaInteractionDates read pushdown (S08-09)', () => {
     seed()
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('reads only interaction_at NULL/blank audits; same written/missing and upserted rows as whole-table parity', async () => {
@@ -655,6 +668,7 @@ describe('backfillQaInteractionDates read pushdown (S08-09)', () => {
     h.tables.qa_audits = fixture
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const at: Record<string, string> = {}
     h.tables.qa_queue.forEach((q) => {
@@ -689,6 +703,7 @@ describe('my-audits CTL read pushdown (S08-10)', () => {
     seed()
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('bounds the qa_ctls read to agent_email eq; ctlBy/page output matches whole-table parity', async () => {
@@ -705,6 +720,7 @@ describe('my-audits CTL read pushdown (S08-10)', () => {
     ]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
 
     const res = (await getQaMyAuditsPage()) as { audits: Record<string, unknown>[]; average: unknown; today: string }
     const ctlRead = h.reads.find((r) => r.table === 'qa_ctls')
@@ -735,6 +751,7 @@ describe('resendQaAuditEmail CTL read pushdown (S08-11)', () => {
     h.tables.mail_log = []
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   it('bounds the qa_ctls read to audit_id eq; same ctl pick and mail decision as whole-table parity', async () => {
@@ -773,6 +790,7 @@ describe('qaTicketClash_ queue read pushdown (S08-12)', () => {
     ]
     h.reads.length = 0
     cacheClear()
+    h.tables.app_cache = []
   })
 
   const queueReadFor = (ticket: string) =>

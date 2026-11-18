@@ -150,9 +150,21 @@ export function parseConfigValue(raw: unknown): unknown {
 }
 
 /** configAll_: the whole settings map, cached 5 minutes, dropped on every write. */
+let configInflight: Promise<Record<string, unknown>> | null = null
+
 export async function configAll(): Promise<Record<string, unknown>> {
   const hit = cacheGet(CONFIG_CACHE_KEY)
   if (hit) return JSON.parse(hit) as Record<string, unknown>
+  /* Concurrent callers on a cold cache share one table read. */
+  if (!configInflight) {
+    configInflight = loadConfigAll().finally(() => {
+      configInflight = null
+    })
+  }
+  return configInflight
+}
+
+async function loadConfigAll(): Promise<Record<string, unknown>> {
   const map: Record<string, unknown> = {}
   Object.keys(CONFIG_DEFAULTS).forEach((k) => {
     map[k] = CONFIG_DEFAULTS[k].value
