@@ -235,6 +235,20 @@ describe('qaRowsWhere_ lte + readAllPaged (S08-01)', () => {
   })
 })
 
+describe('qaScoresRange_ counts every sample basis', () => {
+  it('historical audits feed the trend points and the team score', () => {
+    const rows = Array.from({ length: 12 }, (_, i) =>
+      auditRow({ audit_id: 'h' + i, audit_date: '2026-01-06', sample_basis: 'historical', score: 80 })
+    )
+    const res = qaScoresRange_(rows, FROM, TO, { basis: 'audit', weekStartsOn: 0, nameOf }) as {
+      team: { audits: number; score: number | null }
+      series: { audits: number; score: number | null }[]
+    }
+    expect(res.team.audits).toBe(12)
+    expect(res.series.some((p) => p.audits === 12 && p.score === 80)).toBe(true)
+  })
+})
+
 const day = (off: number) => {
   const [y, m, d] = pwToday().split('-').map(Number)
   return new Date(Date.UTC(y, m - 1, d + off)).toISOString().slice(0, 10)

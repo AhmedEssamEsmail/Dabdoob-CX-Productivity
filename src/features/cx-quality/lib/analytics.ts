@@ -1084,8 +1084,8 @@ export function qaScoresRange_(
   const counted = qaRollupAudits_(audits).filter(qaScoreKnown_)
   const cur = counted.filter((a) => inR(a, from, to))
   const isRandom = (a: Record<string, unknown>) => qaSampleBasis_(a) === 'random'
-  const rnd = cur.filter(isRandom)
-  const rndPrev = counted.filter((a) => isRandom(a) && inR(a, prevFrom, prevTo))
+  const rnd = cur
+  const rndPrev = counted.filter((a) => inR(a, prevFrom, prevTo))
   const item = (a: Record<string, unknown>) => ({ agent: normEmail_(a.agent_email), score: qaFinalScore_(a) })
   const by = (list: Record<string, unknown>[], keyOf: (a: Record<string, unknown>) => string) => {
     const o: Record<string, Record<string, unknown>[]> = {}

@@ -619,7 +619,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                   Score trend
                 </div>
                 <div className="cx-section__hint">
-                  Random daily sample only; the band is the 95% range.
+                  All sample types; the band is the 95% range.
                 </div>
               </div>
             </div>
