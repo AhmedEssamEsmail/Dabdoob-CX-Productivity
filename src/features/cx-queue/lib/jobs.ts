@@ -379,7 +379,8 @@ export async function dqCheckinTick_(now: Date | null, tick: Record<string, unkn
       if (cp.date === today) todays = todays.concat(rows)
     }
   }
-  await dqRewrite_('agg_snapshots_today', todays)
+  // id is GENERATED ALWAYS on agg_snapshots_today: rows read back from queue_snapshots must not carry theirs.
+  await dqRewrite_('agg_snapshots_today', todays.map(({ id: _id, ...r }) => r))
   await dqRemindMissedCheckins_(now, cps)
   return captured
 }

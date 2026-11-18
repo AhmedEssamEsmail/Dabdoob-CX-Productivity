@@ -153,7 +153,7 @@ export const MAPPINGS: TableMapping[] = [
     columns: ['snapshot_key', 'slot_date', 'slot', 'captured_at', 'data_as_of', 'late', 'queue',
       'open', 'actionable', 'unassigned', 'oldest_h', 'over_top', 'created_today', 'resolved_today',
       'stale', 'by_status_json', 'bands_json', 'year'],
-    upsertOn: 'snapshot_key',
+    upsertOn: 'snapshot_key,queue',
     require: ['snapshot_key', 'queue'],
   },
   {
