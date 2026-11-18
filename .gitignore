@@ -59,3 +59,4 @@ supabase/.temp/
 cx-kpis-*.json
 *.iam.gserviceaccount.com.json
 service-account*.json
+nul

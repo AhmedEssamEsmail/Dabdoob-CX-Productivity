@@ -7,12 +7,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({
-  pagedCalls: [] as { table: string; columns?: string; pk?: string; filters: [string, string, unknown][] }[],
+  pagedCalls: [] as { table: string; columns?: string; pk?: string | string[]; filters: [string, string, unknown][] }[],
   dbCalls: [] as string[],
 }))
 
 vi.mock('@/features/shared/platform/repo', () => ({
-  readAllPaged: async (table: string, opts?: { columns?: string; pk?: string; build?: (q: never) => never }) => {
+  readAllPaged: async (table: string, opts?: { columns?: string; pk?: string | string[]; build?: (q: never) => never }) => {
     const filters: [string, string, unknown][] = []
     const q = {
       gte: (c: string, v: unknown) => (filters.push(['gte', c, v]), q),
@@ -66,13 +66,13 @@ describe('tlqIo_ paged reads', () => {
     expect(h.dbCalls).not.toContain('tickets')
   })
 
-  it('trackerRecords pages tracker_records pk row_n with the tracker_id filter', async () => {
+  it('trackerRecords pages tracker_records pk [row_n, record_id] with the tracker_id filter', async () => {
     const io = await tlqIo_()
     const rows = await io.trackerRecords('operational_loss')
     expect(rows).toEqual([])
     const call = h.pagedCalls.find((c) => c.table === 'tracker_records')
     expect(call?.filters).toContainEqual(['eq', 'tracker_id', 'operational_loss'])
-    expect(call?.pk).toBe('row_n')
+    expect(call?.pk).toEqual(['row_n', 'record_id'])
     expect(h.dbCalls).not.toContain('tracker_records')
   })
 })

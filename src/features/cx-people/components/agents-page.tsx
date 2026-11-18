@@ -265,6 +265,7 @@ function ScorecardAdmin() {
   const [behNote, setBehNote] = useState('')
   const [behMsg, setBehMsg] = useState('')
   const [behMsgErr, setBehMsgErr] = useState('')
+  const [behMsgStatus, setBehMsgStatus] = useState<'ok' | 'info'>('ok')
 
   const run = (key: string, call: () => Promise<any>, done: (r: any) => void) => {
     setBusyKey(key)
@@ -310,6 +311,7 @@ function ScorecardAdmin() {
     setBusyKey('behaviour')
     setBehMsg('')
     setBehMsgErr('')
+    setBehMsgStatus('ok')
     call().then(
       (r) => {
         setBusyKey('')
@@ -324,11 +326,13 @@ function ScorecardAdmin() {
   const logBehaviour = (email: string, date: string, note: string) =>
     runBehaviour(() => api.addBehaviour(email, date, note), (r) => {
       if (r.saved) {
+        setBehMsgStatus('ok')
         setBehMsg(`Logged for ${date.slice(0, 7)}.`)
         setBehEmail('')
         setBehDate('')
         setBehNote('')
       } else if (r.duplicate) {
+        setBehMsgStatus('info')
         setBehMsg('Already logged.')
       }
     })
@@ -468,8 +472,11 @@ function ScorecardAdmin() {
               </label>
               <Input
                 id="ps-beh-email"
+                name="beh-email"
                 type="email"
                 required
+                autoComplete="off"
+                spellCheck={false}
                 value={behEmail}
                 onInput={(e) => setBehEmail(e.currentTarget.value)}
               />
@@ -480,6 +487,7 @@ function ScorecardAdmin() {
               </label>
               <Input
                 id="ps-beh-date"
+                name="beh-date"
                 type="date"
                 required
                 value={behDate}
@@ -492,11 +500,13 @@ function ScorecardAdmin() {
               </label>
               <Input
                 id="ps-beh-note"
+                name="beh-note"
                 required
                 maxLength={500}
                 value={behNote}
                 onInput={(e) => setBehNote(e.currentTarget.value)}
               />
+              <span className="cx-hint cx-sub">one line, up to 500 characters</span>
             </div>
             <Button type="submit" variant="primary" disabled={busyKey === 'behaviour'}>
               {busyKey === 'behaviour' ? 'Logging…' : 'Log case'}
@@ -508,7 +518,7 @@ function ScorecardAdmin() {
             </div>
           ) : null}
           {behMsg ? (
-            <div className="cx-note" data-status="ok" role="status">
+            <div className="cx-note" data-status={behMsgStatus} role="status">
               <div>{behMsg}</div>
             </div>
           ) : null}
@@ -665,7 +675,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
   const viewTabs = [
     { id: 'rank', label: 'Stack ranking' },
     { id: 'detail', label: 'Agent detail' },
-    ...(boot?.user.role === 'admin' ? [{ id: 'workbook', label: 'Workbook imports' }] : []),
+    ...(boot?.user.role === 'admin' ? [{ id: 'workbook', label: 'Workbook links' }] : []),
     { id: 'scoring', label: 'How scoring works' },
   ]
 
@@ -999,7 +1009,7 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 quality 90 / 93 / 97; FCR 80 / 85 / 90; a value between bands takes the lower one), and points = payout ×
                 weight (35 / 35 / 15 / 15) ÷ 100. The score is the sum of the points. A KPI with no data scores 0 points
                 and the score is marked incomplete; it is not re-weighted. Behaviour is 0 with one case in the
-                workbook&apos;s log or the KPI logs. An operational-loss case halves the score; 3 unplanned leaves inside
+                behaviour log or the KPI logs. An operational-loss case halves the score; 3 unplanned leaves inside
                 2 months make it 0. On probation (first 3 months from the hiring date) each KPI is pass or fail. Raw
                 figures sum the whole period first and divide once; they are computed from each month&apos;s data
                 overnight and on Refresh now.

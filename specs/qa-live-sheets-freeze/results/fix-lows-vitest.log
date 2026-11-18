@@ -1,0 +1,46 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+ [32m✓[39m tests/lib/sheets-freeze.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/freeze/sheets-freeze-scan.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m tests/platform/sc-behaviour.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/perf/scorecard-range.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/golden/people.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [31m❯[39m tests/platform/tlq-io-paged.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 8[2mms[22m[39m
+   [31m❯[39m tlqIo_ paged reads [2m(2)[22m
+     [32m✓[39m ticketsSince pages tickets with the created_at >= since filter and FD headers[32m 3[2mms[22m[39m
+[31m     [31m×[31m trackerRecords pages tracker_records pk row_n with the tracker_id filter[39m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/golden/queue-tlqueue.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m tests/golden/scorecard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 198[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/platform/tlq-io-paged.test.ts[2m > [22mtlqIo_ paged reads[2m > [22mtrackerRecords pages tracker_records pk row_n with the tracker_id filter
+[31m[1mAssertionError[22m: expected [ 'row_n', 'record_id' ] to be 'row_n' // Object.is equality[39m
+
+[32m- Expected:[39m
+"row_n"
+
+[31m+ Received:[39m
+[
+  "row_n",
+  "record_id",
+]
+
+[36m [2m❯[22m tests/platform/tlq-io-paged.test.ts:[2m75:22[22m[39m
+    [90m 73|[39m     const call = h.pagedCalls.find((c) => c.table === 'tracker_records…
+    [90m 74|[39m     expect(call?.filters).toContainEqual(['eq', 'tracker_id', 'operati…
+    [90m 75|[39m     expect(call?.pk).toBe('row_n')
+    [90m   |[39m                      [31m^[39m
+    [90m 76|[39m     expect(h.dbCalls).not.toContain('tracker_records')
+    [90m 77|[39m   })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m102 passed[39m[22m[90m (103)[39m
+[2m   Start at [22m 13:00:40
+[2m   Duration [22m 1.08s[2m (import 62%, transform 25%, tests 11%, worker 1%)[22m
+
+vitest exit=1

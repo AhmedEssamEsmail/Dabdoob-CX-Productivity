@@ -19,7 +19,7 @@
 --   cxh-mail-desk              '*/15 * * * *' POST /api/desk/job/mail
 --
 -- Command pattern: derived from the APPLIED 20261108231643_job_data_tick_pg_cron
--- file — same settings-guard DO block, but the two job secrets are now read
+-- file — same DO-block guard shape; the two job secrets are read
 -- from Supabase Vault at each run:
 --   (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'cxh_app_url')
 --   (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'cxh_cron_secret')

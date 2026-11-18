@@ -296,7 +296,7 @@
 [data-app="people"] .field.pw-flex-170 { flex:0 1 170px }
 [data-app="people"] .pw-flex-140 { flex:1 1 140px }
 [data-app="people"] .pw-flex-200 { flex:2 1 200px }
-[data-app="people"] .pw-field-grow { flex:1;min-inline-size:18rem }
+[data-app="people"] .pw-field-grow { flex:1;min-inline-size:min(18rem, 100%) }
 [data-app="people"] .pw-basis-full { flex-basis:100% }
 [data-app="people"] .pw-grid-12 { display:grid;gap:var(--cx-space-3) }
 [data-app="people"] .pw-grid-14 { display:grid;gap:.875rem }

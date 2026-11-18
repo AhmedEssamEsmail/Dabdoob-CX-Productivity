@@ -89,7 +89,10 @@ export function scMonthOk_(m: unknown): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(m))
 }
 export function scDateOk_(d: unknown): boolean {
-  return /^\d{4}-\d\d-\d\d$/.test(String(d))
+  const s = String(d)
+  if (!/^\d{4}-\d\d-\d\d$/.test(s)) return false
+  const t = new Date(s + 'T00:00:00Z')
+  return isFinite(t.getTime()) && t.toISOString().slice(0, 10) === s
 }
 
 /** Matrix values (rows from SC_MATRIX_FIRST_ROW, columns A..V) -> one row per agent per day. First row for an agent+day wins. */

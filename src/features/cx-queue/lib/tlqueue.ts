@@ -617,7 +617,7 @@ export async function tlqIo_(): Promise<TlqIo> {
     },
     trackerRecords: async (trackerId) =>
       (await readAllPaged('tracker_records', {
-        pk: 'row_n',
+        pk: ['row_n', 'record_id'],
         build: (q) => q.eq('tracker_id', trackerId),
       })) as Row[],
     ticketsSince: async (since) =>

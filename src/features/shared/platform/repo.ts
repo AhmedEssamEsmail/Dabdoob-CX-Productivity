@@ -185,7 +185,7 @@ export const PK_OVERRIDES: Record<string, string | string[]> = {
 }
 
 export interface ReadAllPagedOptions {
-  pk?: string
+  pk?: string | string[]
   pageSize?: number
   columns?: string
   /** Caller filters applied before ordering/paging. */
