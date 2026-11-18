@@ -9,7 +9,7 @@
 
 import 'server-only'
 
-import { appendRow, db, cachePut, cacheRemove, newId } from '@/features/shared/platform/repo'
+import { appendRow, db, readAllPaged, cachePut, cacheRemove, newId } from '@/features/shared/platform/repo'
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { dqTitleLevel_, requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
@@ -123,11 +123,13 @@ export async function buildQueueAggregates_(now?: Date): Promise<Record<string, 
   const opts = dqAgingOpts_(cfg)
   // Lean read: every row needs status, group and the two dates; open rows outside the
   // excluded groups are the only ones whose full fields matter (the board).
-  const { data: tickets, error } = await db()
-    .from('tickets')
-    .select('ticket_id,status,group_name,responder_id,created_at,resolved_at,country,channel,contact_type_1')
-    .or(dqTicketsReadOr_(opts, now))
-  if (error) throw described(error, { table: 'tickets' })
+  // Paged: PostgREST caps one response at max-rows (1000), which silently truncated open tickets.
+  const orBound = dqTicketsReadOr_(opts, now)
+  const tickets = await readAllPaged('tickets', {
+    pk: 'ticket_id',
+    columns: 'ticket_id,status,group_name,responder_id,created_at,resolved_at,country,channel,contact_type_1',
+    build: (q) => q.or(orBound),
+  }).catch((e) => { throw described(e, { table: 'tickets' }) })
   const res = dqBuildAging_(tickets as Record<string, unknown>[], now, opts, await rosterPeople_())
   const syncedTo = await dqSyncedTo_()
   res.queues.forEach((r) => {

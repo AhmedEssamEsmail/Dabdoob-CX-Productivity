@@ -100,6 +100,14 @@ describe('buildQueueAggregates_ tickets read bound (perf-2)', () => {
     expect(or).toMatch(/created_at\.gte\.\d{4}-\d{2}-\d{2}T/)
   })
 
+  it('pages the tickets read past the PostgREST 1000-row cap', async () => {
+    await buildQueueAggregates_(new Date('2026-10-15T09:30:00Z'))
+    const ranges = h.calls.filter((c) => c.table === 'tickets' && c.method === 'range')
+    expect(ranges.length).toBeGreaterThan(0)
+    expect(ranges[0].args).toEqual([0, 999])
+    expect(h.calls.some((c) => c.table === 'tickets' && c.method === 'order' && c.args[0] === 'ticket_id')).toBe(true)
+  })
+
   it('dqRewrite_ evicts live|<table> so dqCachedLive serves fresh aggregates (data-3)', async () => {
     cacheClear()
     cachePut('live|agg_queue_now', '[{}]', 45)
