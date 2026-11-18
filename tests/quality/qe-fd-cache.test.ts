@@ -41,6 +41,7 @@ vi.mock('@/features/shared/platform/repo', () => ({
     h.logs.push({ table, ...obj })
     return obj
   },
+  newId: (p: string) => `${p}_test`,
   readRows: async () => [],
   sanitizeInput: (o: unknown) => o,
 }))

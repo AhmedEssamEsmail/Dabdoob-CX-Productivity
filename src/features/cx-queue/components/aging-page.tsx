@@ -217,11 +217,11 @@ export function AgingPage({ route }: { route: { title: string } }) {
                   <table className="cx-table">
                     <thead>
                       <tr>
-                        <th>Queue</th>
+                        <th style={{ textAlign: 'center' }}>Queue</th>
                         {n.bands.labels.map((x: string) => (
-                          <th key={x} scope="col" className="cx-num-col cx-num">{x}</th>
+                          <th key={x} scope="col" className="cx-num-col cx-num" style={{ textAlign: 'center' }}>{x}</th>
                         ))}
-                        <th scope="col" className="cx-num-col cx-num">All</th>
+                        <th scope="col" className="cx-num-col cx-num" style={{ textAlign: 'center' }}>All</th>
                       </tr>
                     </thead>
                     <tbody>
