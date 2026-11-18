@@ -93,7 +93,8 @@ async function rosterPeople_(): Promise<ReturnType<typeof dqPeopleIndex_>> {
  * superset since the in-memory filter still applies. Plus rows created or
  * resolved inside the today-window counters' range, widened by a 1-day margin. */
 function dqTicketsReadOr_(opts: Record<string, unknown>, now: Date): string {
-  const raw = Array.isArray(opts.open) ? opts.open : String(opts.open || '').split(',')
+  const closed = opts.closed || ['Resolved', 'Closed']
+  const raw = Array.isArray(closed) ? closed : String(closed).split(',')
   const seen = new Set<string>()
   const vals: string[] = []
   raw.forEach((s) => {
@@ -108,7 +109,7 @@ function dqTicketsReadOr_(opts: Record<string, unknown>, now: Date): string {
   const bp = dqAddDays_(dqDateKey_(now, bizTz), -1).split('-')
   const bound = dqWallToUtc_(+bp[0], +bp[1], +bp[2], 0, 0, 0, bizTz).toISOString()
   const parts: string[] = []
-  vals.forEach((v) => parts.push('status.ilike."*' + v + '*"'))
+  parts.push('and(' + vals.map((v) => 'status.not.ilike."*' + v + '*"').join(',') + ')')
   parts.push('created_at.gte.' + bound, 'resolved_at.gte.' + bound)
   return parts.join(',')
 }

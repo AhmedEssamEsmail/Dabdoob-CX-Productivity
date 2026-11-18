@@ -369,7 +369,7 @@ export const DQ_SNAPSHOT_HEADERS = ['snapshot_key', 'slot_date', 'slot', 'captur
 export function dqAgingOpts_(cfg: Cfg): Record<string, unknown> {
   return {
     bizTz: String(dqSetting_(cfg, 'business_tz')), dataTz: String(dqSetting_(cfg, 'data_tz')),
-    edges: dqSetting_(cfg, 'aging_bands_h'), open: dqSetting_(cfg, 'open_statuses'), actionable: dqSetting_(cfg, 'actionable_statuses'),
+    edges: dqSetting_(cfg, 'aging_bands_h'), closed: dqSetting_(cfg, 'closed_statuses'), actionable: dqSetting_(cfg, 'actionable_statuses'),
     excluded: dqSetting_(cfg, 'inflow_excluded_groups'), excludedText: dqSetting_(cfg, 'queue_excluded_text'), queueMap: dqSetting_(cfg, 'queue_map') || {},
     chatMaxAgeH: dqSetting_(cfg, 'chat_open_max_age_h'), staleAfterMin: dqSetting_(cfg, 'daily_report_stale_after_min'),
   }
@@ -408,7 +408,7 @@ export function dqBuildAging_(
   const top = opts.edges.length
   const queues: Record<string, Record<string, unknown>> = {}
   const aging: Record<string, unknown>[] = []
-  const openL = dqStatusList_(opts.open), actL = dqStatusList_(opts.actionable)
+  const closedL = dqStatusList_(opts.closed || ['Resolved', 'Closed']), actL = dqStatusList_(opts.actionable)
   const dropped: Record<string, unknown> = { excludedGroup: 0, notOpenStatus: {}, noCreatedAt: 0, noCreatedSample: '' }
   const q = (name: string) => (queues[name] = queues[name] || dqEmptyQueue_(name, 'ticket', top + 1))
   tickets.forEach((t) => {
@@ -420,7 +420,7 @@ export function dqBuildAging_(
     if (created && isToday(created)) (q(name).created_today as number)++
     if (resolved && isToday(resolved)) (q(name).resolved_today as number)++
     const st = String(t.status)
-    if (openL.indexOf(st.trim().toLowerCase()) === -1) {
+    if (closedL.indexOf(st.trim().toLowerCase()) !== -1) {
       const m = dropped.notOpenStatus as Record<string, number>
       m[st] = (m[st] || 0) + 1
       return

@@ -90,9 +90,8 @@ describe('buildQueueAggregates_ tickets read bound (perf-2)', () => {
     const ors = ticketsCalls.filter((c) => c.method === 'or').map((c) => String(c.args[0]))
     expect(ors.length).toBe(1)
     const or = ors[0]
-    expect(or).toContain('status.ilike."*Open*"')
-    expect(or).toContain('status.ilike."*Pending*"')
-    expect(or).toContain('status.ilike."*Pending on CX*"')
+    expect(or).toContain('status.not.ilike."*Resolved*"')
+    expect(or).toContain('status.not.ilike."*Closed*"')
     expect(or).not.toContain('status.in')
     expect(or).toContain('created_at.gte.')
     expect(or).toContain('resolved_at.gte.')

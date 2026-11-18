@@ -53,6 +53,7 @@ export const DQ_SETTINGS: Record<string, { value: unknown; description: string }
   queue_excluded_text: { value: ['gift card'], description: 'Any group whose name contains one of these words is left out of the queue board and aging cases (in addition to inflow_excluded_groups). Case-insensitive.' },
   our_queue_text: { value: ['customer support'], description: 'Groups whose name contains one of these words are our CX queues and are listed first; every other group is listed after them under "Other teams". Chats count as ours.' },
   open_statuses: { value: ['Open', 'Pending', 'Pending on CX', 'Pending on Ops', 'Pending on 3PL', 'Waiting on Customer', 'No Response From customer'], description: 'Statuses that count as open for aging and queue health.' },
+  closed_statuses: { value: ['Resolved', 'Closed'], description: 'Statuses that are NOT open. Every other status (including new custom ones) counts as open for aging and queue health.' },
   actionable_statuses: { value: ['Open', 'Pending', 'Pending on CX'], description: 'Open statuses that are CX work right now.' },
   inflow_excluded_groups: { value: ['FreshChat', 'Inbound Calls Documentation', 'Ops Qatar - Gift cards', 'Ops Kuwait - Gift cards'], description: 'Groups left out of inflow, aging and queue health: documentation groups (the contact is already counted) and notification-only groups. Matched ignoring case and spaces around "-".' },
   inflow_escalation_channel: { value: 'Internal Escalation', description: 'Ticket channel value that marks an internal escalation.' },

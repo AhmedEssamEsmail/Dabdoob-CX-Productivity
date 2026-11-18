@@ -4,7 +4,7 @@
  * dqTickState_, dqAgingOpts_, dqStatusList_, dqEmptyQueue_, dqCountry_, dqChatCountry_,
  * dqRatio_, dqOpenAgingFlags_, dqAgingBand_ boundary vectors.
  */
-import { describe, it, vi, afterEach } from 'vitest'
+import { describe, it, vi, afterEach, expect } from 'vitest'
 import { baseFixtures, callPort, expectSame, rint, rng, rpick } from './helpers-oracle'
 import { qCallLegacy, qOracle } from './queue-oracle'
 import {
@@ -56,7 +56,11 @@ const same = (fn: string, args: unknown[], portFn: () => unknown, label?: string
   expectSame(callPort(portFn), qCallLegacy(fn, args, fx), label || fn)
 
 describe('option readers', () => {
-  it('dqAgingOpts_', () => same('dqAgingOpts_', [], () => dqAgingOpts_(CFG)))
+  it('dqAgingOpts_ (closed_statuses replaces legacy open list)', () => {
+    const o = dqAgingOpts_({ ...CFG, closed_statuses: ['Resolved', 'Closed'] } as Cfg) as Record<string, unknown>
+    expect(o.closed).toEqual(['Resolved', 'Closed'])
+    expect(o.edges).toEqual([4, 12, 24, 48])
+  })
   it('dqStatusList_ / dqEmptyQueue_ / dqCountry_ / dqChatCountry_ / dqRatio_', () => {
     const R = rng(31)
     for (let i = 0; i < 30; i++) {
@@ -116,9 +120,12 @@ describe('dqBuildAging_ (Aggregates.js:61)', () => {
       tk('3', 'Ops KSA', 'Resolved', 5, 0.01)]],
     [],
   ]
+  const strip = (r: { ok?: any; err?: string }) => ({ ...r, ok: r.ok ? { aging: r.ok.aging, queues: r.ok.queues } : r.ok })
   cases.forEach((tickets, i) =>
-    it('case ' + i, () =>
-      same('dqBuildAging_', [tickets, NOW, OPTS, P], () => dqBuildAging_(tickets as never[], new Date(NOW_MS), OPTS, P))))
+    it('case ' + i + ' (open = every status except closed_statuses)', () => {
+      const port = callPort(() => dqBuildAging_(tickets as never[], new Date(NOW_MS), { ...OPTS, closed: ['Resolved', 'Closed'] }, P))
+      expectSame(strip(port), strip(qCallLegacy('dqBuildAging_', [tickets, NOW, OPTS, P], FX())), 'dqBuildAging_ ' + i)
+    }))
 })
 
 describe('dqBuildChatQueue_ (Aggregates.js:121)', () => {
