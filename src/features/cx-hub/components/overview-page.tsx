@@ -242,8 +242,8 @@ function OvIco({ s }: { s: string }) {
   )
 }
 
-function Mu() {
-  const { data: n, error: e, reload: t } = Eo(Of.queueHealth)
+function Mu({ tick }: { tick: number }) {
+  const { data: n, error: e, reload: t } = Eo(Of.queueHealth, [tick])
   const [i, s] = useState('')
   const [r, a] = useState('')
   const o = useRef<HTMLDivElement | null>(null)
@@ -277,7 +277,7 @@ function Mu() {
             Queues now
           </h2>
           <span className="cx-section__hint">
-            {xg({ iso: n.dataAsOf })} <Hf onDone={t} />
+            {xg({ iso: n.dataAsOf })}
           </span>
         </div>
         {vg({ tiles: h, active: i, onPick: g, label: 'Queue totals. Press one to list only the queues it counts.' })}
@@ -398,6 +398,7 @@ const LoLadder = () => lo({ shape: 'ladder', n: 6 })
 
 export function OverviewPage({ route: n }: { route: { title: string } }) {
   const { data: e, error: t, reload: i } = Eo(Vi.home)
+  const [qTick, setQTick] = useState(0)
   const s = e ? String(e.name).split(' ')[0] : ''
   const r = e && !e.specialist && e.role !== 'agent' ? Ag(e) : null
   const edgeCount = e?.bands?.edges?.length ?? 0
@@ -448,7 +449,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
       actions={
         e ? (
           <>
-            {e.role !== 'agent' ? <Hf onDone={i} /> : null}
+            {e.role !== 'agent' ? <Hf onDone={() => { i(); setQTick((v) => v + 1) }} /> : null}
             {r ? <If item={r} /> : null}
           </>
         ) : undefined
@@ -613,7 +614,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
             </p>
           </section>
         ) : e.role === 'admin' ? (
-          <Mu />
+          <Mu tick={qTick} />
         ) : e.role === 'tl' ? (
           <Ft>
             <div className="cx-grid-2">
@@ -640,7 +641,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
                 allLink={resolveLink('#/aging?mine=1').href}
               />
             </div>
-            <Mu />
+            <Mu tick={qTick} />
           </Ft>
         ) : (
           <_u

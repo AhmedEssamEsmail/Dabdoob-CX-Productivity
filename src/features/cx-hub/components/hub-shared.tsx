@@ -143,8 +143,8 @@ export interface ConfigRow {
 }
 
 /* --------------------------------------------------------------------- Eo */
-export function Eo<T>(fn: () => Promise<T>) {
-  return usePageData<T>(null, fn, { cacheKey: fn.name ? fn : null })
+export function Eo<T>(fn: () => Promise<T>, deps?: unknown[]) {
+  return usePageData<T>(null, fn, { cacheKey: fn.name ? fn : null, deps })
 }
 
 /* ------------------------------------------------------- skeletons (lo/jl) */
