@@ -77,7 +77,7 @@ const CoverageRow = memo(function CoverageRow({
           today={today}
         />
       ))}
-      <td className="cx-num">{row.done}</td>
+      <td className="cx-num qa-cov__ctr">{row.done}</td>
       <td className="cx-num">{row.requested || '–'}</td>
       {currentWeek ? <td className="cx-num">{row.waiting || '–'}</td> : null}
       <td className="cx-num">
@@ -134,7 +134,7 @@ export const WeekCoverage = memo(function WeekCoverage({ d }: { d: any }) {
                   <span>{u.slice(8)}</span>
                 </th>
               ))}
-              <SortTh col="done" sort={n}>
+              <SortTh col="done" sort={n} className="qa-cov__ctr">
                 Done
               </SortTh>
               <SortTh col="requested" sort={n}>

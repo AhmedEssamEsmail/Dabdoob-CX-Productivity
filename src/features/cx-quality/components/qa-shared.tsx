@@ -522,16 +522,19 @@ export interface QaSort {
 export function SortTh({
   col,
   sort,
+  className,
   children,
 }: {
   col: string
   sort: QaSort
+  className?: string
   children?: ReactNode
 }) {
   const s = sort.s && sort.s.col === col ? sort.s.dir : null
   return (
     <th
       scope="col"
+      className={className}
       aria-sort={s === 'asc' ? 'ascending' : s === 'desc' ? 'descending' : 'none'}
     >
       <Button type="button" className="qa-sort" onClick={() => sort.toggle(col)}>
