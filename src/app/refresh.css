@@ -23,17 +23,19 @@
   gap: var(--cx-space-4) var(--cx-space-6); flex-wrap: wrap; margin-bottom: var(--cx-space-5);
 }
 :root .page-actions {
+  position: relative;
   display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
   margin-inline-start: auto;
 }
 :root .page-actions :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { box-sizing:border-box;min-inline-size:0;max-inline-size:100% }
-:root .page-actions > [role="status"] { flex-basis: 100%; min-inline-size: 0; overflow-wrap: anywhere; }
+:root .page-actions > [role="status"] { position: absolute; inset-inline: 0; inset-block-start: 100%; margin-block-start: 2px; min-inline-size: 0; overflow-wrap: anywhere; }
 :root .page-actions .roster-add-btn { min-inline-size: 5.5rem; }
 :root .page-actions .meetings-form-btn { min-inline-size: 14rem; }
 :root .page-actions .tl-task-form-btn { min-inline-size: 10rem; }
 
 /* ============================ FRAME SLOTS ============================ */
 :root .page-head:has(+ .page-bar) { margin-bottom: var(--cx-space-3); }
+:root .page-head:has([role="status"]) { padding-block-end: 2.5rem; }
 :root .page-bar {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: var(--cx-space-3) var(--cx-space-6); margin-bottom: var(--cx-space-5);
@@ -494,8 +496,8 @@
 /* The .dq-editor/.dq-editor__actions/.dq-days/.dq-holform rules below are documented keeps (people-holidays editor skin); the rest of the family was renamed cx-* per results/dq-map.md. */
 :root .cx-totals__item dd { margin: 0; font-size: var(--cx-text-2xl); font-weight: var(--cx-weight-strong); line-height: 1.1; }
 :root .cx-details summary { cursor: pointer; padding: var(--cx-space-3) var(--cx-space-4); font-weight: var(--cx-weight-strong); font-size: var(--cx-text-sm); min-height: var(--cx-target); display: flex; align-items: center; }
-:root .cx-refresh{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--cx-space-2)}
-:root .cx-refresh>[role="status"]{flex-basis:100%;min-inline-size:0;overflow-wrap:anywhere}
+:root .cx-refresh{position:relative;display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--cx-space-2)}
+:root .cx-refresh>[role="status"]{position:absolute;inset-block-start:100%;inset-inline-end:0;inline-size:max-content;max-inline-size:min(36rem,calc(100vw - 4rem));margin-block-start:2px;min-inline-size:0;overflow-wrap:anywhere;z-index:var(--z-raised)}
 :root .cx-refresh>.cx-btn,:root .cx-refresh>button{min-inline-size:11rem}
 :root .cx-statusline{display:block;font-weight:var(--cx-weight-regular);font-size:var(--cx-text-sm);color:var(--cx-text-muted)}
 :root .cx-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1px;margin:0;background:var(--cx-line);border:1px solid var(--cx-line);border-radius:var(--cx-radius-object);overflow:hidden}
@@ -565,6 +567,7 @@
 :root .trk-table th, :root .trk-table td { text-align:start;padding:7px 10px;border-bottom:1px solid var(--cx-line);vertical-align:top;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
 :root .trk-table th { position:sticky;top:0;background:var(--cx-bg);font-weight:var(--cx-weight-strong);color:var(--cx-ink-2);font-size:var(--cx-text-xs) }
 :root .trk-table tbody tr:last-child td { border-bottom:0 }
+:root .trk-table thead th { text-align:center }
 :root .trk-table .trk-num { text-align:end;font-variant-numeric:tabular-nums }
 :root .trk-table td.trk-misfit { box-shadow:inset 3px 0 0 var(--cx-status-warn-edge);font-style:italic }
 :root [dir="rtl"] .trk-table td.trk-misfit { box-shadow:inset -3px 0 0 var(--cx-status-warn-edge) }

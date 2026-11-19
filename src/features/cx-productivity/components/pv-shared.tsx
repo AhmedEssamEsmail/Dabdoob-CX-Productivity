@@ -237,7 +237,7 @@ export function CalibrationChart({
           {keys.map((i, h) => (
             <tr key={i}>
               <td className="cx-num">{i}</td>
-              <td>
+              <td className="cx-num">
                 <span
                   className="pv-bar cc-sweep-bar"
                   data-kind="idle"
@@ -245,7 +245,7 @@ export function CalibrationChart({
                 />{' '}
                 {idleShare(i).toFixed(1)}%
               </td>
-              <td>
+              <td className="cx-num">
                 <span
                   className="pv-bar cc-sweep-bar"
                   data-kind="working"

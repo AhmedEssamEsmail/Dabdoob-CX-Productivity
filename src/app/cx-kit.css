@@ -655,11 +655,14 @@
   border-block-end-color: var(--cx-line-strong);
   white-space: nowrap;
 }
+/* --- header + numeric cell alignment — beat the start defaults ----------- */
+:root :is(.cx-table, table) thead tr th { text-align: center; }
+:root :is(.cx-table, table) :is(td, tbody th):is(.cx-num, .num, .cx-num-col, .trk-num) { text-align: center; }
 :root .cx-table tbody tr:hover,
 :root table tbody tr:hover { background: var(--cx-surface-2); }
 :root .cx-table--nowrap th, :root .cx-table--nowrap td { white-space: nowrap; }
 :root .cx-table--readonly td { cursor: default; }
-:root .cx-num-col { text-align: end; }
+:root .cx-num-col { text-align: center; }
 :root .cx-num, :root .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 :root .cx-mono { font-family: var(--cx-font-mono); font-size: .93em; letter-spacing: 0; }
 :root .cx-clip { max-width: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

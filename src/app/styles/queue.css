@@ -86,7 +86,7 @@
 [data-app="queue"] .hm-grid-scroll:focus-visible { outline: calc(var(--cx-space-1) / 2) solid var(--cx-focus); }
 [data-app="queue"] .hm-grid { border-collapse: separate; border-spacing: calc(var(--cx-space-1) / 2); width: 100%; font-variant-numeric: tabular-nums; font-size: var(--cx-text-sm); }
 [data-app="queue"] .hm-grid th { font-weight: var(--cx-weight-strong); color: var(--cx-ink-2); padding: calc(var(--cx-space-1) / 2) var(--cx-space-1); }
-[data-app="queue"] .hm-gt { text-align: end; white-space: nowrap; }
+[data-app="queue"] .hm-grid tbody .hm-gt { text-align: end; white-space: nowrap; }
 [data-app="queue"] .hm-gs { width: 14px; /* px-exact: bar-column geometry */ padding: 0; white-space: nowrap; } /* !important removed per QU-M7 */
 [data-app="queue"] .hm-bar { display: inline-block; width: 4px; height: 22px; margin-inline-end: 2px; border-radius: 2px; /* px-exact: heatmap bar slivers */ background: transparent; vertical-align: middle; }
 [data-app="queue"] .hm-bar.is-on.hm-shift-am { background: var(--hm-am); }
@@ -117,6 +117,7 @@
 [data-app="queue"] .hm-need-table { border-collapse: collapse; font-size: var(--cx-text-sm); }
 [data-app="queue"] .hm-need-table th, [data-app="queue"] .hm-need-table td { border: 1px solid var(--cx-line); padding: var(--cx-space-1) var(--cx-space-2); text-align: start; white-space: nowrap; }
 [data-app="queue"] .hm-need-table th { background: var(--cx-surface-2); font-weight: var(--cx-weight-strong); }
+[data-app="queue"] .hm-need-table thead th { text-align:center }
 [data-app="queue"] .hm-need-list { margin: var(--cx-space-2) 0 0; padding-inline-start: var(--cx-space-4); /* rounded .5rem/1.1rem -> nearest steps */ display: grid; gap: var(--cx-space-1); }
 [data-app="queue"] .hm-need-actions { display: flex; flex-wrap: wrap; gap: var(--cx-space-2); margin-top: var(--cx-space-3); }
 @media (prefers-color-scheme: dark) {
@@ -158,8 +159,10 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
 [data-app="queue"] .sch-scroll { overflow-x: auto; border: 1px solid var(--cx-line); border-radius: var(--cx-radius-control); background: var(--cx-surface); }
 [data-app="queue"] .sch-grid-table, [data-app="queue"] .sch-table { border-collapse: collapse; inline-size: 100%; font-size: var(--cx-text-sm); }
 [data-app="queue"] .sch-grid-table th, [data-app="queue"] .sch-grid-table td, [data-app="queue"] .sch-table th, [data-app="queue"] .sch-table td { padding: var(--cx-space-1); border-bottom: 1px solid var(--cx-line); text-align: center; }
-[data-app="queue"] .sch-table th, [data-app="queue"] .sch-table td { text-align: start; padding: var(--cx-space-2) var(--cx-space-3); }
-[data-app="queue"] .sch-sticky { position: sticky; inset-inline-start: 0; background: var(--cx-surface); text-align: start !important; padding-inline: var(--cx-space-3) !important; white-space: nowrap; z-index: 1; }
+[data-app="queue"] .sch-table tbody :is(th, td) { text-align: start; padding: var(--cx-space-2) var(--cx-space-3); }
+[data-app="queue"] .sch-table thead th { padding: var(--cx-space-2) var(--cx-space-3) }
+[data-app="queue"] .sch-sticky { position: sticky; inset-inline-start: 0; background: var(--cx-surface); padding-inline: var(--cx-space-3) !important; white-space: nowrap; z-index: 1; }
+[data-app="queue"] tbody .sch-sticky { text-align: start !important; }
 [data-app="queue"] .sch-day { font-weight: var(--cx-weight-regular); color: var(--cx-ink-2); }
 [data-app="queue"] .sch-day.wk { background: var(--hover); }
 [data-app="queue"] .sch-day-btn { display: grid; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; padding: calc(var(--cx-space-1) / 2) var(--cx-space-1); border-radius: var(--cx-radius-bar); line-height: 1.15; }

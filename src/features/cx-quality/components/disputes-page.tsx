@@ -243,7 +243,7 @@ export default function DisputesPage({ route }: { route: { title: string } }) {
                           {l.open ? ` (${l.open} undecided)` : ''}
                         </td>
                         <td className="cx-num">{l.upheld}</td>
-                        <td>
+                        <td className="cx-num">
                           <Chip
                             status={
                               l.disputePct === null

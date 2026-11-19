@@ -238,16 +238,16 @@ function TeamBlock({ ctx, name }: { ctx: any; name: string }) {
                         ['fcr', 'fcrLast'],
                       ] as const
                     ).map(([k, kLast]) => (
-                      <td key={k} data-band={bandOf(a[k], ctx.floor)}>
+                      <td key={k} className="cx-num" data-band={bandOf(a[k], ctx.floor)}>
                         {a[k] === null ? <span className="oo-muted">–</span> : `${a[k]}%`}
                         <PwDelta now={a[k]} before={a[kLast]} unit="" />
                       </td>
                     ))}
-                    <td data-band={bandOf(a.prod7)}>
+                    <td className="cx-num" data-band={bandOf(a.prod7)}>
                       {pct(a.prod7)}
                       <PwDelta now={a.prod7} before={a.prodPrev7} unit="" />
                     </td>
-                    <td>
+                    <td className="cx-num">
                       {a.open}
                       {a.overTop ? <span className="oo-fine oo-bad">{a.overTop} oldest</span> : null}
                     </td>
@@ -698,9 +698,9 @@ function QueueRow({ label, now, before }: { label: string; now: number | null; b
   return (
     <tr>
       <th scope="row">{label}</th>
-      <td data-band={bandOf(now)}>{pct(now)}</td>
-      <td className="oo-muted">{before === undefined ? '' : pct(before)}</td>
-      <td>{before === undefined ? null : <PwDelta now={now} before={before} />}</td>
+      <td className="cx-num" data-band={bandOf(now)}>{pct(now)}</td>
+      <td className="oo-muted cx-num">{before === undefined ? '' : pct(before)}</td>
+      <td className="cx-num">{before === undefined ? null : <PwDelta now={now} before={before} />}</td>
     </tr>
   )
 }

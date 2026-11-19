@@ -813,16 +813,16 @@ function UploadDialog({ countries, canAdmin, onClose, onSaved, onCountryAdded, o
                 <td>Inbound</td>
                 <td>Sun</td>
                 <td>09:00</td>
-                <td>6</td>
-                <td>240</td>
+                <td className="cx-num">6</td>
+                <td className="cx-num">240</td>
               </tr>
               <tr>
                 <td>Kuwait</td>
                 <td>WA</td>
                 <td>Mon</td>
                 <td>10:00</td>
-                <td>5</td>
-                <td>150</td>
+                <td className="cx-num">5</td>
+                <td className="cx-num">150</td>
               </tr>
             </tbody>
           </table>

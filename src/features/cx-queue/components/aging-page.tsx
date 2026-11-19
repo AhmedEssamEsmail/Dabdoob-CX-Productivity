@@ -300,9 +300,9 @@ export function AgingPage({ route }: { route: { title: string } }) {
                       <td className="cx-muted">{x[10] && x[10] !== 'null' ? x[10] : '–'}</td>
                       <td>{x[7] || <span className="cx-faint">Not assigned</span>}</td>
                       {n.scope !== 'agent' ? <td>{x[8] || '–'}</td> : null}
-                      <td><span className="cx-chip" data-status={x[3] ? 'info' : 'neutral'} title={x[3] ? "CX's to work" : 'Waiting on another team or the customer'}>{x[2]}</span></td>
+                      <td className="cx-num"><span className="cx-chip" data-status={x[3] ? 'info' : 'neutral'} title={x[3] ? "CX's to work" : 'Waiting on another team or the customer'}>{x[2]}</span></td>
                       <td className="cx-muted">{x[4] || '–'}</td>
-                      <td><AgeChip hours={x[5]} band={x[6]} /></td>
+                      <td className="cx-num"><AgeChip hours={x[5]} band={x[6]} /></td>
                       <td><HelpCell t={x} flag={flags.get(x[0])} scope={n.scope} onChange={reload} /></td>
                     </tr>
                   ))}

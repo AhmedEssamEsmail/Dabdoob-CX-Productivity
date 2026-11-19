@@ -276,7 +276,7 @@ function ByChannel({ d: t }: { d: any }) {
               t.byChannel.map((a: any) => (
                 <tr className={a.badge === 'low' ? 'qa-low' : undefined} key={a.key}>
                   <td>{a.label}</td>
-                  <td>
+                  <td className="cx-num">
                     {n(a)}
                     <span className="cx-faint qa-sub">
                       audit average {qaPct(a.auditAvg)}
@@ -325,7 +325,7 @@ function ByChannel({ d: t }: { d: any }) {
                     ) : null}
                   </td>
                   <td>{a.channel}</td>
-                  <td>{n(a)}</td>
+                  <td className="cx-num">{n(a)}</td>
                   <td className="cx-num">{a.audits}</td>
                   <td>
                     <Chip status={QA_CONF_TONE[a.badge]}>{QA_CONF[a.badge]}</Chip>
@@ -383,7 +383,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     />
                     <span className="cx-faint qa-sub">{s.tlName}</span>
                   </td>
-                  <td>
+                  <td className="cx-num">
                     <Chip status={qaVerdictTone(s)}>{qaPct(s.avg)}</Chip>{' '}
                     <span className="qa-range cx-num">{qaMargin(s.margin)}</span>
                     {s.trend ? (
@@ -704,7 +704,7 @@ function Coaching({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     <span className="cx-faint qa-sub">last {l.last}</span>
                   </td>
                   <td>{l.reason ? QA_REASON_LABELS[l.reason] : '–'}</td>
-                  <td>
+                  <td className="cx-num">
                     {l.afterCtl ? (
                       <>
                         <Chip status="bad">CTL {l.afterCtl}</Chip>
@@ -775,7 +775,7 @@ function TeamLeads({ d: t }: { d: any }) {
                     )}
                   </td>
                   {t.grain === 'month' ? (
-                    <td>
+                    <td className="cx-num">
                       <Chip
                         status={
                           n.slaPct === null
@@ -872,7 +872,7 @@ function Extras({ d: t }: { d: any }) {
                     <tr key={n.email}>
                       <td>{n.name}</td>
                       <td className="cx-num">{n.audits}</td>
-                      <td>
+                      <td className="cx-num">
                         <Chip
                           status={
                             n.disputePct === null
@@ -890,7 +890,7 @@ function Extras({ d: t }: { d: any }) {
                           </span>
                         ) : null}
                       </td>
-                      <td>
+                      <td className="cx-num">
                         <Chip
                           status={
                             n.alignmentPct === null
@@ -934,7 +934,7 @@ function Extras({ d: t }: { d: any }) {
                       <td className="cx-num">
                         {n.onTime} of {n.due}
                       </td>
-                      <td>
+                      <td className="cx-num">
                         <Chip
                           status={
                             n.slaPct === null
@@ -1139,7 +1139,7 @@ function Drill({
                           {QA_BASIS_LABELS[r.basis].toLowerCase()}
                         </span>
                       </td>
-                      <td>
+                      <td className="cx-num">
                         <ScoreChip score={r.score} fatal={r.critical} />
                         {r.rescored ? (
                           <span className="cx-faint qa-sub">re-scored</span>

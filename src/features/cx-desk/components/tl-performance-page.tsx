@@ -261,9 +261,9 @@ function Otd({ otd, canEdit }: { otd: Otd; canEdit: boolean }) {
               <tr key={m.month}>
                 <th scope="row">{m.month}</th>
                 {m.values.map((x, i) => (
-                  <td key={i}>{pct(x)}</td>
+                  <td key={i} className="cx-num">{pct(x)}</td>
                 ))}
-                <td data-band={band(m.avg)}>{pct(m.avg)}</td>
+                <td data-band={band(m.avg)} className="cx-num">{pct(m.avg)}</td>
               </tr>
             ))}
           </tbody>
@@ -554,13 +554,13 @@ function Body({ p, reload }: { p: TlData; reload: () => void }) {
                       {B(d.date)}
                       <span className="dk-fine">{d.windows}</span>
                     </th>
-                    <td>{Math.round(d.queueMin / 6) / 10} h</td>
-                    <td data-band={band(d.answerRate)}>
+                    <td className="cx-num">{Math.round(d.queueMin / 6) / 10} h</td>
+                    <td data-band={band(d.answerRate)} className="cx-num">
                       {pct(d.answerRate)}
                       <span className="dk-fine">{d.callsIn} calls</span>
                     </td>
-                    <td>{d.touches}</td>
-                    <td>{mins(d.respAvgMin)}</td>
+                    <td className="cx-num">{d.touches}</td>
+                    <td className="cx-num">{mins(d.respAvgMin)}</td>
                   </tr>
                 ))}
               </tbody>

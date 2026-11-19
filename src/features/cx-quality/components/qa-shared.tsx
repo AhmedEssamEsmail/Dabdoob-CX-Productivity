@@ -1515,7 +1515,7 @@ export function DrillSection({
                           {QA_BASIS_LABELS[r.basis].toLowerCase()}
                         </span>
                       </td>
-                      <td>
+                      <td className="cx-num">
                         <ScoreChip score={r.score} fatal={r.critical} />
                         {r.rescored ? (
                           <span className="cx-faint qa-sub">re-scored</span>

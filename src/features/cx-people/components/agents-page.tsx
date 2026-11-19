@@ -80,13 +80,13 @@ function Val({ v, sub }: { v: number | null; sub?: string }) {
 
 /* TrendCell — the "Trend · 8w" spark column fed by a.trend (8 buckets, oldest first). */
 function TrendCell({ trend }: { trend: any }) {
-  if (!Array.isArray(trend)) return <td>–</td>
+  if (!Array.isArray(trend)) return <td className="cx-num">–</td>
   const series = trend.slice(0, 8)
   const label = series.every((v) => v === null)
     ? 'Trend: no data'
     : `Trend: ${series.map((v) => (v === null ? '–' : v)).join(', ')}`
   return (
-    <td>
+    <td className="cx-num">
       <div className="spark" role="img" aria-label={label}>
         {series.map((v: any, i: number) =>
           typeof v === 'number' && isFinite(v) ? (

@@ -163,6 +163,7 @@
 [data-app="people"] .oo-table th, [data-app="people"] .oo-table td { text-align:start;padding-block:6px;padding-inline:0 8px;border-bottom:1px solid var(--cx-line);vertical-align:top }
 [data-app="people"] .oo-table thead th { font-size:var(--cx-text-xs);font-weight:var(--cx-weight-medium);color:var(--cx-ink-2) }
 [data-app="people"] .oo-table tbody th { font-weight:var(--cx-weight-medium) }
+[data-app="people"] .oo-table thead th { text-align:center }
 [data-app="people"] .oo-table td[data-band] { color:var(--band, var(--cx-ink));font-weight:var(--cx-weight-strong) }
 [data-app="people"] .oo-table td[data-band] .oo-fine, [data-app="people"] .oo-table td[data-band] .oo-muted { font-weight:var(--cx-weight-regular) }
 [data-app="people"] .oo-table--narrow th[scope=row] { font-weight:var(--cx-weight-regular);color:var(--cx-ink-2) }

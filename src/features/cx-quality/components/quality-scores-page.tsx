@@ -360,7 +360,7 @@ function BreakdownTable({
                       <span className="cx-faint qa-sub">{r.tlName}</span>
                     ) : null}
                   </td>
-                  <td>
+                  <td className="cx-num">
                     <ScoreCell r={r} minN={p} />
                   </td>
                   <td className="cx-num">

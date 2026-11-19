@@ -1024,7 +1024,7 @@ const CapTableAgentRow = memo(function CapTableAgentRow({
       <td className="cx-num">{cell.touches == null ? <span className="cx-faint">pending</span> : cell.touches}</td>
       <td className="cx-num">{P(cell.tph)}</td>
       <td className="cx-num">{P(cell.cap)}</td>
-      <td>{ut(cell)}</td>
+      <td className="cx-num">{ut(cell)}</td>
       <td>{cell.limit ? Ne(d, cell.limit) : '–'}</td>
     </tr>
   )

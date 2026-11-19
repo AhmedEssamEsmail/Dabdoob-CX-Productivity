@@ -293,7 +293,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                     <td className="cx-num">{P(f.cap)}</td>
                     <td className="cx-num">{f.touches ?? <span className="cx-faint">pending</span>}</td>
                     <td className="cx-num">{P(f.tph)}</td>
-                    <td>{ut(f)}</td>
+                    <td className="cx-num">{ut(f)}</td>
                     <td className="cx-num">{_e(f.pctRaw)}</td>
                     <td>{f.limit ? Ne(d, f.limit) : '–'}</td>
                   </tr>
@@ -306,7 +306,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                     <td className="cx-num">{P(hrSum.cap)}</td>
                     <td className="cx-num">{P(hrSum.touches)}</td>
                     <td />
-                    <td>
+                    <td className="cx-num">
                       {hrSum.pct == null ? (
                         <span className="cx-faint">{pt(rows)}</span>
                       ) : (
@@ -371,7 +371,7 @@ function AgentDialog({ d, sel, name, byHour, total, pick }: {
                               P(v.touches)
                             )}
                           </td>
-                          <td>
+                          <td className="cx-num">
                             {v.pct == null ? (
                               <span className="cx-faint">{pt(f)}</span>
                             ) : (

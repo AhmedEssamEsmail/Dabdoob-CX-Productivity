@@ -392,7 +392,7 @@ function CoverageTotals({ c: t }: { c: any }) {
                 <td>
                   {qaDayName(n)} {n}
                 </td>
-                <td>
+                <td className="cx-num">
                   <Chip status={qaCovTone(t.totals.audited[a], t.totals.target[a])}>
                     {t.totals.audited[a]}
                   </Chip>

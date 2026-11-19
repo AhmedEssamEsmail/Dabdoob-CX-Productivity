@@ -24,7 +24,7 @@
 [data-app="quality"] .qa-q>td { padding-block:var(--cx-space-2);vertical-align:top }
 [data-app="quality"] .qa-form .cx-table :is(th,td):nth-child(n+2) { width:1% }
 [data-app="quality"] .qa-form .qa-q .cx-select { inline-size:auto;min-inline-size:6.5rem }
-[data-app="quality"] .cx-table :is(th,td).num { text-align:end }
+[data-app="quality"] .cx-table :is(th,td).num { text-align:center }
 [data-app="quality"] .qa-q__text { display:grid;gap:2px;min-inline-size:0 }
 [data-app="quality"] .qa-q__text>span:first-child { font-weight:var(--cx-weight-strong) }
 [data-app="quality"] .qa-q__hint { font-size:var(--cx-text-xs) }

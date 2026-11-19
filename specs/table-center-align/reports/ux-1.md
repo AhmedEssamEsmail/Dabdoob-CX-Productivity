@@ -1,0 +1,22 @@
+# ux report - table-center-align - round 1 (FULL)
+Verdict: FAIL
+Open: 0/0/2/3
+
+States checked: loading (n/a — alignment only), empty (centered `–`/colSpan rows verified in markup), error (n/a), success (n/a), disabled (n/a), long text (`.cx-clip`/`overflow-wrap` unchanged, nowrap headers pre-existing), mobile (text-align has no reflow impact; `.sch-scroll`/`.trk-table-wrap` overflow wrappers unchanged), dark (no color changes), keyboard (sort buttons remain native `<Button>`; `qa-sort:focus-visible` outline intact), focus (no rules removed).
+
+Consistency pass: new centering rules reuse `cx-num`/`num`/`cx-num-col` conventions and `[data-app]` scoping; row-label cells (`dk-table`/`oo-table`/`hm-need-table`/`sch-table` tbody th, `.qa-cov__name`, `.tph-hg :first-child`, `.sch-sticky` body cells) keep `text-align:start`; `.qa-sort` `aria-sort` + `aria-hidden` arrow intact; no ad-hoc colors/sizes introduced; sort/chip/spark cells center cleanly.
+
+| ID | Sev | file:line | Evidence | Exact fix | Owner(dev) |
+|---|---|---|---|---|---|
+| ux-1 | MED | src/features/cx-operations/components/trackers-page.tsx:689 (and th :703) | `.trk-table` number/money cells carry `trk-num` on `td`/`th`, but the new cx-kit selector `:is(td, tbody th):is(.cx-num, .num, .cx-num-col)` (cx-kit.css:660) omits `.trk-num`. Before this change headers and data were both start-aligned; now `th.trk-num` centers via :659 while `td.trk-num` stays start — new header/data misalignment on the /trackers records table. PLAN excluded `.trk-num` assuming inputs-only (operations.css:76 is the input rule); markup shows it is also a cell class. | Add `.trk-num` to the cx-kit.css:660 `:is()` list (selector only matches `td`/`tbody th`, so `.input.trk-num` is untouched), or add `cx-num` alongside `trk-num` at :689 and :703. | dev |
+| ux-2 | MED | src/features/cx-queue/components/aging-page.tsx:303 | Status-column `<td>` holds a count chip `<span className="cx-chip">{x[2]}</span>` ("CX's to work") with no numeral class — stays start-aligned under the now-centered "Status" header while the adjacent Age column (`:305`, `cx-num`) centers. Per PLAN, chips/badges holding numeric values are in scope. | `<td className="cx-num"><span className="cx-chip" …>` | dev |
+| ux-3 | LOW | src/features/cx-queue/components/scheduler-page.tsx:650; queue.css:164 | `.sch-sticky` `text-align:start !important` keeps the `scope="col"` "Team lead" corner header start while every other `sch-grid-table` header centers. Pre-existing (not introduced here) and arguably intentional — it matches the start-aligned sticky row labels — but it is the one column header that cannot satisfy the literal "every column header centered" acceptance. Decide intent; if it should center, scope the `!important` rule to `tbody .sch-sticky` only. | PM decision; if center: change queue.css:164 to `[data-app="queue"] tbody .sch-sticky` | dev |
+| ux-4 | LOW | src/features/cx-queue/components/aging-page.tsx:309 | Empty-state `<td colSpan={9}>` but only 8 headers render when `n.scope === 'agent'` ("Team lead" column is conditional). Pre-existing; colSpan over-count is clamped harmlessly but incorrect. | `colSpan={n.scope !== 'agent' ? 9 : 8}` | dev |
+| ux-5 | LOW | heatmap-page.tsx:802-807, aging-page.tsx:214, queue-page.tsx:294 | Carried from qa-1/qa-2: three `thead th` cells lack `scope="col"` (1.3.1 partial). TL-deferred per FIX LOW policy; still open. | Add `scope="col"`. | dev |
+
+Not verified / assumptions:
+- No rendered-browser check run (Playwright available if PM wants a visual); all alignment verdicts derived from selector specificity math: new rules (0,2,3) header / (0,3,2) numeric beat `:root .cx-table :is(th,td)` (0,2,1), `:root .cx-table thead th` (0,2,2), and each `[data-app]` tbody/base rule inspected (desk.css:33, people.css:163, queue.css:118/161-163, productivity.css:147 (0,3,1) < (0,3,2) — numeric first-child cells intentionally center).
+- `tbody th.hm-gt` row labels keep pre-existing `end` alignment (queue.css:89) — unchanged by this diff, not flagged.
+- `tbody th.cx-num` (tph-grid-matrix.tsx:478, ticket number) centers by design — numeric row label, consistent with spec.
+- 375/1024px contract and e2e not run (PM-level gates); no layout/spacing properties were touched, so reflow risk is nil.
+- ux-1's page (`/trackers`, data-app="operations") assumed reachable in app shell; the CSS/markup evidence stands regardless.

@@ -34,6 +34,7 @@
 [data-app="desk"] .dk-table thead th { font-size:var(--cx-text-xs);color:var(--cx-ink-2);font-weight:var(--cx-weight-strong) }
 [data-app="desk"] .dk-table td[data-band] { color:var(--band);font-weight:var(--cx-weight-strong) }
 [data-app="desk"] .dk-table th[scope=row], [data-app="desk"] .dk-table thead th { white-space:nowrap }
+[data-app="desk"] .dk-table thead th { text-align:center }
 [data-app="desk"] .dk-table td { min-inline-size:0;overflow-wrap:anywhere }
 [data-app="desk"] .dk-pick { display:inline-block;margin-top:var(--cx-space-2) }
 [data-app="desk"] .md-asof { margin:0 0 var(--cx-space-4) }

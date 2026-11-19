@@ -393,7 +393,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
                         </td>
                         <td>{u.auditorName}</td>
                         <td>{u.tlName}</td>
-                        <td>
+                        <td className="cx-num">
                           <Chip
                             status={
                               u.alignmentPct === null

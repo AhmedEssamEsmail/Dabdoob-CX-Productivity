@@ -472,7 +472,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                         <td>{r.tlName}</td>
                         <td className="cx-num">{r.due}</td>
                         <td className="cx-num">{r.onTime}</td>
-                        <td>
+                        <td className="cx-num">
                           <Chip
                             status={
                               r.slaPct === null
