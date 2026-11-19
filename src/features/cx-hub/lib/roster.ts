@@ -364,7 +364,17 @@ export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Pr
       appends.push(row)
       return
     }
-    if (cur.source && cur.source !== 'hct') return
+    if (cur.source && cur.source !== 'hct') {
+      const patch: Record<string, unknown> = {}
+      ;['freshdesk_id', 'freshdesk_name', 'maqsam_name'].forEach((f) => {
+        if (String(cur[f]) !== String(row[f])) patch[f] = row[f]
+      })
+      if (Object.keys(patch).length) {
+        patch.synced_at = now
+        updates.push({ key: String(cur.email), patch })
+      }
+      return
+    }
     if (DQ_ROSTER_ROLES.indexOf(String(cur.role_override || '')) !== -1)
       row.role = String(cur.role_override)
     if (cur.tl_override) row.tl_email = normEmail_(cur.tl_override)

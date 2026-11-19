@@ -133,6 +133,8 @@ async function qeReadAgentRoster_(S: Row): Promise<{ byId: Record<string, Row>; 
     const rec = { id, name, email, excluded }
     if (id) byId[id] = rec
     byName[name] = rec
+    const fdName = String(r.freshdesk_name || r.fd_name || '').trim()
+    if (fdName && !byName[fdName]) byName[fdName] = rec
     n++
     if (excluded) excludedCount++
   })

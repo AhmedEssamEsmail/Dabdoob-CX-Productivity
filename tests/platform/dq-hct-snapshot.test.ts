@@ -130,6 +130,31 @@ describe('dqSyncRoster_ dq_hct snapshot', () => {
     expect(dups[0].name).toBe('Dup Last')
   })
 
+  it('patches fd identity fields onto a manual roster row without flipping source', async () => {
+    const rows = sheetRows()
+    rows[1][9] = 'FD-77' // 'Fresh desk ID' -> fdId
+    rows[1][10] = 'FD Agent 0' // 'Freshdesk Name' -> fdName
+    rows[1][11] = 'MQ-9' // 'Maqsam Name' -> maqsamName
+    hubSetSheet('Sheet1', rows)
+    hubDb.tables.roster = [
+      {
+        email: 'agent0@dabdoob.com', name: 'Manual Agent', role: 'specialist',
+        tl_email: 'tl@dabdoob.com', source: 'manual', active: true,
+        freshdesk_id: '', freshdesk_name: '', maqsam_name: '',
+      },
+    ]
+
+    await dqSyncRoster_(undefined, 'admin@dabdoob.com')
+
+    const row = hubDb.tables.roster.find((r) => r.email === 'agent0@dabdoob.com')
+    expect(row?.freshdesk_id).toBe('FD-77')
+    expect(row?.freshdesk_name).toBe('FD Agent 0')
+    expect(row?.maqsam_name).toBe('MQ-9')
+    expect(row?.source).toBe('manual')
+    expect(row?.role).toBe('specialist')
+    expect(row?.tl_email).toBe('tl@dabdoob.com')
+  })
+
   it('grants manualHct only inside dqSyncRoster_ — no violation log', async () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
