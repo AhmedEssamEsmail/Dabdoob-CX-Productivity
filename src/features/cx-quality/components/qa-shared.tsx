@@ -129,6 +129,11 @@ export function QaPage({
   error,
   reload,
   aside,
+  kicker,
+  actions,
+  toolbar,
+  status,
+  stats,
   children,
 }: {
   route: { title: ReactNode }
@@ -137,6 +142,11 @@ export function QaPage({
   error?: string
   reload?: () => void
   aside?: ReactNode
+  kicker?: ReactNode
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
   children?: ReactNode
 }) {
   return (
@@ -145,6 +155,11 @@ export function QaPage({
       title={route.title}
       purpose={sub}
       aside={aside}
+      kicker={kicker}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
       busy={!d && !error}
       error={error}
       onRetry={reload}

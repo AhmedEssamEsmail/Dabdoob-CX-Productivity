@@ -429,7 +429,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
   return (
     <PageShell
       title={e ? `${Df(Number(Yn(e.now).slice(0, 2)))}, ${s}` : n.title}
-      purpose={
+      sub={
         e ? (
           <>
             {To(e.now)}, {Yn(e.now)} Kuwait ·{' '}
@@ -445,55 +445,56 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
           </>
         ) : undefined
       }
-      aside={
+      actions={
         e ? (
-          <div className="page-actions">
+          <>
             {e.role !== 'agent' ? <Hf onDone={i} /> : null}
             {r ? <If item={r} /> : null}
-          </div>
+          </>
         ) : undefined
       }
-      className="cxp aging-page-head"
+      stats={
+        e ? (
+          <>
+            <div className="stat" data-tone={aged ? 'bad' : 'ok'}>
+              <span className="stat-l">Open {gg(topEdge)}+</span>
+              <span className="stat-v num">{Hi(aged)}</span>
+              <span className="stat-d">
+                {aged ? 'in the oldest band' : 'nothing in the oldest band'}
+              </span>
+            </div>
+            <div className="stat">
+              <span className="stat-l">Open now</span>
+              <span className="stat-v num">{Hi(e.openTotal ?? 0)}</span>
+              <span className="stat-d">
+                {unassigned ? `${Hi(unassigned)} not assigned` : 'all assigned'}
+              </span>
+            </div>
+            <div className="stat" data-tone={flags ? 'warn' : 'ok'}>
+              <span className="stat-l">Flags to review</span>
+              <span className="stat-v num">{Hi(flags)}</span>
+              <span className="stat-d">
+                {flags ? 'agents and leads asking for help' : 'nothing waiting on review'}
+              </span>
+            </div>
+            <div className="stat" data-tone="ok">
+              <span className="stat-l">Check-ins in today</span>
+              <span className="stat-v num">{Hi(slotsDone)}</span>
+              <span className="stat-d">
+                {slotsTotal
+                  ? slotsDone === slotsTotal
+                    ? 'all done'
+                    : `${Hi(slotsTotal - slotsDone)} still to come`
+                  : 'no check-ins today'}
+              </span>
+            </div>
+          </>
+        ) : undefined
+      }
+      className="cxp"
       id="page-title"
     >
-      {e ? (
-        <div className="grid grid-4 mb-3">
-          <div className="stat" data-tone={aged ? 'bad' : 'ok'}>
-            <span className="stat-l">Open {gg(topEdge)}+</span>
-            <span className="stat-v num">{Hi(aged)}</span>
-            <span className="stat-d">
-              {aged ? 'in the oldest band' : 'nothing in the oldest band'}
-            </span>
-          </div>
-          <div className="stat">
-            <span className="stat-l">Open now</span>
-            <span className="stat-v num">{Hi(e.openTotal ?? 0)}</span>
-            <span className="stat-d">
-              {unassigned ? `${Hi(unassigned)} not assigned` : 'all assigned'}
-            </span>
-          </div>
-          <div className="stat" data-tone={flags ? 'warn' : 'ok'}>
-            <span className="stat-l">Flags to review</span>
-            <span className="stat-v num">{Hi(flags)}</span>
-            <span className="stat-d">
-              {flags ? 'agents and leads asking for help' : 'nothing waiting on review'}
-            </span>
-          </div>
-          <div className="stat" data-tone="ok">
-            <span className="stat-l">Check-ins in today</span>
-            <span className="stat-v num">{Hi(slotsDone)}</span>
-            <span className="stat-d">
-              {slotsTotal
-                ? slotsDone === slotsTotal
-                  ? 'all done'
-                  : `${Hi(slotsTotal - slotsDone)} still to come`
-                : 'no check-ins today'}
-            </span>
-          </div>
-        </div>
-      ) : t ? null : (
-        <LoTiles />
-      )}
+      {!e ? (t ? null : <LoTiles />) : null}
       {t ? sh({ message: t, onRetry: i }) : null}
       {r ? <Nf item={r} /> : null}
       {e ? (

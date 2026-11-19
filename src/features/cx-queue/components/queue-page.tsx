@@ -150,24 +150,38 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
     <Head
       title={route.title}
       sub={route.purpose ?? 'Every queue now: open work, its age, and how it moved since the last check-in.'}
-      className="aging-page-head"
-      aside={
-        <div className="page-actions">
-          <label className="cx-filter">
-            <Input
-              className="input"
-              type="search"
-              aria-label="Filter queues"
-              placeholder="Search queue names"
-              value={r}
-              onChange={(e) => i(e.target.value)}
-            />
-          </label>
+      toolbar={
+        <label className="cx-filter">
+          <Input
+            className="input"
+            type="search"
+            aria-label="Filter queues"
+            placeholder="Search queue names"
+            value={r}
+            onChange={(e) => i(e.target.value)}
+          />
+        </label>
+      }
+      actions={
+        <Fragment>
           <Button variant="quiet" className="btn btn-quiet" disabled={!t} onClick={() => exportCsv(f, t?.bands?.labels ?? [], new Date().toISOString().slice(0, 10))}>
             Export
           </Button>
           <RefreshNow onDone={s} />
-        </div>
+        </Fragment>
+      }
+      stats={
+        t ? (
+          headStats(t).map((m) => (
+            <div key={m.key} className="stat" data-tone={m.tone}>
+              <span className="stat-l">{m.label}</span>
+              <span className="stat-v num">
+                <Count value={m.value} format={fmt} />
+              </span>
+              <span className="stat-d">{m.sub}</span>
+            </div>
+          ))
+        ) : null
       }
     >
       {children}
@@ -188,17 +202,6 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
   const pickBand = (idx: number) => setAgeBand((cur) => (cur === idx ? null : idx))
   return shell(
     <>
-      <div className="grid grid-5 mb-3">
-        {headStats(t).map((m) => (
-          <div key={m.key} className="stat" data-tone={m.tone}>
-            <span className="stat-l">{m.label}</span>
-            <span className="stat-v num">
-              <Count value={m.value} format={fmt} />
-            </span>
-            <span className="stat-d">{m.sub}</span>
-          </div>
-        ))}
-      </div>
       <section className="cx-panel mb-3" aria-labelledby="age-h">
         <div className="cx-section__head">
           <div className="cx-section__title" id="age-h">

@@ -1234,10 +1234,8 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
       d={a}
       error={s}
       reload={i}
-      sub="Scores use the random daily sample, each agent counted once; other bases are shown apart, and disputed audits return when decided."
-    >
-      {a ? (
-        <>
+      toolbar={
+        a ? (
           <div className="cx-filters">
             <Seg
               name="qa-grain"
@@ -1275,6 +1273,12 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
               ]}
               aria-label="Show agents"
             />
+          </div>
+        ) : undefined
+      }
+      actions={
+        a ? (
+          <>
             <Button
               variant="quiet"
               aria-expanded={p}
@@ -1285,13 +1289,23 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
             <a className="cx-btn cx-btn--quiet" href="#/quality-scores">
               Team scores for any dates
             </a>
-          </div>
+          </>
+        ) : undefined
+      }
+      status={
+        a ? (
           <p className="cx-faint qa-basisnote">
             {qaBasisNote(a.basis ?? 'interaction', a.fallbackDates ?? 0)}
             {a.grain === 'week'
               ? ` Weeks run ${a.weekStartsOn === 1 ? 'Monday to Sunday' : 'Sunday to Saturday'}, like the audit quota.`
               : ''}
           </p>
+        ) : undefined
+      }
+      sub="Scores use the random daily sample, each agent counted once; other bases are shown apart, and disputed audits return when decided."
+    >
+      {a ? (
+        <>
           {p ? (
             <p className="cx-muted">
               Each score has a 95% range from its audits. Low confidence (under

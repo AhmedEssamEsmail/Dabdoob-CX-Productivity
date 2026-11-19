@@ -219,17 +219,13 @@ export function TphGridPage() {
   return (
     <PageShell
       id="page-title"
-      className="cxp page"
+      className="cxp"
       title={ROUTE.title}
       purpose={D("Log which channel each agent is on, check the cases offered each hour, and compare each agent's touches with their cap.")}
-      aside={
-        d ? (
-          <div className="page-actions">
-            <Ja d={d} go={go} />
-            {d.lastAuto ? (
-              <span className="small faint">{D('Last build {at}', { at: $e(d.lastAuto.at) })}</span>
-            ) : null}
-          </div>
+      toolbar={d ? <Ja d={d} go={go} /> : undefined}
+      status={
+        d?.lastAuto ? (
+          <span className="small faint">{D('Last build {at}', { at: $e(d.lastAuto.at) })}</span>
         ) : undefined
       }
       busy={!d && !error}

@@ -130,7 +130,7 @@
 [data-app="people"] .pw-row:hover { background:color-mix(in srgb,var(--cx-bg) 55%,var(--cx-surface)) }
 [data-app="people"] .pw-rows { overflow:hidden }
 [data-app="people"] .pw-load { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)) }
-[data-app="people"] .pw-page { display:flex;flex-direction:column;min-height:calc(100vh - 2 * var(--cx-space-6)) }
+[data-app="people"] .pw-page { display:flex;flex-direction:column;min-height:calc(100vh - 2 * var(--main-pad)) }
 [data-app="people"] .pw-page>.pw-two { flex:1 1 auto }
 
 /* one-on-ones context column */
@@ -261,7 +261,6 @@
 [data-app="people"] .nt-del { color:var(--cx-status-bad-fg) }
 
 /* shell chrome kept people-scoped (rail/nav/va re-declares live in cx-kit) */
-[data-app="people"] .main { padding:var(--cx-space-6) var(--cx-gutter);min-width:0 }
 [data-app="people"] .main>* { animation:page-in .2s var(--cx-ease) backwards }
 
 /* codemodded static inline layout/typography literals (S06-08) */

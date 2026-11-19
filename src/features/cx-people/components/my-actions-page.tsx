@@ -129,7 +129,7 @@ export function MyActionsPage({ route }: { route: { title: string } }) {
     <PageShell
       className="cxp"
       title={route.title}
-      purpose="What you agreed to in 1:1s and meetings — post where each stands before it is reviewed."
+      sub="What you agreed to in 1:1s and meetings — post where each stands before it is reviewed."
       busy={!data && !error}
     >
       {error ? <LoadError message={error} onRetry={reload} /> : null}

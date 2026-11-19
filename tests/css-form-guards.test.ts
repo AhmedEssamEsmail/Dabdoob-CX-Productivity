@@ -114,7 +114,7 @@ function siteOk(cssText: string, sel: string): boolean {
 const SITES: Array<{ file: string; sel: string; where: string }> = [
   { file: 'src/app/refresh.css', sel: '.dq-holform', where: 'people-holidays add-form (repeat(3,minmax(0,1fr)) auto)' },
   { file: 'src/app/refresh.css', sel: '.dq-editor', where: 'inline person editor (repeat(2,minmax(0,1fr)))' },
-  { file: 'src/app/refresh.css', sel: '.aging-page-head .page-actions', where: 'queue page-head search+refresh row' },
+  { file: 'src/app/refresh.css', sel: '.page-actions', where: 'unified page-actions row' },
   { file: 'src/app/styles/people.css', sel: '.pw-new-action', where: '1:1/meeting action rows' },
   { file: 'src/app/styles/people.css', sel: '.oo-proj-grid', where: 'project field grid (9rem < control min)' },
   { file: 'src/app/styles/people.css', sel: '.pw-inline', where: 'flex rows: .field items + buttons' },

@@ -84,20 +84,16 @@ export function MyStatusPage() {
   return (
     <PageShell
       id="page-title"
-      className="cxp page"
+      className="cxp"
       title={ROUTE.title}
       purpose={
         n
           ? `Week of ${re(n.week)} – ${re(addDays(n.week, 6))} · your flagged IDLE time and what each review changed in your productivity.`
           : undefined
       }
-      busy={!n && !error}
-      error={error}
-      onRetry={reload}
-    >
-      {n ? (
-        <Fragment>
-          <div className="grid grid-4 mb-3">
+      stats={
+        n ? (
+          <>
             <div className="stat">
               <span className="stat-l">Productivity (raw)</span>
               <span className="stat-v num">{T(o?.prodRawPct, '%')}</span>
@@ -125,7 +121,15 @@ export function MyStatusPage() {
               <span className="stat-v num">{disputes}</span>
               <span className="stat-d">with your TL, open</span>
             </div>
-          </div>
+          </>
+        ) : undefined
+      }
+      busy={!n && !error}
+      error={error}
+      onRetry={reload}
+    >
+      {n ? (
+        <Fragment>
           <Section
             id="pv-me"
             title="This week"

@@ -492,6 +492,12 @@ Empty-state panel → `cx-empty` (dashed border, centered).
 | with sub | `sub` | `<Empty title="Nothing here" sub="Try widening the filter." />` |
 | with action | `children` | `<Empty title="Empty"><Button variant="primary">Create</Button></Empty>` |
 
+## Page layout
+
+Every routed page renders through `PageShell`'s slot frame (kicker → title →
+sub → actions → toolbar/status bar → stats → body); the slot contract and
+token geometry are documented in `docs/PAGE-FRAME.md`.
+
 ## Theming
 
 Appearance is stored as JSON in `localStorage["cx.appearance"]`

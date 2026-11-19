@@ -117,10 +117,10 @@ export function ProductivityAnalyticsPage() {
   return (
     <PageShell
       id="page-title"
-      className="cxp page"
+      className="cxp"
       title={ROUTE.title}
       purpose="Raw vs reviewed status per agent; reclassifying IDLE time changes the Productivity % denominator."
-      aside={aside}
+      toolbar={aside}
       busy={!s && !error}
       error={
         error

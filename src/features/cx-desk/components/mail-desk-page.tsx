@@ -123,12 +123,29 @@ function Badge({ tone, children }: { tone?: ChipStatus; children: ReactNode }) {
   return <Chip tone={tone}>{children}</Chip>
 }
 
-function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
+function Shell({
+  route,
+  actions,
+  toolbar,
+  status,
+  stats,
+  children,
+}: {
+  route: { title: string; purpose: string }
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
+  children: ReactNode
+}) {
   return (
     <PageShell
       title={route.title}
       purpose={route.purpose}
-      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
       id="page-title"
       className="dk"
     >
@@ -342,23 +359,21 @@ export default function MailDeskPage() {
   const { data, setData, error, reload } = useLoaded(api.mailPage)
   const [filter, setFilter] = useState('all')
   const run = useRun()
-  const aside = data?.isApprover ? (
-    <div className="md-aside">
-      <Button
-        variant="quiet"
-        size="sm"
-        disabled={run.busy}
-        onClick={() =>
-          void run.run(async () => {
-            setData(await api.mailRefresh())
-          })
-        }
-      >
-        {run.busy ? 'Checking Gmail…' : 'Check Gmail now'}
-      </Button>
-      {run.error ? <ErrMsg message={run.error} /> : null}
-    </div>
+  const actions = data?.isApprover ? (
+    <Button
+      variant="quiet"
+      size="sm"
+      disabled={run.busy}
+      onClick={() =>
+        void run.run(async () => {
+          setData(await api.mailRefresh())
+        })
+      }
+    >
+      {run.busy ? 'Checking Gmail…' : 'Check Gmail now'}
+    </Button>
   ) : null
+  const status = data?.isApprover && run.error ? <ErrMsg message={run.error} /> : null
   if (error) {
     return (
       <Shell route={ROUTE}>
@@ -385,7 +400,7 @@ export default function MailDeskPage() {
         : d,
     )
   return (
-    <Shell route={ROUTE} aside={aside}>
+    <Shell route={ROUTE} actions={actions} status={status}>
       <p className="dk-fine md-asof">
         Gmail checked every 10 minutes{data.asOf ? `, last ${V(data.asOf)}` : ''}.
       </p>

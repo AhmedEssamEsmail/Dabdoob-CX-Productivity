@@ -54,19 +54,22 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
       d={n}
       error={a}
       reload={s}
+      status={
+        n && n.canAdd && !n.myAudits.length ? (
+          <p className="cx-note" role="status">
+            <span>
+              A gap is logged from one of your own audits, and you have none
+              in the last 14 days. Audit a ticket from the Audit Desk, then
+              log the gap here the same day.
+            </span>
+          </p>
+        ) : undefined
+      }
       sub="Knowledge-base gaps found while auditing, each linked to its audit and dated when logged. The KB update list is emailed about each one and marks it added. A gap logged the same day as the audit counts towards the auditor's KPI."
     >
       {n ? (
         <>
-          {n.canAdd && !n.myAudits.length ? (
-            <p className="cx-note" role="status">
-              <span>
-                A gap is logged from one of your own audits, and you have none
-                in the last 14 days. Audit a ticket from the Audit Desk, then
-                log the gap here the same day.
-              </span>
-            </p>
-          ) : n.canAdd ? (
+          {n.canAdd && n.myAudits.length ? (
             <form
               className="cx-panel cx-panel--pad qa-grid"
               onSubmit={(g) => {

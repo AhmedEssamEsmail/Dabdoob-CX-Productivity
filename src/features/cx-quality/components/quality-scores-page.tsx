@@ -476,10 +476,8 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
       d={i}
       error={c}
       reload={l}
-      sub="How the team scores for the dates you pick: the team score uses the random daily sample, every row counts all audits."
-    >
-      {i && f ? (
-        <>
+      toolbar={
+        i && f ? (
           <div className="cx-filters qs-bar">
             <Seg
               name="qs-preset"
@@ -517,9 +515,6 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                 <Button type="submit">Show</Button>
               </form>
             ) : null}
-            <span className="qs-range">
-              {qaDayLabel(i.from)} to {qaDayLabel(i.to)}
-            </span>
             <Toggle className="qs-check" checked={p} onChange={(c) => m(c)}>
               Compare with the {i.days} days before
             </Toggle>
@@ -535,12 +530,27 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
               aria-label="Show agents"
             />
           </div>
-          <p className="cx-faint qa-basisnote">
-            {qaBasisNote(i.basis, i.fallbackDates)}
-            {i.fallbackDates && i.basis === 'interaction'
-              ? ' Older audits get theirs once backfillQaInteractionDates has run.'
-              : ''}
-          </p>
+        ) : undefined
+      }
+      status={
+        i && f ? (
+          <>
+            <span className="qs-range">
+              {qaDayLabel(i.from)} to {qaDayLabel(i.to)}
+            </span>
+            <p className="cx-faint qa-basisnote">
+              {qaBasisNote(i.basis, i.fallbackDates)}
+              {i.fallbackDates && i.basis === 'interaction'
+                ? ' Older audits get theirs once backfillQaInteractionDates has run.'
+                : ''}
+            </p>
+          </>
+        ) : undefined
+      }
+      sub="How the team scores for the dates you pick: the team score uses the random daily sample, every row counts all audits."
+    >
+      {i && f ? (
+        <>
           <section className="cx-panel" aria-labelledby="qs-team-h">
             <div className="cx-section__head">
               <div>

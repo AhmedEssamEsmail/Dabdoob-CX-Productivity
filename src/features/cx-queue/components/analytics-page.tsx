@@ -316,7 +316,7 @@ export function AnalyticsPage({ route }: { route: { title: string } }) {
     <Head
       title={route.title}
       sub="Contacts coming in: inbound calls, chats and internal escalations raised outside CX. Weeks start on Sunday."
-      aside={n ? <AsOfHint iso={n.dataAsOf} what="Inflow" /> : null}
+      status={n ? <AsOfHint iso={n.dataAsOf} what="Inflow" /> : null}
     >
       {s ? <LoadError message={s} onRetry={a} /> : null}
       {!n || !c ? (

@@ -683,16 +683,16 @@ export function AgentsPage({ route }: { route: { title: string } }) {
     <PageShell
       className="cxp"
       title={route.title}
-      purpose={
+      sub={
         data
           ? teamView
             ? D('Team scorecard from the live tables: ranking and agent detail for any period.')
             : D('Your scorecard from the live tables.')
           : undefined
       }
-      aside={
+      toolbar={
         data ? (
-          <div className="page-actions">
+          <>
             <Input
               id="sc-from"
               type="date"
@@ -713,6 +713,12 @@ export function AgentsPage({ route }: { route: { title: string } }) {
             <Button variant="primary" onClick={() => apply(from, to)}>
               {D('Apply')}
             </Button>
+          </>
+        ) : null
+      }
+      actions={
+        data ? (
+          <>
             <Button onClick={() => apply(addDays(todayStr, -30), todayStr)}>{D('30 days')}</Button>
             <Button onClick={() => apply(monthStart(lastMonthEnd), lastMonthEnd)}>{D('Last month')}</Button>
             <Button onClick={() => apply(monthStart(todayStr), todayStr)}>{D('This month')}</Button>
@@ -721,8 +727,52 @@ export function AgentsPage({ route }: { route: { title: string } }) {
                 {refreshing ? D('Rebuilding…') : D('Refresh')}
               </Button>
             ) : null}
-            <AsOfHint iso={data.dataAsOf} what={D('Live tables')} />
-          </div>
+          </>
+        ) : null
+      }
+      status={data ? <AsOfHint iso={data.dataAsOf} what={D('Live tables')} /> : null}
+      stats={
+        agents.length ? (
+          <>
+            {teamScore !== null ? (
+              <div className="stat">
+                <span className="stat-l">{D('Team KPI score')}</span>
+                <span className="stat-v num">{teamScore}</span>
+                <span className="stat-d">
+                  {typeof data.prevTeam === 'number' && teamScore !== null ? (
+                    <>
+                      {(() => {
+                        const d = Math.round((teamScore - data.prevTeam) * 10) / 10
+                        const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat'
+                        const txt = d > 0 ? `▲ ${d}` : d < 0 ? `▼ ${Math.abs(d)}` : '='
+                        return <span className={cls}>{txt}</span>
+                      })()}{' '}
+                      {D('vs prior period')}
+                    </>
+                  ) : (
+                    D('{n} agents scored', { n: String(scoredAgents.length) })
+                  )}
+                </span>
+              </div>
+            ) : null}
+            <div className="stat" data-tone="ok">
+              <span className="stat-l">{D('Agents at/above 95')}</span>
+              <span className="stat-v num">{atOrAbove95}</span>
+              <span className="stat-d">{D('of {n} scored', { n: String(scoredAgents.length) })}</span>
+            </div>
+            <div className="stat" data-tone="warn">
+              <span className="stat-l">{D('Below 75 band')}</span>
+              <span className="stat-v num">{below75}</span>
+              <span className="stat-d">{D('Pay impact · see detail')}</span>
+            </div>
+            {coverage !== null ? (
+              <div className="stat">
+                <span className="stat-l">{D('Data coverage')}</span>
+                <span className="stat-v num">{coverage}%</span>
+                <span className="stat-d">{D('{n} agent-days', { n: String(agentDays) })}</span>
+              </div>
+            ) : null}
+          </>
         ) : null
       }
       busy={!data && !error}
@@ -730,48 +780,6 @@ export function AgentsPage({ route }: { route: { title: string } }) {
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {data ? (
         <>
-          {agents.length ? (
-            <div className="grid grid-4 mb-3">
-              {teamScore !== null ? (
-                <div className="stat">
-                  <span className="stat-l">{D('Team KPI score')}</span>
-                  <span className="stat-v num">{teamScore}</span>
-                  <span className="stat-d">
-                    {typeof data.prevTeam === 'number' && teamScore !== null ? (
-                      <>
-                        {(() => {
-                          const d = Math.round((teamScore - data.prevTeam) * 10) / 10
-                          const cls = d > 0 ? 'delta up' : d < 0 ? 'delta down' : 'delta flat'
-                          const txt = d > 0 ? `▲ ${d}` : d < 0 ? `▼ ${Math.abs(d)}` : '='
-                          return <span className={cls}>{txt}</span>
-                        })()}{' '}
-                        {D('vs prior period')}
-                      </>
-                    ) : (
-                      D('{n} agents scored', { n: String(scoredAgents.length) })
-                    )}
-                  </span>
-                </div>
-              ) : null}
-              <div className="stat" data-tone="ok">
-                <span className="stat-l">{D('Agents at/above 95')}</span>
-                <span className="stat-v num">{atOrAbove95}</span>
-                <span className="stat-d">{D('of {n} scored', { n: String(scoredAgents.length) })}</span>
-              </div>
-              <div className="stat" data-tone="warn">
-                <span className="stat-l">{D('Below 75 band')}</span>
-                <span className="stat-v num">{below75}</span>
-                <span className="stat-d">{D('Pay impact · see detail')}</span>
-              </div>
-              {coverage !== null ? (
-                <div className="stat">
-                  <span className="stat-l">{D('Data coverage')}</span>
-                  <span className="stat-v num">{coverage}%</span>
-                  <span className="stat-d">{D('{n} agent-days', { n: String(agentDays) })}</span>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
           <section className="cx-section" aria-labelledby="sc-period">
             <div className="cx-section__head">
               <h2 className="cx-section__title" id="sc-period">

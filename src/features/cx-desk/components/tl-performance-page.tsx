@@ -93,12 +93,29 @@ const dash = (v: number | null | undefined) => (v === null || v === undefined ? 
 const mins = (v: number | null) => (v === null ? '–' : v >= 90 ? `${Math.round(v / 6) / 10} h` : `${v} min`)
 const PART: Record<string, string> = { team: 'team KPI', responsibilities: 'responsibilities' }
 const zone = (v: number, z: Zones) => (v >= z.exceeds ? 'exceeds' : v >= z.meets ? 'meets' : 'below')
-function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
+function Shell({
+  route,
+  actions,
+  toolbar,
+  status,
+  stats,
+  children,
+}: {
+  route: { title: string; purpose: string }
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
+  children: ReactNode
+}) {
   return (
     <PageShell
       title={route.title}
       purpose={route.purpose}
-      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
       id="page-title"
       className="dk"
     >
@@ -625,7 +642,7 @@ export default function TlPerformancePage() {
   }, [])
   const load = useCallback(() => api.tlPerformance(tl), [tl])
   const { data, error, reload } = useLoaded(load)
-  const aside =
+  const toolbar =
     data && data.tls.length > 1 ? (
       <label className="dk-pick">
         <span className="cx-sr">Team lead</span>
@@ -639,7 +656,7 @@ export default function TlPerformancePage() {
       </label>
     ) : null
   return (
-    <Shell route={ROUTE} aside={aside}>
+    <Shell route={ROUTE} toolbar={toolbar}>
       {error ? (
         <Failed message={error} retry={() => void reload()} />
       ) : !data || (tl && data.tl !== tl) ? (

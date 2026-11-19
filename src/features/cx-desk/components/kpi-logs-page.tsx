@@ -40,9 +40,32 @@ const B = (v: string) => {
 }
 const todayKw = () => new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10)
 
-function Shell({ route, children }: { route: { title: string; purpose: string }; children: ReactNode }) {
+function Shell({
+  route,
+  actions,
+  toolbar,
+  status,
+  stats,
+  children,
+}: {
+  route: { title: string; purpose: string }
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
+  children: ReactNode
+}) {
   return (
-    <PageShell title={route.title} purpose={route.purpose} id="page-title" className="dk">
+    <PageShell
+      title={route.title}
+      purpose={route.purpose}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
+      id="page-title"
+      className="dk"
+    >
       {children}
     </PageShell>
   )

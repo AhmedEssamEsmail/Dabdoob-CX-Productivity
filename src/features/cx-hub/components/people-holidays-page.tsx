@@ -347,7 +347,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
     <Vf
       title={n.title}
       sub="Role, who each person reports to, where they are based, their days off, and public holidays by country. The daily HCT sync never changes what you set here."
-      aside={
+      actions={
         <Button className="cx-btn" disabled={p} onClick={x}>
           {p ? 'Syncing…' : 'Sync roster from HCT now'}
         </Button>

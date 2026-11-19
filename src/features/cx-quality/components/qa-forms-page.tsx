@@ -361,20 +361,8 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
       className="cxp"
       title={route.title}
       purpose="The questions auditors answer, per channel. Critical questions set the audit to 0 when failed. Each save is a new version; past audits keep theirs."
-      busy={!n && !a && !i}
-      error={a}
-      onRetry={s}
-    >
-      {i ? (
-        <FormBuilder
-          draft={i}
-          onClose={(l) => {
-            c(null)
-            if (l) s()
-          }}
-        />
-      ) : n ? (
-        <>
+      actions={
+        n && !i ? (
           <Button
             variant="primary"
             onClick={() =>
@@ -392,6 +380,22 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
           >
             New form
           </Button>
+        ) : undefined
+      }
+      busy={!n && !a && !i}
+      error={a}
+      onRetry={s}
+    >
+      {i ? (
+        <FormBuilder
+          draft={i}
+          onClose={(l) => {
+            c(null)
+            if (l) s()
+          }}
+        />
+      ) : n ? (
+        <>
           <TableScroll label="Audit forms" className="cx-panel cx-tablewrap qa-gap">
             <table className="cx-table">
               <thead>

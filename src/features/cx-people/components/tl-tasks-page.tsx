@@ -916,17 +916,16 @@ export function TlTasksPage({ route }: { route: { title: string; purpose?: strin
   return (
     <PwShell
       route={routeOf('tl-tasks', route)}
-      aside={
+      actions={
         data ? (
-          <div className="pw-actions-bar">
-            <Button
-              variant="primary"
-              aria-expanded={formOpen}
-              onClick={() => setFormOpen((o) => !o)}
-            >
-              {formOpen ? 'Close the form' : data.me.role === 'admin' ? 'Assign a task' : 'Add a task'}
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            aria-expanded={formOpen}
+            className="tl-task-form-btn"
+            onClick={() => setFormOpen((o) => !o)}
+          >
+            {formOpen ? 'Close the form' : data.me.role === 'admin' ? 'Assign a task' : 'Add a task'}
+          </Button>
         ) : null
       }
     >

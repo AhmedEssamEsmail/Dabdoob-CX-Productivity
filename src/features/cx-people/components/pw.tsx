@@ -126,6 +126,11 @@ export function PwLate({ message, retry }: { message: string; retry: () => void 
 /** rt() — the pw page shell: delegates to shared PageShell, keeping the .pw-page marker. */
 export function PwShell({
   route,
+  kicker,
+  actions,
+  toolbar,
+  status,
+  stats,
   children,
   aside,
   busy,
@@ -133,6 +138,11 @@ export function PwShell({
   onRetry,
 }: {
   route: { title: ReactNode; purpose?: ReactNode }
+  kicker?: ReactNode
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
   children?: ReactNode
   aside?: ReactNode
   busy?: boolean
@@ -143,6 +153,11 @@ export function PwShell({
     <PageShell
       title={route.title}
       purpose={route.purpose}
+      kicker={kicker}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
       aside={aside}
       busy={busy}
       error={error}

@@ -320,28 +320,26 @@ export function StatusValidationPage() {
   return (
     <PageShell
       id="page-title"
-      className="cxp page"
+      className="cxp"
       title={ROUTE.title}
       purpose={
         n
           ? `IDLE time with ${n.rule.x} or more distinct cases inside ${n.rule.windowMin} minutes (intervals of ${n.rule.minIntervalMin} minutes or more). Until you review a flag, its suggested status counts; on day ${n.rule.reviewDays} it is accepted automatically.`
           : undefined
       }
-      aside={
+      toolbar={
         n ? (
-          <div className="page-actions">
-            <Seg
-              name="pv-view"
-              aria-label="Flag views"
-              value={view}
-              onChange={(v) => changeView(v as PvView)}
-              options={[
-                { value: 'open', label: `Open (${n.pending.length})` },
-                { value: 'reviewed', label: `Reviewed (${n.decided.length})` },
-                { value: 'disputed', label: `Disputed (${n.disputes.length})` },
-              ]}
-            />
-          </div>
+          <Seg
+            name="pv-view"
+            aria-label="Flag views"
+            value={view}
+            onChange={(v) => changeView(v as PvView)}
+            options={[
+              { value: 'open', label: `Open (${n.pending.length})` },
+              { value: 'reviewed', label: `Reviewed (${n.decided.length})` },
+              { value: 'disputed', label: `Disputed (${n.disputes.length})` },
+            ]}
+          />
         ) : undefined
       }
       busy={!n && !error}

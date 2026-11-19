@@ -57,6 +57,32 @@ export const QUIRKS: Record<string, { skipToolbar?: boolean; note?: string }> = 
     skipToolbar: true,
     note: 'primary action books a real calendar event (mutating POST /api/hub/my-day)',
   },
+  // "/" renders MyDayPage in place (src/app/page.tsx), so its primary is the
+  // same "Book focus block" that fires the mutating POST /api/hub/my-day —
+  // clicking it reproduced a console-500 on re-book. Must never click.
+  '/': {
+    skipToolbar: true,
+    note: 'renders MyDayPage; primary books a real calendar event (mutating POST /api/hub/my-day)',
+  },
+  // "Import now" fires a mutating POST (importNow) and the label swaps to
+  // "Importing…" — the contract must never click it. Recorded in the baseline.
+  '/audit-queue': {
+    skipToolbar: true,
+    note: 'primary action triggers a mutating import POST (label swaps to "Importing…")',
+  },
+  // The primary fires a mutating HCT sync POST and the label swaps to
+  // "Syncing…" — the contract must never click it. Recorded in the baseline.
+  '/people-holidays': {
+    skipToolbar: true,
+    note: 'primary action triggers a mutating HCT sync POST (label swaps to "Syncing…")',
+  },
+  // "New form" sets the editing state and unmounts .page-actions entirely
+  // (qa-forms-page.tsx `actions={n && !i ? … : undefined}`) — same precedent
+  // as /kb-tracker, so box stability cannot apply. Recorded in the baseline.
+  '/qa-forms': {
+    skipToolbar: true,
+    note: 'primary action unmounts .page-actions by opening the form editor',
+  },
 }
 
 /** Append the parent rel-path of every page.tsx under `dir` to `out`. */

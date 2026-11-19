@@ -812,13 +812,15 @@ export function MeetingsPage({ route }: { route: { title: string; purpose?: stri
   return (
     <PwShell
       route={routeOf('meetings', route)}
-      aside={
+      actions={
         data ? (
-          <div className="pw-actions-bar">
-            <Button aria-expanded={formOpen} onClick={() => setFormOpen((o) => !o)}>
-              {formOpen ? 'Close the form' : 'Set up a meeting series'}
-            </Button>
-          </div>
+          <Button
+            aria-expanded={formOpen}
+            className="meetings-form-btn"
+            onClick={() => setFormOpen((o) => !o)}
+          >
+            {formOpen ? 'Close the form' : 'Set up a meeting series'}
+          </Button>
         ) : null
       }
     >

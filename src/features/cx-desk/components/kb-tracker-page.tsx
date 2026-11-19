@@ -48,12 +48,29 @@ const toLocal = (iso: string) => (iso ? utc3(iso).toISOString().slice(0, 16) : '
 const fromLocal = (v: string) => (v ? new Date(Date.parse(v + ':00+03:00')).toISOString() : '')
 const blank = (): Partial<KbRow> => ({ topic: '', requestedAt: new Date().toISOString(), doneAt: '', accurate: '', note: '' })
 
-function Shell({ route, aside, children }: { route: { title: string; purpose: string }; aside?: ReactNode; children: ReactNode }) {
+function Shell({
+  route,
+  actions,
+  toolbar,
+  status,
+  stats,
+  children,
+}: {
+  route: { title: string; purpose: string }
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
+  children: ReactNode
+}) {
   return (
     <PageShell
       title={route.title}
       purpose={route.purpose}
-      aside={aside ? <div className="page-actions">{aside}</div> : undefined}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
       id="page-title"
       className="dk"
     >
@@ -180,7 +197,7 @@ export default function KbTrackerPage() {
   return (
     <Shell
       route={ROUTE}
-      aside={
+      actions={
         data.canEdit && !editing ? (
           <Button variant="primary" className="dk-sm" onClick={() => setEditing(blank())}>
             Add a KB update

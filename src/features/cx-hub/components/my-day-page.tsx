@@ -25,12 +25,6 @@ const Wn = (n: string | number | Date): string => {
     ? e.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: bo })
     : ''
 }
-const Hm = (n: string): string => {
-  const e = new Date(`${n}T12:00:00+03:00`)
-  return wo(e)
-    ? e.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: bo })
-    : String(n || '')
-}
 const co = (n: string): string => {
   const e = new Date(`${String(n).slice(0, 10)}T12:00:00+03:00`)
   return wo(e)
@@ -1042,21 +1036,10 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
   }
   return (
     <PageShell
-      title={
-        <>
-          {w ? (
-            <span className="kicker kicker--block">
-              {Hm(w.today)}
-            </span>
-          ) : (
-            ' '
-          )}
-          {n.title}
-        </>
-      }
+      title={n.title}
       purpose={w ? $m(w, _) : undefined}
-      aside={
-        <div className="page-actions md-head-actions">
+      actions={
+        <>
           <Button
             type="button"
             className="btn btn-primary md-book-btn"
@@ -1065,28 +1048,36 @@ export function MyDayPage({ route: n }: { route: { title: string } }) {
           >
             {bb ? D('Booking…') : D('Book focus block')}
           </Button>
-          <Seg
-            name="md-agenda-range"
-            aria-label={D('Agenda range')}
-            value={pd}
-            onChange={(v) => setPd(v as 'today' | 'week')}
-            options={[
-              { value: 'today', label: D('Today') },
-              { value: 'week', label: D('Week') },
-            ]}
-          />
-          {!w ? <RingSkeleton /> : w.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
           {T ? <If item={T} /> : null}
+          <Button type="button" className="btn btn-quiet" onClick={x} disabled={!w || b}>
+            {b ? 'Refreshing…' : 'Refresh'}
+          </Button>
+        </>
+      }
+      toolbar={
+        <Seg
+          name="md-agenda-range"
+          aria-label={D('Agenda range')}
+          value={pd}
+          onChange={(v) => setPd(v as 'today' | 'week')}
+          options={[
+            { value: 'today', label: D('Today') },
+            { value: 'week', label: D('Week') },
+          ]}
+        />
+      }
+      status={
+        <>
+          {!w ? <RingSkeleton /> : w.events.today.ok ? <Km events={w.events.today.data} nowMs={_} /> : null}
           {S ? (
             <span className="md-fresh" role="status">
               {b ? `Showing ${Wn(S)}, updating…` : `Updated ${Wn(S)}`}
             </span>
           ) : null}
-          <Button type="button" className="btn btn-quiet" onClick={x} disabled={!w || b}>
-            {b ? 'Refreshing…' : 'Refresh'}
-          </Button>
-        </div>
+        </>
       }
+      className="md-page"
+      id="page-title"
     >
       {u && w ? (
         <p className="md-banner" role="alert">

@@ -262,7 +262,28 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
     )
   }
   return (
-    <PwShell route={routeOf('notes', route)}>
+    <PwShell
+      route={routeOf('notes', route)}
+      toolbar={
+        data ? (
+          <Input
+            className="input nt-search"
+            type="search"
+            placeholder="Search notes and tags"
+            aria-label="Search notes and tags"
+            value={search}
+            onInput={(e) => setSearch(e.currentTarget.value)}
+          />
+        ) : null
+      }
+      status={
+        data ? (
+          <span className="pw-muted pw-small pw-num">
+            {search.trim() ? `${shown.length} of ${notes.length}` : `${notes.length} notes`}
+          </span>
+        ) : null
+      }
+    >
       <datalist id="note-tags">
         {tags.map((t) => (
           <option key={t} value={t} />
@@ -275,19 +296,6 @@ export function NotesPage({ route }: { route: { title: string; purpose?: string 
         <PwLate message={error} retry={reload} />
       ) : data ? (
         <>
-          <div className="nt-bar">
-            <Input
-              className="input nt-search"
-              type="search"
-              placeholder="Search notes and tags"
-              aria-label="Search notes and tags"
-              value={search}
-              onInput={(e) => setSearch(e.currentTarget.value)}
-            />
-            <span className="pw-muted pw-small pw-num">
-              {search.trim() ? `${shown.length} of ${notes.length}` : `${notes.length} notes`}
-            </span>
-          </div>
           <PwErr message={busy.error} />
           {shown.length ? (
             <ol className="nt-list">

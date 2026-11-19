@@ -12,7 +12,7 @@ import {
   useState,
 } from 'react'
 import { toast } from '@/features/shared/components/shell/Toasts'
-import { Button, Input, PageShell, Seg, Select } from '@/features/shared/components/ui'
+import { Button, Input, PageShell, RefreshButton, Seg, Select } from '@/features/shared/components/ui'
 import { Failed } from '@/features/shared/components/ui/PageStates'
 import { getBoot, setBoot, useBootSelector } from '@/features/shared/shell/context'
 import { applyAppearance, D } from '@/features/shared/shell/i18n'
@@ -23,7 +23,6 @@ import {
 } from '@/features/shared/lib/fetch-json'
 import { usePageData } from '@/features/shared/lib/use-page-data'
 import { loadOptions } from '@/features/shared/lib/use-options'
-import { usePoll } from '@/features/shared/lib/use-poll'
 import { fmt } from '@/features/shared/lib/format'
 
 /**
@@ -193,21 +192,42 @@ export { Failed as sh }
 /* ------------------------------------------------------------------ Vf */
 export function Vf({
   title,
+  kicker,
   sub,
+  actions,
+  toolbar,
+  status,
+  stats,
   aside,
   children,
   className,
   id,
 }: {
   title: ReactNode
+  kicker?: ReactNode
   sub?: ReactNode
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
   aside?: ReactNode
   children?: ReactNode
   className?: string
   id?: string
 }) {
   return (
-    <PageShell title={title} purpose={sub} aside={aside} className={className} id={id}>
+    <PageShell
+      title={title}
+      kicker={kicker}
+      purpose={sub}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
+      aside={aside}
+      className={className}
+      id={id}
+    >
       {children}
     </PageShell>
   )
@@ -547,48 +567,12 @@ export function rg({
 
 /* -------------------------------------------------------------- Hf refresh */
 export function Hf({ onDone }: { onDone: () => void }) {
-  const [busy, setBusy] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [until, setUntil] = useState(0)
-  const [now, setNow] = useState(Date.now) // legacy he(Date.now()) — lazy init, same value
-  usePoll(until > now ? 1e3 : null, () => setNow(Date.now()), { immediate: false })
-  const left = Math.max(0, Math.ceil((until - now) / 1e3))
-  const run = () => {
-    setBusy(true)
-    setMsg('')
-    Of.refreshNow().then(
-      (u: Record<string, never>) => {
-        setBusy(false)
-        const d =
-          u.refreshed && u.synced_to
-            ? `Freshdesk changes up to ${Yn(u.synced_to as string)} Kuwait time.`
-            : ''
-        setMsg(
-          (d + ' ' + ((u.message as string) || '')).replace(/\s*Try again in \d+ s\.$/, '').trim()
-        )
-        if (u.retryInS) {
-          setUntil(Date.now() + (u.retryInS as number) * 1e3)
-          setNow(Date.now())
-        }
-        if (u.refreshed) onDone()
-      },
-      (u) => {
-        setBusy(false)
-        setMsg((u as Error).message)
-      }
-    )
-  }
   return (
-    <span className="cx-refresh">
-      <Button className="cx-btn" disabled={busy || left > 0} aria-busy={busy} onClick={run}>
-        {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
-      </Button>
-      {msg ? (
-        <span className="cx-section__hint" role="status">
-          {msg}
-        </span>
-      ) : null}
-    </span>
+    <RefreshButton
+      btnClassName="cx-btn"
+      refresh={() => Of.refreshNow()}
+      onDone={onDone}
+    />
   )
 }
 

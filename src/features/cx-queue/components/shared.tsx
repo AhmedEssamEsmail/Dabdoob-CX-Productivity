@@ -8,12 +8,11 @@
  */
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { PageHead } from '@/features/shared/components/shell/ui'
-import { Button, Input, PageShell, Select } from '@/features/shared/components/ui'
+import { Button, Input, PageShell, RefreshButton, Select } from '@/features/shared/components/ui'
 import { pageParams } from '@/features/shared/shell/gates'
 import { FetchError, fetchJson as baseFetchJson, postJson } from '@/features/shared/lib/fetch-json'
 import { useOptions } from '@/features/shared/lib/use-options'
 import { usePageData } from '@/features/shared/lib/use-page-data'
-import { usePoll } from '@/features/shared/lib/use-poll'
 import { fmt } from '@/features/shared/lib/format'
 
 export { FetchError, postJson }
@@ -42,9 +41,42 @@ export function AgeChip({ hours, band }: { hours: number; band: number }) {
   )
 }
 
-export function Head({ title, sub, aside, className, children }: { title: string; sub: string; aside?: React.ReactNode; className?: string; children?: React.ReactNode }) {
+export function Head({
+  title,
+  sub,
+  aside,
+  className,
+  children,
+  kicker,
+  actions,
+  toolbar,
+  status,
+  stats,
+}: {
+  title: string
+  sub: string
+  aside?: React.ReactNode
+  className?: string
+  children?: React.ReactNode
+  kicker?: React.ReactNode
+  actions?: React.ReactNode
+  toolbar?: React.ReactNode
+  status?: React.ReactNode
+  stats?: React.ReactNode
+}) {
   return (
-    <PageShell title={title} purpose={sub} aside={aside} className={className} id="page-title">
+    <PageShell
+      title={title}
+      purpose={sub}
+      aside={aside}
+      className={className}
+      id="page-title"
+      kicker={kicker}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
+    >
       {children}
     </PageShell>
   )
@@ -363,44 +395,8 @@ export function CxFilters({
 
 /** ys — Refresh now, with the retry cooldown countdown. */
 export function RefreshNow({ onDone }: { onDone: () => void }) {
-  const [busy, setBusy] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [until, setUntil] = useState(0)
-  // eslint-disable-next-line react-hooks/purity -- verbatim: cooldown timer seeds from Date.now()
-  const [now, setNow] = useState(Date.now())
-  usePoll(until > now ? 1000 : null, () => setNow(Date.now()), { immediate: false })
-  const left = Math.max(0, Math.ceil((until - now) / 1000))
-  const go = () => {
-    setBusy(true)
-    setMsg('')
-    fetchJsonLegacy('/api/queue/refresh', {}).then(
-      (c) => {
-        setBusy(false)
-        const o = c.refreshed && c.synced_to ? `Freshdesk changes up to ${hm(c.synced_to)} Kuwait time.` : ''
-        setMsg((o + ' ' + (c.message || '')).replace(/\s*Try again in \d+ s\.$/, '').trim())
-        if (c.retryInS) {
-          setUntil(Date.now() + c.retryInS * 1000)
-          setNow(Date.now())
-        }
-        if (c.refreshed) onDone()
-      },
-      (c) => {
-        setBusy(false)
-        setMsg(c.message)
-      },
-    )
-  }
   return (
-    <span className="cx-refresh">
-      <Button disabled={busy || left > 0} aria-busy={busy} onClick={go}>
-        {busy ? 'Refreshing…' : left > 0 ? `Refresh again in ${left} s` : 'Refresh now'}
-      </Button>
-      {msg ? (
-        <span className="cx-section__hint" role="status">
-          {msg}
-        </span>
-      ) : null}
-    </span>
+    <RefreshButton refresh={() => fetchJsonLegacy('/api/queue/refresh', {})} onDone={onDone} />
   )
 }
 

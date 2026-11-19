@@ -36,6 +36,12 @@ function SiteChromeBody({ children }: { children: ReactNode }) {
     if (isAuthPage) applyAppearance(readAppearance())
   }, [isAuthPage])
 
+  /* One-shot latch: once the shell mounts, #app[data-booted] lets SPLASH_CSS
+     keep .boot-splash hidden for the rest of the session. */
+  useEffect(() => {
+    document.getElementById('app')?.setAttribute('data-booted', '')
+  }, [])
+
   if (isAuthPage) {
     return (
       <main id="main" className="main" tabIndex={-1}>

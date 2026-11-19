@@ -243,8 +243,8 @@ function AuditQueuePage({
       className="cxp page"
       title={route.title}
       purpose="Tickets to audit today: audits team leads asked for first, then the daily sample of four per agent. Start audit opens the form with the ticket, agent and team lead filled in, and records when you started. Under 100% opens a CTL for the team lead."
-      aside={
-        <div className="page-actions">
+      toolbar={
+        <>
           {s ? (
             <Seg
               name="qa-queue-status"
@@ -312,27 +312,29 @@ function AuditQueuePage({
               }}
             />
           ) : null}
-          {s?.isAdmin ? (
-            <Button
-              disabled={u}
-              onClick={() => {
-                d(true)
-                P.importNow().then(
-                  (w) => (d(false), Q(w.note || w.skipped || 'Imported.'), c()),
-                  (w) => (d(false), Q(w.message, 'error'))
-                )
-              }}
-            >
-              {u
-                ? s?.engineLive
-                  ? 'Building…'
-                  : 'Importing…'
-                : s?.engineLive
-                  ? 'Build the queue now'
-                  : 'Import the queue now'}
-            </Button>
-          ) : null}
-        </div>
+        </>
+      }
+      actions={
+        s?.isAdmin ? (
+          <Button
+            disabled={u}
+            onClick={() => {
+              d(true)
+              P.importNow().then(
+                (w) => (d(false), Q(w.note || w.skipped || 'Imported.'), c()),
+                (w) => (d(false), Q(w.message, 'error'))
+              )
+            }}
+          >
+            {u
+              ? s?.engineLive
+                ? 'Building…'
+                : 'Importing…'
+              : s?.engineLive
+                ? 'Build the queue now'
+                : 'Import the queue now'}
+          </Button>
+        ) : null
       }
     >
       {i ? <LoadError message={i} onRetry={c} /> : null}

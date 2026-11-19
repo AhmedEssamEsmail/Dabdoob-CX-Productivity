@@ -929,25 +929,27 @@ export function HeatmapPage({ route }: { route: { title: string } }) {
       className="hm-page"
       title={route.title}
       purpose="How many agents each half hour needs, and how many people to hire for each shift."
-      aside={
-        <div className="hm-head-actions">
-          {n && n.inputs.length ? (
-            <div className="field hm-source">
-              <label className="field-label" htmlFor="hm-src">Volumes</label>
-              <Select id="hm-src" className="select" value={r?.id ?? ''} onChange={(S) => L(S.currentTarget.value)}>
-                {n.inputs.map((S: any) => (
-                  <option key={S.id} value={S.id}>{S.name}</option>
-                ))}
-              </Select>
-            </div>
-          ) : null}
+      toolbar={
+        n && n.inputs.length ? (
+          <div className="field hm-source">
+            <label className="field-label" htmlFor="hm-src">Volumes</label>
+            <Select id="hm-src" className="select" value={r?.id ?? ''} onChange={(S) => L(S.currentTarget.value)}>
+              {n.inputs.map((S: any) => (
+                <option key={S.id} value={S.id}>{S.name}</option>
+              ))}
+            </Select>
+          </div>
+        ) : null
+      }
+      actions={
+        <>
           <Button variant="quiet" onClick={() => hmDownload_('heatmap-example-rows.csv', hmExampleLong_())} title="A small file in the format the upload expects. Replace its numbers with yours.">
             Download example file
           </Button>
           <Button variant="primary" onClick={() => b(true)} disabled={!n}>
             Upload heatmap
           </Button>
-        </div>
+        </>
       }
     >
       {h ? (

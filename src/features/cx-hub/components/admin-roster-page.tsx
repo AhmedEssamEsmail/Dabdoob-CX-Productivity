@@ -91,16 +91,14 @@ export function AdminRosterPage() {
     <PageShell
       title="Roster"
       purpose="Roles, team leads and active status for the CX roster."
-      aside={
-        <div className="page-actions">
-          <Button
-            className="roster-add-btn"
-            variant={showAddForm ? 'quiet' : 'primary'}
-            onClick={() => setShowAddForm(!showAddForm)}
-          >
-            {showAddForm ? 'Cancel' : 'Add user'}
-          </Button>
-        </div>
+      actions={
+        <Button
+          className="roster-add-btn"
+          variant={showAddForm ? 'quiet' : 'primary'}
+          onClick={() => setShowAddForm(!showAddForm)}
+        >
+          {showAddForm ? 'Cancel' : 'Add user'}
+        </Button>
       }
       id="page-title"
     >

@@ -106,37 +106,31 @@ export function AgingPage({ route }: { route: { title: string } }) {
   return (
     <PageShell
       id="page-title"
-      className="cxp aging-page-head"
+      className="cxp"
       title={n?.scope === 'agent' ? D('My aging cases') : route.title}
       purpose={
         n?.scope === 'agent'
           ? D('Your open tickets, coloured by how long they have waited. Stuck on one? Ask your team lead for help from its row.')
           : D('Every open ticket, coloured by how long it has waited. The redder the row, the longer the customer has been left.')
       }
-      aside={
-        <div className="page-actions ag-actions-full">
-          <Seg
-            name="ag-assign"
-            value={assign}
-            onChange={(v) => {
-              setAssign(v as 'all' | 'ours' | 'unassigned')
-              setShown(PAGE)
-            }}
-            options={[
-              { value: 'all', label: D('All') },
-              { value: 'ours', label: D('Ours') },
-              { value: 'unassigned', label: D('Unassigned') },
-            ]}
-            aria-label={D('Assignment')}
-          />
-          {n ? (
-            <>
-              <AsOfHint iso={n.dataAsOf} />
-              {n.scope !== 'agent' ? <RefreshNow onDone={reload} /> : null}
-            </>
-          ) : null}
-        </div>
+      toolbar={
+        <Seg
+          name="ag-assign"
+          value={assign}
+          onChange={(v) => {
+            setAssign(v as 'all' | 'ours' | 'unassigned')
+            setShown(PAGE)
+          }}
+          options={[
+            { value: 'all', label: D('All') },
+            { value: 'ours', label: D('Ours') },
+            { value: 'unassigned', label: D('Unassigned') },
+          ]}
+          aria-label={D('Assignment')}
+        />
       }
+      status={n ? <AsOfHint iso={n.dataAsOf} /> : null}
+      actions={n && n.scope !== 'agent' ? <RefreshNow onDone={reload} /> : null}
     >
       {error ? <LoadError message={error} onRetry={reload} /> : null}
       {n?.scope === 'agent' ? (

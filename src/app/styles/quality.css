@@ -273,7 +273,7 @@
 [data-app="quality"] .qa-card--strip .qa-note-txt { font-size:var(--cx-text-xs);color:var(--cx-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 }
 [data-app="quality"] .qa-card--strip .qa-meta--full { flex-wrap:wrap;white-space:normal;overflow:visible }
 [data-app="quality"] .qa-card--strip .qa-meta--full>span { overflow:visible;text-overflow:clip }
-[data-app="quality"] .qa-card--strip .qa-note-txt--full { white-space:normal;overflow:visible;text-overflow:clip }
+[data-app="quality"] .qa-card--strip .qa-note-txt--full { white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere }
 [data-app="quality"] .qa-card--strip .qa-acts { display:flex;gap:var(--cx-space-2);flex:none;margin-inline-start:auto }
 [data-app="quality"] .qa-card--strip .qa-detail { display:grid;gap:var(--cx-space-2);border-top:1px solid var(--cx-line);padding:var(--cx-space-2) var(--cx-space-3) var(--cx-space-3) }
 [data-app="quality"] .qa-card--strip .qa-detail .qa-reason { margin:0 }

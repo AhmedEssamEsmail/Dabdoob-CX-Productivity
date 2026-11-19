@@ -1063,57 +1063,57 @@ export function SchedulerPage({ route }: { route: { title: string } }) {
       className="sch-page"
       title={route.title}
       purpose="Who works which shift, and what each lead is doing in every hour."
-      aside={
-        <div className="sch-controls">
-          <div className="sch-month" role="group" aria-label="Month">
-            <Button variant="quiet" onClick={() => b(-1)} aria-label="Previous month">
-              ‹
-            </Button>
-            <strong className="sch-month-name">{l?.plan.monthName ?? '…'}</strong>
-            <Button variant="quiet" onClick={() => b(1)} aria-label="Next month">
-              ›
-            </Button>
-          </div>
-          {m ? (
-            <Fragment>
-              <Button
-                variant="primary"
-                disabled={p}
-                onClick={() => void g({ reshuffle: true })}
-                title="Try another arrangement of who works which week. Covers every slot the current roster covers."
-              >
-                Regenerate
-              </Button>
-              {l && l.plan.variant > 0 ? (
-                <Button variant="quiet" disabled={p} onClick={() => void g({ original: true })}>
-                  Original roster
-                </Button>
-              ) : null}
-              <Button
-                variant="quiet"
-                disabled={p}
-                onClick={() => void g({ fresh: true })}
-                title="Read every sheet again. Use after editing a tab by hand."
-              >
-                Re-read inputs
-              </Button>
-              <Button
-                variant="quiet"
-                disabled={p}
-                onClick={async () => {
-                  try {
-                    const y = await Z.save(s.year, s.month)
-                    toast(`Saved ${y.saved} rows. Working hours now follow this roster.`)
-                  } catch (y) {
-                    toast(ce(y), 'error')
-                  }
-                }}
-              >
-                Save roster
-              </Button>
-            </Fragment>
-          ) : null}
+      toolbar={
+        <div className="sch-month" role="group" aria-label="Month">
+          <Button variant="quiet" onClick={() => b(-1)} aria-label="Previous month">
+            ‹
+          </Button>
+          <strong className="sch-month-name">{l?.plan.monthName ?? '…'}</strong>
+          <Button variant="quiet" onClick={() => b(1)} aria-label="Next month">
+            ›
+          </Button>
         </div>
+      }
+      actions={
+        m ? (
+          <Fragment>
+            <Button
+              variant="primary"
+              disabled={p}
+              onClick={() => void g({ reshuffle: true })}
+              title="Try another arrangement of who works which week. Covers every slot the current roster covers."
+            >
+              Regenerate
+            </Button>
+            {l && l.plan.variant > 0 ? (
+              <Button variant="quiet" disabled={p} onClick={() => void g({ original: true })}>
+                Original roster
+              </Button>
+            ) : null}
+            <Button
+              variant="quiet"
+              disabled={p}
+              onClick={() => void g({ fresh: true })}
+              title="Read every sheet again. Use after editing a tab by hand."
+            >
+              Re-read inputs
+            </Button>
+            <Button
+              variant="quiet"
+              disabled={p}
+              onClick={async () => {
+                try {
+                  const y = await Z.save(s.year, s.month)
+                  toast(`Saved ${y.saved} rows. Working hours now follow this roster.`)
+                } catch (y) {
+                  toast(ce(y), 'error')
+                }
+              }}
+            >
+              Save roster
+            </Button>
+          </Fragment>
+        ) : null
       }
     >
       {l ? (

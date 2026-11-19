@@ -27,10 +27,8 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
       d={a}
       error={s}
       reload={i}
-      sub="Your auditor KPIs for the month — audits, disputes, calibrations and KB gaps — and the audits you did."
-    >
-      {a ? (
-        <>
+      toolbar={
+        a ? (
           <div className="cx-filters">
             <div className="cx-field">
               <label className="cx-label" htmlFor="mak-m">
@@ -52,6 +50,12 @@ export function MyAuditorKpisPage({ route }: { route: { title: string } }) {
               </Select>
             </div>
           </div>
+        ) : undefined
+      }
+      sub="Your auditor KPIs for the month — audits, disputes, calibrations and KB gaps — and the audits you did."
+    >
+      {a ? (
+        <>
           <QaSection id="mak-h" title={`${a.name}, ${a.month}`}>
             <TableScroll label="My auditor KPIs" className="cx-panel cx-tablewrap">
               <table className="cx-table">

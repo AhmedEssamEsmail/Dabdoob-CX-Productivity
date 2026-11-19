@@ -800,7 +800,7 @@ export function TrackersPage({ route: e }: { route: { title: string } }) {
     <PageShell
       title={e.title}
       purpose="Every record keeps the email of the person who added it."
-      aside={isEmpty ? undefined : (
+      toolbar={isEmpty ? undefined : (
         <div className="trk-switch field">
           <label className="field-label" htmlFor="trk-switch">Tracker</label>
           {t ? (

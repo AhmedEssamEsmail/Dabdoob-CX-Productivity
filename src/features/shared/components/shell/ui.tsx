@@ -207,17 +207,37 @@ export function PageHead({
   title,
   sub,
   purpose,
+  kicker,
+  actions,
+  toolbar,
+  status,
+  stats,
   aside,
   id,
 }: {
   title: ReactNode
   sub?: ReactNode
   purpose?: ReactNode
+  kicker?: ReactNode
+  actions?: ReactNode
+  toolbar?: ReactNode
+  status?: ReactNode
+  stats?: ReactNode
   aside?: ReactNode
   id?: string
 }) {
   return (
-    <PageShell title={title} purpose={sub ?? purpose} aside={aside} id={id} />
+    <PageShell
+      title={title}
+      purpose={sub ?? purpose}
+      kicker={kicker}
+      actions={actions}
+      toolbar={toolbar}
+      status={status}
+      stats={stats}
+      aside={aside}
+      id={id}
+    />
   )
 }
 
