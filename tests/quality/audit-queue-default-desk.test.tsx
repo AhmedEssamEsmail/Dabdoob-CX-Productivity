@@ -65,10 +65,6 @@ vi.mock('@/features/cx-quality/components/audit-queue-detail', () => ({
   RequestedAudits: 'requested-audits',
   SamplingPanel: 'sampling-panel',
 }))
-vi.mock('@/features/cx-quality/components/audit-queue-helpers', () => ({
-  wiPill: () => ({ cls: '', label: 'pill' }),
-  wiTone: () => '',
-}))
 
 type El = { type: unknown; props: Record<string, unknown> }
 

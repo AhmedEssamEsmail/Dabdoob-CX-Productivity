@@ -10,8 +10,7 @@
  *   fs → AccessPanel, gs → via labels, Jn — non-ticket remove reasons,
  *   vs/_s/xs/ws/Ts — column sort maps.
  * S13-05 split: detail/edit regions → audit-queue-detail.tsx,
- *   WeekCoverage + audit-form entry → audit-queue-coverage.tsx,
- *   wiTone/wiPill → audit-queue-helpers.ts.
+ *   WeekCoverage + audit-form entry → audit-queue-coverage.tsx.
  * Shared: P/useSe/QaPage(de)/QaSection(D)/Chips(E,ae,Ie,oe,U)/TicketRef(ne)/
  *   AuditForm(Zn)/SortTh(M)/useQaSort(_e)/dates(dl,he,ul,Rt)/toast(Q). */
 import { Fragment, useMemo, useRef, useState } from 'react'
@@ -26,7 +25,6 @@ import {
   SortTh,
   StatusChip,
   TicketRef,
-  qaTicketLabel,
   useQaSort,
   useSe,
   type QaSortCols,
@@ -40,8 +38,6 @@ import {
   RequestedAudits,
   SamplingPanel,
 } from './audit-queue-detail'
-import { wiPill, wiTone } from './audit-queue-helpers'
-import type { ChipStatus } from '@/features/shared/components/ui/Chip'
 
 /* --- vs/_s/xs/ws/Ts — the column sort maps (verbatim) -------------------- */
 const QUEUE_COLS: QaSortCols = {
@@ -99,34 +95,6 @@ function ViewingAs({ d, onPick }: { d: any; onPick: (email: string) => void }) {
 }
 
 /* --- As — the Audit Desk page ---------------------------------------------- */
-/* --- mock-06 worklist pieces -------------------------------------------- */
-/** Channel → wi-ico glyph (phone / chat / ticket, as in the mock). */
-function WiIco({ channel, tone }: { channel: string; tone: string }) {
-  const c = String(channel || '').toLowerCase()
-  const kind = /call|phone|voice/.test(c)
-    ? 'call'
-    : /chat|whats|mail|email|social|sms/.test(c)
-      ? 'chat'
-      : 'ticket'
-  return (
-    <span className={`wi-ico${tone ? ` ${tone}` : ''}`} aria-hidden="true">
-      {kind === 'call' ? (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z" />
-        </svg>
-      ) : kind === 'chat' ? (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      ) : (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M4 4h16v12H8l-4 4z" />
-        </svg>
-      )}
-    </span>
-  )
-}
-
 function AuditQueuePage({
   route,
   who,
@@ -143,7 +111,6 @@ function AuditQueuePage({
   const [u, d] = useState(false)
   const [o, h] = useState('')
   const [b, x] = useState('')
-  const [seg, setSeg] = useState<'todo' | 'doing' | 'done'>('todo')
   const [formDirty, setFormDirty] = useState(false)
   const [pendingAct, setPendingAct] = useState<'active' | 'all' | null>(null)
   const [pendingStart, setPendingStart] = useState<string | null>(null)
@@ -204,35 +171,6 @@ function AuditQueuePage({
     [C, sToday]
   )
   const v = O.filter((w: any) => w.status === 'done').length
-  /* mock-06 "Today's queue": open requests first, then today's sample rows. */
-  const wiAll = useMemo(
-    () => [
-      ...(sRequests ?? [])
-        .filter((r: any) => r.status === 'open' || r.status === 'in_progress')
-        .map((r: any) => ({ ...r, requested: true })),
-      ...O.map((w: any) => ({ ...w, requested: false })),
-    ],
-    [sRequests, O]
-  )
-  const wiCounts = useMemo(
-    () => ({
-      todo: wiAll.filter((w: any) => w.status === 'open').length,
-      doing: wiAll.filter((w: any) => w.status === 'in_progress').length,
-      done: wiAll.filter((w: any) => w.status === 'done').length,
-    }),
-    [wiAll]
-  )
-  const wiList = useMemo(
-    () =>
-      wiAll.filter((w: any) =>
-        seg === 'todo'
-          ? w.status === 'open'
-          : seg === 'doing'
-            ? w.status === 'in_progress'
-            : w.status === 'done'
-      ),
-    [wiAll, seg]
-  )
   const { apply: applyQueue } = f
   const { apply: applyPassed } = g
   const sortedQueue = useMemo(() => applyQueue(C), [C, applyQueue])
@@ -245,19 +183,6 @@ function AuditQueuePage({
       purpose="Tickets to audit today: audits team leads asked for first, then the daily sample of four per agent. Start audit opens the form with the ticket, agent and team lead filled in, and records when you started. Under 100% opens a CTL for the team lead."
       toolbar={
         <>
-          {s ? (
-            <Seg
-              name="qa-queue-status"
-              value={seg}
-              onChange={(v) => setSeg(v as 'todo' | 'doing' | 'done')}
-              options={[
-                { value: 'todo', label: `To do · ${wiCounts.todo}` },
-                { value: 'doing', label: `In progress · ${wiCounts.doing}` },
-                { value: 'done', label: `Done · ${wiCounts.done}` },
-              ]}
-              aria-label="Audit status"
-            />
-          ) : null}
           {s ? (
             <Seg
               name="qa-queue-active"
@@ -379,95 +304,40 @@ function AuditQueuePage({
               </Button>
             </p>
           ) : null}
-          <div className="md">
-            <section className="cx-panel" aria-labelledby="qa-today-h">
-              <div className="cx-section__head">
-                <div>
-                  <div className="cx-section__title" id="qa-today-h">
-                    Today&rsquo;s queue
-                  </div>
-                  <div className="cx-section__hint">Requested first</div>
-                </div>
-              </div>
-              <div className="worklist">
-                {wiList.length ? (
-                  wiList.map((w: any) => {
-                    const sel = l?.queueId === w.queueId
-                    const p = wiPill(w)
-                    const status: ChipStatus | undefined =
-                      p.cls === 'ok' || p.cls === 'warn' ? p.cls : undefined
-                    const off = w.status === 'done' || w.takenByOther || !!s.readOnly
-                    return (
-                      // intentionally raw: workitem row-card widget (aria-pressed + disabled + nested layout), styled by .workitem
-                      <button
-                        key={w.queueId}
-                        type="button"
-                        className="workitem qa-workitem"
-                        aria-pressed={sel}
-                        disabled={off}
-                        onClick={() => y(String(w.queueId))}
-                      >
-                        <WiIco channel={w.channel} tone={wiTone(w)} />
-                        <div className="wi-main">
-                          <div className="wi-t" title={`${w.channel || 'Ticket'} ${qaTicketLabel(w.ticketId)}`}>
-                            {w.channel || 'Ticket'} {qaTicketLabel(w.ticketId)}
-                          </div>
-                          <div
-                            className="wi-s"
-                            title={`${w.agentName}${w.tlName ? ` · TL ${w.tlName}` : ''}${w.requested ? ` · requested by ${w.requestedByName}` : ''}${w.actionAt ? ` · ${w.actionAt}` : ''}`}
-                          >
-                            {w.agentName}
-                            {w.tlName ? ` · TL ${w.tlName}` : ''}
-                            {w.requested ? ` · requested by ${w.requestedByName}` : ''}
-                            {w.actionAt ? ` · ${w.actionAt}` : ''}
-                          </div>
-                        </div>
-                        <Chip status={status}>{p.label}</Chip>
-                      </button>
-                    )
-                  })
-                ) : (
-                  <Empty
-                    title={`Nothing ${seg === 'todo' ? 'to do' : seg === 'doing' ? 'in progress' : 'done'} in today’s queue.`}
-                  />
-                )}
-              </div>
+          {_ && k ? (
+            <AuditEntry
+              key={l!.queueId}
+              d={s}
+              row={_}
+              form={k}
+              startedAt={l!.startedAt}
+              onCancel={() => {
+                p(null)
+                requestAnimationFrame(() => {
+                  const back = qaInvoker.current
+                  if (back?.isConnected) back.focus()
+                  else document.getElementById('qq-h')?.focus()
+                  document.getElementById('qq-h')?.scrollIntoView({ block: 'start' })
+                })
+              }}
+              onSubmitted={() => {
+                p(null)
+                c()
+              }}
+              onDirtyChange={setFormDirty}
+            />
+          ) : _ ? (
+            <p className="cx-note" role="alert" id="qa-audit-open">
+              <span>
+                {_.channel} has no active audit form. An admin adds one in Admin &gt;
+                Audit forms; until then this item cannot be audited.
+              </span>
+            </p>
+          ) : (
+            <section className="cx-panel">
+              <Empty title="Pick a queue item to start auditing." />
             </section>
-            {_ && k ? (
-              <AuditEntry
-                key={l!.queueId}
-                d={s}
-                row={_}
-                form={k}
-                startedAt={l!.startedAt}
-                onCancel={() => {
-                  p(null)
-                  requestAnimationFrame(() => {
-                    const back = qaInvoker.current
-                    if (back?.isConnected) back.focus()
-                    else document.getElementById('qq-h')?.focus()
-                    document.getElementById('qq-h')?.scrollIntoView({ block: 'start' })
-                  })
-                }}
-                onSubmitted={() => {
-                  p(null)
-                  c()
-                }}
-                onDirtyChange={setFormDirty}
-              />
-            ) : _ ? (
-              <p className="cx-note" role="alert" id="qa-audit-open">
-                <span>
-                  {_.channel} has no active audit form. An admin adds one in Admin &gt;
-                  Audit forms; until then this item cannot be audited.
-                </span>
-              </p>
-            ) : (
-              <section className="cx-panel">
-                <Empty title="Pick a queue item to start auditing." />
-              </section>
-            )}
-          </div>
+          )}
           <RequestedAudits
             d={s}
             busyId={m}

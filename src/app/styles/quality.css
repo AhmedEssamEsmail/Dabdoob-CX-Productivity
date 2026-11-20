@@ -284,10 +284,6 @@
   [data-app="quality"] .qa-card--strip, [data-app="quality"] .qa-card--strip>summary { flex-wrap:wrap }
   [data-app="quality"] .qa-card--strip .qa-meta { flex-basis:100%;order:5 }
 }
-[data-app="quality"] .workitem.qa-workitem { gap:.9rem;inline-size:100%;border-inline:0;border-block-start:0;border-radius:0/* px-exact: workitem reset */;background:transparent;font:inherit;color:inherit;text-align:start;cursor:pointer }
-[data-app="quality"] .workitem.qa-workitem[aria-pressed=true] { background:var(--cx-accent-soft) }
-[data-app="quality"] .workitem.qa-workitem[aria-pressed=true]:hover { background:var(--cx-accent-soft) }
-[data-app="quality"] .workitem.qa-workitem:disabled { cursor:default }
 [data-app="quality"] .qa-kbgaps td { overflow-wrap:anywhere }
 [data-app="quality"] .qa-kbgaps a { overflow-wrap:anywhere }
 [data-app="quality"] .qa-kbgaps__type { white-space:nowrap; overflow-wrap:normal }
