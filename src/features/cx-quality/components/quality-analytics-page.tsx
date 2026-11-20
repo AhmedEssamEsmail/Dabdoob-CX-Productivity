@@ -274,7 +274,7 @@ function ByChannel({ d: t }: { d: any }) {
           <tbody>
             {t.byChannel.length ? (
               t.byChannel.map((a: any) => (
-                <tr className={a.badge === 'low' ? 'qa-low' : undefined} key={a.key}>
+                <tr key={a.key}>
                   <td>{a.label}</td>
                   <td className="cx-num">
                     {n(a)}
@@ -317,7 +317,7 @@ function ByChannel({ d: t }: { d: any }) {
           <tbody>
             {t.byContactType.length ? (
               t.byContactType.map((a: any) => (
-                <tr className={a.badge === 'low' ? 'qa-low' : undefined} key={a.key}>
+                <tr key={a.key}>
                   <td>
                     {a.label}
                     {a.other ? (
@@ -375,7 +375,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
           <tbody>
             {t.byAgent.length ? (
               t.byAgent.map((s: any) => (
-                <tr className={s.badge === 'low' ? 'qa-low' : undefined} key={s.key}>
+                <tr key={s.key}>
                   <td>
                     <QaLink
                       label={s.label}
@@ -533,7 +533,7 @@ function Questions({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
           <tbody>
             {i.length ? (
               i.map((c: any) => (
-                <tr className={c.gated ? 'qa-low' : undefined} key={c.key}>
+                <tr key={c.key}>
                   <td>
                     <QaLink
                       label={c.text}
@@ -1308,8 +1308,8 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
         <>
           {p ? (
             <p className="cx-muted">
-              Each score has a 95% range from its audits. Low confidence (under
-              10 audits, or wider than ±5) is greyed; a score is coloured from
+              Each score has a 95% range from its audits. Low confidence means
+              under 10 audits or a range wider than ±5; a score is coloured from
               16 audits; an arrow only when the change beats both ranges. A run
               of identical scores gets a cautious range, not ±0.
             </p>

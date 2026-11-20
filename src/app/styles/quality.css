@@ -194,7 +194,6 @@
 [data-app="quality"] .qa-request .cx-error { margin:0 }
 [data-app="quality"] .qa-request .qa-actions { justify-self:start }
 [data-app="quality"] .qa-range { font-size:var(--cx-text-xs);color:var(--cx-ink-2);white-space:nowrap }
-[data-app="quality"] .qa-low { opacity:.55 }
 [data-app="quality"] .qa-ref { overflow-wrap:anywhere }
 [data-app="quality"] .qa-viewing { flex-wrap:wrap;align-items:center;justify-content:space-between;margin-block-end:var(--cx-space-3) }
 [data-app="quality"] .qa-viewing>span:first-child { flex:1 1 18rem }
