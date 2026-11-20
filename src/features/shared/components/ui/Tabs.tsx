@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { cx } from './cx'
+import { prefersReducedMotion } from '@/features/shared/shell/i18n'
 
 export interface TabItem {
   id: string
@@ -33,6 +34,26 @@ export function nextTabIndex(
   return -1
 }
 
+export function scrollSelectedTabIntoView(list: HTMLElement | null): void {
+  if (!list) return
+  const tab = list.querySelector<HTMLElement>('[aria-selected="true"]')
+  if (!tab) return
+
+  const listRect = list.getBoundingClientRect()
+  const tabRect = tab.getBoundingClientRect()
+  const delta =
+    tabRect.left < listRect.left
+      ? tabRect.left - listRect.left
+      : tabRect.right > listRect.right
+        ? tabRect.right - listRect.right
+        : 0
+  if (delta === 0) return
+
+  const reduced = typeof document === 'undefined' ? false : prefersReducedMotion()
+
+  list.scrollBy({ left: delta, behavior: reduced ? 'auto' : 'smooth' })
+}
+
 export function Tabs({
   tabs,
   value,
@@ -52,10 +73,7 @@ export function Tabs({
   }
 
   useEffect(() => {
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    listRef.current
-      ?.querySelector('[aria-selected="true"]')
-      ?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' })
+    scrollSelectedTabIntoView(listRef.current)
   }, [active])
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

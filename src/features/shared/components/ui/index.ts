@@ -32,6 +32,7 @@ export { Toggle } from './Toggle'
 export type { ToggleProps } from './Toggle'
 
 export { Tabs } from './Tabs'
+export { scrollSelectedTabIntoView } from './Tabs'
 export type { TabsProps, TabItem } from './Tabs'
 
 // .cx-panel / .cx-table / .cx-note are documented raw markup classes (DECISION B).

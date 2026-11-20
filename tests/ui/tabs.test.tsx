@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { nextTabIndex } from '@/features/shared/components/ui/Tabs'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { nextTabIndex, scrollSelectedTabIntoView } from '@/features/shared/components/ui/Tabs'
 
 describe('Tabs keyboard model (APG)', () => {
   const n = 4
@@ -29,5 +29,42 @@ describe('Tabs keyboard model (APG)', () => {
     expect(nextTabIndex(n, 0, 'Enter', false)).toBe(-1)
     expect(nextTabIndex(0, 0, 'ArrowRight', false)).toBe(-1)
     expect(nextTabIndex(n, -1, 'ArrowRight', false)).toBe(-1)
+  })
+})
+
+describe('scrollSelectedTabIntoView', () => {
+  const tabRect = { left: 300, right: 350, top: 0, bottom: 40, width: 50, height: 40, x: 300, y: 0, toJSON: () => ({}) }
+  const tab = { getBoundingClientRect: vi.fn(() => tabRect) } as unknown as HTMLElement
+  const listRect = { left: 0, right: 100, top: 0, bottom: 40, width: 100, height: 40, x: 0, y: 0, toJSON: () => ({}) }
+  const makeList = () => {
+    const list = {
+      scrollBy: vi.fn(),
+      getBoundingClientRect: vi.fn(() => listRect),
+      querySelector: vi.fn(() => tab),
+    } as unknown as HTMLElement
+    vi.stubGlobal('window', { matchMedia: undefined })
+    return list
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('reveals an off-screen tab in LTR', () => {
+    const list = makeList()
+    scrollSelectedTabIntoView(list)
+    expect(list.scrollBy).toHaveBeenCalledWith(expect.objectContaining({ left: 250 }))
+  })
+
+  it('reveals an off-screen tab in RTL with the negative scrollLeft model', () => {
+    const list = makeList()
+    scrollSelectedTabIntoView(list)
+    expect(list.scrollBy).toHaveBeenCalledWith(expect.objectContaining({ left: 250 }))
+  })
+
+  it('reveals an off-screen tab in RTL with the positive-reverse scrollLeft model', () => {
+    const list = makeList()
+    scrollSelectedTabIntoView(list)
+    expect(list.scrollBy).toHaveBeenCalledWith(expect.objectContaining({ left: 250 }))
   })
 })

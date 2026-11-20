@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react'
 import { D } from '@/features/shared/shell/i18n'
-import { Button, Input, PageShell } from '@/features/shared/components/ui'
+import { Button, Input, PageShell, scrollSelectedTabIntoView } from '@/features/shared/components/ui'
 import { useSearchParamState } from '@/features/shared/lib/use-search-param-state'
 import { useSe } from '@/features/cx-productivity/components/pv-shared'
 import {
@@ -66,10 +66,7 @@ function Ja({ d, go }: { d: TphData; go: (date: string) => void }) {
 function Ya({ tab, select, badges }: { tab: string; select: (t: string, focus?: boolean) => void; badges: Record<string, string> }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const rm = matchMedia('(prefers-reduced-motion: reduce)').matches
-    ref.current
-      ?.querySelector('[aria-selected="true"]')
-      ?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: rm ? 'auto' : 'smooth' })
+    scrollSelectedTabIntoView(ref.current)
   }, [tab])
   return (
     <div

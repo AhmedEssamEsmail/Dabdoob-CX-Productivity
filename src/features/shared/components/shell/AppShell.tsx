@@ -216,6 +216,15 @@ export default function AppShell({ children }: { children?: ReactNode }) {
     else document.documentElement.dataset.entry = 'calm'
   }, [path])
 
+  /* scroll-anchoring guard: pin the viewport at top after a client-side
+     route change unless the new URL carries a real in-page anchor. */
+  useLayoutEffect(() => {
+    if (firstRoute.current) return
+    const hash = window.location.hash
+    if (hash && !hash.startsWith('#/')) return
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+  }, [path])
+
   /* ux-14 — the element that invoked the palette (⌘K keydown target) is
      captured before open so close can restore focus to it. */
   const paletteInvoker = useRef<HTMLElement | null>(null)
