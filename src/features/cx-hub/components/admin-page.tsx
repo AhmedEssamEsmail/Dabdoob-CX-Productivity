@@ -6,7 +6,7 @@
  * fed by getConfigRows/saveConfigSetting). */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, Textarea } from '@/features/shared/components/ui'
+import { Button, Chip, Empty, Input, PageShell, Select, SettingsSection, Textarea, Toggle } from '@/features/shared/components/ui'
 import {
   applyAppearance,
   D,
@@ -338,28 +338,24 @@ function Rb({ rows, error, onSaved, onRetry }: { rows: ConfigRow[] | null; error
             <Chip status={on ? 'ok' : undefined}>{on ? 'on' : 'off'}</Chip>{' '}
             Master switch: stops all reminder popups, in-app alerts and reminder emails for everyone.
           </span>
-          <label className="cx-switch">
-            <input
-              type="checkbox"
-              checked={pending ?? on}
-              disabled={busy || !row}
-              onChange={(e) => {
-                const next = e.currentTarget.checked
-                setPending(next)
-                Ln.saveConfigSetting('reminders_enabled', next)
-                  .then(
-                    (updated) => {
-                      onSaved(updated)
-                      Ti(`Reminders are ${next ? 'on' : 'off'}`)
-                    },
-                    (error) => Ti((error as Error).message, 'error')
-                  )
-                  .finally(() => setPending(null))
-              }}
-            />
-            <span className="cx-switch__track" aria-hidden="true" />
-            <span className="cx-sr">Reminders</span>
-          </label>
+          <Toggle
+            checked={pending ?? on}
+            disabled={busy || !row}
+            onChange={(next) => {
+              setPending(next)
+              Ln.saveConfigSetting('reminders_enabled', next)
+                .then(
+                  (updated) => {
+                    onSaved(updated)
+                    Ti(`Reminders are ${next ? 'on' : 'off'}`)
+                  },
+                  (error) => Ti((error as Error).message, 'error')
+                )
+                .finally(() => setPending(null))
+            }}
+          >
+            Reminders
+          </Toggle>
         </div>
       )}
     </SettingsSection>
