@@ -390,6 +390,7 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
   const s = e ? String(e.name).split(' ')[0] : ''
   const q = ((e?.quality ?? {}) as {
     month?: number | null
+    prevMonth?: number | null
     monthDelta?: number | null
     week?: number | null
     openCtls?: number
@@ -497,9 +498,15 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
             <span className="stat-d">audits so far</span>
           </div>
           <div className="stat">
-            <span className="stat-l">vs last month</span>
-            <span className="stat-v num">{q.monthDelta == null ? '–' : `${Ql(q.monthDelta)} pts`}</span>
-            <span className="stat-d">score points vs last month</span>
+            <span className="stat-l">Last month</span>
+            <span className="stat-v num">{q.prevMonth == null ? '–' : `${q.prevMonth}%`}</span>
+            <span className="stat-d">
+              {q.monthDelta == null ? (
+                '–'
+              ) : (
+                <span className={`delta ${q.monthDelta > 0 ? 'up' : q.monthDelta < 0 ? 'down' : 'flat'}`}>{Ql(q.monthDelta)} pts</span>
+              )}
+            </span>
           </div>
           <div className="stat">
             <span className="stat-l">Quality this week</span>

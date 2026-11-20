@@ -70,7 +70,7 @@ function fx(over: HubFx = {}): HubFx {
   }
 }
 
-type Quality = { month: number | null; monthDelta: number | null; week: number | null; openCtls: number }
+type Quality = { month: number | null; prevMonth: number | null; monthDelta: number | null; week: number | null; openCtls: number }
 
 async function qualityFor(email: string): Promise<Record<string, unknown>> {
   hubInstall(fx({ userEmail: email }))
@@ -92,6 +92,7 @@ describe('getHomePage quality block', () => {
     const q = (await qualityFor('admin@dabdoob.com')).quality as Quality
     // month: (80 + 90 + 60) / 3 -> 76.7 ; prev: (70 + 50) / 2 -> 60 ; week: (90 + 60) / 2 -> 75
     expect(q.month).toBe(76.7)
+    expect(q.prevMonth).toBe(60)
     expect(q.monthDelta).toBe(16.7)
     expect(q.week).toBe(75)
     expect(q.openCtls).toBe(2)
@@ -101,6 +102,7 @@ describe('getHomePage quality block', () => {
     const q = (await qualityFor('tl@dabdoob.com')).quality as Quality
     // team = tl+agent+agent2(+spec): month (80+90)/2 -> 85 ; prev 70 ; week 90
     expect(q.month).toBe(85)
+    expect(q.prevMonth).toBe(70)
     expect(q.monthDelta).toBe(15)
     expect(q.week).toBe(90)
     expect(q.openCtls).toBe(1)

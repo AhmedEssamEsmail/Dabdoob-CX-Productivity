@@ -477,6 +477,7 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
           : ctls.filter((c) => normEmail_(c.tl_email) === user.email).length
       out.quality = {
         month,
+        prevMonth: prev,
         monthDelta: month !== null && prev !== null ? qaRound1_(month - prev) : null,
         week: mean(weekStart, today),
         openCtls,

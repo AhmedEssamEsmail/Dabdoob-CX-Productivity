@@ -22,6 +22,9 @@ tests/golden/queue-checkin-auto.test.ts, tests/quality/qa-audit-footer-compact.t
 | low1-01 | mini/S01 | dev | none | 1/1/5/5 | PASS | verified | results/low1-01.md; diff scoped to 1 expr; eslint 0 |
 | low1-02 | mini/S01 | dev | low1-01 | 1/2/4/5 | PASS | verified | results/low1-02.md; 2 strings only; eslint 0 |
 | low1-03 | mini/S01 | test-engineer | none | 1/3/80/10 | PASS | verified | results/low1-03.md; 2 new tests, 7/7 pass, week=50 discriminates |
+| chg1-01 | mini/S01 | dev | none | 1/2/5/5 | PASS | done | results/chg1-01.md; aggregates.ts +1 line; tsc 0 |
+| chg1-02 | mini/S01 | dev | chg1-01 | 1/3/15/5 | PASS | verified | results/chg1-02.md; overview-page +9/-3; tsc 0, eslint 0 |
+| chg1-03 | mini/S01 | test-engineer | chg1-01 | 1/2/10/5 | PASS | verified | results/chg1-03.md; prevMonth asserts admin 60 / tl 70; vitest 7/7 |
 
 ## Re-sharding
 | Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |
@@ -45,6 +48,12 @@ tests/golden/queue-checkin-auto.test.ts, tests/quality/qa-audit-footer-compact.t
 | 4 | typecheck | npx tsc --noEmit | PASS (exit 0) |
 | 4 | lint (scoped) | npx eslint overview-page.tsx tests/hub-home-quality.test.ts | PASS (exit 0) |
 
+| 5 | unit (targeted) | npx vitest run tests/hub-home-quality.test.ts | PASS 7/7 |
+| 5 | typecheck | npx tsc --noEmit | PASS (exit 0) |
+| 5 | lint (scoped) | npx eslint overview-page.tsx aggregates.ts hub-home-quality.test.ts | PASS (exit 0) |
+
+Round 5 log: logs/gates-chg1.log
+
 Round 4 log: logs/gates-low1.log
 
 Round 3 log: logs/gates-ux1.log
@@ -60,6 +69,9 @@ Round 2 evidence: reports/tl-2.md (gate exits and failure list; scratch logs rem
 | ux-1 (MED): quality `.stat-v` scores lack a unit | reports/ux-1.md | ux1-01 / dev | verified | results/ux1-01.md; logs/gates-ux1.log |
 | ux-2 (LOW): Open CTLs shows `0` when quality is null | reports/ux-1.md; reports/low-findings.md low-1 | low1-01 / dev | verified | results/low1-01.md; expr now `== null ? '–'` |
 | ux-3 (LOW): `.stat-d` jargon copy | reports/ux-1.md; reports/low-findings.md low-2 | low1-02 / dev | verified | results/low1-02.md; plain copy landed |
+| chg-1 (REQ): `prev` computed but not exposed on `out.quality` | reports/change-delta-card.md | chg1-01 / dev | done | results/chg1-01.md; +1 line, tsc 0 |
+| chg-2 (REQ): delta card must show last month's score + `.delta` pill | reports/change-delta-card.md | chg1-02 / dev | verified | results/chg1-02.md; logs/gates-chg1.log |
+| chg-3 (REQ): `prevMonth` untested | reports/change-delta-card.md | chg1-03 / test-engineer | verified | results/chg1-03.md; vitest 7/7 |
 
 ## Blocked / needs user
 - (none)

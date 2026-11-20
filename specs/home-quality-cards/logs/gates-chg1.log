@@ -1,0 +1,40 @@
+=== vitest ===
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/AHMED/KPIs/CX-Hub[39m
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2madmin: month/week means over the whole pool, delta vs prev month, all open CTLs
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:qa_audits=0 read:qa_ctls=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 quality@0 ecosystem@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mtl: scoped to self+team audits and own tl_email CTLs only
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:qa_audits=0 read:qa_ctls=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 quality@0 ecosystem@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mquality key absent for agent@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mquality key absent for spec@dabdoob.com
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mmissing qa stores do not reject; quality is null or all-null metrics
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:qa_audits=0 read:qa_ctls=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 quality@0 ecosystem@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mmalformed qa_engine_settings resolves with no error and quality === null
+[22m[39mquality failed: Config qa_engine_settings is not valid JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mmalformed qa_engine_settings resolves with no error and quality === null
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 quality@0 ecosystem@0
+
+[90mstdout[2m | tests/hub-home-quality.test.ts[2m > [22m[2mgetHomePage quality block[2m > [22m[2mweekStartsOn: 1 shifts the quota week to Monday, excluding a 05-03 audit
+[22m[39m[perf] getHomePage total=0 requireRole=0 configAll=0 read:aging_open_tickets=0 read:roster=0 read:queue_submissions=0 read:dq_aging_flags=0 read:sc_daily=0 read:prod_daily_layers=0 read:fcr_daily=0 workHomeCards_=0 planHomeCards_=0 peopleHomeCards_=0 dqLastRun=0 dqSetting=0 read:qa_audits=0 read:qa_ctls=0 read:queue_snapshots=0 read:agg_queue_now=0 ecosystemHealth=0 tickets@0 workHomeCards_@0 planHomeCards_@0 peopleHomeCards_@0 quality@0 ecosystem@0
+
+ [32m✓[39m tests/hub-home-quality.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 21:48:20
+[2m   Duration [22m 427ms[2m (import 51%, transform 35%, tests 13%, worker 2%)[22m
+
+VITEST_EXIT=0
+=== tsc ===
+TSC_EXIT=0
+=== eslint ===
+ESLINT_EXIT=0
