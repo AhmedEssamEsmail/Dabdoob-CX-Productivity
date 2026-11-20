@@ -680,7 +680,7 @@ const TaskItem = memo(function TaskItem({
         <strong>{task.name}</strong> {task.start}–{task.end}, {channelName}
         {task.calls ? ' + inbound calls' : ''} <span className="cx-faint">by {task.by}</span>
       </span>
-      {canEdit ? <Button onClick={() => onRemove(task.taskId)}>Remove</Button> : null}
+      {canEdit ? <Button size="sm" onClick={() => onRemove(task.taskId)}>Remove</Button> : null}
     </li>
   )
 })

@@ -288,3 +288,11 @@
 [data-app="quality"] .qa-kbgaps td { overflow-wrap:anywhere }
 [data-app="quality"] .qa-kbgaps a { overflow-wrap:anywhere }
 [data-app="quality"] .qa-kbgaps__type { white-space:nowrap; overflow-wrap:normal }
+/* ui-label-size-sweep A1-A3: compact denial/kb/ctl textareas (#qa-comment pattern) */
+[data-app="quality"] .qa-card--strip .qa-detail textarea { max-inline-size:60ch }
+[data-app="quality"] #kb-d { max-inline-size:60ch }
+[data-app="quality"] .qa-ctlbox textarea { max-inline-size:60ch }
+/* ui-label-size-sweep DECISIONS pair-fixes: ctl textarea floor relax + short inputs (#qa-when pattern) */
+[data-app="quality"] #ctl-reason, [data-app="quality"] #ctl-notes { min-block-size:auto }
+[data-app="quality"] #ctl-ref { inline-size:auto;max-inline-size:100% }
+[data-app="quality"] #qa-access-find { max-inline-size:28rem }

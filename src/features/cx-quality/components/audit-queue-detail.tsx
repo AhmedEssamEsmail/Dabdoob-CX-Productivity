@@ -117,10 +117,10 @@ export function PassForm({
         />
       </div>
       <div className="qa-actions">
-        <Button type="submit" variant="primary" disabled={u || !r}>
+        <Button type="submit" variant="primary" size="sm" disabled={u || !r}>
           {u ? (x ? 'Removing…' : 'Skipping…') : x ? 'Remove' : 'Confirm skip'}
         </Button>
-        <Button variant="quiet" onClick={onCancel}>
+        <Button variant="quiet" size="sm" onClick={onCancel}>
           Cancel
         </Button>
       </div>
@@ -301,11 +301,12 @@ function WaiveForm({
         <Button
           type="submit"
           variant="primary"
+          size="sm"
           disabled={c || s.replace(/\s+/g, ' ').trim().length < 5}
         >
           {c ? 'Waiving…' : 'Confirm waive'}
         </Button>
-        <Button variant="quiet" onClick={onCancel}>
+        <Button variant="quiet" size="sm" onClick={onCancel}>
           Cancel
         </Button>
       </div>
@@ -383,6 +384,7 @@ const RequestedAuditRow = memo(function RequestedAuditRow({
               ) : (
                 <Button
                   variant="primary"
+                  size="sm"
                   disabled={!!busyId || openId === row.queueId}
                   onClick={() => onStart(row.queueId)}
                 >
@@ -394,7 +396,7 @@ const RequestedAuditRow = memo(function RequestedAuditRow({
                 </Button>
               )}
               {canWaive ? (
-                <Button aria-expanded={waiveOpen} onClick={() => onToggleWaive(row.queueId)}>
+                <Button size="sm" aria-expanded={waiveOpen} onClick={() => onToggleWaive(row.queueId)}>
                   Waive
                 </Button>
               ) : null}
@@ -693,6 +695,7 @@ const NonTicketAuditRow = memo(function NonTicketAuditRow({
             <div className="qa-actions">
               <Button
                 variant="primary"
+                size="sm"
                 disabled={!!busyId || openId === row.queueId}
                 onClick={() => onStart(row.queueId)}
               >
@@ -703,6 +706,7 @@ const NonTicketAuditRow = memo(function NonTicketAuditRow({
                     : 'Start audit'}
               </Button>
               <Button
+                size="sm"
                 aria-expanded={removeOpen}
                 disabled={!!busyId}
                 onClick={() => onToggleRemove(row.queueId)}
@@ -902,6 +906,7 @@ const OffQueueAuditRow = memo(function OffQueueAuditRow({
             <div className="qa-actions">
               <Button
                 variant="primary"
+                size="sm"
                 disabled={!!busyId || openId === row.queueId}
                 onClick={() => onStart(row.queueId)}
               >
@@ -912,6 +917,7 @@ const OffQueueAuditRow = memo(function OffQueueAuditRow({
                     : 'Start audit'}
               </Button>
               <Button
+                size="sm"
                 aria-expanded={removeOpen}
                 disabled={!!busyId}
                 onClick={() => onToggleRemove(row.queueId)}
@@ -1462,6 +1468,7 @@ export function AccessPanel() {
                     <td className="qa-access-act">
                       {o.via ? (
                         <Button
+                          size="sm"
                           disabled={!!i}
                           onClick={() => r(o.email, o.name, false)}
                         >
@@ -1470,6 +1477,7 @@ export function AccessPanel() {
                       ) : o.active === false ? null : (
                         <Button
                           variant="primary"
+                          size="sm"
                           disabled={!!i}
                           onClick={() => r(o.email, o.name, true)}
                         >

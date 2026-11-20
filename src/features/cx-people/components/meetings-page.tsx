@@ -211,7 +211,7 @@ function ActionRows({
         <Button size="sm" onClick={() => insert(rows.length - 1, [mk(rows[rows.length - 1])])}>
           Add another action
         </Button>
-        <Button variant="primary" disabled={busy || disabled || !filled.length || missingOwner} onClick={submit}>
+        <Button size="sm" variant="primary" disabled={busy || disabled || !filled.length || missingOwner} onClick={submit}>
           {label(filled.length)}
         </Button>
         {missingOwner ? <span className="pw-small pw-muted">Choose an owner for each action.</span> : null}
@@ -571,6 +571,7 @@ function MeetingView({
           <span className="field-label">Notes</span>
           <Textarea
             className="pw-textarea"
+            rows={4}
             readOnly={!canEdit}
             value={notes}
             onInput={(e) => setNotes(e.currentTarget.value)}
@@ -581,6 +582,7 @@ function MeetingView({
           <span className="field-label">Decisions</span>
           <Textarea
             className="pw-textarea"
+            rows={3}
             readOnly={!canEdit}
             value={decisions}
             onInput={(e) => setDecisions(e.currentTarget.value)}

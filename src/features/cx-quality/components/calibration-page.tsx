@@ -344,6 +344,7 @@ export function CalibrationPage({ route }: { route: { title: string } }) {
                     </span>
                     <Button
                       variant="primary"
+                      size="sm"
                       onClick={() =>
                         c({ c: u, startedAt: new Date().toISOString() })
                       }

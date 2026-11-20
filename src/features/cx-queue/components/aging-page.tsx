@@ -25,7 +25,7 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
       <span>
         <span className="cx-chip" data-status="bad" title={flag.note}>Help asked by {String(flag.by).split('@')[0]}</span>
         <span className="cx-muted"> {flag.note}</span>{' '}
-        <Button variant="quiet" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { flag_id: flag.flagId, resolved_note: '' }))}>
+        <Button size="sm" variant="quiet" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { flag_id: flag.flagId, resolved_note: '' }))}>
           Mark handled
         </Button>
         {err ? <span role="alert"> {err}</span> : null}
@@ -35,14 +35,14 @@ function HelpCell({ t, flag, scope, onChange }: { t: any[]; flag: any; scope: st
   return open ? (
     <span>
       <Input aria-label={`What is blocking ticket ${t[0]}`} placeholder="What is blocking it, what you need" value={note} onInput={(e) => setNote((e.target as HTMLInputElement).value)} />{' '}
-      <Button disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { ticket_id: t[0], note }))}>Send</Button>{' '}
-      <Button variant="quiet" onClick={() => setOpen(false)}>Cancel</Button>
+      <Button size="sm" disabled={busy} onClick={() => run(() => fetchJson('/api/queue/aging-flags', { ticket_id: t[0], note }))}>Send</Button>{' '}
+      <Button size="sm" variant="quiet" onClick={() => setOpen(false)}>Cancel</Button>
       {err ? <span role="alert"> {err}</span> : null}
     </span>
   ) : flag ? (
     <span className="cx-chip" data-status="warn" title={flag.note}>Asked {flag.at ? '' : ''}: waiting on your TL</span>
   ) : (
-    <Button variant="quiet" onClick={() => setOpen(true)} aria-label={`Ask your team lead for help with ticket ${t[0]}`}>
+    <Button size="sm" variant="quiet" onClick={() => setOpen(true)} aria-label={`Ask your team lead for help with ticket ${t[0]}`}>
       Ask my TL for help
     </Button>
   )

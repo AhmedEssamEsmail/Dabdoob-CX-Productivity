@@ -223,6 +223,7 @@ function FlagDetail({
               </label>
               <Textarea
                 id={`rs-${flagId}`}
+                rows={2}
                 value={reason}
                 onInput={(e) => setReason(e.currentTarget.value)}
               />

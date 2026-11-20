@@ -444,11 +444,11 @@ function ScorecardAdmin() {
                       )}
                     </td>
                     <td>
-                      <Button disabled={!!busyKey} onClick={() => refresh(m.month)}>
+                      <Button size="sm" disabled={!!busyKey} onClick={() => refresh(m.month)}>
                         {busyKey === 'r' + m.month ? 'Rebuilding…' : 'Refresh now'}
                       </Button>{' '}
                       {m.usingFallback ? null : (
-                        <Button variant="danger" disabled={!!busyKey} onClick={() => remove(m.month)}>
+                        <Button size="sm" variant="danger" disabled={!!busyKey} onClick={() => remove(m.month)}>
                           Remove
                         </Button>
                       )}

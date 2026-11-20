@@ -330,6 +330,8 @@
 }
 
 :root .other-row { display: grid; gap: var(--cx-space-2); }
+/* ui-label-size-sweep DECISIONS: .other-row buttons hug content, input keeps full width */
+:root .other-row :is(.cx-btn,.btn) { justify-self:start }
 :root .cx-other {
   display: none;
   gap: var(--cx-space-1);

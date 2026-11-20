@@ -167,7 +167,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                       label={<>What is driving it? <span className="cx-faint chk-faint" style={{ visibility: draft[k.queue].status && draft[k.queue].status !== 'On track' ? 'visible' : 'hidden' }}>Needed unless on track</span></>}
                       error={errs[k.queue]}
                     >
-                      <Textarea id={`q-${k.queue.replace(/\W+/g, '-')}-n`} className="chk-note" placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
+                      <Textarea id={`q-${k.queue.replace(/\W+/g, '-')}-n`} className="chk-note" rows={2} placeholder="For example: Aramex delay in Kuwait, 40 tickets waiting for their reply." value={draft[k.queue].note} aria-invalid={errs[k.queue] ? 'true' : undefined} onInput={(e) => setDraft((d) => ({ ...d, [k.queue]: { ...d[k.queue], note: (e.target as HTMLTextAreaElement).value } }))} />
                     </Field>
                   </fieldset>
                 ) : null
@@ -177,11 +177,11 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                   <Field label="Why did you change a count from Freshdesk?"><Input id="reason" value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} /></Field>
                 ) : null}
                 <Field label={<>Anything the next shift or Mohamed should know? <span className="cx-faint chk-faint">Optional</span></>}>
-                  <Textarea id="gen" value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} />
+                  <Textarea id="gen" rows={2} value={gen} onInput={(e) => setGen((e.target as HTMLTextAreaElement).value)} />
                 </Field>
                 <Toggle className="cx-correct" checked={help} onChange={setHelp}>I need help from Mohamed now</Toggle>
                 {help ? (
-                  <Field label="What help do you need?" hint="Mohamed gets an email and a card on his Home as soon as you submit."><Textarea id="help" value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /></Field>
+                  <Field label="What help do you need?" hint="Mohamed gets an email and a card on his Home as soon as you submit."><Textarea id="help" rows={2} value={helpNote} onInput={(e) => setHelpNote((e.target as HTMLTextAreaElement).value)} /></Field>
                 ) : null}
                 {err ? <p className="cx-error" role="alert">{err}</p> : null}
                 <div className="chk-actions">

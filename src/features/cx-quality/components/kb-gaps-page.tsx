@@ -127,6 +127,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                 </label>
                 <Textarea
                   id="kb-d"
+                  rows={2}
                   value={m}
                   required
                   onInput={(g) => r(g.currentTarget.value)}
@@ -198,6 +199,7 @@ export function KbGapsPage({ route }: { route: { title: string } }) {
                             </>
                           ) : n.canMarkAdded ? (
                             <Button
+                              size="sm"
                               disabled={!!o}
                               onClick={() => f(g.gapId)}
                             >

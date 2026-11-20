@@ -586,7 +586,7 @@ export interface UpNextItem {
 }
 export function If({ item }: { item: UpNextItem }) {
   return (
-    <Button className="btn btn-quiet upnext-jump" onClick={Om}>
+    <Button className="btn btn-quiet upnext-jump" onClick={Om} aria-label={`Jump to up next (${item.live ? 'Now' : 'Next'}: ${item.at})`}>
       {item.live ? 'Now' : 'Next'}: <span className="upnext-num">{item.at}</span>
     </Button>
   )

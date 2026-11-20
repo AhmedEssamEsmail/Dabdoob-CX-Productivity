@@ -465,6 +465,7 @@ function AuditQueuePage({
                               <div className="qa-actions">
                                 <Button
                                   variant="primary"
+                                  size="sm"
                                   disabled={!!m || l?.queueId === w.queueId}
                                   onClick={() => y(w.queueId)}
                                 >
@@ -475,6 +476,7 @@ function AuditQueuePage({
                                       : 'Start audit'}
                                 </Button>
                                 <Button
+                                  size="sm"
                                   aria-expanded={o === w.queueId}
                                   disabled={!!m}
                                   onClick={(e) => {

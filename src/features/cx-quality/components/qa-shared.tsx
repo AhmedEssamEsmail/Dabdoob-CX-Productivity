@@ -893,6 +893,7 @@ export function AuditForm({
                   </span>
                   <Button
                     variant="quiet"
+                    size="sm"
                     onClick={() => v(z, !X)}
                     aria-pressed={!X}
                   >

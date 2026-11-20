@@ -336,12 +336,14 @@ function FormBuilder({
         <Button
           type="submit"
           variant="primary"
+          size="sm"
           disabled={i}
         >
           {i ? 'Saving…' : a.formId ? 'Save as a new version' : 'Create form'}
         </Button>
         <Button
           variant="quiet"
+          size="sm"
           onClick={() => n(false)}
         >
           Cancel
@@ -441,7 +443,7 @@ export function QaFormsPage({ route }: { route: { title: string } }) {
                         </Chip>
                       </td>
                       <td>
-                        <Button onClick={() => c(fl(l, n.auditTypes ?? []))}>
+                        <Button size="sm" onClick={() => c(fl(l, n.auditTypes ?? []))}>
                           Edit
                         </Button>
                       </td>

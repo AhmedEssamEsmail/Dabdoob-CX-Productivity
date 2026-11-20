@@ -598,3 +598,9 @@
 }
 :root[data-reduce-motion] .spinner { animation: none; }
 :root[data-reduce-motion] .page-loading { animation: none; }
+
+/* ui-label-size-sweep C1: hiring-date input is short content (#qa-when pattern) */
+[data-app="hub"] .dq-editor .cx-input[type="date"] { inline-size:auto;max-inline-size:100% }
+
+/* ui-label-size-sweep DECISIONS pair-fix: holiday mobile/HR inputs are short content (C1 extension) */
+[data-app="hub"] .dq-editor .cx-input:is([id^="hd-mobile"],[id^="hd-hr"]) { inline-size:auto;max-inline-size:100% }

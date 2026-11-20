@@ -40,9 +40,9 @@ function DecisionForm({
   const [d, o] = useState(false)
   const [h, b] = useState('')
   const x: [string, string][] = [
-    ['void', 'Uphold: void the audit'],
-    ['rescore', 'Uphold: re-score'],
-    ['reject', 'Reject'],
+    ['void', 'Uphold dispute: void the audit'],
+    ['rescore', 'Uphold dispute: re-score'],
+    ['reject', 'Reject dispute'],
   ]
   if (canEscalate) x.push(['escalate', `Not aligned: escalate to ${ownerName}`])
   return (
@@ -103,6 +103,7 @@ function DecisionForm({
         </label>
         <Textarea
           id={`dn-${disputeId}`}
+          rows={2}
           value={r}
           onInput={(f) => u(f.currentTarget.value)}
         />

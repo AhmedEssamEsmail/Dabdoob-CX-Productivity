@@ -326,14 +326,14 @@ function ApprovalCard({ a, dryRun, onDone }: { a: Approval; dryRun: boolean; onD
       ) : (
         <div className="md-actions">
           <Button variant="primary" size="sm" onClick={() => setPending({ decision: 'approved', tok: token() })}>
-            Approved
+            Approve
           </Button>
           <Button
             variant="danger-quiet"
             size="sm"
             onClick={() => setPending({ decision: 'rejected', tok: token() })}
           >
-            Rejected
+            Reject
           </Button>
           <Button
             variant="quiet"

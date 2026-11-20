@@ -1,0 +1,24 @@
+
+C:\Users\AHMED\KPIs\CX-Hub\scripts\ops\qa-recon-agentweeks.ts
+  6:10  warning  'normEmail_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\specs\ux-ui-audit-v3\probe-qa2-extra.mjs
+  70:17  warning  'el' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\specs\ux-ui-audit-v3\ux3-people-capture.mjs
+  148:9  warning  'res' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\src\features\cx-queue\lib\jobs.ts
+  449:61  warning  '_id' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\golden\queue-aggregates.test.ts
+  123:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\perf\qa-queue-active.test.ts
+  31:38  warning  'b2' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\AHMED\KPIs\CX-Hub\tests\quality\qe-performer-resolution.test.ts
+  90:97  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 7 problems (1 error, 6 warnings)
+

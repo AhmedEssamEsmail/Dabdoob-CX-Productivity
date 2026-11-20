@@ -214,13 +214,14 @@ function AssignForm({ data, onCreated }: { data: any; onCreated: (task: any) => 
         </label>
         <label className="field pw-span-all">
           <span className="field-label">What done looks like</span>
-          <Textarea className="pw-textarea" value={form.description} onInput={(e) => patch({ description: e.currentTarget.value })} />
+          <Textarea className="pw-textarea" rows={3} value={form.description} onInput={(e) => patch({ description: e.currentTarget.value })} />
         </label>
         {form.ownerEmail !== data.me.email ? (
           <label className="field pw-span-all">
             <span className="field-label">Your expectation: the result you will rate Below, Meets or Exceeds in the 1:1</span>
             <Textarea
               className="pw-textarea"
+              rows={3}
               value={form.expectation ?? ''}
               onInput={(e) => patch({ expectation: e.currentTarget.value })}
             />
@@ -774,7 +775,7 @@ function TaskDetail({ task: t, me, onChange }: { task: any; me: any; onChange: (
             ) : null}
             <label className="field">
               <span className="field-label">{kind === 'status' ? 'Where do you stand now?' : 'Note (optional)'}</span>
-              <Textarea className="pw-textarea" value={note} onInput={(e) => setNote(e.currentTarget.value)} />
+              <Textarea className="pw-textarea pw-textarea--short" rows={2} value={note} onInput={(e) => setNote(e.currentTarget.value)} />
             </label>
             {kind === 'status' ? (
               <>

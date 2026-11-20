@@ -1743,7 +1743,7 @@ function LogForm({
             </label>
             <label className="field">
               <span className="field-label">Private note</span>
-              <Textarea className="pw-textarea" value={privateNote} onInput={(e) => setPrivateNote(e.currentTarget.value)} />
+              <Textarea className="pw-textarea pw-textarea--short" rows={2} value={privateNote} onInput={(e) => setPrivateNote(e.currentTarget.value)} />
               <span className="field-hint">Seen only by you and Mohamed, never by {start.report.name}.</span>
             </label>
             {start.kind === 'tl' && me.role === 'admin' ? (
@@ -1759,7 +1759,8 @@ function LogForm({
                   <label key={k} className="field">
                     <span className="field-label">{lbl}</span>
                     <Textarea
-                      className="pw-textarea"
+                      className="pw-textarea pw-textarea--short"
+                      rows={2}
                       value={assessment[k]}
                       onInput={(e) => setAssessment((v) => ({ ...v, [k]: e.currentTarget.value }))}
                     />

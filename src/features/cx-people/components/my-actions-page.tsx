@@ -75,6 +75,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
         </label>
         <Textarea
           id={`${id}-n`}
+          rows={3}
           value={note}
           onInput={(e) => setNote(e.currentTarget.value)}
           placeholder="For example: read sections 4.1-4.3, need 10 minutes with my TL on 4.4."
@@ -88,6 +89,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
       <div className="cxp-act__btns">
         <Button
           variant="primary"
+          size="sm"
           disabled={busy}
           onClick={() =>
             act(() => api.actionsPostUpdate(a.actionId, { note }), 'Update posted. Your team lead sees it in the next review.')
@@ -97,6 +99,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
         </Button>
         {a.status !== 'blocked' ? (
           <Button
+            size="sm"
             disabled={busy}
             onClick={() => act(() => api.actionsSetStatus(a.actionId, 'blocked', note), 'Marked blocked. Your team lead sees why.')}
           >
@@ -104,6 +107,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
           </Button>
         ) : (
           <Button
+            size="sm"
             disabled={busy}
             onClick={() => act(() => api.actionsSetStatus(a.actionId, 'open', note), 'Back to open.')}
           >
@@ -112,6 +116,7 @@ function ActionCard({ a, onChange }: { a: any; onChange: () => void }) {
         )}
         <Button
           variant="quiet"
+          size="sm"
           disabled={busy}
           onClick={() => act(() => api.actionsSetStatus(a.actionId, 'done', note), 'Marked done.')}
         >

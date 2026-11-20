@@ -85,6 +85,7 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
           <div className="qa-actions">
             <Button
               variant="primary"
+              size="sm"
               disabled={l}
               onClick={() => u(P.confirmCtl(d.ctlId, true, ''), 'Confirmed: the CTL is done.')}
             >
@@ -92,11 +93,12 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
             </Button>
             <Button
               variant="quiet"
+              size="sm"
               disabled={l}
               aria-expanded={deny}
               onClick={() => s(!deny)}
             >
-              Deny
+              Deny: it did not happen
             </Button>
           </div>
           {deny ? (
@@ -106,10 +108,12 @@ function AuditCard({ a, onDone }: { a: any; onDone: () => void }) {
               </label>
               <Textarea
                 id={`nh-${a.auditId}`}
+                rows={2}
                 value={i}
                 onInput={(o) => c(o.currentTarget.value)}
               />
               <Button
+                size="sm"
                 disabled={l || i.trim().length < 5}
                 onClick={() =>
                   u(

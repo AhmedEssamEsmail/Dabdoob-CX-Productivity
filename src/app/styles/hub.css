@@ -251,3 +251,6 @@
 [data-app="hub"] .ov-main .card-title{margin:0}
 [data-app="hub"] .ov-grid-start{align-content:start}
 [data-app="hub"] .ov-stack{display:flex;flex-direction:column;gap:var(--cx-space-3)}
+/* ui-label-size-sweep C2/C3: short-content settings inputs (#qa-when pattern) */
+[data-app="hub"] #prod-assumptions-mq, [data-app="hub"] #prod-assumptions-text, [data-app="hub"] #prod-assumptions-wa { inline-size:auto;max-inline-size:100% }
+[data-app="hub"] .md-settings-form .input { inline-size:auto;max-inline-size:100% }

@@ -260,6 +260,7 @@ function CtlForm({
             </label>
             <Textarea
               id="ctl-reason"
+              rows={2}
               value={d}
               onInput={(k) => o(k.currentTarget.value)}
               placeholder="Which question, and what the ticket shows (time, message). It goes to the weekly Quality meeting."
@@ -275,6 +276,7 @@ function CtlForm({
               </label>
               <Textarea
                 id="ctl-notes"
+                rows={2}
                 value={p}
                 onInput={(k) => m(k.currentTarget.value)}
                 placeholder="What you went through, what the agent will do differently."

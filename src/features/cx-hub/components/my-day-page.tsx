@@ -533,7 +533,7 @@ function FollowUpsCard({ section: n }: { section: Section }) {
                   <div className="wi-side">
                     <div className="t">{u.hoursWaiting} h</div>
                     <Button type="button" className="btn btn-quiet" onClick={() => l(u)}>
-                      Done
+                      Mark done
                     </Button>
                   </div>
                 </li>

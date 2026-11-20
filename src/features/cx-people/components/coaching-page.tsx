@@ -85,6 +85,7 @@ export function CoachingPage({ route }: { route: { title: string; purpose?: stri
               </label>
               <Textarea
                 id="cs-r"
+                rows={3}
                 value={reason}
                 onInput={(e) => setReason(e.currentTarget.value)}
                 placeholder="For example: QA audit A-1234 scored 62% on refunds; refunded without approval twice."

@@ -255,4 +255,8 @@ html[data-theme="dark"] [data-app="queue"] .hm-total-n { color: var(--cx-ink); }
 /* .mixbar clips the universal outside ring via overflow:hidden — draw it inside */
 [data-app="queue"] .mixbar > :is(.ag-mixseg, .q-mixseg):focus-visible { outline-offset: calc(var(--cx-space-1) / -2); }
 
+/* ui-label-size-sweep DECISIONS pair-fixes: per-queue note floor relax + agents count short input */
+[data-app="queue"] .chk-note[id$="-n"] { min-block-size:auto }
+[data-app="queue"] .chk-grid .cx-num { inline-size:auto;max-inline-size:100% }
+
 

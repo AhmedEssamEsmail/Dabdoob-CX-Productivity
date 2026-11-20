@@ -84,3 +84,5 @@
 @media(max-width:480px) {
   [data-app="operations"] .trk-kinds, [data-app="operations"] .trk-dep-row { grid-template-columns:minmax(0,1fr) }
 }
+/* ui-label-size-sweep C4: tracker date/number fields are short content (#qa-when pattern) */
+[data-app="operations"] .trk-form .input[type="date"], [data-app="operations"] .trk-form .trk-num { inline-size:auto;max-inline-size:100% }

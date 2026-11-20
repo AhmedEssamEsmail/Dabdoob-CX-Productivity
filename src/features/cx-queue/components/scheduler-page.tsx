@@ -503,20 +503,20 @@ function RequestsTab({ admin, onChanged }: { admin: boolean; onChanged: () => vo
                 <td className="sch-actions">
                   {c.needsMyAnswer ? (
                     <Fragment>
-                      <Button variant="quiet" onClick={() => void u(() => Z.respondToSwap(c.id, true), 'Agreed.')}>
+                      <Button variant="quiet" size="sm" onClick={() => void u(() => Z.respondToSwap(c.id, true), 'Agreed.')}>
                         Agree
                       </Button>
-                      <Button variant="quiet" onClick={() => void u(() => Z.respondToSwap(c.id, false), 'Declined.')}>
+                      <Button variant="quiet" size="sm" onClick={() => void u(() => Z.respondToSwap(c.id, false), 'Declined.')}>
                         Decline
                       </Button>
                     </Fragment>
                   ) : null}
                   {admin && c.status === 'Pending' ? (
                     <Fragment>
-                      <Button variant="primary" onClick={() => void u(() => Z.decide(c.id, 'approve', ''), 'Approved.')}>
+                      <Button variant="primary" size="sm" onClick={() => void u(() => Z.decide(c.id, 'approve', ''), 'Approved.')}>
                         Approve
                       </Button>
-                      <Button variant="quiet" onClick={() => void u(() => Z.decide(c.id, 'reject', ''), 'Rejected.')}>
+                      <Button variant="quiet" size="sm" onClick={() => void u(() => Z.decide(c.id, 'reject', ''), 'Rejected.')}>
                         Reject
                       </Button>
                     </Fragment>
