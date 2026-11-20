@@ -461,6 +461,59 @@ describe('syncRosterNow / dqSyncRoster_', () => {
     expect(synced && synced.employment_status).toBe('current')
   })
 
+  it('manual-source rows follow HCT employment facts (Resigned -> inactive; blanks kept; absent untouched)', async () => {
+    // Regression: legacy-imported source='manual' rows kept active=true with
+    // employment_status Resigned/Moved forever — the manual branch only patched
+    // freshdesk fields. "Show people who left" had nothing to hide.
+    const SHEET1 = [
+      ['Employee Name', 'Email', 'Position', 'Department', 'Section', 'Direct Repporter', 'Status', 'LWD', 'Hiring Date', 'Fresh desk ID', 'Freshdesk Name', 'Maqsam Name', 'Code', 'Gender', 'Contact Number'],
+      ['Lead One', 'tl@dabdoob.com', 'Team Leader', 'Operations', 'Customer Experience', 'Admin One', 'current', '', '', '12', 'Lead One', '', '1002', 'Female', '+201000000002'],
+      ['Admin One', 'admin@dabdoob.com', 'Customer Experience Manager', 'Operations', 'Customer Experience', '-', 'current', '', '', '11', 'Admin One', '', '1001', 'Male', '+201000000001'],
+      ['Manual Row', 'manual@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', 'Resigned', '2026-05-01', '', '14', 'Manual Row', '', '1099', 'Male', '+201000000099'],
+      ['Blank Status', 'blank@dabdoob.com', 'CX Agent', 'Operations', 'Customer Experience', 'Lead One', '', '', '', '15', 'Blank Status', '', '1098', 'Female', '+201000000098'],
+    ]
+    const base = fx()
+    base.tables = {
+      ...base.tables,
+      refresh_log: [],
+      roster: [
+        ...(base.tables?.roster || []),
+        // a manual row the HCT still carries with a blank Status — KEEP_MANUAL
+        // must preserve the manually-set employment_status while active flips
+        {
+          email: 'blank@dabdoob.com', name: 'Blank Status', role: 'agent', tl_email: 'tl@dabdoob.com',
+          country: '', active: true, source: 'manual', section: '', position: '',
+          gender: 'Female', mobile: '', hr_id: '', employment_status: 'Current',
+        },
+        // a manual row absent from the HCT — sync must leave it alone
+        {
+          email: 'nothere@dabdoob.com', name: 'Not In Hct', role: 'agent', tl_email: 'tl@dabdoob.com',
+          country: '', active: true, source: 'manual', section: '', position: '',
+          gender: 'Male', mobile: '', hr_id: '', employment_status: 'Current',
+        },
+      ],
+    }
+    hubInstall(base)
+    hubSetSheet('Sheet1', SHEET1)
+    const port = await portCall(() => dqSyncRoster_(undefined, 'admin@dabdoob.com'))
+    if (port.err) throw new Error('sync failed: ' + port.err)
+
+    const rows = hubDb.tables.roster || []
+    const manual = rows.find((r) => r.email === 'manual@dabdoob.com')
+    expect(manual && manual.active).toBe(false)
+    expect(manual && manual.employment_status).toBe('Resigned')
+    const blank = rows.find((r) => r.email === 'blank@dabdoob.com')
+    expect(blank && blank.active).toBe(false)
+    expect(blank && blank.employment_status).toBe('Current')
+    const nothere = rows.find((r) => r.email === 'nothere@dabdoob.com')
+    expect(nothere && nothere.active).toBe(true)
+    expect(nothere && nothere.employment_status).toBe('Current')
+    // the sync note surfaces manual-row deactivations like hct-row ones
+    const note = (port.ok || {}) as Record<string, unknown>
+    const changed = (note.changes || []) as { email: string }[]
+    expect(changed.some((c) => c.email === 'manual@dabdoob.com')).toBe(true)
+  })
+
 })
 
 describe('headcount fields (port-only)', () => {

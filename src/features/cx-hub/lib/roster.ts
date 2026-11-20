@@ -366,10 +366,31 @@ export async function dqSyncRoster_(cfg?: Cfg, actor = 'system:roster_sync'): Pr
     }
     if (cur.source && cur.source !== 'hct') {
       const patch: Record<string, unknown> = {}
-      ;['freshdesk_id', 'freshdesk_name', 'maqsam_name'].forEach((f) => {
-        if (String(cur[f]) !== String(row[f])) patch[f] = row[f]
-      })
+      // freshdesk/maqsam identity + the HCT-owned employment facts; a manual
+      // row's HR status still follows the sheet (KEEP_MANUAL guards blanks).
+      ;['freshdesk_id', 'freshdesk_name', 'maqsam_name', 'employment_status', 'active'].forEach(
+        (f) => {
+          if (
+            DQ_SYNC_KEEP_MANUAL.indexOf(f) !== -1 &&
+            String(row[f] || '') === '' &&
+            String(cur[f] || '') !== ''
+          )
+            return
+          if (String(cur[f]) !== String(row[f])) patch[f] = row[f]
+        }
+      )
       if (Object.keys(patch).length) {
+        const shown = Object.keys(patch).filter(
+          (f) => f === 'active' || f === 'employment_status'
+        )
+        if (shown.length)
+          changes.push({
+            email: String(row.email),
+            name: String(row.name || row.email),
+            fields: shown.map(
+              (f) => f + ': ' + String(cur[f] || '-') + ' -> ' + String(row[f] || '-')
+            ),
+          })
         patch.synced_at = now
         updates.push({ key: String(cur.email), patch })
       }
