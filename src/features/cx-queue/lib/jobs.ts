@@ -13,7 +13,7 @@ import { appendRow, db, readAllPaged, cachePut, cacheRemove, newId } from '@/fea
 import { configAll, remindersOn } from '@/features/shared/platform/settings'
 import { dqTitleLevel_, requireJobCaller } from '@/features/shared/platform/identity'
 import { dqCachedLive, dqLastRun, readStore } from '@/features/shared/platform/stores'
-import { raisePopup } from '@/features/shared/platform/popups'
+import { raisePopup, resolvePopups } from '@/features/shared/platform/popups'
 import { sendMail, escapeHtml } from '@/features/shared/platform/mail'
 import { hbBeat, hbFlush } from '@/features/shared/platform/health'
 import { described } from '@/features/shared/lib/errors'
@@ -335,6 +335,21 @@ export async function dqRemindMissedCheckins_(now: Date, cps: ReturnType<typeof 
   }
 }
 
+/** dqAutoCheckinQueues_: the captured snapshot rows as a submission's queues_json — real numbers, human fields left blank. */
+function dqAutoCheckinQueues_(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  return rows.map((r) => ({
+    queue: r.queue, agents: null, status: 'Auto', note: '',
+    open: r.open, oldestH: r.oldest_h, unassigned: r.unassigned, stale: r.stale, data_as_of: r.data_as_of,
+  }))
+}
+
+/** dqSnapshotRows_: frozen snapshot rows for one checkpoint, used when retrying an orphaned submission. */
+async function dqSnapshotRows_(snapshotKey: string): Promise<Record<string, unknown>[]> {
+  const { data, error } = await db().from('queue_snapshots').select('*').eq('snapshot_key', snapshotKey)
+  if (error) throw described(error, { table: 'queue_snapshots' })
+  return (data || []) as Record<string, unknown>[]
+}
+
 /**
  * dqCheckinTick_ verbatim: capture each due slot's snapshot (idempotent), keep
  * agg_snapshots_today live, raise missed-check-in reminders.
@@ -347,40 +362,99 @@ export async function dqCheckinTick_(now: Date | null, tick: Record<string, unkn
   const cps = dqCheckpoints_(dqAddDays_(today, -1), cfg).concat(dqCheckpoints_(today, cfg))
   const year = Number(today.slice(0, 4))
   const have: Record<string, boolean> = {}
-  const { data: snapKeys } = await db().from('queue_snapshots').select('snapshot_key').eq('year', year)
+  const { data: snapKeys, error: snapErr } = await db().from('queue_snapshots').select('snapshot_key').in('snapshot_key', cps.map((c) => c.key))
   ;(snapKeys || []).forEach((r) => {
     have[String((r as Record<string, unknown>).snapshot_key)] = true
   })
+  // A failed snapKeys lookup means "have = unknown": abort this tick's capture +
+  // auto-insert rather than recapturing live data over already-frozen rows.
+  if (snapErr) {
+    hbBeat('queue_snapshot', 'warn', 'Snapshot key lookup failed; skipping check-in capture/auto-insert this tick: ' + String(snapErr.message || snapErr))
+  }
   let live: Record<string, unknown>[] | null = null
+  const dates = Array.from(new Set(cps.map((c) => c.date))).sort()
+  const subDone: Record<string, boolean> = {}
+  if (dates.length) {
+    const { data: subRows, error: subErr } = await db()
+      .from(DQ_QUEUE_SUBMISSIONS_TABLE)
+      .select('*')
+      .gte('slot_date', dates[0])
+      .lte('slot_date', dates[dates.length - 1] + String.fromCharCode(0xfffd))
+    dqSubmissionsFor_(subErr ? null : ((subRows || []) as Record<string, unknown>[]), dates).forEach((s) => {
+      subDone[String(s.slot_date) + '|' + s.slot] = true
+    })
+  }
   let captured = 0
-  let todays = (((await db().from('queue_snapshots').select('*').eq('year', year).eq('slot_date', today).order('snapshot_key', { ascending: false }).limit(400)).data) || []) as Record<string, unknown>[]
+  const { data: todaysRows, error: todaysErr } = await db().from('queue_snapshots').select('*').eq('year', year).eq('slot_date', today).order('snapshot_key', { ascending: false }).limit(400)
+  // A failed todays lookup means "todays = unknown": the rewrite below would
+  // DELETE every agg_snapshots_today row, so it must be skipped this tick.
+  if (todaysErr) {
+    hbBeat('queue_snapshot', 'warn', 'Today snapshots lookup failed; leaving agg_snapshots_today untouched this tick: ' + String(todaysErr.message || todaysErr))
+  }
+  let todays = ((todaysRows || []) as Record<string, unknown>[])
   const syncedTo = await dqSyncedTo_()
-  for (const cp of cps) {
-    if (now < cp.readAfter || have[cp.key]) continue
+  for (const cp of snapErr ? [] : cps) {
+    if (now < cp.readAfter) continue
     if (now.getTime() - cp.at.getTime() > 6 * 3600000) continue
-    if (tick && (!tick.fresh || (tick.aggAt && new Date(String(tick.aggAt)) < cp.readAfter))) {
-      hbBeat('queue_snapshot', 'warn', 'Check-in ' + cp.key + ' not captured yet: ' + String(tick.reason || 'aggregates built before the read time'))
+    let snapRows: Record<string, unknown>[] | null = null
+    if (!have[cp.key]) {
+      if (tick && (!tick.fresh || (tick.aggAt && new Date(String(tick.aggAt)) < cp.readAfter))) {
+        hbBeat('queue_snapshot', 'warn', 'Check-in ' + cp.key + ' not captured yet: ' + String(tick.reason || 'aggregates built before the read time'))
+        continue
+      }
+      live = live || (await dqCachedLive('agg_queue_now'))
+      const asOf = syncedTo || new Date(now.getTime() - Number(dqSetting_(cfg, 'checkin_read_delay_min')) * 60000)
+      const rows = live.map((q) => ({
+        snapshot_key: cp.key, slot_date: cp.date, slot: cp.slot, captured_at: now.toISOString(), data_as_of: asOf.toISOString(),
+        late: now.getTime() > cp.at.getTime() + 3600000, queue: q.queue, open: q.open, actionable: q.actionable,
+        unassigned: q.unassigned, oldest_h: q.oldest_h, bands_json: q.bands_json,
+        over_top: q.over_top, created_today: q.created_today, resolved_today: q.resolved_today,
+        stale: q.stale, by_status_json: q.by_status_json, year: Number(cp.date.slice(0, 4)),
+      }))
+      if (rows.length) {
+        const { error } = await db().from('queue_snapshots').upsert(rows, { onConflict: 'snapshot_key,queue' })
+        if (error) throw described(error, { table: 'queue_snapshots' })
+        captured++
+        hbBeat('queue_snapshot', 'ok', 'Captured ' + cp.key)
+        if (cp.date === today) todays = todays.concat(rows)
+        snapRows = rows
+      }
+    }
+    if (!snapRows && !have[cp.key]) continue
+    if (subDone[cp.key]) {
+      try {
+        await resolvePopups('queue_checkin_missed', cp.key, 'system:job')
+      } catch (err) {
+        hbBeat('queue_snapshot', 'warn', 'Missed check-in popup resolve ' + cp.key + ' failed: ' + String(err instanceof Error ? err.message : err))
+      }
       continue
     }
-    live = live || (await dqCachedLive('agg_queue_now'))
-    const asOf = syncedTo || new Date(now.getTime() - Number(dqSetting_(cfg, 'checkin_read_delay_min')) * 60000)
-    const rows = live.map((q) => ({
-      snapshot_key: cp.key, slot_date: cp.date, slot: cp.slot, captured_at: now.toISOString(), data_as_of: asOf.toISOString(),
-      late: now.getTime() > cp.at.getTime() + 3600000, queue: q.queue, open: q.open, actionable: q.actionable,
-      unassigned: q.unassigned, oldest_h: q.oldest_h, bands_json: q.bands_json,
-      over_top: q.over_top, created_today: q.created_today, resolved_today: q.resolved_today,
-      stale: q.stale, by_status_json: q.by_status_json, year: Number(cp.date.slice(0, 4)),
-    }))
-    if (rows.length) {
-      const { error } = await db().from('queue_snapshots').upsert(rows, { onConflict: 'snapshot_key,queue' })
-      if (error) throw described(error, { table: 'queue_snapshots' })
-      captured++
-      hbBeat('queue_snapshot', 'ok', 'Captured ' + cp.key)
-      if (cp.date === today) todays = todays.concat(rows)
+    try {
+      snapRows = snapRows || (await dqSnapshotRows_(cp.key))
+      if (!snapRows.length) continue
+      await appendRow(DQ_QUEUE_SUBMISSIONS_TABLE, {
+        submission_id: newId('qs'),
+        slot_date: cp.date,
+        slot: cp.slot,
+        snapshot_key: cp.key,
+        status: now.getTime() > cp.dueAt.getTime() ? 'late' : 'submitted',
+        queues_json: dqAutoCheckinQueues_(snapRows),
+        corrections_json: {},
+        correction_reason: '',
+        general_note: '',
+        help_needed: false,
+        help_note: '',
+      }, 'system:job')
+      subDone[cp.key] = true
+      await resolvePopups('queue_checkin_missed', cp.key, 'system:job')
+    } catch (err) {
+      hbBeat('queue_snapshot', 'warn', 'Auto check-in submission ' + cp.key + ' failed: ' + String(err instanceof Error ? err.message : err))
     }
   }
   // id is GENERATED ALWAYS on agg_snapshots_today: rows read back from queue_snapshots must not carry theirs.
-  await dqRewrite_('agg_snapshots_today', todays.map(({ id: _id, ...r }) => r))
+  if (!todaysErr) {
+    await dqRewrite_('agg_snapshots_today', todays.map(({ id: _id, ...r }) => r))
+  }
   await dqRemindMissedCheckins_(now, cps)
   return captured
 }

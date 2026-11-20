@@ -109,6 +109,8 @@ function mkQuery(table: string) {
     const dead: Record<string, unknown> = {
       select() { return dead },
       eq() { return dead },
+      neq() { return dead },
+      not() { return dead },
       order() { return dead },
       limit() { return dead },
       range() { return dead },
@@ -116,6 +118,7 @@ function mkQuery(table: string) {
       gt() { return dead },
       lte() { return dead },
       lt() { return dead },
+      in() { return dead },
       insert() { return dead },
       update() { return dead },
       delete() { return dead },
@@ -188,6 +191,19 @@ function mkQuery(table: string) {
     },
     neq(col: string, v: unknown) {
       filters.push((r) => !(r[col] === v || String(r[col]) === String(v)))
+      return builder
+    },
+    not(col: string, op: string, v: unknown) {
+      // Negated predicate; .not('id','is',null) keeps every row (all get serial
+      // ids) — the delete-all semantics dqRewrite_ relies on.
+      filters.push((r) => {
+        if (op === 'is') {
+          const nullish = r[col] === null || r[col] === undefined || r[col] === ''
+          return v === null || v === undefined ? !nullish : !(r[col] === v)
+        }
+        if (op === 'eq') return !(r[col] === v || String(r[col]) === String(v))
+        return true
+      })
       return builder
     },
     is(col: string, v: unknown) {
