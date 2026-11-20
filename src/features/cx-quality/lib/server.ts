@@ -33,7 +33,7 @@ import { dqAddDays_ } from '@/features/shared/lib/adapters'
 import {
   QA_SETTINGS,
   qaBool_, qaRound1_, qaLostQuestions_, qaNeedsCtl_,
-  qaCanCloseCtl_, qaCtlVisibleTo_, qaFindOpenCtls_,
+  qaCanCloseCtl_, qaCtlScopeVisible_, qaFindOpenCtls_,
   qaCtlSla_, qaDisputeStats_, qaAuditorKpis_, qaEmailList_,
   qaQueueFromSheet_, qaForms_, qaAuditView_, qaCleanForm_,
   qaItemRef_, qaItemId_, qaItemTag_, qaIsNonTicket_, qaWhen_, qaParse_, qaFinalScore_,
@@ -1189,14 +1189,20 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
 // =====================================================================
 
 /** getQaCtlPage verbatim: the TL's CTL desk (open + recent + SLA). */
-export async function getQaCtlPage(): Promise<Row> {
+export async function getQaCtlPage(scope = 'mine'): Promise<Row> {
   const user = await qaRequireRole_(['admin', 'tl'])
   const dir = await pwDirectory()
   const today = qaToday_()
   const [formRows, all] = await Promise.all([qaRows_('qa_forms'), qaRows_('qa_ctls')])
   const forms = qaForms_(formRows)
-  const mine = all.filter((c) => qaCtlVisibleTo_(c, user))
-  const shownCtls = mine.filter((c) => c.status !== 'cancelled' && (c.status === 'open' || c.status === 'on_hold' || String(c.opened_date) >= dqAddDays_(today, -45)))
+  const [onShift, actSet] = await Promise.all([
+    user.role === 'tl' ? qaOnShiftNow_() : Promise.resolve([] as string[]),
+    qaActiveEmails_(),
+  ])
+  const mine = all.filter((c) => qaCtlScopeVisible_(c, user, scope))
+  const shownCtls = mine
+    .filter((c) => c.status !== 'cancelled' && (c.status === 'open' || c.status === 'on_hold' || String(c.opened_date) >= dqAddDays_(today, -45)))
+    .filter((c) => (c.status !== 'open' && c.status !== 'on_hold') || actSet === null || actSet.has(normEmail(c.agent_email)))
   const disputeIds = [...new Set(shownCtls.filter((c) => c.dispute_id).map((c) => String(c.dispute_id)))]
   const [auditRows, disputeRows] = await Promise.all([
     shownCtls.length ? qaRowsWhere_('qa_audits', { in: { audit_id: [...new Set(shownCtls.map((c) => String(c.audit_id)))] } }) : Promise.resolve([] as Row[]),
@@ -1219,6 +1225,7 @@ export async function getQaCtlPage(): Promise<Row> {
         overdue: c.status === 'open' && String(c.due_date) < today, dueToday: c.status === 'open' && String(c.due_date) === today,
         agentName: dir.name(String(c.agent_email)), tlName: dir.name(String(c.tl_email)), closedBy: c.closed_by ? dir.name(String(c.closed_by)) : '',
         own: normEmail(c.tl_email) === user.email, notes: String(c.coaching_notes || ''), action: String(c.action || ''),
+        canClose: qaCanCloseCtl_(c, user, onShift),
         submittedDate: String(c.submitted_date || ''), submittedAt: String(c.submitted_at || ''), slaMet: c.sla_met === '' || c.sla_met === null || c.sla_met === undefined ? null : qaBool_(c.sla_met),
         agentNote: String(c.agent_note || ''), outcome: String(c.outcome || ''), reopenCount: Number(c.reopen_count) || 0,
         dispute: d ? { disputeId: String(d.dispute_id), status: String(d.status), reason: String(d.reason || '') } : null,
@@ -1234,7 +1241,7 @@ export async function getQaCtlPage(): Promise<Row> {
       const s = sla[k]
       return { tlEmail: k, tlName: dir.name(k), total: s.total, due: s.due, onTime: s.onTime, done: s.done, slaPct: s.slaPct, donePct: s.donePct }
     })
-  return { today, month, rows, sla: slaRows, slaTarget: Number(await qaSetting_('qa_ctl_sla_target')), ticketUrl: await qaTicketUrl_(), isAdmin: user.role === 'admin' }
+  return { today, month, rows, sla: slaRows, slaTarget: Number(await qaSetting_('qa_ctl_sla_target')), ticketUrl: await qaTicketUrl_(), isAdmin: user.role === 'admin', scope: scope === 'all' ? 'all' : 'mine' }
 }
 
 /** submitQaCtl verbatim: the TL closes a CTL with an outcome + notes. */

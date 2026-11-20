@@ -34,6 +34,7 @@ function findOpenCtls(t: any[], n: string): any[] {
   return t.filter(
     (c) =>
       c.status === 'open' &&
+      c.canClose &&
       (s
         ? c.audit?.ticketId === s
         : c.auditId.toLowerCase() === i || c.ctlId.toLowerCase() === i)
@@ -321,7 +322,8 @@ function ResendMail({ auditId, ticketId }: { auditId: string; ticketId: string }
 
 /* --- Rs — CTLs page ----------------------------------------------------------- */
 export default function CtlsPage({ route }: { route: { title: string } }) {
-  const { data: n, error: a, reload: s } = useSe(P.ctlPage)
+  const [scope, setScope] = useState<'mine' | 'all'>('mine')
+  const { data: n, error: a, reload: s } = useSe(() => P.ctlPage(scope))
   const [i, c] = useState({ ref: '', ctlId: '' })
   const l = useRef<HTMLDivElement | null>(null)
   const p = n ? n.rows.filter((r: any) => r.status === 'open') : []
@@ -340,6 +342,23 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
       error={a}
       reload={s}
       sub="Every audit under 100% opens a CTL — whoever is on shift may close it and submit the outcome."
+      toolbar={
+        n && !n.isAdmin ? (
+          <Seg
+            name="ctl-scope"
+            value={scope}
+            onChange={(v) => {
+              setScope(v as 'mine' | 'all')
+              s()
+            }}
+            options={[
+              { value: 'mine', label: 'My CTLs' },
+              { value: 'all', label: 'All CTLs' },
+            ]}
+            aria-label="Show CTLs"
+          />
+        ) : null
+      }
     >
       {n ? (
         <div className="qa-ctls-layout">
@@ -427,7 +446,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                       ) : null}
                       {r.reopenCount ? <Chip status="bad">Reopened by the agent</Chip> : null}
                       <span className="qa-acts">
-                        {r.status === 'open' ? (
+                        {r.status === 'open' && r.canClose ? (
                           <Button size="sm" variant="primary" onClick={() => m(r)}>
                             Open in the form
                           </Button>

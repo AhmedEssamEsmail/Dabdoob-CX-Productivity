@@ -327,6 +327,11 @@ export function qaCtlVisibleTo_(c: Record<string, unknown>, user: { email: strin
   return user.role === 'admin' || normEmail_(c.tl_email) === user.email || qaEmailList_(c.shift_tls).indexOf(user.email) !== -1
 }
 
+/** CTL page scope: admins and 'all' see every CTL; 'mine' matches tl_email only (no shift_tls leg). Pure. */
+export function qaCtlScopeVisible_(c: Record<string, unknown>, user: { email: string; role: string }, scope: unknown): boolean {
+  return user.role === 'admin' || scope === 'all' || normEmail_(c.tl_email) === user.email
+}
+
 /**
  * The open CTLs a person may submit that match `ref`: a Freshdesk ticket number (digits, '#' allowed)
  * or an audit ID / CTL ID. Team leads match their own; admins any. auditsBy: audit_id -> audit row.

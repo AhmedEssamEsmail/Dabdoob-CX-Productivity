@@ -23,7 +23,7 @@ const HANDLERS: Record<string, (a: unknown[]) => Promise<unknown>> = {
   createQaNonTicketAudit: (a) => qa.createQaNonTicketAudit((a[0] || {}) as Record<string, unknown>),
   getQaMyAuditsPage: () => qa.getQaMyAuditsPage(),
   confirmQaCtl: (a) => qa.confirmQaCtl(String(a[0] ?? ''), a[1], String(a[2] ?? '')),
-  getQaCtlPage: () => qa.getQaCtlPage(),
+  getQaCtlPage: (a) => qa.getQaCtlPage(String(a[0] ?? 'mine')),
   submitQaCtl: (a) => qa.submitQaCtl((a[0] || {}) as Record<string, unknown>),
   getQaDisputesPage: () => qa.getQaDisputesPage(),
   decideQaDispute: (a) => qa.decideQaDispute((a[0] || {}) as Record<string, unknown>),
