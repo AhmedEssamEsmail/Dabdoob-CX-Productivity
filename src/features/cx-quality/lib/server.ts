@@ -823,10 +823,10 @@ export async function submitQaAudit(input: Row): Promise<Row> {
       audit_id: newId('QA'), kind: 'audit', queue_id: q.queue_id, calibration_id: '', ticket_id: q.ticket_id,
       agent_email: normEmail(q.agent_email), tl_email: normEmail(q.tl_email || dir.managerOf(String(q.agent_email)) || ''), auditor_email: user.email,
       channel: q.channel, contact_type: q.contact_type, form_id: (scored.form as Row).formId, form_version: (scored.form as Row).version,
-      answers_json: JSON.stringify(scored.answers), comment, score: scored.result.score, fatal: scored.result.fatal, score_final: '',
+      answers_json: JSON.stringify(scored.answers), comment, score: scored.result.score, fatal: scored.result.fatal, score_final: null,
       started_at: q.started_at || now, submitted_at: now, audit_date: today,
       status: markdown ? 'submitted' : 'acknowledged', ack_due_date: '',
-      acknowledged_at: markdown ? '' : now, ack_by: markdown ? '' : 'full_marks', updated_at: now, updated_by: user.email,
+      acknowledged_at: markdown ? null : now, ack_by: markdown ? '' : 'full_marks', updated_at: now, updated_by: user.email,
       source: q.source === 'request' || q.source === 'offqueue' ? q.source : qaIsNonTicket_(q) ? String(q.source || 'manual') : '',
       fail_reasons_json: JSON.stringify(failReasons), audit_type: String(q.audit_type || ''), reference: String(q.reference || ''), interaction_at: interactionAt,
     }
@@ -1137,7 +1137,7 @@ export async function confirmQaCtl(ctlId: string, happened: unknown, note: strin
       row.status = 'open'
       row.reopened_at = now
       row.reopen_count = (Number(row.reopen_count) || 0) + 1
-      row.submitted_at = ''
+      row.submitted_at = null
       row.submitted_date = ''
       row.sla_met = ''
       if (row.outcome !== 'dispute') {
@@ -1293,9 +1293,9 @@ export async function submitQaCtl(input: Row): Promise<Row> {
       if (a.status !== 'submitted') throw new Error('This audit is ' + String(a.status).replace('_', ' ') + ' and can no longer be disputed. Submit it as Acknowledged.')
       dispute = {
         dispute_id: newId('DSP'), audit_id: a.audit_id, agent_email: normEmail(a.agent_email), auditor_email: normEmail(a.auditor_email),
-        tl_email: normEmail(row.tl_email), reason, raised_at: now, status: 'open', decision: '', decision_note: '', old_score: a.score, new_score: '',
-        decided_by: '', decided_at: '', audit_month: String(a.audit_date).slice(0, 7), raised_by: user.email, raised_date: today,
-        escalated_by: '', escalated_at: '', escalation_note: '',
+        tl_email: normEmail(row.tl_email), reason, raised_at: now, status: 'open', decision: '', decision_note: '', old_score: a.score, new_score: null,
+        decided_by: '', decided_at: null, audit_month: String(a.audit_date).slice(0, 7), raised_by: user.email, raised_date: today,
+        escalated_by: '', escalated_at: null, escalation_note: '',
       }
       await qaUpsertIn_('qa_disputes', ['dispute_id'], [dispute])
       a.status = 'disputed'
@@ -1318,7 +1318,7 @@ export async function submitQaCtl(input: Row): Promise<Row> {
     row.action = action
     row.submitted_at = now
     row.submitted_date = today
-    row.sla_met = today <= String(row.due_date)
+    row.sla_met = today <= String(row.due_date) ? 'TRUE' : 'FALSE'
     row.closed_by = user.email
     row.updated_at = now
     row.updated_by = user.email
@@ -1461,7 +1461,7 @@ export async function decideQaDispute(input: Row): Promise<Row> {
     d.status = decision === 'reject' ? 'rejected' : 'upheld'
     d.decision = decision
     d.decision_note = note
-    d.new_score = newScore === null ? '' : newScore
+    d.new_score = newScore === null ? null : newScore
     d.decided_by = user.email
     d.decided_at = now
     await qaUpsertIn_('qa_disputes', ['dispute_id'], [d])
@@ -1608,7 +1608,7 @@ export async function createQaCalibration(input: Row): Promise<Row> {
   const row: Row = {
     calibration_id: newId('CAL'), ticket_id: ticket, channel, agent_email: normEmail(input.agentEmail || ''),
     form_id: form.formId, form_version: form.version, auditor_email: auditor, tl_email: tl, created_by: user.email, created_at: qaNowIso_(),
-    status: 'open', auditor_audit_id: '', tl_audit_id: '', alignment_pct: '', month: today.slice(0, 7), completed_at: '',
+    status: 'open', auditor_audit_id: '', tl_audit_id: '', alignment_pct: null, month: today.slice(0, 7), completed_at: null,
   }
   await qaTx_(async () => {
     await qaUpsertIn_('qa_calibrations', ['calibration_id'], [row])
@@ -1645,8 +1645,8 @@ export async function submitQaCalibrationAudit(input: Row): Promise<Row> {
       audit_id: newId('QA'), kind: 'calibration', queue_id: '', calibration_id: c.calibration_id, ticket_id: c.ticket_id,
       agent_email: c.agent_email || '', tl_email: '', auditor_email: user.email, channel: c.channel, contact_type: '', form_id: c.form_id,
       form_version: c.form_version, answers_json: JSON.stringify(scored.answers), comment: String(input.comment || '').slice(0, 2000),
-      score: scored.result.score, fatal: scored.result.fatal, score_final: '', started_at: String(input.startedAt || now), submitted_at: now,
-      audit_date: qaToday_(), status: 'calibration', ack_due_date: '', acknowledged_at: '', ack_by: '', updated_at: now, updated_by: user.email,
+      score: scored.result.score, fatal: scored.result.fatal, score_final: null, started_at: String(input.startedAt || now), submitted_at: now,
+      audit_date: qaToday_(), status: 'calibration', ack_due_date: '', acknowledged_at: null, ack_by: '', updated_at: now, updated_by: user.email,
       interaction_at: interactionAt,
     }
     await qaUpsertIn_('qa_audits', ['audit_id'], [a])
@@ -1714,7 +1714,7 @@ export async function addQaKbGap(input: Row): Promise<Row> {
     const row: Row = {
       gap_id: newId('KB'), audit_id: a.audit_id, ticket_id: qaItemId_(a), auditor_email: user.email, topic, description,
       suggestion: String(input.suggestion || '').trim().slice(0, 1000), created_at: qaNowIso_(), created_date: today, audit_date: String(a.audit_date),
-      same_day: today === String(a.audit_date), status: 'open', added_by: '', added_at: '',
+      same_day: today === String(a.audit_date) ? 'TRUE' : 'FALSE', status: 'open', added_by: '', added_at: null,
     }
     await qaUpsertIn_('qa_kb_gaps', ['gap_id'], [row])
     return row

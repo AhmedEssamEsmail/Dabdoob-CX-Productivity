@@ -40,7 +40,7 @@ import { Button, Seg, Select, TableScroll } from '@/features/shared/components/u
 /* --- Ys — the health/bases head ------------------------------------------ */
 function HealthHead({ d: t }: { d: any }) {
   const n = t.health
-  const a = t.bases.filter((s: any) => s.basis !== 'random')
+  const a = t.bases
   return (
     <section className="cx-panel" aria-labelledby="qa-health-h">
       <div className="cx-section__head">
@@ -77,7 +77,7 @@ function HealthHead({ d: t }: { d: any }) {
           </dd>
           <span className="cx-faint qa-sub">
             {n.score === null
-              ? 'No agent has 10 random audits yet'
+              ? 'No agent has 10 audits yet'
               : `${n.agents} agents, each counted once; ${QA_CONF[n.badge].toLowerCase()} confidence`}
           </span>
         </div>
@@ -96,7 +96,7 @@ function HealthHead({ d: t }: { d: any }) {
             <Count v={n.critical} />
           </dd>
           <span className="cx-faint qa-sub">
-            {n.criticalRate ? `${qaCi(n.criticalRate)} of ${t.audits}` : 'no random audits'}
+            {n.criticalRate ? `${qaCi(n.criticalRate)} of ${t.audits}` : 'no audits'}
           </span>
         </div>
         <div className="cx-totals__item">
@@ -135,16 +135,16 @@ function HealthHead({ d: t }: { d: any }) {
             <Count v={n.pendingDisputes} />
           </dd>
           <span className="cx-faint qa-sub">
-            {n.notFinal ? 'Not final: these return when decided' : 'Final'}
+            {n.notFinal ? 'Not final: counted already; the score can still move when decided' : 'Final'}
           </span>
         </div>
       </dl>
       {a.length || t.blankScores ? (
         <p className="cx-muted qa-bases">
-          Not in the score:{' '}
+          Counted, by basis:{' '}
           {a.map((s: any) => `${QA_BASIS_LABELS[s.basis]} ${s.audits} (average ${qaPct(s.avg)})`).join(', ')}
           {t.blankScores
-            ? `${a.length ? '; ' : ''}${t.blankScores} with no score`
+            ? `${a.length ? ' · not counted: ' : 'Not counted: '}${t.blankScores} with no score`
             : ''}
           .
           {a.some((s: any) => s.basis === 'unknown')
@@ -207,7 +207,7 @@ function Attention({
                   </td>
                   <td className="cx-num">
                     {c.avg === null ? '–' : `${c.avg}%`}
-                    <span className="cx-faint qa-sub">{c.audits} random</span>
+                    <span className="cx-faint qa-sub">{c.audits} audits</span>
                   </td>
                 </tr>
               ))
@@ -297,7 +297,7 @@ function ByChannel({ d: t }: { d: any }) {
               ))
             ) : (
               <tr>
-                <td colSpan={6}>No random audits in this period.</td>
+                <td colSpan={6}>No audits in this period.</td>
               </tr>
             )}
           </tbody>
@@ -334,7 +334,7 @@ function ByChannel({ d: t }: { d: any }) {
               ))
             ) : (
               <tr>
-                <td colSpan={5}>No random audits in this period.</td>
+                <td colSpan={5}>No audits in this period.</td>
               </tr>
             )}
           </tbody>
@@ -351,7 +351,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
     <QaSection
       id="qa-ag-h"
       title="Agents"
-      hint="Random audits only. Agents with 16 or more audits first, lowest score first; under 16 the score is not coloured. Channels are shown apart."
+      hint="Every audit of any sample basis counts. Agents with 16 or more audits first, lowest score first; under 16 the score is not coloured. Channels are shown apart."
     >
       <TableScroll label="Agent quality scores" className="cx-panel cx-tablewrap">
         <table className="cx-table">
@@ -433,7 +433,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
               ))
             ) : (
               <tr>
-                <td colSpan={a ? 9 : 7}>No random audits in this period.</td>
+                <td colSpan={a ? 9 : 7}>No audits in this period.</td>
               </tr>
             )}
           </tbody>
@@ -594,7 +594,7 @@ function NonTicket({ d: t }: { d: any }) {
         <QaSection
           id={`qa-nt-${n.type.replace(/\W+/g, '-')}`}
           title={n.type}
-          hint={`Its own form and scale, kept out of the ticket scores. ${n.audits} audits, ${qaPct(n.avg)} ${qaMargin(n.margin)}.`}
+          hint={`Its own form and scale, counted in the scores above and shown apart by type. ${n.audits} audits, ${qaPct(n.avg)} ${qaMargin(n.margin)}.`}
           key={n.type}
         >
           <TableScroll label={`${n.type} audits by agent`} className="cx-panel cx-tablewrap">
@@ -1302,7 +1302,7 @@ export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
           </p>
         ) : undefined
       }
-      sub="Scores use the random daily sample, each agent counted once; other bases are shown apart, and disputed audits return when decided."
+      sub="Scores count every audit — any sample basis, disputed included — each agent counted once."
     >
       {a ? (
         <>

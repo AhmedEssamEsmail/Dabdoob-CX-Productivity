@@ -138,7 +138,7 @@ function ColsChart({
                       tabIndex={0}
                       role="img"
                       {...c(
-                        `${n === 'week' ? `Week of ${_}` : _}: ${k.avg}% from ${k.audits} audits (${k.history} old-form history, ${k.audits - k.history} random)`
+                        `${n === 'week' ? `Week of ${_}` : _}: ${k.avg}% from ${k.audits} audits (${k.history} old-form history)`
                       )}
                     />
                     <text
@@ -277,7 +277,7 @@ export function Spread({ d: t }: { d: any }) {
     <QaSection
       id="qa-spread-h"
       title="Agents against the team"
-      hint={`Each agent's random-audit score with its 95% range, lowest first; the dashed line is the team score. Grey dot: under 16 audits, no verdict yet. ${f ? `Of the ${f} agents with a verdict: ${x.ok} green, ${x.warn} amber, ${x.bad} red.` : 'No agent has 16 audits yet.'}`}
+      hint={`Each agent's audit score with its 95% range, lowest first; the dashed line is the team score. Grey dot: under 16 audits, no verdict yet. ${f ? `Of the ${f} agents with a verdict: ${x.ok} green, ${x.warn} amber, ${x.bad} red.` : 'No agent has 16 audits yet.'}`}
     >
       <figure className="qa-trend qa-spread cc-chart" ref={n as any}>
         {s}

@@ -210,7 +210,7 @@ function SideBars({ d }: { d: any }) {
       <div className="cx-panel">
         <div className="cx-section__head">
           <div>
-            <div className="cx-section__title">Not in the score</div>
+            <div className="cx-section__title">Beyond the random sample</div>
           </div>
         </div>
         <div className="cx-panel--pad">
@@ -224,7 +224,7 @@ function SideBars({ d }: { d: any }) {
               ))}
             </ul>
           ) : (
-            <Empty title="Every audit in these dates is from the random sample." />
+            <Empty title="Only random-sample audits in these dates." />
           )}
         </div>
       </div>
@@ -235,12 +235,8 @@ function SideBars({ d }: { d: any }) {
 /* --- Al — the score cell (chip + margin + n + low sample) ------------------- */
 function ScoreCell({ r, minN }: { r: any; minN: number }) {
   if (r.score === null) return <span className="cx-faint">–</span>
-  const a =
-    r.randomAudits && r.randomAudits !== r.audits
-      ? `random only: ${r.randomScore}% (n=${r.randomAudits})`
-      : ''
   return (
-    <span title={a || undefined}>
+    <span>
       <Chip status={r.verdict ? qaBand(r.score, false) : 'neutral'}>{r.score}%</Chip>{' '}
       <span className="qa-range cx-num">{qaMargin(r.margin)}</span>
       <span className="cx-faint qa-sub">
@@ -255,7 +251,6 @@ function ScoreCell({ r, minN }: { r: any; minN: number }) {
         ) : (
           ''
         )}
-        {a ? `; ${a}` : ''}
       </span>
     </span>
   )
@@ -378,7 +373,7 @@ function BreakdownTable({
               ))
             ) : (
               <tr>
-                <td colSpan={6}>No random audits in these dates.</td>
+                <td colSpan={6}>No audits in these dates.</td>
               </tr>
             )}
           </tbody>
@@ -547,7 +542,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
           </>
         ) : undefined
       }
-      sub="How the team scores for the dates you pick: the team score uses the random daily sample, every row counts all audits."
+      sub="How the team scores for the dates you pick: the team score and every row count every audit, whatever the sample basis."
     >
       {i && f ? (
         <>
@@ -555,7 +550,7 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
             <div className="cx-section__head">
               <div>
                 <div className="cx-section__title" id="qs-team-h">
-                  Team score, random sample
+                  Team score
                 </div>
               </div>
             </div>
@@ -570,13 +565,13 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
                 </p>
               )}
               <p className="qs-all">
-                All audits: <b className="cx-num">{qaPct(f.allScore)}</b>{' '}
+                Every audit counted once: <b className="cx-num">{qaPct(f.allScore)}</b>{' '}
                 <span className="cx-faint">(n={f.allAudits}, any sample, from 1 audit)</span>
               </p>
             </div>
             <p className="qs-delta">
               {f.score === null
-                ? `No agent has ${i.minN} random audits in these dates yet.`
+                ? `No agent has ${i.minN} audits in these dates yet.`
                 : p && f.delta !== null
                   ? `${f.delta > 0 ? '+' : ''}${f.delta} points vs the ${i.days} days before (${f.prevScore}%)${f.trend ? ` ${QA_TREND_ARROW[f.trend]}` : ', within the noise'}`
                   : p
@@ -670,17 +665,18 @@ export default function QualityScoresPage({ route }: { route: { title: string } 
           </p>
           {r ? (
             <p className="cx-muted">
-              The team score and its chart use the random daily sample only: the
-              average of agent averages, so every agent counts once, and an agent
-              joins it from {i.minN} audits. &quot;All audits&quot; beside it, and every row
-              in the table, count every audit whatever how it was chosen (random,
-              history, requested, off-queue, non-ticket), from 1 audit; under{' '}
-              {i.minN} audits (10 for a lead or channel) the row is tagged low
-              sample, and a score is coloured from {i.verdictN}. The random-only
-              figure shows beside a row when it differs. Disputed audits are left
-              out until decided. The ± is a 95% range; an arrow appears only when
-              the change is bigger than both ranges together. The team lead is
-              the one on each audit, not today&apos;s roster.
+              The team score and its chart count every audit, whatever the sample
+              basis: the average of agent averages, so every agent counts once,
+              and an agent joins it from {i.minN} audits. Disputed audits count
+              immediately, and the disputes-raised figure shows how many are
+              still undecided. The &quot;Beyond the random sample&quot; panel and
+              the &quot;every audit counted once&quot; line are shown for context.
+              Under {i.minN}
+              audits (10 for a lead or channel) the row is tagged low sample, and
+              a score is coloured from {i.verdictN}. The ± is a 95% range; an
+              arrow appears only when the change is bigger than both ranges
+              together. The team lead is the one on each audit, not
+              today&apos;s roster.
             </p>
           ) : null}
         </>

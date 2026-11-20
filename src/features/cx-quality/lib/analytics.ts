@@ -553,11 +553,10 @@ export function qaAnalytics_(
     return false
   })
   const inP = (p: string) => known.filter((a) => per(dateOf(a)) === p)
-  const isRandom = (a: Record<string, unknown>) => qaSampleBasis_(a) === 'random'
   const cur = inP(period)
-  const rnd = cur.filter(isRandom)
-  const rndPrev = inP(prevP).filter(isRandom)
-  const rndPrev2 = inP(prev2P).filter(isRandom)
+  const scored = cur
+  const scoredPrev = inP(prevP)
+  const scoredPrev2 = inP(prev2P)
   const item = (a: Record<string, unknown>) => ({ agent: normEmail_(a.agent_email), score: qaFinalScore_(a) })
   const by = (list: Record<string, unknown>[], keyOf: (a: Record<string, unknown>) => string) => {
     const o: Record<string, Record<string, unknown>[]> = {}
@@ -571,10 +570,10 @@ export function qaAnalytics_(
   const scores = (l: Record<string, unknown>[]) => l.map(qaFinalScore_)
   const meanOf = (l: Record<string, unknown>[]) => (l.length ? qaRound1_(l.reduce((s, a) => s + qaFinalScore_(a), 0) / l.length) : null)
 
-  // Block 2 (health strip): team score with every agent equal, random audits only.
-  const team = qaAgentMeanCi_(rnd.map(item), QA_AGENT_MIN_N)
-  const teamPrev = qaAgentMeanCi_(rndPrev.map(item), QA_AGENT_MIN_N)
-  const critical = rnd.filter(qaIsCritical_).length
+  // Block 2 (health strip): team score with every agent equal, over all counted audits of the period.
+  const team = qaAgentMeanCi_(scored.map(item), QA_AGENT_MIN_N)
+  const teamPrev = qaAgentMeanCi_(scoredPrev.map(item), QA_AGENT_MIN_N)
+  const critical = scored.filter(qaIsCritical_).length
   const vol = qaVolumeFor_(opts.volume || [], grain, period, startsOn)
   const typeKey = (a: Record<string, unknown>) => String(a.channel || '') + '|' + (String(a.contact_type || '').trim() || '(not set)')
   const typeScores = (list: Record<string, unknown>[]) => {
@@ -585,7 +584,7 @@ export function qaAnalytics_(
     })
     return out
   }
-  const agentsAll = by(rnd, agentOf)
+  const agentsAll = by(scored, agentOf)
   const quota = opts.quota || {}
   const elapsed = anchor < pStart ? 0 : Math.round((Date.parse(anchor) - Date.parse(pStart)) / 864e5) + 1
   const doneBy: Record<string, number> = {}
@@ -605,26 +604,26 @@ export function qaAnalytics_(
   const health = {
     score: team.mean, margin: team.margin, badge: team.badge, agents: team.agents, agentsExcluded: team.excluded, auditMean: team.auditMean,
     prevScore: teamPrev.mean, trend: qaTrend_(team, teamPrev),
-    scoreNoCritical: qaAgentMeanCi_(rnd.filter((a) => !qaIsCritical_(a)).map(item), QA_AGENT_MIN_N).mean,
-    critical, criticalRate: qaWilson_(critical, rnd.length),
-    weighted: qaPostStratify_(typeScores(rnd), vol),
+    scoreNoCritical: qaAgentMeanCi_(scored.filter((a) => !qaIsCritical_(a)).map(item), QA_AGENT_MIN_N).mean,
+    critical, criticalRate: qaWilson_(critical, scored.length),
+    weighted: qaPostStratify_(typeScores(scored), vol),
     agentsAudited: Object.keys(agentsAll).length,
     agentsVerdict: Object.keys(agentsAll).filter((k) => agentsAll[k].length >= QA_MIN_VERDICT_N).length,
     pendingDisputes: pending, notFinal: pending > 0,
     quotaDone, quotaExpected, quotaPct: quotaExpected ? qaRound1_((quotaDone / quotaExpected) * 100) : null,
   }
 
-  // Samples that are not in the score, with their n (D1).
+  // Sample-basis composition of the counted audits, with their n (D1).
   const bases = QA_BASES.map((b) => {
     const l = cur.filter((a) => qaSampleBasis_(a) === b)
     return { basis: b, audits: l.length, avg: meanOf(l), critical: l.filter(qaIsCritical_).length }
   }).filter((x) => x.audits)
 
-  // Block 7: agents (random ticket audits), with their channels apart (D5) and agent / other reason split (D11).
-  const prevBy = by(rndPrev, agentOf)
-  const prev2By = by(rndPrev2, agentOf)
+  // Block 7: agents (all counted audits of the period), with their channels apart (D5) and agent / other reason split (D11).
+  const prevBy = by(scoredPrev, agentOf)
+  const prev2By = by(scoredPrev2, agentOf)
   const tlOf: Record<string, string> = {}
-  cur.concat(rndPrev).forEach((a) => {
+  cur.concat(scoredPrev).forEach((a) => {
     if (a.tl_email && !tlOf[agentOf(a)]) tlOf[agentOf(a)] = normEmail_(a.tl_email)
   })
   const byAgent = Object.keys(agentsAll).map((k) => {
@@ -654,16 +653,16 @@ export function qaAnalytics_(
     agentRow[r.key as string] = r
   })
 
-  // Trend: the team score (same rule as the health strip) and each agent's random-audit average.
+  // Trend: the team score (same rule as the health strip) and each agent's average over all counted audits.
   const histP = [period]
   while (histP.length < (grain === 'week' ? 8 : 6)) histP.unshift(qaPrevPeriod_(histP[0], grain))
-  const rndBy = by(known.filter(isRandom), (a) => per(dateOf(a)))
+  const scoredBy = by(known, (a) => per(dateOf(a)))
   const history = histP.map((p) => {
-    const l = rndBy[p] || []
+    const l = scoredBy[p] || []
     const t = qaAgentMeanCi_(l.map(item), QA_AGENT_MIN_N)
     return { period: p, score: t.mean, margin: t.margin, badge: t.badge, agents: t.agents, audits: l.length, critical: l.filter(qaIsCritical_).length }
   })
-  const histBy = histP.map((p) => by(rndBy[p] || [], agentOf))
+  const histBy = histP.map((p) => by(scoredBy[p] || [], agentOf))
   byAgent.forEach((r) => {
     r.history = histBy.map((o) => {
       const l = o[r.key as string] || []
@@ -672,7 +671,7 @@ export function qaAnalytics_(
   })
   const columns = qaColumnTrend_(known, anchor, startsOn, nameOf, dateOf)
 
-  // Block 3 (points lost map, D10) and reasons (D11), random ticket audits; re-scored ones skipped (D7).
+  // Block 3 (points lost map, D10) and reasons (D11), over all counted audits; re-scored ones skipped (D7).
   const gapsByAudit: Record<string, number> = {}
   ;(kb || []).forEach((g) => {
     gapsByAudit[String(g.audit_id)] = (gapsByAudit[String(g.audit_id)] || 0) + 1
@@ -680,7 +679,7 @@ export function qaAnalytics_(
   const qStats: Record<string, Record<string, unknown>> = {}
   const reasonTotals = qaReasonCounts_()
   let rescoredSkipped = 0
-  rnd.forEach((a) => {
+  scored.forEach((a) => {
     if (a.status === 'rescored') {
       rescoredSkipped++
       return
@@ -790,8 +789,8 @@ export function qaAnalytics_(
 
   // Block 6: segments. Channel and contact reason within channel, every agent equal, with the ticket-mix weighted score (D3).
   const seg = (keyOf: (a: Record<string, unknown>) => string, labelOf: (k: string) => string, gate: number) => {
-    const g = by(rnd, keyOf)
-    const pg = by(rndPrev, keyOf)
+    const g = by(scored, keyOf)
+    const pg = by(scoredPrev, keyOf)
     return qaGateSort_(
       Object.keys(g).map((k) => {
         const ci = qaAgentMeanCi_(g[k].map(item), 1)
@@ -811,7 +810,7 @@ export function qaAnalytics_(
     Object.keys(vol).forEach((k) => {
       if (k.indexOf(String(r.key) + '|') === 0) v[k] = vol[k]
     })
-    rnd.forEach((a) => {
+    scored.forEach((a) => {
       if (String(a.channel || '') === r.key) (sub[typeKey(a)] = sub[typeKey(a)] || []).push(qaFinalScore_(a))
     })
     r.weighted = qaPostStratify_(sub, v)
@@ -931,7 +930,7 @@ export function qaAnalytics_(
     })
     .sort((a, b) => b.attention - a.attention || b.ctlOverdue - a.ctlOverdue || a.tlName.localeCompare(b.tlName))
 
-  // Non-ticket audits (Cash refund...): their own block, never blended into agent scores (D5).
+  // Non-ticket audits (Cash refund...): counted in the scores above like every other basis, also shown apart by type (D5).
   const ntBy = by(
     cur.filter((a) => qaSampleBasis_(a) === 'non-ticket'),
     (a) => String(a.audit_type || a.channel || '')
@@ -973,7 +972,7 @@ export function qaAnalytics_(
   return {
     grain, period, periodStart: pStart, periodEnd: pEnd, weekStartsOn: startsOn,
     basis, fallbackDates: basis === 'audit' ? 0 : cur.filter((a) => !qaHasInteraction_(a)).length,
-    audits: rnd.length, excludedDisputed: pending, blankScores, rescoredSkipped,
+    audits: cur.length, blankScores, rescoredSkipped,
     health, history, columns, bases, attention,
     questions, outside,
     reasonTotals, reasonTagged: tagged, reasonCoveragePct: failedTotal ? qaRound1_((tagged / failedTotal) * 100) : null,
@@ -1083,9 +1082,7 @@ export function qaScoresRange_(
   }
   const counted = qaRollupAudits_(audits).filter(qaScoreKnown_)
   const cur = counted.filter((a) => inR(a, from, to))
-  const isRandom = (a: Record<string, unknown>) => qaSampleBasis_(a) === 'random'
-  const rnd = cur
-  const rndPrev = counted.filter((a) => inR(a, prevFrom, prevTo))
+  const curPrev = counted.filter((a) => inR(a, prevFrom, prevTo))
   const item = (a: Record<string, unknown>) => ({ agent: normEmail_(a.agent_email), score: qaFinalScore_(a) })
   const by = (list: Record<string, unknown>[], keyOf: (a: Record<string, unknown>) => string) => {
     const o: Record<string, Record<string, unknown>[]> = {}
@@ -1098,17 +1095,17 @@ export function qaScoresRange_(
   const agentOf = (a: Record<string, unknown>) => normEmail_(a.agent_email)
   const meanOf = (l: Record<string, unknown>[]) => (l.length ? qaRound1_(l.reduce((s, a) => s + qaFinalScore_(a), 0) / l.length) : null)
 
-  const t = qaAgentMeanCi_(rnd.map(item), QA_AGENT_MIN_N)
-  const tp = qaAgentMeanCi_(rndPrev.map(item), QA_AGENT_MIN_N)
-  const critical = rnd.filter(qaIsCritical_).length
+  const t = qaAgentMeanCi_(cur.map(item), QA_AGENT_MIN_N)
+  const tp = qaAgentMeanCi_(curPrev.map(item), QA_AGENT_MIN_N)
+  const critical = cur.filter(qaIsCritical_).length
   const all = audits.filter((a) => String(a.kind || 'audit') === 'audit' && a.status !== 'voided' && inR(a, from, to))
   const disputed = all.filter((a) => ['disputed', 'dispute_rejected', 'rescored'].indexOf(String(a.status)) !== -1).length
   const team = {
-    score: t.mean, margin: t.margin, badge: t.badge, audits: rnd.length, agents: t.agents, agentsExcluded: t.excluded,
-    prevScore: tp.mean, prevMargin: tp.margin, prevAudits: rndPrev.length,
+    score: t.mean, margin: t.margin, badge: t.badge, audits: cur.length, agents: t.agents, agentsExcluded: t.excluded,
+    prevScore: tp.mean, prevMargin: tp.margin, prevAudits: curPrev.length,
     delta: t.mean !== null && tp.mean !== null ? qaRound1_(t.mean - tp.mean) : null,
-    trend: qaTrend_(t, tp), critical, fatalRate: qaWilson_(critical, rnd.length),
-    scoreNoCritical: qaAgentMeanCi_(rnd.filter((a) => !qaIsCritical_(a)).map(item), QA_AGENT_MIN_N).mean,
+    trend: qaTrend_(t, tp), critical, fatalRate: qaWilson_(critical, cur.length),
+    scoreNoCritical: qaAgentMeanCi_(cur.filter((a) => !qaIsCritical_(a)).map(item), QA_AGENT_MIN_N).mean,
     disputes: disputed, disputeRate: qaWilson_(disputed, all.length),
     allScore: qaAgentMeanCi_(cur.map(item), 1).mean, allAudits: cur.length,
     pendingDisputes: all.filter((a) => a.status === 'disputed').length,
@@ -1139,8 +1136,8 @@ export function qaScoresRange_(
     const c = qaAgentMeanCi_(l.map(item), 1)
     return { score: c.mean, margin: c.margin, audits: l.length }
   }
-  const curBy = by(rnd, (a) => keyOf(dateOf(a)))
-  const prevBy = by(rndPrev, (a) => keyOf(dateOf(a)))
+  const curBy = by(cur, (a) => keyOf(dateOf(a)))
+  const prevBy = by(curPrev, (a) => keyOf(dateOf(a)))
   const series = keys.map((k, i) => {
     const p = point(curBy[k] || [])
     const q = pkeys[i] ? point(prevBy[pkeys[i]] || []) : null
@@ -1148,19 +1145,13 @@ export function qaScoresRange_(
   })
 
   // Rows: every counted audit of the range whatever its basis, no minimum n.
-  const curPrev = counted.filter((a) => inR(a, prevFrom, prevTo))
-  const randomOf = (l: Record<string, unknown>[]) => {
-    const r = l.filter(isRandom)
-    return { randomScore: r.length ? qaAgentMeanCi_(r.map(item), 1).mean : null, randomAudits: r.length }
-  }
   const group = (list: Record<string, unknown>[], prevList: Record<string, unknown>[]) => {
     const c = qaAgentMeanCi_(list.map(item), 1)
     const pc = prevList.length ? qaAgentMeanCi_(prevList.map(item), 1) : null
-    const rr = randomOf(list)
     return {
       audits: list.length, agents: c.agents, score: c.mean, margin: c.margin, badge: c.badge, lowSample: list.length < QA_ROW_MIN_N,
       verdict: list.length >= QA_MIN_VERDICT_N, prevScore: pc ? pc.mean : null, trend: qaTrend_(c, pc),
-      critical: list.filter(qaIsCritical_).length, randomScore: rr.randomScore, randomAudits: rr.randomAudits,
+      critical: list.filter(qaIsCritical_).length,
     }
   }
   const tlOfA = (a: Record<string, unknown>) => normEmail_(a.tl_email) || '(no lead)'
@@ -1190,7 +1181,6 @@ export function qaScoresRange_(
     const ci = qaMeanCi_(l.map(qaFinalScore_))
     const p = agPrev[k] || []
     const pci = p.length ? qaMeanCi_(p.map(qaFinalScore_)) : null
-    const rr = randomOf(l)
     const latest = l.reduce((m, a) => (dateOf(a) >= dateOf(m) ? a : m), l[0])
     const reasons = qaReasonCounts_()
     l.forEach((a) => {
@@ -1206,7 +1196,6 @@ export function qaScoresRange_(
       audits: l.length, score: ci.mean, margin: ci.margin, badge: ci.badge, lowSample: l.length < QA_AGENT_MIN_N,
       verdict: l.length >= QA_MIN_VERDICT_N, prevScore: pci ? pci.mean : null, delta: pci ? qaRound1_((ci.mean as number) - (pci.mean as number)) : null,
       trend: qaTrend_(ci, pci), critical: l.filter(qaIsCritical_).length, topReason: top, reasons,
-      randomScore: rr.randomScore, randomAudits: rr.randomAudits,
     }
   })
   const rank = (rows: Record<string, unknown>[]) =>
@@ -1225,6 +1214,7 @@ export function qaScoresRange_(
     })
   })
 
+  // Non-random-basis share of the counted population (composition info).
   const others = QA_BASES.filter((b) => b !== 'random')
     .map((b) => {
       const l = cur.filter((a) => qaSampleBasis_(a) === b)

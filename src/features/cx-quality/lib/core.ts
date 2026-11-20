@@ -257,11 +257,12 @@ export function qaFinalScore_(a: Record<string, unknown>): number {
 
 /**
  * Audits that count in any score rollup: real audits (not calibration), not
- * voided, and not under an open dispute.
+ * voided. Disputed audits count immediately; they are still reported via
+ * pendingDisputes/notFinal.
  */
 export function qaRollupAudits_(audits: Record<string, unknown>[]): Record<string, unknown>[] {
   return audits.filter((a) => {
-    return String(a.kind || 'audit') === 'audit' && a.status !== 'voided' && a.status !== 'disputed'
+    return String(a.kind || 'audit') === 'audit' && a.status !== 'voided'
   })
 }
 

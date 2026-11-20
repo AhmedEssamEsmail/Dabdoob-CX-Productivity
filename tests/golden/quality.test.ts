@@ -620,6 +620,17 @@ describe('partitioning & rollups', () => {
     expect(sameQa('qaRollupAudits_', [AUDITS], () => core.qaRollupAudits_(AUDITS))).toBeNull()
   })
 
+  // Pin (not oracle-compared): disputed audits count; voided/calibration drop.
+  it('qaRollupAudits_ keeps disputed, drops voided/calibration', () => {
+    const rows = core.qaRollupAudits_([
+      { audit_id: 'D1', kind: 'audit', status: 'disputed', score: 80 },
+      { audit_id: 'V1', kind: 'audit', status: 'voided', score: 80 },
+      { audit_id: 'C1', kind: 'calibration', status: 'done', score: 80 },
+    ])
+    expect(rows).toHaveLength(1)
+    expect(rows[0].audit_id).toBe('D1')
+  })
+
   it('qaDisputeStats_ month rollup', () => {
     for (const m of ['2026-02', '2026-03']) {
       expect(sameQa('qaDisputeStats_', [AUDITS, DISPUTES, m], () => core.qaDisputeStats_(AUDITS, DISPUTES, m)), m).toBeNull()

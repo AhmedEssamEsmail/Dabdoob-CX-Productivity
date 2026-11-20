@@ -140,8 +140,8 @@ export function qaNewCtl_(
   return {
     ctl_id: newId('CTL'), audit_id: audit.audit_id, agent_email: normEmail_(audit.agent_email), tl_email: normEmail_(tlEmail), opened_date: today,
     due_date: qaCtlDue_(today, isWorking, ctlDays || 2, ctlDaysOverWeekend || 3),
-    status: 'open', coaching_notes: '', action: '', submitted_at: '', submitted_date: '', sla_met: '', agent_confirmed_at: '', agent_note: '',
-    reminded_date: '', updated_at: now, updated_by: by, outcome: '', dispute_id: '', reopened_at: '', reopen_count: 0,
+    status: 'open', coaching_notes: '', action: '', submitted_at: null, submitted_date: '', sla_met: '', agent_confirmed_at: null, agent_note: '',
+    reminded_date: '', updated_at: now, updated_by: by, outcome: '', dispute_id: '', reopened_at: null, reopen_count: 0,
   }
 }
 
