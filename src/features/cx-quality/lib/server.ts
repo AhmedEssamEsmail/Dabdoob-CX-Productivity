@@ -2207,7 +2207,7 @@ async function qaRequestedTaken_(): Promise<Record<string, number>> {
   const out: Record<string, number> = {}
   ;(await qaRows_('qa_queue')).forEach((q) => {
     if (!(q.source === 'request' || qaIsNonTicket_(q)) || q.status === 'waived' || q.status === 'passed' || String(q.queue_date) < weekStart) return
-    const k = qeCanonAgent_(q.agent_name)
+    const k = String(q.agent_name || '').trim()
     if (k) out[k] = (out[k] || 0) + 1
   })
   return out

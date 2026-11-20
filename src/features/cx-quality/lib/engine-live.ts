@@ -175,14 +175,23 @@ function qeTouchCells_(cols: unknown): { at: unknown; tid: unknown; name: unknow
  * legacy, without the sheet.
  */
 async function qeReadTouches_(since: Date, until: Date, roster: { byId: Record<string, Row>; byName: Record<string, Row> }): Promise<Row> {
-  const { data, error } = await db()
-    .from('fd_activities')
-    .select('ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name')
-    .gte('ts_ms', since.getTime())
-    .lt('ts_ms', until.getTime())
-    .order('ts_ms', { ascending: false })
-    .limit(QE_MAX_TOUCH_ROWS)
-  if (error) throw described(error, { table: 'fd_activities' })
+  const data: Row[] = []
+  const pageSize = 1000
+  for (let from = 0; from < QE_MAX_TOUCH_ROWS; from += pageSize) {
+    const to = Math.min(from + pageSize - 1, QE_MAX_TOUCH_ROWS - 1)
+    const { data: page, error } = await db()
+      .from('fd_activities')
+      .select('ts_ms,performed_at,ticket_id,performer_name,performer_type,activity_type,field_changed,new_value,old_value,group_name')
+      .gte('ts_ms', since.getTime())
+      .lt('ts_ms', until.getTime())
+      .order('ts_ms', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, to)
+    if (error) throw described(error, { table: 'fd_activities' })
+    const rows = (page || []) as Row[]
+    data.push(...rows)
+    if (rows.length < to - from + 1) break
+  }
   const map: Record<string, Row> = {}
   const openers: Record<string, Row> = {}
   const seenActivity: Record<string, number> = {}
@@ -584,7 +593,7 @@ function qeRecordToValues_(o: Row): unknown[] {
 
 /** qeReadLog_ verbatim: the whole log (the no-repeat rule needs all of it). */
 async function qeReadLog_(): Promise<unknown[][]> {
-  const rows = (await readRows(QE_TBL_LOG, { orderBy: 'id', ascending: true, limit: 200000 } as never).catch(() => [] as Row[])) as Row[]
+  const rows = (await readRows(QE_TBL_LOG, { orderBy: 'id', ascending: true }).catch(() => [] as Row[])) as Row[]
   return rows.map((r) => qeRecordToValues_(r))
 }
 

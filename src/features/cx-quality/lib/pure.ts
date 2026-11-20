@@ -318,14 +318,14 @@ export function qaRequestRows_(
 }
 
 /**
- * Requests of this quota week not waived, by the engine's agent key (qeCanonAgent_ of the roster name).
+ * Requests of this quota week not waived, keyed by the raw roster agent_name.
  * rows: qa_queue; weekStart: yyyy-MM-dd. Pure.
  */
 export function qaRequestedTakenFor_(rows: Record<string, unknown>[], weekStart: string): Record<string, number> {
   const out: Record<string, number> = {}
   rows.forEach((q) => {
     if (!(q.source === 'request' || qaIsNonTicket_(q)) || q.status === 'waived' || q.status === 'passed' || String(q.queue_date) < weekStart) return
-    const k = qeCanonAgent_(q.agent_name)
+    const k = String(q.agent_name || '').trim()
     if (k) out[k] = (out[k] || 0) + 1
   })
   return out
