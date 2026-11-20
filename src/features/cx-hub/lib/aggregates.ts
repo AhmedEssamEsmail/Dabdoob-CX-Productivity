@@ -33,7 +33,13 @@ import {
   dqTodaySnapshots_,
   dqWithCurrentTl_,
 } from '@/features/cx-queue/lib'
-import { dqAddDays_, dqDateKey_, normEmail_, type Cfg } from '@/features/shared/lib/adapters'
+import {
+  dqAddDays_,
+  dqDateKey_,
+  dqSetting_,
+  normEmail_,
+  type Cfg,
+} from '@/features/shared/lib/adapters'
 import { inDateRange, pick } from '@/features/shared/lib/fragments'
 import {
   scAdd_,
@@ -42,6 +48,14 @@ import {
   scNumRow_,
   scRound1_,
 } from '@/features/cx-people/lib/scorecard'
+import {
+  qaFinalScore_,
+  qaPeriodOf_,
+  qaRollupAudits_,
+  qaRound1_,
+} from '@/features/cx-quality/lib/core'
+import { qaScoreKnown_ } from '@/features/cx-quality/lib/analytics'
+import { qeSettingsFrom_ } from '@/features/cx-quality/lib/engine'
 import {
   peopleHomeCards_,
   planHomeCards_,
@@ -184,6 +198,10 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
   const top = (bands.edges as unknown[]).length
   const pulseTo = dqDateKey_(now, cfg)
   const pulseFrom = dqAddDays_(pulseTo, -6)
+  const today = pulseTo
+  const monthStart = today.slice(0, 7) + '-01'
+  const prevMonthEnd = dqAddDays_(monthStart, -1)
+  const prevMonthStart = prevMonthEnd.slice(0, 7) + '-01'
   const [agingRows, rosterRows, submissionRows, flagRows, scDaily, prodLayers, fcrDaily] =
     await Promise.all([
       perf.time('read:aging_open_tickets', readStore('aging_open_tickets')),
@@ -421,6 +439,53 @@ export async function getHomePage(cfg?: Cfg): Promise<Record<string, unknown>> {
     openTotal: oldest.length,
     pulse,
     queues: [] as unknown[],
+  }
+  if (!user.specialist && user.role !== 'agent') {
+    try {
+      const weekStartsOn =
+        Number(qeSettingsFrom_(dqSetting_(cfg, 'qa_engine_settings')).weekStartsOn) === 1 ? 1 : 0
+      const weekStart = qaPeriodOf_(today, 'week', weekStartsOn)
+      const [auditRead, ctlRead] = await Promise.all([
+        perf.time(
+          'read:qa_audits',
+          readStoreFiltered('qa_audits', {
+            gte: { audit_date: prevMonthStart },
+            lte: { audit_date: today },
+          })
+        ),
+        perf.time('read:qa_ctls', readStoreFiltered('qa_ctls', { eq: { status: 'open' } })),
+      ])
+      let pool = qaRollupAudits_(auditRead.exists ? auditRead.rows : []).filter(qaScoreKnown_)
+      if (pulseEmails !== null) {
+        const emails = pulseEmails
+        pool = pool.filter((a) => emails.has(normEmail_(a.agent_email)))
+      }
+      const mean = (from: string, to: string): number | null => {
+        const rows = pool.filter((a) => {
+          const d = String(a.audit_date || '')
+          return d >= from && d <= to
+        })
+        if (!rows.length) return null
+        return qaRound1_(rows.reduce((sum, a) => sum + qaFinalScore_(a), 0) / rows.length)
+      }
+      const month = mean(monthStart, today)
+      const prev = mean(prevMonthStart, prevMonthEnd)
+      const ctls = ctlRead.exists ? ctlRead.rows : []
+      const openCtls =
+        user.role === 'admin'
+          ? ctls.length
+          : ctls.filter((c) => normEmail_(c.tl_email) === user.email).length
+      out.quality = {
+        month,
+        monthDelta: month !== null && prev !== null ? qaRound1_(month - prev) : null,
+        week: mean(weekStart, today),
+        openCtls,
+      }
+    } catch (e) {
+      console.log('quality failed: ' + (e as Error).message)
+      out.quality = null
+    }
+    perf.lap('quality')
   }
   if (user.role === 'admin') {
     const [snapRows, queueNow] = await Promise.all([

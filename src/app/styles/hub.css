@@ -225,6 +225,7 @@
 [data-app="hub"] .upnext-title{margin:0;font-weight:var(--w-strong);overflow-wrap:anywhere}
 [data-app="hub"] .upnext-meta{margin:var(--space-1) 0 0;font-size:var(--text-sm);color:var(--ink-2)}
 @media(max-width:600px){[data-app="hub"] .upnext{grid-template-columns:1fr}[data-app="hub"] .upnext-go{grid-column:1 / -1;justify-self:start}}
+[data-app="hub"] .page-stats--quality{margin-block-end:var(--cx-space-5)}
 [data-app="hub"] .ap-themes{display:flex;flex-wrap:wrap;gap:var(--space-3)}
 [data-app="hub"] .ap-theme{position:relative;display:grid;gap:var(--space-2);justify-items:center;cursor:pointer;font-size:var(--text-sm)}
 [data-app="hub"] .ap-theme input, [data-app="hub"] .ap-dot input{position:absolute;opacity:0;inline-size:1px;block-size:1px}

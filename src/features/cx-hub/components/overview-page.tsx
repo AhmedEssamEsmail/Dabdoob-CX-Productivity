@@ -8,25 +8,13 @@
 import { Fragment, useRef, useState } from 'react'
 import { Button, Empty, PageShell, TableScroll } from '@/features/shared/components/ui'
 import {
-  Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, Hf, Hi, If, jl, Kf, km, lo, Nf,
+  Ao, Df, du, Eo, fg, Ft, Gf, gg, Gs, Hf, Hi, jl, Kf, km, lo,
   Of, pg, Ql, rg, sh, To, useTh, Vi, Wf, Yn, _g,
 } from './hub-shared'
 import { resolveLink } from '@/features/shared/shell/gates'
 
 type Q = Record<string, any>
 
-function Ag(n: Q) {
-  const e = n.slots.find((i: Q) => i.state === 'due') || n.slots.find((i: Q) => i.state === 'upcoming')
-  if (!e) return null
-  const t = e.state === 'due'
-  return {
-    at: e.slot,
-    title: `${e.name} check-in`,
-    live: t,
-    meta: t ? `Due by ${Yn(e.dueAt)}.` : `Opens at ${Yn(e.at)}.`,
-    action: t ? { label: 'Start', href: resolveLink('#/checkins').href } : void 0,
-  }
-}
 function Cg(n: Q) {
   const e = n.slots.filter((s: Q) => s.state === 'due' || s.state === 'upcoming').length
   const t = n.needs.filter((s: Q) => s.count > 0).length
@@ -400,7 +388,12 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
   const { data: e, error: t, reload: i } = Eo(Vi.home)
   const [qTick, setQTick] = useState(0)
   const s = e ? String(e.name).split(' ')[0] : ''
-  const r = e && !e.specialist && e.role !== 'agent' ? Ag(e) : null
+  const q = ((e?.quality ?? {}) as {
+    month?: number | null
+    monthDelta?: number | null
+    week?: number | null
+    openCtls?: number
+  })
   const edgeCount = e?.bands?.edges?.length ?? 0
   const topEdge = edgeCount ? e.bands.edges[edgeCount - 1] : 0
   const aged = edgeCount ? (e.ladder?.[edgeCount] ?? 0) : 0
@@ -450,7 +443,6 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
         e ? (
           <>
             {e.role !== 'agent' ? <Hf onDone={() => { i(); setQTick((v) => v + 1) }} /> : null}
-            {r ? <If item={r} /> : null}
           </>
         ) : undefined
       }
@@ -497,7 +489,30 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
     >
       {!e ? (t ? null : <LoTiles />) : null}
       {t ? sh({ message: t, onRetry: i }) : null}
-      {r ? <Nf item={r} /> : null}
+      {e && !e.specialist && e.role !== 'agent' ? (
+        <div className="page-stats page-stats--quality" role="group" aria-label="Quality">
+          <div className="stat">
+            <span className="stat-l">Quality this month</span>
+            <span className="stat-v num">{q.month == null ? '–' : `${q.month}%`}</span>
+            <span className="stat-d">audits so far</span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">vs last month</span>
+            <span className="stat-v num">{q.monthDelta == null ? '–' : `${Ql(q.monthDelta)} pts`}</span>
+            <span className="stat-d">signed change</span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">Quality this week</span>
+            <span className="stat-v num">{q.week == null ? '–' : `${q.week}%`}</span>
+            <span className="stat-d">quota week</span>
+          </div>
+          <div className="stat">
+            <span className="stat-l">Open CTLs</span>
+            <span className="stat-v num">{Hi(q.openCtls ?? 0)}</span>
+            <span className="stat-d">needing coaching</span>
+          </div>
+        </div>
+      ) : null}
       {e ? (
         <div className="ov-main">
           <section className="cx-panel" aria-labelledby="needs-h">

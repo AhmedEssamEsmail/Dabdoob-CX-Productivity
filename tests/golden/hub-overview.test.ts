@@ -117,7 +117,12 @@ function fx(over: HubFx = {}): HubFx {
 // same seam as D-BRAND (desk-fakes.ts:336).
 const dropPulse_ = <T extends { ok?: unknown; err?: string }>(r: T): T => {
   const c = json(r)
-  if (c.ok && typeof c.ok === 'object') delete (c.ok as Record<string, unknown>).pulse
+  if (c.ok && typeof c.ok === 'object') {
+    delete (c.ok as Record<string, unknown>).pulse
+    // D-QUALITY (documented divergence): additive `ok.quality` (home quality
+    // cards) has no oracle emitter either — same PORT-side strip as pulse.
+    delete (c.ok as Record<string, unknown>).quality
+  }
   return c
 }
 
