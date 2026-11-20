@@ -458,7 +458,11 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                             : ''}
                         </span>
                       )}
-                      <StatusChip s={r.status} />
+                      {r.status === 'submitted' ? (
+                        <Chip status="neutral">Awaiting agent confirmation</Chip>
+                      ) : (
+                        <StatusChip s={r.status} />
+                      )}
                       {r.status === 'open' ? (
                         <Chip status={r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral'}>
                           {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
