@@ -14,15 +14,15 @@ Baseline dirty tree (foreign — do NOT touch): `specs/table-center-align/*`,
 | ID | Kind/Parent | Owner | Depends | Budget f/a/lines/min | Size gate | Status | Result / evidence |
 |---|---|---|---|---|---|---|---|
 | fix-debug-1 | package/- | - | - | n/a | not dispatchable | pending | spec/fix-debug-1.md |
-| dbg1-01 | mini/fix-debug-1 | dev | none | 2/3/60/10 | PASS | done | results/dbg1-01.md; tsc+eslint exit 0; helper exported |
-| dbg1-02 | mini/fix-debug-1 | dev | dbg1-01 | 1/2/20/5 | PASS | done | results/dbg1-02.md; tsc+eslint exit 0 |
-| dbg1-03 | mini/fix-debug-1 | dev | dbg1-01 | 1/1/30/5 | PASS | done | results/dbg1-03.md; tsc+eslint exit 0 |
-| dbg1-04 | mini/fix-debug-1 | dev | dbg1-01 | 1/2/20/5 | PASS | done | results/dbg1-04.md; e2e regression 2/2 pass |
-| fix-ux-1 | package/- | - | - | n/a | not dispatchable | done | spec/fix-ux-1.md; integration gates pass |
-| ux1-01 | mini/fix-ux-1 | dev | none | 2/3/80/10 | PASS | done | results/ux1-01.md; vitest 7/7, tsc+eslint 0 |
-| ux1-02 | mini/fix-ux-1 | dev | ux1-01 (same file, serial) | 1/2/15/5 | PASS | done | results/ux1-02.md; vitest 7/7, tsc+eslint 0 |
-| fix-qa-2 | package/- | - | - | n/a | not dispatchable | done | spec/fix-qa-2.md; gates pass |
-| qa2-01 | mini/fix-qa-2 | dev | none | 2/4/80/10 | PASS | done | results/qa2-01.md; 2 attempts (attempt 1 sign-flip corrected); vitest 8/8, tsc+eslint 0, e2e 2/2 |
+| dbg1-01 | mini/fix-debug-1 | dev | none | 2/3/60/10 | PASS | verified | results/dbg1-01.md; tsc+eslint exit 0; helper exported |
+| dbg1-02 | mini/fix-debug-1 | dev | dbg1-01 | 1/2/20/5 | PASS | verified | results/dbg1-02.md; tsc+eslint exit 0 |
+| dbg1-03 | mini/fix-debug-1 | dev | dbg1-01 | 1/1/30/5 | PASS | verified | results/dbg1-03.md; tsc+eslint exit 0 |
+| dbg1-04 | mini/fix-debug-1 | dev | dbg1-01 | 1/2/20/5 | PASS | verified | results/dbg1-04.md; e2e regression 2/2 pass |
+| fix-ux-1 | package/- | - | - | n/a | not dispatchable | verified | spec/fix-ux-1.md; integration gates pass |
+| ux1-01 | mini/fix-ux-1 | dev | none | 2/3/80/10 | PASS | verified | results/ux1-01.md; vitest 7/7, tsc+eslint 0 |
+| ux1-02 | mini/fix-ux-1 | dev | ux1-01 (same file, serial) | 1/2/15/5 | PASS | verified | results/ux1-02.md; vitest 7/7, tsc+eslint 0 |
+| fix-qa-2 | package/- | - | - | n/a | not dispatchable | verified | spec/fix-qa-2.md; gates pass |
+| qa2-01 | mini/fix-qa-2 | dev | none | 2/4/80/10 | PASS | verified | results/qa2-01.md; 2 attempts (attempt 1 sign-flip corrected); vitest 8/8, tsc+eslint 0, e2e 2/2 |
 
 ## Re-sharding
 | Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |
@@ -46,15 +46,15 @@ Baseline dirty tree (foreign — do NOT touch): `specs/table-center-align/*`,
 ## Review findings (FIX mode)
 | Finding | Source report | Assigned | Status | Evidence |
 |---|---|---|---|---|
-| dbg-1 HIGH Tabs.tsx scrollIntoView | reports/debug-1.md | dbg1-01 | done | results/dbg1-01.md |
-| dbg-2 HIGH tph-grid-page scrollIntoView | reports/debug-1.md | dbg1-02 | done | results/dbg1-02.md |
-| dbg-3 MED agents-page scroll pin | reports/debug-1.md | dbg1-03 | done | results/dbg1-03.md |
-| dbg-4 LOW AppShell scroll pin | reports/debug-1.md | dbg1-04 | done | promoted from deferred: e2e still failed (scroll anchoring, probe-verified) |
-| ux-1 MED Tabs.tsx RTL scrollLeft | reports/ux-1.md | ux1-01 | done | physical-offset normalization per reviewer's exact fix; RTL unit case passes |
-| ux-2 LOW Tabs.tsx matchMedia | reports/ux-1.md | ux1-02 | done | `prefersReducedMotion()` replaces matchMedia read |
+| dbg-1 HIGH Tabs.tsx scrollIntoView | reports/debug-1.md | dbg1-01 | verified | results/dbg1-01.md |
+| dbg-2 HIGH tph-grid-page scrollIntoView | reports/debug-1.md | dbg1-02 | verified | results/dbg1-02.md |
+| dbg-3 MED agents-page scroll pin | reports/debug-1.md | dbg1-03 | verified | results/dbg1-03.md |
+| dbg-4 LOW AppShell scroll pin | reports/debug-1.md | dbg1-04 | verified | promoted from deferred: e2e still failed (scroll anchoring, probe-verified) |
+| ux-1 MED Tabs.tsx RTL scrollLeft | reports/ux-1.md | ux1-01 | verified | physical-offset normalization per reviewer's exact fix; RTL unit case passes |
+| ux-2 LOW Tabs.tsx matchMedia | reports/ux-1.md | ux1-02 | verified | `prefersReducedMotion()` replaces matchMedia read |
 | ux-3 LOW AppShell popstate | reports/ux-1.md | none | deferred | PLAN non-goal (back/forward); PM-scoped out |
-| qa-2 MED Tabs.tsx RTL positive-reverse model | reports/qa-2.md | qa2-01 | done | rect-delta + model-agnostic `scrollBy({left: delta})`; scrollLeft no longer read/written — immune to all models |
-| qa-1 LOW Tabs.tsx offsetParent-relative geometry | reports/qa-2.md (carried from qa-1.md) | qa2-01 | done | trivial: offsetLeft/offsetWidth removed by the same rect-delta rewrite |
+| qa-2 MED Tabs.tsx RTL positive-reverse model | reports/qa-2.md | qa2-01 | verified | rect-delta + model-agnostic `scrollBy({left: delta})`; scrollLeft no longer read/written — immune to all models |
+| qa-1 LOW Tabs.tsx offsetParent-relative geometry | reports/qa-2.md (carried from qa-1.md) | qa2-01 | verified | trivial: offsetLeft/offsetWidth removed by the same rect-delta rewrite |
 
 ## Blocked / needs user
 - (none)

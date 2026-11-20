@@ -14,6 +14,7 @@ import {
   P,
   Q,
   QA_STATUS,
+  QaLink,
   QaPage,
   ScoreChip,
   StatusChip,
@@ -38,6 +39,20 @@ function findOpenCtls(t: any[], n: string): any[] {
       (s
         ? c.audit?.ticketId === s
         : c.auditId.toLowerCase() === i || c.ctlId.toLowerCase() === i)
+  )
+}
+
+/* --- view lookup: same ref match but ANY status — feeds the read-only preview - */
+function findViewCtls(t: any[], n: string): any[] {
+  const a = n.trim()
+  if (!a) return []
+  const s = /^#?\s*\d+$/.test(a) ? a.replace(/\D/g, '') : '',
+    i = a.toLowerCase()
+  return t.filter(
+    (c) =>
+      s
+        ? c.audit?.ticketId === s
+        : c.auditId.toLowerCase() === i || c.ctlId.toLowerCase() === i
   )
 }
 
@@ -125,6 +140,9 @@ function CtlForm({
   const [x, f] = useState('')
   const g = findOpenCtls(rows, picked.ref)
   const y = g.find((k) => k.ctlId === picked.ctlId) ?? (g.length === 1 ? g[0] : null)
+  const v = findViewCtls(rows, picked.ref)
+  const z = y ?? v.find((k) => k.ctlId === picked.ctlId) ?? (v.length === 1 ? v[0] : null)
+  const readOnly = !y && !!z
   const _ = !!y && y.outcome === 'dispute' && !!y.dispute
   const T = _ ? 'dispute' : c
   return (
@@ -179,6 +197,7 @@ function CtlForm({
             aria-describedby="ctl-ref-hint"
             autoComplete="off"
             placeholder="e.g. 701234 or QA-…"
+            readOnly={readOnly}
             onInput={(k) => onPick({ ref: k.currentTarget.value, ctlId: '' })}
           />
           <span className="qa-ctlform__hint" id="ctl-ref-hint">Find an open CTL to review before submitting.</span>
@@ -199,10 +218,17 @@ function CtlForm({
               aria-labelledby="ctl-pick-l"
             />
           </div>
-        ) : picked.ref.trim() && !g.length ? (
+        ) : picked.ref.trim() && !g.length && !z ? (
           <p className="cx-muted">No open CTL of yours matches “{picked.ref.trim()}”.</p>
         ) : null}
-        {_ ? (
+        {readOnly ? (
+          <p className="cx-muted">
+            Read-only — {z.status === 'open'
+              ? 'this CTL is still open, but it is not yours to close.'
+              : `this CTL is ${QA_STATUS[z.status]?.[0] ?? z.status}.`}
+          </p>
+        ) : null}
+        {readOnly ? null : _ ? (
           <p className="cx-note">
             <span>
               Outcome stays Dispute: it was raised before the agent reopened this
@@ -227,7 +253,7 @@ function CtlForm({
             />
           </div>
         )}
-        {T === 'dispute' && !_ ? (
+        {!readOnly && T === 'dispute' && !_ ? (
           <div className="cx-field">
             <label className="cx-label" htmlFor="ctl-reason">
               The agent&apos;s case
@@ -240,33 +266,37 @@ function CtlForm({
             />
           </div>
         ) : null}
-        <ListSelect listKey="qa.ctl_action" label="Action taken" value={r} onChange={u} required />
-        <div className="cx-field">
-          <label className="cx-label" htmlFor="ctl-notes">
-            Coaching notes
-          </label>
-          <Textarea
-            id="ctl-notes"
-            value={p}
-            onInput={(k) => m(k.currentTarget.value)}
-            placeholder="What you went through, what the agent will do differently."
-          />
-        </div>
-        {x ? (
-          <p className="cx-error" role="alert">
-            {x}
-          </p>
-        ) : null}
-        <div className="qa-actions">
-          <Button type="submit" variant="primary" disabled={h}>
-            {h ? 'Submitting…' : 'Submit CTL'}
-          </Button>
-          <span className="cx-faint">The date and time are recorded when you submit.</span>
-        </div>
+        {readOnly ? null : (
+          <>
+            <ListSelect listKey="qa.ctl_action" label="Action taken" value={r} onChange={u} required />
+            <div className="cx-field">
+              <label className="cx-label" htmlFor="ctl-notes">
+                Coaching notes
+              </label>
+              <Textarea
+                id="ctl-notes"
+                value={p}
+                onInput={(k) => m(k.currentTarget.value)}
+                placeholder="What you went through, what the agent will do differently."
+              />
+            </div>
+            {x ? (
+              <p className="cx-error" role="alert">
+                {x}
+              </p>
+            ) : null}
+            <div className="qa-actions">
+              <Button type="submit" variant="primary" disabled={h}>
+                {h ? 'Submitting…' : 'Submit CTL'}
+              </Button>
+              <span className="cx-faint">The date and time are recorded when you submit.</span>
+            </div>
+          </>
+        )}
       </form>
       <aside className="qa-ctlside" aria-labelledby="ctl-audit-heading">
         <h3 className="qa-ctlside__heading" id="ctl-audit-heading">Audit preview</h3>
-        <CtlAuditSide c={y} ticketUrl={ticketUrl} />
+        <CtlAuditSide c={z} ticketUrl={ticketUrl} />
       </aside>
     </div>
   )
@@ -403,13 +433,12 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                     >
                       {r.audit ? <ScoreChip score={r.audit.finalScore} fatal={r.audit.fatal} /> : null}
                       <strong className="qa-name" title={r.agentName}>{r.agentName}</strong>
+                      {r.audit ? (
+                        <QaLink label={qaTicketLabel(r.audit.ticketId)} onClick={() => m(r)} />
+                      ) : null}
                       {r.status === 'open' || !r.notes ? (
                         <span className="qa-meta qa-meta--full">
-                          {r.audit ? (
-                            <span>
-                              ticket <TicketRef url={n.ticketUrl} id={r.audit.ticketId} />, {r.audit.channel}
-                            </span>
-                          ) : null}
+                          {r.audit ? <span>{r.audit.channel}</span> : null}
                           {r.audit ? <span className="qa-sep">·</span> : null}
                           <span>
                             {r.own
@@ -429,7 +458,11 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
                             : ''}
                         </span>
                       )}
-                      <StatusChip s={r.status} />
+                      {r.status === 'submitted' ? (
+                        <Chip status="neutral">Awaiting agent confirmation</Chip>
+                      ) : (
+                        <StatusChip s={r.status} />
+                      )}
                       {r.status === 'open' ? (
                         <Chip status={r.overdue ? 'bad' : r.dueToday ? 'warn' : 'neutral'}>
                           {r.overdue ? `Overdue since ${r.dueDate}` : r.dueToday ? 'Due today' : `Due ${r.dueDate}`}
