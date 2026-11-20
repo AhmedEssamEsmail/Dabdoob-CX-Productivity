@@ -1204,7 +1204,7 @@ function BasisSeg({
 /* --- gl — the page -------------------------------------------------------------- */
 export function QualityAnalyticsPage({ route }: { route: { title: string } }) {
   const [n, setScope] = useState({
-    grain: 'week',
+    grain: 'month',
     period: '',
     basis: 'interaction',
     active: 'active',
