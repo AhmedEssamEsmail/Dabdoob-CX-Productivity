@@ -122,4 +122,31 @@ describe('getHomePage quality block', () => {
       q === null || (q?.month === null && q?.monthDelta === null && q?.week === null && q?.openCtls === 0)
     ).toBe(true)
   })
+
+  it('malformed qa_engine_settings resolves with no error and quality === null', async () => {
+    hubInstall(fx({ settings: { qa_engine_settings: '{not-json' } }))
+    const res = (await portCall(() => getHomePage())) as { ok?: { quality?: Quality | null }; err?: string }
+    expect(res.err).toBeUndefined()
+    expect(res.ok?.quality).toBeNull()
+  })
+
+  it('weekStartsOn: 1 shifts the quota week to Monday, excluding a 05-03 audit', async () => {
+    hubInstall(
+      fx({
+        settings: { qa_engine_settings: { weekStartsOn: 1 } },
+        tables: {
+          qa_audits: [
+            // Countable audit on Sunday 05-03: inside a Sun-start week, outside a Mon-start week.
+            { audit_id: 'w0', agent_email: 'agent@dabdoob.com', audit_date: '2026-05-03', score: 90, status: 'acknowledged', kind: 'audit' },
+            // In-window under either rule so the week is a number, not null.
+            { audit_id: 'w1', agent_email: 'agent@dabdoob.com', audit_date: '2026-05-05', score: 50, status: 'acknowledged', kind: 'audit' },
+          ],
+        },
+      })
+    )
+    const res = (await portCall(() => getHomePage())) as { ok?: { quality?: Quality }; err?: string }
+    expect(res.err).toBeUndefined()
+    // Mon-start window 05-04..05-06 counts only w1 -> 50; Sun-start would add w0 -> 70.
+    expect(res.ok?.quality?.week).toBe(50)
+  })
 })

@@ -499,16 +499,16 @@ export function OverviewPage({ route: n }: { route: { title: string } }) {
           <div className="stat">
             <span className="stat-l">vs last month</span>
             <span className="stat-v num">{q.monthDelta == null ? '–' : `${Ql(q.monthDelta)} pts`}</span>
-            <span className="stat-d">signed change</span>
+            <span className="stat-d">score points vs last month</span>
           </div>
           <div className="stat">
             <span className="stat-l">Quality this week</span>
             <span className="stat-v num">{q.week == null ? '–' : `${q.week}%`}</span>
-            <span className="stat-d">quota week</span>
+            <span className="stat-d">current week</span>
           </div>
           <div className="stat">
             <span className="stat-l">Open CTLs</span>
-            <span className="stat-v num">{Hi(q.openCtls ?? 0)}</span>
+            <span className="stat-v num">{q.openCtls == null ? '–' : Hi(q.openCtls)}</span>
             <span className="stat-d">needing coaching</span>
           </div>
         </div>

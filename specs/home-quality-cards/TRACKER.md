@@ -19,6 +19,9 @@ tests/golden/queue-checkin-auto.test.ts, tests/quality/qa-audit-footer-compact.t
 | S01-03 | mini/S01 | dev | S01-01 | 2/5/110/10 | PASS | verified | results/S01-03.md; overview-page +47-16, hub.css +1; eslint+tsc 0 |
 | qa1-01 | mini/S01 | dev | none | 1/2/15/5 | PASS | verified | results/qa1-01.md; settings parse moved inside quality catch; targeted vitest 5/5, scoped eslint 0, tsc 0 |
 | ux1-01 | mini/S01 | dev | none | 1/3/10/5 | PASS | verified | results/ux1-01.md; 3 .stat-v spans get %/pts units; tsc 0, eslint 0, vitest 5/5 |
+| low1-01 | mini/S01 | dev | none | 1/1/5/5 | PASS | verified | results/low1-01.md; diff scoped to 1 expr; eslint 0 |
+| low1-02 | mini/S01 | dev | low1-01 | 1/2/4/5 | PASS | verified | results/low1-02.md; 2 strings only; eslint 0 |
+| low1-03 | mini/S01 | test-engineer | none | 1/3/80/10 | PASS | verified | results/low1-03.md; 2 new tests, 7/7 pass, week=50 discriminates |
 
 ## Re-sharding
 | Original ID/path | Violated limit / checkpoint | Children replacing remaining scope | Status |
@@ -38,6 +41,11 @@ tests/golden/queue-checkin-auto.test.ts, tests/quality/qa-audit-footer-compact.t
 | 3 | typecheck | npx tsc --noEmit | PASS (exit 0) |
 | 3 | lint (scoped) | npx eslint src/features/cx-hub/components/overview-page.tsx | PASS (exit 0) |
 | 3 | unit (targeted) | npx vitest run tests/hub-home-quality.test.ts | PASS 5/5 |
+| 4 | unit (targeted) | npx vitest run tests/hub-home-quality.test.ts | PASS 7/7 |
+| 4 | typecheck | npx tsc --noEmit | PASS (exit 0) |
+| 4 | lint (scoped) | npx eslint overview-page.tsx tests/hub-home-quality.test.ts | PASS (exit 0) |
+
+Round 4 log: logs/gates-low1.log
 
 Round 3 log: logs/gates-ux1.log
 
@@ -48,10 +56,10 @@ Round 2 evidence: reports/tl-2.md (gate exits and failure list; scratch logs rem
 | Finding | Source report | Assigned | Status | Evidence |
 |---|---|---|---|---|
 | qa-1 (MED): `qeSettingsFrom_` can throw before the quality `try/catch` | reports/qa-1.md | qa1-01 / dev | verified | results/qa1-01.md; parse now inside catch; targeted vitest 5/5 |
-| qa-2 (LOW): missing throw-path and `weekStartsOn=1` coverage | reports/qa-1.md | - | deferred | LOW deferred per FIX policy |
+| qa-2 (LOW): missing throw-path and `weekStartsOn=1` coverage | reports/qa-1.md; reports/low-findings.md low-3 | low1-03 / test-engineer | verified | results/low1-03.md; 7/7 pass |
 | ux-1 (MED): quality `.stat-v` scores lack a unit | reports/ux-1.md | ux1-01 / dev | verified | results/ux1-01.md; logs/gates-ux1.log |
-| ux-2 (LOW): Open CTLs shows `0` when quality is null | reports/ux-1.md | - | deferred | LOW deferred per FIX policy |
-| ux-3 (LOW): `.stat-d` jargon copy | reports/ux-1.md | - | deferred | LOW deferred per FIX policy |
+| ux-2 (LOW): Open CTLs shows `0` when quality is null | reports/ux-1.md; reports/low-findings.md low-1 | low1-01 / dev | verified | results/low1-01.md; expr now `== null ? '–'` |
+| ux-3 (LOW): `.stat-d` jargon copy | reports/ux-1.md; reports/low-findings.md low-2 | low1-02 / dev | verified | results/low1-02.md; plain copy landed |
 
 ## Blocked / needs user
 - (none)
