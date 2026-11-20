@@ -1,0 +1,54 @@
+diff --git a/src/features/cx-quality/components/audit-queue-detail.tsx b/src/features/cx-quality/components/audit-queue-detail.tsx
+index 717b941..d361bf7 100644
+--- a/src/features/cx-quality/components/audit-queue-detail.tsx
++++ b/src/features/cx-quality/components/audit-queue-detail.tsx
+@@ -118,7 +118,7 @@ export function PassForm({
+       </div>
+       <div className="qa-actions">
+         <Button type="submit" variant="primary" disabled={u || !r}>
+-          {u ? (x ? 'Removing…' : 'Passing…') : x ? 'Remove' : 'Confirm pass'}
++          {u ? (x ? 'Removing…' : 'Skipping…') : x ? 'Remove' : 'Confirm skip'}
+         </Button>
+         <Button variant="quiet" onClick={onCancel}>
+           Cancel
+diff --git a/src/features/cx-quality/components/audit-queue-page.tsx b/src/features/cx-quality/components/audit-queue-page.tsx
+index 7ffadb3..7e7d808 100644
+--- a/src/features/cx-quality/components/audit-queue-page.tsx
++++ b/src/features/cx-quality/components/audit-queue-page.tsx
+@@ -482,7 +482,7 @@ function AuditQueuePage({
+                                     h(o === w.queueId ? '' : w.queueId)
+                                   }}
+                                 >
+-                                  Pass
++                                  Skip
+                                 </Button>
+                               </div>
+                             )}
+diff --git a/src/features/cx-quality/components/qa-shared.tsx b/src/features/cx-quality/components/qa-shared.tsx
+index 77b4a21..8321ad2 100644
+--- a/src/features/cx-quality/components/qa-shared.tsx
++++ b/src/features/cx-quality/components/qa-shared.tsx
+@@ -1011,6 +1011,7 @@ export function AuditForm({
+           </label>
+           <Textarea
+             id="qa-comment"
++            rows={3}
+             value={o}
+             onInput={(N) => h(N.currentTarget.value)}
+             placeholder="What to keep doing, and what to change, with the moment in the ticket."
+@@ -1052,6 +1053,7 @@ export function AuditForm({
+             <Button
+               type="submit"
+               variant="primary"
++              size="sm"
+               disabled={
+                 y || C.missing.length > 0 || C.score === null || A > 0 || !b
+               }
+@@ -1068,6 +1070,7 @@ export function AuditForm({
+             </Button>
+             <Button
+               variant="quiet"
++              size="sm"
+               onClick={I}
+               disabled={y}
+             >

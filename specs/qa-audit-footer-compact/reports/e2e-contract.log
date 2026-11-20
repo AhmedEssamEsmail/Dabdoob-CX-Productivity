@@ -1,0 +1,1727 @@
+
+Running 410 tests using 10 workers
+
+[1/410] [chromium] › e2e\page-contract.spec.ts:100:9 › / contract @375px
+[2/410] [chromium] › e2e\page-contract.spec.ts:100:9 › / contract @1024px
+[3/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin contract @375px
+[4/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @1024px
+[5/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @375px
+[6/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @1024px
+[7/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px
+[8/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /agents contract @375px
+[9/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px
+[10/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px
+[11/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px
+[12/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /aging contract @1024px
+[13/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /analytics contract @375px
+[14/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /analytics contract @1024px
+[15/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px
+[16/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @1024px
+[17/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px
+[18/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px
+[19/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px
+[20/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /checkins contract @1024px
+[21/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px
+[22/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px
+[23/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px
+[24/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px
+[25/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px
+[26/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px
+[27/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px
+[28/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px
+  1) [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ───────────────────
+
+    Error: console errors on /calibration:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-chromium\error-context.md
+
+
+  2) [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ──────────────────
+
+    Error: console errors on /calibration:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-chromium\error-context.md
+
+
+[29/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @375px
+[30/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @1024px
+[31/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @375px
+[32/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @1024px
+[33/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @375px
+[34/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @1024px
+[35/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @375px
+[36/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @1024px
+[37/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @375px
+[38/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @1024px
+[39/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /meetings contract @375px
+[40/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /meetings contract @1024px
+[41/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @375px
+[42/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px
+[43/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @375px
+[44/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @1024px
+[45/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px
+[46/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px
+[47/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[48/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+[49/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-status contract @375px
+[50/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /my-status contract @1024px
+[51/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /notes contract @375px
+[52/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /notes contract @1024px
+[53/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px
+[54/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px
+[55/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /overview contract @375px
+[56/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /overview contract @1024px
+[57/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @375px
+[58/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @1024px
+[59/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px
+[60/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @1024px
+[61/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @375px
+[62/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px
+[63/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px
+[64/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px
+[65/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px
+[66/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px
+[67/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px
+[68/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px
+[69/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px
+[70/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px
+[71/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px
+  3) [chromium] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px ─────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--qa-forms-contract-1024px-chromium\error-context.md
+
+
+[72/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px
+  4) [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px ─────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--quality-analytics-contract-375px-chromium\error-context.md
+
+
+[73/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px
+[74/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px
+  5) [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ───────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-1024px-chromium\error-context.md
+
+
+[75/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @375px
+  6) [chromium] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px ─────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--scheduler-contract-375px-chromium\error-context.md
+
+
+[76/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @1024px
+  7) [chromium] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px ─────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--status-validation-contract-375px-chromium\error-context.md
+
+
+[77/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tph contract @375px
+  8) [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px ───────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--tl-performance-contract-1024px-chromium\error-context.md
+
+
+[78/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tph contract @1024px
+[79/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @375px
+[80/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @1024px
+[81/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /trackers contract @375px
+[82/410] [chromium] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px
+[83/410] [firefox] › e2e\page-contract.spec.ts:100:9 › / contract @375px
+[84/410] [firefox] › e2e\page-contract.spec.ts:100:9 › / contract @1024px
+[85/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin contract @375px
+[86/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px
+[87/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px
+[88/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @1024px
+[89/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @1024px
+[90/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @375px
+[91/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /agents contract @375px
+[92/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px
+  9) [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px ───────────────────
+
+    Error: page.goto: NS_BINDING_ABORTED
+    Call log:
+      - navigating to "http://localhost:3000/admin/config", waiting until "domcontentloaded"
+
+
+      116 |       // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      117 |       // unboundedly under dev-server load — ready() covers settling (S06).
+    > 118 |       await page.goto(r.path, { waitUntil: 'domcontentloaded' })
+          |                  ^
+      119 |       await ready(page)
+      120 |
+      121 |       // 1. no horizontal scroll
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:118:18
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-375px-firefox\error-context.md
+
+
+[93/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px
+[94/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /aging contract @1024px
+  10) [firefox] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px ────────────────────────
+
+    Error: page.goto: NS_BINDING_ABORTED; maybe frame was detached?
+    Call log:
+      - navigating to "http://localhost:3000/admin", waiting until "domcontentloaded"
+
+
+      116 |       // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      117 |       // unboundedly under dev-server load — ready() covers settling (S06).
+    > 118 |       await page.goto(r.path, { waitUntil: 'domcontentloaded' })
+          |                  ^
+      119 |       await ready(page)
+      120 |
+      121 |       // 1. no horizontal scroll
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:118:18
+
+    Error Context: test-results\e2e-page-contract--admin-contract-1024px-firefox\error-context.md
+
+
+[95/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /analytics contract @375px
+[96/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /analytics contract @1024px
+[97/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px
+[98/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @1024px
+[99/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px
+[100/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px
+[101/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px
+[102/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /checkins contract @1024px
+[103/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px
+[104/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px
+[105/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px
+[106/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px
+[107/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px
+[108/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px
+  11) [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ──────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-firefox\error-context.md
+
+
+  12) [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ───────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-firefox\error-context.md
+
+
+[109/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px
+[110/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px
+  13) [firefox] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ─────────────────────
+
+    Error: page.goto: NS_BINDING_ABORTED; maybe frame was detached?
+    Call log:
+      - navigating to "http://localhost:3000/disputes", waiting until "domcontentloaded"
+
+
+      116 |       // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      117 |       // unboundedly under dev-server load — ready() covers settling (S06).
+    > 118 |       await page.goto(r.path, { waitUntil: 'domcontentloaded' })
+          |                  ^
+      119 |       await ready(page)
+      120 |
+      121 |       // 1. no horizontal scroll
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:118:18
+
+    Error Context: test-results\e2e-page-contract--disputes-contract-1024px-firefox\error-context.md
+
+
+  14) [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ─────────────────────
+
+    Error: page.goto: NS_BINDING_ABORTED
+    Call log:
+      - navigating to "http://localhost:3000/ecosystem", waiting until "domcontentloaded"
+
+
+      116 |       // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      117 |       // unboundedly under dev-server load — ready() covers settling (S06).
+    > 118 |       await page.goto(r.path, { waitUntil: 'domcontentloaded' })
+          |                  ^
+      119 |       await ready(page)
+      120 |
+      121 |       // 1. no horizontal scroll
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:118:18
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-375px-firefox\error-context.md
+
+
+  15) [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ────────────────────
+
+    Error: page.goto: NS_BINDING_ABORTED; maybe frame was detached?
+    Call log:
+      - navigating to "http://localhost:3000/ecosystem", waiting until "domcontentloaded"
+
+
+      116 |       // domcontentloaded, not 'load': subresource waits (fonts/chunks) queue
+      117 |       // unboundedly under dev-server load — ready() covers settling (S06).
+    > 118 |       await page.goto(r.path, { waitUntil: 'domcontentloaded' })
+          |                  ^
+      119 |       await ready(page)
+      120 |
+      121 |       // 1. no horizontal scroll
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:118:18
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-1024px-firefox\error-context.md
+
+
+[111/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @375px
+[112/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @1024px
+[113/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @375px
+[114/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @1024px
+[115/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @375px
+[116/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @1024px
+[117/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @375px
+[118/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @1024px
+[119/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @375px
+[120/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @1024px
+[121/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /meetings contract @375px
+[122/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /meetings contract @1024px
+[123/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @375px
+[124/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px
+[125/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @375px
+[126/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @1024px
+[127/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px
+[128/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px
+[129/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[130/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+[131/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-status contract @375px
+[132/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /my-status contract @1024px
+[133/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /notes contract @375px
+[134/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /notes contract @1024px
+[135/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px
+[136/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px
+[137/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /overview contract @1024px
+[138/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /overview contract @375px
+[139/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @375px
+[140/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @1024px
+[141/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px
+[142/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @1024px
+[143/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @375px
+[144/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px
+[145/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px
+[146/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px
+[147/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px
+[148/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px
+[149/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px
+[150/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px
+  16) [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px ───────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--one-on-ones-contract-375px-firefox\error-context.md
+
+
+[151/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px
+  17) [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px ──────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--one-on-ones-contract-1024px-firefox\error-context.md
+
+
+[152/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px
+[153/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px
+[154/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px
+[155/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px
+[156/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px
+[157/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @375px
+[158/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @1024px
+[159/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tph contract @375px
+[160/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tph contract @1024px
+[161/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @375px
+[162/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @1024px
+[163/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /trackers contract @375px
+[164/410] [firefox] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px
+[165/410] [webkit] › e2e\page-contract.spec.ts:100:9 › / contract @375px
+[166/410] [webkit] › e2e\page-contract.spec.ts:100:9 › / contract @1024px
+[167/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin contract @375px
+[168/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px
+[169/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px
+[170/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @375px
+[171/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @1024px
+[172/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @1024px
+[173/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /aging contract @1024px
+[174/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /agents contract @375px
+[175/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px
+[176/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px
+[177/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /analytics contract @375px
+[178/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /analytics contract @1024px
+[179/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px
+[180/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @1024px
+[181/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px
+[182/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px
+[183/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px
+[184/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /checkins contract @1024px
+[185/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px
+[186/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px
+[187/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px
+[188/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px
+[189/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px
+  18) [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ───────────────────
+
+    Error: console errors on /calibration:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-webkit\error-context.md
+
+
+[190/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px
+[191/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px
+  19) [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ────────────────────
+
+    Error: console errors on /calibration:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-webkit\error-context.md
+
+
+[192/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px
+[193/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @375px
+[194/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @1024px
+[195/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @375px
+[196/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @1024px
+[197/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @375px
+[198/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @1024px
+[199/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @375px
+[200/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @1024px
+[201/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @375px
+[202/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @1024px
+[203/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /meetings contract @375px
+[204/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /meetings contract @1024px
+[205/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @375px
+[206/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px
+[207/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @375px
+[208/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @1024px
+[209/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px
+[210/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px
+[211/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[212/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+[213/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-status contract @375px
+[214/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /my-status contract @1024px
+[215/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /notes contract @375px
+[216/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /notes contract @1024px
+[217/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px
+[218/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px
+[219/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /overview contract @375px
+[220/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /overview contract @1024px
+[221/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @375px
+[222/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @1024px
+[223/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px
+[224/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @1024px
+[225/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @375px
+[226/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px
+[227/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px
+[228/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px
+[229/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px
+[230/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px
+[231/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px
+[232/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px
+[233/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px
+[234/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px
+[235/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px
+[236/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px
+[237/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px
+[238/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px
+[239/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @375px
+[240/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @1024px
+[241/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tph contract @375px
+[242/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tph contract @1024px
+[243/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @375px
+[244/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @1024px
+[245/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /trackers contract @375px
+[246/410] [webkit] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px
+[247/410] [mobile] › e2e\page-contract.spec.ts:100:9 › / contract @375px
+[248/410] [mobile] › e2e\page-contract.spec.ts:100:9 › / contract @1024px
+[249/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin contract @375px
+[250/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px
+[251/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px
+[252/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @1024px
+[253/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @375px
+[254/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @1024px
+[255/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /agents contract @375px
+[256/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px
+  20) [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px ───────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--admin-config-contract-375px-mobile\error-context.md
+
+
+[257/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /analytics contract @375px
+[258/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px
+[259/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /aging contract @1024px
+[260/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /analytics contract @1024px
+[261/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px
+[262/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @1024px
+[263/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px
+[264/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px
+[265/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px
+[266/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /checkins contract @1024px
+[267/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px
+[268/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px
+[269/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px
+  21) [mobile] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px ────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--audit-queue-contract-375px-mobile\error-context.md
+
+
+[270/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px
+[271/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px
+[272/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px
+[273/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px
+  22) [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ────────────────────
+
+    Error: console errors on /calibration:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-mobile\error-context.md
+
+
+[274/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px
+[275/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @375px
+[276/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @1024px
+  23) [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px ───────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--ctls-contract-375px-mobile\error-context.md
+
+
+[277/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @375px
+  24) [mobile] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px ───────────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--coaching-contract-375px-mobile\error-context.md
+
+
+[278/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @1024px
+  25) [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ──────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-375px-mobile\error-context.md
+
+
+[279/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @375px
+  26) [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ───────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-mobile\error-context.md
+
+
+[280/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @1024px
+  27) [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px ──────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--ctls-contract-1024px-mobile\error-context.md
+
+
+[281/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @375px
+  28) [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px ───────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--disputes-contract-375px-mobile\error-context.md
+
+
+  29) [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ──────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--disputes-contract-1024px-mobile\error-context.md
+
+
+[282/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @1024px
+[283/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @375px
+[284/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @1024px
+[285/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /meetings contract @375px
+[286/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /meetings contract @1024px
+[287/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @375px
+[288/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px
+[289/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @375px
+[290/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @1024px
+[291/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px
+[292/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px
+[293/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[294/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+[295/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-status contract @375px
+[296/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /my-status contract @1024px
+[297/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /notes contract @375px
+[298/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /notes contract @1024px
+  30) [mobile] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px ────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--my-actions-contract-1024px-mobile\error-context.md
+
+
+[299/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px
+  31) [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px ──────────────────────
+
+    Error: e2e login failed for e2e.agent@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--my-audits-contract-375px-mobile\error-context.md
+
+
+[300/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px
+  32) [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ─────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 90000ms exceeded.
+
+      62 | /** Controls lacking an accessible name; returns offender outerHTMLs. */
+      63 | function unnamedControls(page: Page): Promise<string[]> {
+    > 64 |   return page.evaluate(() => {
+         |               ^
+      65 |     const labelledByText = (el: Element): string => {
+      66 |       const ids = el.getAttribute('aria-labelledby')
+      67 |       if (!ids) return ''
+        at unnamedControls (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:64:15)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:169:29
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-1024px-mobile\error-context.md
+
+
+  33) [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px ─────────────────────
+
+    Error: e2e login failed for e2e.agent@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--my-audits-contract-1024px-mobile\error-context.md
+
+
+[301/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @375px
+[302/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /overview contract @375px
+[303/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /overview contract @1024px
+[304/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @1024px
+  34) [mobile] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px ───────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--one-on-ones-contract-1024px-mobile\error-context.md
+
+
+[305/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @1024px
+[306/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px
+[307/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @375px
+[308/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px
+[309/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px
+[310/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px
+[311/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px
+[312/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px
+[313/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px
+[314/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px
+[315/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px
+[316/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px
+  35) [mobile] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px ─────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--productivity-analytics-contract-375px-mobile\error-context.md
+
+
+[317/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px
+[318/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px
+  36) [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px ─────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-375px-mobile\error-context.md
+
+
+  37) [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px ─────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--quality-analytics-contract-1024px-mobile\error-context.md
+
+
+[319/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @375px
+[320/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px
+[321/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px
+  38) [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px ──────────────
+
+    Error: console errors on /quality-analytics:
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+    Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    +   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    + ]
+
+      164 |         offenders,
+      165 |         `console errors on ${r.path}:\n${offenders.slice(0, 5).join('\n')}`
+    > 166 |       ).toEqual([])
+          |         ^
+      167 |
+      168 |       // 4. accessible names on every control
+      169 |       const unnamed = await unnamedControls(page)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:166:9
+
+    Error Context: test-results\e2e-page-contract--quality-analytics-contract-375px-mobile\error-context.md
+
+
+[322/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @1024px
+  39) [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px ──────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--scheduler-contract-375px-mobile\error-context.md
+
+
+[323/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tph contract @375px
+  40) [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-1024px-mobile\error-context.md
+
+
+[324/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tph contract @1024px
+  41) [mobile] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px ─────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--queue-contract-1024px-mobile\error-context.md
+
+
+[325/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @375px
+  42) [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px ─────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--scheduler-contract-1024px-mobile\error-context.md
+
+
+[326/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @1024px
+  43) [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px ─────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--tl-performance-contract-375px-mobile\error-context.md
+
+
+[327/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /trackers contract @375px
+  44) [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px ─────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--status-validation-contract-1024px-mobile\error-context.md
+
+
+[328/410] [mobile] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px
+[329/410] [tablet] › e2e\page-contract.spec.ts:100:9 › / contract @375px
+[330/410] [tablet] › e2e\page-contract.spec.ts:100:9 › / contract @1024px
+[331/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin contract @375px
+[332/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px
+  45) [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px ──────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--status-validation-contract-375px-mobile\error-context.md
+
+
+[333/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px
+[334/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @1024px
+[335/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @375px
+[336/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /admin/roster contract @1024px
+[337/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /agents contract @375px
+[338/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px
+[339/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px
+[340/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /aging contract @1024px
+[341/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /analytics contract @375px
+[342/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /analytics contract @1024px
+[343/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px
+[344/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @1024px
+[345/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px
+[346/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px
+[347/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px
+[348/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /checkins contract @1024px
+  46) [tablet] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px ────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--agents-contract-1024px-tablet\error-context.md
+
+
+  47) [tablet] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px ──────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--aging-contract-375px-tablet\error-context.md
+
+
+[349/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px
+[350/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px
+[351/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px
+[352/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px
+[353/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px
+[354/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px
+[355/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px
+[356/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px
+[357/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @375px
+  48) [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-375px-tablet\error-context.md
+
+
+[358/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /heatmap contract @1024px
+  49) [tablet] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px ───────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--checkins-contract-375px-tablet\error-context.md
+
+
+[359/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @375px
+  50) [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ───────────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[aria-busy="true"]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('[aria-busy="true"]') with timeout 15000ms
+      - waiting for locator('[aria-busy="true"]')
+        33 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      53 | async function ready(page: Page): Promise<void> {
+      54 |   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {})
+    > 55 |   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15000 })
+         |                                                    ^
+      56 | }
+      57 |
+      58 | /** documentElement overflow past the viewport in px (<=0 means no h-scroll). */
+        at ready (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:55:52)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:119:7
+
+    Error Context: test-results\e2e-page-contract--calibration-contract-1024px-tablet\error-context.md
+
+
+[360/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kb-gaps contract @1024px
+  51) [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px ───────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 90000ms exceeded.
+
+       at e2e\users.ts:78
+
+      76 |       /* attempt wedged (navigation/fill timeout) — retry */
+      77 |     }
+    > 78 |     await page.waitForTimeout(500 * (attempt + 1))
+         |                ^
+      79 |   }
+      80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+      81 | }
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:78:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--coaching-contract-375px-tablet\error-context.md
+
+
+[361/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @375px
+  52) [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px ──────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 90000ms exceeded.
+
+       at e2e\users.ts:78
+
+      76 |       /* attempt wedged (navigation/fill timeout) — retry */
+      77 |     }
+    > 78 |     await page.waitForTimeout(500 * (attempt + 1))
+         |                ^
+      79 |   }
+      80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+      81 | }
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:78:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--coaching-contract-1024px-tablet\error-context.md
+
+
+[362/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kb-tracker contract @1024px
+  53) [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px ───────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at e2e\users.ts:78
+
+      76 |       /* attempt wedged (navigation/fill timeout) — retry */
+      77 |     }
+    > 78 |     await page.waitForTimeout(500 * (attempt + 1))
+         |                ^
+      79 |   }
+      80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+      81 | }
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:78:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--disputes-contract-375px-tablet\error-context.md
+
+
+[363/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @375px
+  54) [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ──────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at e2e\users.ts:78
+
+      76 |       /* attempt wedged (navigation/fill timeout) — retry */
+      77 |     }
+    > 78 |     await page.waitForTimeout(500 * (attempt + 1))
+         |                ^
+      79 |   }
+      80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+      81 | }
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:78:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--disputes-contract-1024px-tablet\error-context.md
+
+
+[364/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /kpi-logs contract @1024px
+  55) [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ──────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       at e2e\users.ts:78
+
+      76 |       /* attempt wedged (navigation/fill timeout) — retry */
+      77 |     }
+    > 78 |     await page.waitForTimeout(500 * (attempt + 1))
+         |                ^
+      79 |   }
+      80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+      81 | }
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:78:16)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-375px-tablet\error-context.md
+
+
+[365/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @375px
+[366/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /mail-desk contract @1024px
+[367/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /meetings contract @375px
+[368/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /meetings contract @1024px
+[369/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @375px
+[370/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px
+[371/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @375px
+[372/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-auditor-kpis contract @1024px
+  56) [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ─────────────────────
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 90000ms exceeded.
+
+      62 | /** Controls lacking an accessible name; returns offender outerHTMLs. */
+      63 | function unnamedControls(page: Page): Promise<string[]> {
+    > 64 |   return page.evaluate(() => {
+         |               ^
+      65 |     const labelledByText = (el: Element): string => {
+      66 |       const ids = el.getAttribute('aria-labelledby')
+      67 |       if (!ids) return ''
+        at unnamedControls (C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:64:15)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:169:29
+
+    Error Context: test-results\e2e-page-contract--ecosystem-contract-1024px-tablet\error-context.md
+
+
+[373/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px
+[374/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px
+[375/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-day contract @375px
+[376/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-day contract @1024px
+[377/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-status contract @375px
+[378/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /my-status contract @1024px
+[379/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /notes contract @375px
+[380/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /notes contract @1024px
+[381/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px
+[382/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px
+[383/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /overview contract @375px
+[384/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /overview contract @1024px
+[385/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @375px
+[386/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /people-holidays contract @1024px
+[387/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px
+[388/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @1024px
+[389/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @375px
+[390/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px
+[391/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px
+[392/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px
+[393/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px
+[394/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px
+[395/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px
+[396/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px
+[397/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px
+[398/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px
+[399/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px
+[400/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px
+[401/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px
+  57) [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--quality-scores-contract-1024px-tablet\error-context.md
+
+
+[402/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @375px
+[403/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tl-tasks contract @1024px
+[404/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px
+[405/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tph contract @375px
+[406/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tph contract @1024px
+[407/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @375px
+  58) [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px ──────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--queue-contract-375px-tablet\error-context.md
+
+
+  59) [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px ─────────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--queue-contract-1024px-tablet\error-context.md
+
+
+[408/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /tph-grid contract @1024px
+[409/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /trackers contract @375px
+[410/410] [tablet] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px
+  60) [tablet] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px ──────────────────────
+
+    Error: e2e login failed for e2e.admin@dabdoob.com — is e2e/seed-users.mjs run and the dev server up?
+
+       at e2e\users.ts:80
+
+      78 |     await page.waitForTimeout(500 * (attempt + 1))
+      79 |   }
+    > 80 |   throw new Error(`e2e login failed for ${email} — is e2e/seed-users.mjs run and the dev server up?`)
+         |         ^
+      81 | }
+      82 |
+        at login (C:\Users\AHMED\KPIs\CX-Hub\e2e\users.ts:80:9)
+        at C:\Users\AHMED\KPIs\CX-Hub\e2e\page-contract.spec.ts:106:7
+
+    Error Context: test-results\e2e-page-contract--trackers-contract-1024px-tablet\error-context.md
+
+
+  60 failed
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ────────────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ───────────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /qa-forms contract @1024px ──────────────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px ──────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ────────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px ──────────────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px ──────────────
+    [chromium] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @1024px ────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /admin contract @1024px ──────────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px ────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ─────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ───────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ───────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ──────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @375px ─────────────────────
+    [firefox] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px ────────────────────
+    [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ──────────────────────
+    [webkit] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ─────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /admin/config contract @375px ─────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /audit-queue contract @375px ──────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ──────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ─────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px ─────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @375px ─────────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /ctls contract @1024px ────────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px ─────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ───────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /my-actions contract @1024px ──────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @375px ────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /my-audits contract @1024px ───────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /one-on-ones contract @1024px ─────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /productivity-analytics contract @375px ───────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @375px ────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-analytics contract @1024px ───────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @375px ───────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ──────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px ───────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @375px ────────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /scheduler contract @1024px ───────────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @375px ────────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /status-validation contract @1024px ───────────────
+    [mobile] › e2e\page-contract.spec.ts:100:9 › /tl-performance contract @375px ───────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /agents contract @1024px ──────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /aging contract @375px ────────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @375px ──────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /calibration contract @1024px ─────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /checkins contract @375px ─────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @375px ─────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /coaching contract @1024px ────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @375px ─────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /disputes contract @1024px ────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @375px ────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /ecosystem contract @1024px ───────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /quality-scores contract @1024px ──────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @375px ────────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /queue contract @1024px ───────────────────────────
+    [tablet] › e2e\page-contract.spec.ts:100:9 › /trackers contract @1024px ────────────────────────
+  350 passed (17.7m)

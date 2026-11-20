@@ -118,7 +118,7 @@ export function PassForm({
       </div>
       <div className="qa-actions">
         <Button type="submit" variant="primary" disabled={u || !r}>
-          {u ? (x ? 'Removing…' : 'Passing…') : x ? 'Remove' : 'Confirm pass'}
+          {u ? (x ? 'Removing…' : 'Skipping…') : x ? 'Remove' : 'Confirm skip'}
         </Button>
         <Button variant="quiet" onClick={onCancel}>
           Cancel

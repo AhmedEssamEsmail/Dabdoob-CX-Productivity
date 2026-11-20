@@ -1011,6 +1011,7 @@ export function AuditForm({
           </label>
           <Textarea
             id="qa-comment"
+            rows={2}
             value={o}
             onInput={(N) => h(N.currentTarget.value)}
             placeholder="What to keep doing, and what to change, with the moment in the ticket."
@@ -1052,6 +1053,7 @@ export function AuditForm({
             <Button
               type="submit"
               variant="primary"
+              size="sm"
               disabled={
                 y || C.missing.length > 0 || C.score === null || A > 0 || !b
               }
@@ -1068,6 +1070,7 @@ export function AuditForm({
             </Button>
             <Button
               variant="quiet"
+              size="sm"
               onClick={I}
               disabled={y}
             >

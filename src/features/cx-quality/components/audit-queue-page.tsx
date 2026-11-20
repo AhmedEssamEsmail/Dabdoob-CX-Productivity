@@ -482,7 +482,7 @@ function AuditQueuePage({
                                     h(o === w.queueId ? '' : w.queueId)
                                   }}
                                 >
-                                  Pass
+                                  Skip
                                 </Button>
                               </div>
                             )}
