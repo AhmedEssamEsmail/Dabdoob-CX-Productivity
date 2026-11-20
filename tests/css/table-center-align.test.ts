@@ -153,10 +153,10 @@ describe('R2 chip-cell + narrowing rules', () => {
     )
   })
 
-  it('centers .qa-whylist li content (flex needs justify-content)', () => {
+  it('left-aligns .qa-whylist li content (Status/Why split into columns)', () => {
     const css = read('src/app/styles/quality.css')
     expect(css).toMatch(
-      /\.qa-whylist\s+li\s*\{[^}]*justify-content:\s*center/,
+      /\.qa-whylist\s+li\s*\{[^}]*justify-content:\s*flex-start/,
     )
   })
 

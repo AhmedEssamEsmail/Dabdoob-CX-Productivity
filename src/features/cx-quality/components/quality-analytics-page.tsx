@@ -178,6 +178,7 @@ function Attention({
           <thead>
             <tr>
               <th scope="col">Agent</th>
+              <th scope="col">Status</th>
               <th scope="col">Why</th>
               <th scope="col">Score</th>
             </tr>
@@ -199,7 +200,15 @@ function Attention({
                     <ul className="qa-whylist">
                       {c.reasons.map((l: any, p: number) => (
                         <li key={p}>
-                          <Chip status={QA_FLAG_LABELS[l.rule][1]}>{QA_FLAG_LABELS[l.rule][0]}</Chip>{' '}
+                          <Chip status={QA_FLAG_LABELS[l.rule][1]}>{QA_FLAG_LABELS[l.rule][0]}</Chip>
+                        </li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td>
+                    <ul className="qa-whylist">
+                      {c.reasons.map((l: any, p: number) => (
+                        <li key={p}>
                           <span className="cx-muted">{l.text}</span>
                         </li>
                       ))}
@@ -213,7 +222,7 @@ function Attention({
               ))
             ) : (
               <tr>
-                <td colSpan={3}>
+                <td colSpan={4}>
                   Nobody this period: no critical fail, repeat after coaching,
                   low verdict, fall or audit gap.
                 </td>
