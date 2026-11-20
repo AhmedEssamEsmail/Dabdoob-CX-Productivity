@@ -343,7 +343,7 @@ export default function CtlsPage({ route }: { route: { title: string } }) {
       reload={s}
       sub="Every audit under 100% opens a CTL — whoever is on shift may close it and submit the outcome."
       toolbar={
-        n && !n.isAdmin ? (
+        n ? (
           <Seg
             name="ctl-scope"
             value={scope}
