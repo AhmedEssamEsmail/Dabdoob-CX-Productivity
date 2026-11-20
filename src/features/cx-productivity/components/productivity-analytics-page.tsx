@@ -166,7 +166,7 @@ export function ProductivityAnalyticsPage() {
                         <td className="cx-num">{T(h.idleEffPct, '%')}</td>
                         <td className="cx-num">{T(h.prodRawPct, '%')}</td>
                         <td className="cx-num">{T(h.prodEffPct, '%')}</td>
-                        <td>
+                        <td className="cx-txt">
                           {h.deltaPp === null ? '–' : `${h.deltaPp > 0 ? '+' : ''}${h.deltaPp} pp`}
                           {h.bandChange ? (
                             <span className="pv-sub">

@@ -414,7 +414,7 @@ function AuditQueuePage({
                             {w.actionAt || '–'}
                             <span className="cx-faint qa-sub">queued {w.date}</span>
                           </td>
-                          <td>
+                          <td className="cx-txt">
                             {w.agentName}
                             <span className="cx-faint qa-sub">{w.tlName}</span>
                             {w.repeatFails ? (

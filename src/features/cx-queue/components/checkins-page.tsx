@@ -205,7 +205,7 @@ export function CheckinsPage({ route }: { route: { title: string } }) {
                         <thead><tr><th scope="col">Queue</th><th scope="col" className="cx-num-col">Agents</th><th scope="col">Status given</th></tr></thead>
                         <tbody>
                           {(k.queues || []).map((A: any) => (
-                            <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td><Chip status={A.status === 'On track' ? 'ok' : 'warn'}>{A.status}</Chip>{A.note ? <span className="cx-statusline">{A.note}</span> : null}</td></tr>
+                            <tr key={A.queue}><td>{A.queue}</td><td className="cx-num-col cx-num">{A.agents}</td><td className="cx-txt"><Chip status={A.status === 'On track' ? 'ok' : 'warn'}>{A.status}</Chip>{A.note ? <span className="cx-statusline">{A.note}</span> : null}</td></tr>
                           ))}
                         </tbody>
                       </table>

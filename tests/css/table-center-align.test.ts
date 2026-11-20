@@ -124,3 +124,66 @@ describe('markup class contract', () => {
     expect(html).toContain('class="cx-num qa-cov__ctr"')
   })
 })
+
+describe('R2 chip-cell + narrowing rules', () => {
+  it('centers any td carrying a .cx-chip at any depth', () => {
+    expect(read('src/app/cx-kit.css')).toMatch(
+      /:is\(\.cx-table,\s*table\)\s+td:has\(\.cx-chip\)\s*\{[^}]*text-align:\s*center/,
+    )
+  })
+
+  it('never sweeps th / tbody th row labels into the chip rule', () => {
+    const css = read('src/app/cx-kit.css')
+    expect(css).not.toMatch(/th:has\(\.cx-chip\)/)
+    expect(css).not.toMatch(/tbody\s+th:has\(/)
+  })
+
+  it('cx-txt opts a text-primary td out of the chip center rule', () => {
+    const css = read('src/app/cx-kit.css')
+    expect(css).toMatch(/:root :is\(\.cx-table, table\) td\.cx-txt\s*\{[^}]*text-align:\s*start/)
+    const chipIdx = css.indexOf('td:has(.cx-chip)')
+    const txtIdx = css.indexOf('td.cx-txt')
+    expect(chipIdx).toBeGreaterThanOrEqual(0)
+    expect(txtIdx).toBeGreaterThan(chipIdx)
+  })
+
+  it('shrinks .cx-select.qa-narrow to content width', () => {
+    expect(read('src/app/styles/quality.css')).toMatch(
+      /\.cx-select\.qa-narrow\s*\{[^}]*inline-size:\s*auto/,
+    )
+  })
+
+  it('centers .qa-whylist li content (flex needs justify-content)', () => {
+    const css = read('src/app/styles/quality.css')
+    expect(css).toMatch(
+      /\.qa-whylist\s+li\s*\{[^}]*justify-content:\s*center/,
+    )
+  })
+
+  it('keeps the bare .qa-narrow 12rem cap free of width overrides', () => {
+    const css = read('src/app/styles/quality.css')
+    const bare = css.match(/\[data-app="quality"\]\s+\.qa-narrow\s*\{([^}]*)\}/)
+    expect(bare, 'bare .qa-narrow rule missing').not.toBeNull()
+    expect(bare![1]).toMatch(/max-inline-size:\s*12rem/)
+    expect(bare![1].replace(/max-inline-size:[^;}]+/g, '')).not.toMatch(
+      /\b(inline-size|width)\s*:/,
+    )
+  })
+})
+
+describe('R2 cx-num markup contract', () => {
+  it('quality-analytics Channels td carries cx-num', () => {
+    expect(
+      read('src/features/cx-quality/components/quality-analytics-page.tsx'),
+    ).toMatch(/<td className="cx-num">\s*\{s\.channels\.length/)
+  })
+
+  it('quality-scores dual-mode td applies cx-num only in count mode', () => {
+    const src = read(
+      'src/features/cx-quality/components/quality-scores-page.tsx',
+    )
+    expect(src).toMatch(
+      /<td[^>]*className=\{m\s*\?[^}]*cx-num[^}]*\}[^>]*>\s*\{m\s*\?[^\n]*r\.agents/,
+    )
+  })
+})

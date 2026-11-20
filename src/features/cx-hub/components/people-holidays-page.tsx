@@ -450,7 +450,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                         <td>{S.mobile || '–'}</td>
                         <td>{S.hrId || '–'}</td>
                         <td>{S.employmentStatus || (S.active ? 'Current' : 'Left')}</td>
-                        <td className="cx-muted">
+                        <td className="cx-muted cx-txt">
                           {S.tlEmail ? (
                             w(S.tlEmail)
                           ) : e.lastSync?.unresolved.some((_: Q) => _.email === S.email) ? (
@@ -465,7 +465,7 @@ export function PeopleHolidaysPage({ route: n }: { route: { title: string } }) {
                             </span>
                           ) : null}
                         </td>
-                        <td>
+                        <td className="cx-txt">
                           {S.basedInCountry || (
                             <Chip
                               status="warn"

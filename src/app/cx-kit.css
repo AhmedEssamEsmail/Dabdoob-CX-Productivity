@@ -658,6 +658,8 @@
 /* --- header + numeric cell alignment — beat the start defaults ----------- */
 :root :is(.cx-table, table) thead tr th { text-align: center; }
 :root :is(.cx-table, table) :is(td, tbody th):is(.cx-num, .num, .cx-num-col, .trk-num) { text-align: center; }
+:root :is(.cx-table, table) td:has(.cx-chip) { text-align: center; }
+:root :is(.cx-table, table) td.cx-txt { text-align: start; }
 :root .cx-table tbody tr:hover,
 :root table tbody tr:hover { background: var(--cx-surface-2); }
 :root .cx-table--nowrap th, :root .cx-table--nowrap td { white-space: nowrap; }

@@ -719,7 +719,7 @@ function Zn2({ fields: e, rows: t, empty: n, onEdit: s }: { fields: FieldOut[]; 
               {e.map((i) => (
                 <Qn key={i.id} f={i} r={a} />
               ))}
-              <td className="trk-by">
+              <td className="trk-by cx-txt">
                 {a.outside ? (
                   <Chip status="info" className="trk-outside">Entered in the sheet</Chip>
                 ) : (

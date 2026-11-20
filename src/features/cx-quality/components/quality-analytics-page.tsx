@@ -404,7 +404,7 @@ function Agents({ d: t, open: n }: { d: any; open: (pick: any) => void }) {
                     <Chip status={QA_CONF_TONE[s.badge]}>{QA_CONF[s.badge]}</Chip>
                   </td>
                   <td className="cx-num">{s.fatal || ''}</td>
-                  <td>
+                  <td className="cx-num">
                     {s.channels.length ? (
                       s.channels.map((i: any) => (
                         <span className="qa-sub" key={i.channel}>
@@ -988,7 +988,7 @@ function Extras({ d: t }: { d: any }) {
                     </td>
                     <td>{n.scoring === 'deduction' ? 'Deduction' : 'Weighted'}</td>
                     <td className="cx-num">{n.critical}</td>
-                    <td>
+                    <td className="cx-txt">
                       {n.critical === 0 ? (
                         '–'
                       ) : n.zeroes ? (

@@ -323,7 +323,7 @@ function Board({ route }: { route: { title: string; purpose?: string } }) {
                       </tr>
                     ) : null}
                     <tr>
-                      <td>
+                      <td className="cx-txt">
                         <span className="lead">
                           {m.queue}
                           {m.kind === 'chat' ? <span className="cx-faint"> (best effort)</span> : null}

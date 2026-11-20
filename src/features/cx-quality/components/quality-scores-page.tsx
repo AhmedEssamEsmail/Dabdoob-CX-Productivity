@@ -373,7 +373,7 @@ function BreakdownTable({
                   </td>
                   <td className="cx-num">{r.audits}</td>
                   <td className="cx-num">{r.critical || ''}</td>
-                  <td>{m ? (r.topReason ? QA_REASON_LABELS[r.topReason] : '–') : (r.agents ?? '')}</td>
+                  <td className={m ? undefined : 'cx-num'}>{m ? (r.topReason ? QA_REASON_LABELS[r.topReason] : '–') : (r.agents ?? '')}</td>
                 </tr>
               ))
             ) : (
