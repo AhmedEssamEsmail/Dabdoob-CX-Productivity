@@ -188,7 +188,7 @@ export async function readSheet(spreadsheetId: string, sheetName: string, opts?:
   })
 }
 
-function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<string, unknown> {
+export function mapRow(row: Record<string, unknown>, mapping: TableMapping): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   const nullAsEmpty = NULL_AS_EMPTY_MAP[mapping.table]
   for (const col of mapping.columns) {
