@@ -174,7 +174,7 @@ function Attention({
       hint="One row per agent, with every rule that fired: a critical fail, a repeat after a CTL, a score whose whole range sits under the middle agent, two falling periods, or fewer audits than the quota so far."
     >
       <TableScroll label="Agents needing a look" className="cx-panel cx-tablewrap">
-        <table className="cx-table">
+        <table className="cx-table qa-att">
           <thead>
             <tr>
               <th scope="col">Agent</th>
